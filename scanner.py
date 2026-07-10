@@ -1,7 +1,7 @@
 import os
 import sys
 import requests
-from datetime import datetime, time
+from datetime import datetime, time, date
 from zoneinfo import ZoneInfo
 from urllib.parse import quote
 
@@ -19,6 +19,24 @@ HEADERS = {
 UNIVERSE = {
     "NIFTY": "NSE_INDEX|Nifty 50",
     "BANKNIFTY": "NSE_INDEX|Nifty Bank"
+}
+
+NSE_HOLIDAYS_2026 = {
+    date(2026, 1, 26),
+    date(2026, 3, 3),
+    date(2026, 3, 26),
+    date(2026, 3, 31),
+    date(2026, 4, 3),
+    date(2026, 4, 14),
+    date(2026, 5, 1),
+    date(2026, 5, 28),
+    date(2026, 6, 26),
+    date(2026, 9, 14),
+    date(2026, 10, 2),
+    date(2026, 10, 20),
+    date(2026, 11, 10),
+    date(2026, 11, 24),
+    date(2026, 12, 25)
 }
 
 
@@ -51,23 +69,28 @@ def get_session():
     )
 
     if now.weekday() >= 5:
+        print("Weekend. Scanner skipped.")
+        return None
+
+    if now.date() in NSE_HOLIDAYS_2026:
+        print("NSE trading holiday. Scanner skipped.")
         return None
 
     current = now.time()
 
-    if time(9, 30) <= current <= time(10, 30):
+    if time(9, 30) <= current <= time(10, 35):
         return {
             "name": "MORNING PRIME",
             "min_score": 75
         }
 
-    if time(10, 30) < current <= time(11, 30):
+    if time(10, 35) < current <= time(11, 35):
         return {
             "name": "MORNING CONTINUATION",
             "min_score": 80
         }
 
-    if time(13, 45) <= current <= time(15, 5):
+    if time(13, 45) <= current <= time(15, 10):
         return {
             "name": "AFTERNOON",
             "min_score": 80
@@ -562,7 +585,7 @@ def main():
     session = get_session()
 
     if session is None:
-        print("Outside configured trading window. Exit.")
+        print("Scanner inactive. Exit.")
         sys.exit(0)
 
     print("Session:", session["name"])
