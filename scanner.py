@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import requests
 from datetime import datetime, time, date
 from zoneinfo import ZoneInfo
@@ -39,6 +40,9 @@ NSE_HOLIDAYS_2026 = {
     date(2026, 12, 25)
 }
 
+STATE_FILE = "alert_state.json"
+COOLDOWN_MINUTES = 30
+
 
 def send_telegram(message):
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
@@ -58,6 +62,73 @@ def send_telegram(message):
         print(response.text)
 
     return response.status_code == 200
+
+
+def load_alert_state():
+    if not os.path.exists(STATE_FILE):
+        return {}
+
+    try:
+        with open(STATE_FILE, "r") as file:
+            return json.load(file)
+
+    except Exception as error:
+        print("State load error:", str(error))
+        return {}
+
+
+def save_alert_state(state):
+    with open(STATE_FILE, "w") as file:
+        json.dump(state, file)
+
+
+def duplicate_alert(name, direction):
+    state = load_alert_state()
+
+    key = f"{name}_{direction}"
+
+    previous = state.get(key)
+
+    if not previous:
+        return False
+
+    try:
+        previous_time = datetime.fromisoformat(previous)
+        now = datetime.now(IST)
+
+        elapsed = (
+            now - previous_time
+        ).total_seconds() / 60
+
+        if elapsed < COOLDOWN_MINUTES:
+            print(
+                name,
+                direction,
+                f"Duplicate blocked. {elapsed:.1f} minutes elapsed."
+            )
+
+            return True
+
+    except Exception as error:
+        print("Duplicate check error:", str(error))
+
+    return False
+
+
+def record_alert(name, direction):
+    state = load_alert_state()
+
+    key = f"{name}_{direction}"
+
+    state[key] = datetime.now(IST).isoformat()
+
+    save_alert_state(state)
+
+    print(
+        name,
+        direction,
+        "Alert state saved."
+    )
 
 
 def get_session():
@@ -119,6 +190,7 @@ def ema(values, period):
         return None
 
     result = sum(values[:period]) / period
+
     multiplier = 2 / (period + 1)
 
     for price in values[period:]:
@@ -194,10 +266,18 @@ def analyse_trend(candles):
     ema9 = ema(closes, 9)
     ema21 = ema(closes, 21)
 
-    recent_high = max(highs[-6:-1])
-    recent_low = min(lows[-6:-1])
+    recent_high = max(
+        highs[-6:-1]
+    )
 
-    avg_volume = sum(volumes[-6:-1]) / 5
+    recent_low = min(
+        lows[-6:-1]
+    )
+
+    avg_volume = (
+        sum(volumes[-6:-1]) / 5
+    )
+
     current_volume = volumes[-1]
 
     volume_expansion = (
@@ -235,7 +315,10 @@ def get_contracts(instrument_key):
 
     response.raise_for_status()
 
-    return response.json().get("data", [])
+    return response.json().get(
+        "data",
+        []
+    )
 
 
 def get_nearest_expiry(contracts):
@@ -262,7 +345,10 @@ def get_nearest_expiry(contracts):
     return expiries[0] if expiries else None
 
 
-def get_option_chain(instrument_key, expiry):
+def get_option_chain(
+    instrument_key,
+    expiry
+):
     url = "https://api.upstox.com/v2/option/chain"
 
     response = requests.get(
@@ -283,7 +369,10 @@ def get_option_chain(instrument_key, expiry):
 
     response.raise_for_status()
 
-    return response.json().get("data", [])
+    return response.json().get(
+        "data",
+        []
+    )
 
 
 def get_atm_data(chain):
@@ -301,7 +390,10 @@ def get_atm_data(chain):
     atm = min(
         chain,
         key=lambda row: abs(
-            safe(row, "strike_price") - spot
+            safe(
+                row,
+                "strike_price"
+            ) - spot
         )
     )
 
@@ -382,39 +474,61 @@ def score_setup(trend, option):
 
     if current > trend["ema9"] > trend["ema21"]:
         bull_score += 25
-        bull_reasons.append("5m EMA trend bullish")
+        bull_reasons.append(
+            "5m EMA trend bullish"
+        )
 
     if current < trend["ema9"] < trend["ema21"]:
         bear_score += 25
-        bear_reasons.append("5m EMA trend bearish")
+        bear_reasons.append(
+            "5m EMA trend bearish"
+        )
 
     if current > trend["recent_high"]:
         bull_score += 25
-        bull_reasons.append("Recent range breakout")
+        bull_reasons.append(
+            "Recent range breakout"
+        )
 
     if current < trend["recent_low"]:
         bear_score += 25
-        bear_reasons.append("Recent range breakdown")
+        bear_reasons.append(
+            "Recent range breakdown"
+        )
 
     if trend["volume_expansion"]:
         if bull_score > bear_score:
             bull_score += 15
-            bull_reasons.append("Volume expansion")
+            bull_reasons.append(
+                "Volume expansion"
+            )
 
         elif bear_score > bull_score:
             bear_score += 15
-            bear_reasons.append("Volume expansion")
+            bear_reasons.append(
+                "Volume expansion"
+            )
 
     ce_oi = option["ce_oi"]
     pe_oi = option["pe_oi"]
 
-    if ce_oi > 0 and pe_oi > ce_oi * 1.15:
+    if (
+        ce_oi > 0
+        and pe_oi > ce_oi * 1.15
+    ):
         bull_score += 15
-        bull_reasons.append("ATM PE OI support")
+        bull_reasons.append(
+            "ATM PE OI support"
+        )
 
-    if pe_oi > 0 and ce_oi > pe_oi * 1.15:
+    if (
+        pe_oi > 0
+        and ce_oi > pe_oi * 1.15
+    ):
         bear_score += 15
-        bear_reasons.append("ATM CE OI resistance")
+        bear_reasons.append(
+            "ATM CE OI resistance"
+        )
 
     if (
         option["pe_volume"] > 0
@@ -422,7 +536,9 @@ def score_setup(trend, option):
         > option["pe_volume"] * 1.10
     ):
         bull_score += 10
-        bull_reasons.append("CE volume dominance")
+        bull_reasons.append(
+            "CE volume dominance"
+        )
 
     if (
         option["ce_volume"] > 0
@@ -430,27 +546,47 @@ def score_setup(trend, option):
         > option["ce_volume"] * 1.10
     ):
         bear_score += 10
-        bear_reasons.append("PE volume dominance")
+        bear_reasons.append(
+            "PE volume dominance"
+        )
 
-    if 0.35 <= option["ce_delta"] <= 0.70:
+    if (
+        0.35
+        <= option["ce_delta"]
+        <= 0.70
+    ):
         bull_score += 10
-        bull_reasons.append("CE delta usable")
+        bull_reasons.append(
+            "CE delta usable"
+        )
 
-    if -0.70 <= option["pe_delta"] <= -0.35:
+    if (
+        -0.70
+        <= option["pe_delta"]
+        <= -0.35
+    ):
         bear_score += 10
-        bear_reasons.append("PE delta usable")
+        bear_reasons.append(
+            "PE delta usable"
+        )
 
     if bull_score > bear_score:
         return {
             "direction": "CE",
-            "score": min(bull_score, 100),
+            "score": min(
+                bull_score,
+                100
+            ),
             "reasons": bull_reasons
         }
 
     if bear_score > bull_score:
         return {
             "direction": "PE",
-            "score": min(bear_score, 100),
+            "score": min(
+                bear_score,
+                100
+            ),
             "reasons": bear_reasons
         }
 
@@ -465,30 +601,58 @@ def calculate_levels(premium):
     premium = float(premium)
 
     return {
-        "entry_low": round(premium * 0.99, 2),
-        "entry_high": round(premium * 1.02, 2),
-        "stop_loss": round(premium * 0.85, 2),
-        "target1": round(premium * 1.20, 2),
-        "target2": round(premium * 1.35, 2)
+        "entry_low":
+            round(premium * 0.99, 2),
+
+        "entry_high":
+            round(premium * 1.02, 2),
+
+        "stop_loss":
+            round(premium * 0.85, 2),
+
+        "target1":
+            round(premium * 1.20, 2),
+
+        "target2":
+            round(premium * 1.35, 2)
     }
 
 
-def scan_symbol(name, instrument_key, session):
+def scan_symbol(
+    name,
+    instrument_key,
+    session
+):
     print("\nScanning:", name)
 
-    candles = get_candles(instrument_key)
-    trend = analyse_trend(candles)
+    candles = get_candles(
+        instrument_key
+    )
+
+    trend = analyse_trend(
+        candles
+    )
 
     if not trend:
-        print(name, "Not enough candle data")
+        print(
+            name,
+            "Not enough candle data"
+        )
         return
 
-    contracts = get_contracts(instrument_key)
+    contracts = get_contracts(
+        instrument_key
+    )
 
-    expiry = get_nearest_expiry(contracts)
+    expiry = get_nearest_expiry(
+        contracts
+    )
 
     if not expiry:
-        print(name, "No active expiry")
+        print(
+            name,
+            "No active expiry"
+        )
         return
 
     chain = get_option_chain(
@@ -496,10 +660,15 @@ def scan_symbol(name, instrument_key, session):
         expiry
     )
 
-    option = get_atm_data(chain)
+    option = get_atm_data(
+        chain
+    )
 
     if not option:
-        print(name, "No ATM option data")
+        print(
+            name,
+            "No ATM option data"
+        )
         return
 
     signal = score_setup(
@@ -514,7 +683,10 @@ def scan_symbol(name, instrument_key, session):
     )
 
     if signal["score"] < session["min_score"]:
-        print(name, "No qualifying setup")
+        print(
+            name,
+            "No qualifying setup"
+        )
         return
 
     direction = signal["direction"]
@@ -529,10 +701,21 @@ def scan_symbol(name, instrument_key, session):
         return
 
     if not premium or premium <= 0:
-        print(name, "Invalid premium")
+        print(
+            name,
+            "Invalid premium"
+        )
         return
 
-    levels = calculate_levels(premium)
+    if duplicate_alert(
+        name,
+        direction
+    ):
+        return
+
+    levels = calculate_levels(
+        premium
+    )
 
     reasons = "\n".join(
         f"• {reason}"
@@ -578,18 +761,31 @@ Rule-based scanner alert.
 Score is not guaranteed win probability.
 """
 
-    send_telegram(message)
+    if send_telegram(message):
+        record_alert(
+            name,
+            direction
+        )
 
 
 def main():
     session = get_session()
 
     if session is None:
-        print("Scanner inactive. Exit.")
+        print(
+            "Scanner inactive. Exit."
+        )
         sys.exit(0)
 
-    print("Session:", session["name"])
-    print("Minimum Score:", session["min_score"])
+    print(
+        "Session:",
+        session["name"]
+    )
+
+    print(
+        "Minimum Score:",
+        session["min_score"]
+    )
 
     for name, instrument_key in UNIVERSE.items():
         try:
@@ -606,7 +802,9 @@ def main():
                 str(error)
             )
 
-    print("\nScanner run completed.")
+    print(
+        "\nScanner run completed."
+    )
 
 
 if __name__ == "__main__":
