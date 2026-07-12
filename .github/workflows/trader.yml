@@ -44,7 +44,7 @@ jobs:
 
       - name: Holiday / weekend guard
         id: guard
-        run: python scripts/holiday_guard.py
+        run: python holiday_guard.py
 
       - name: Run scanner + tracker
         if: steps.guard.outputs.should_run == 'true'
@@ -54,4 +54,4 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           REPO_URL: https://github.com/${{ github.repository }}.git
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python scripts/main.py
+        run: python main.py
