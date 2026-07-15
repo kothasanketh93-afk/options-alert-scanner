@@ -1,0 +1,85 @@
+# premarket.yml
+# -------------
+# Runs ONCE per trading day, >=15 min before market open (09:15 IST)
+# -- see premarket_check.py's own module docstring for the full
+# rationale: catches a misconfiguration or outage BEFORE the trading
+# day starts, instead of discovering it only after trader.yml's first
+# 09:30 run silently produces nothing, or heartbeat.yml's first alert
+# lands 45+ minutes into the session.
+#
+# RECONSTRUCTED FILE -- see trader.yml's header comment for the same
+# caveat: this wasn't uploaded/shared, so every value below is derived
+# from cross-references (premarket_check.py's own docstring is
+# unusually explicit about its own schedule: "scheduled at least 15
+# minutes before market open (09:00 IST; market opens 09:15 IST)"),
+# not copied from an original.
+
+name: Pre-market Check
+
+on:
+  schedule:
+    # 09:00 IST = 03:30 UTC, per premarket_check.py's own docstring.
+    # Runs daily; premarket_check.py's own holiday_guard.should_run()
+    # check skips weekends/NSE holidays internally -- but restricting
+    # the cron to weekdays too avoids paying for a run that will
+    # immediately no-op every single Saturday/Sunday (NSE holidays
+    # still fire the workflow and get skipped internally, since a cron
+    # schedule can't know the NSE calendar -- see holiday_guard.py).
+    - cron: '30 3 * * 1-5'
+
+  # premarket_check.py's docstring explicitly calls this out: "Can
+  # also be triggered on demand any time via this workflow's
+  # workflow_dispatch button for an immediate confirmation, rather
+  # than waiting for the 09:00 IST schedule."
+  workflow_dispatch: {}
+
+# Own concurrency group (like heartbeat.yml, distinct from trader.yml)
+# -- this runs before market open, well before trader.yml's first
+# tick and outside heartbeat.yml's within_market_hours() window, so a
+# real overlap is unlikely in practice, but a dedicated group costs
+# nothing and keeps this workflow's re-run behavior (e.g. a manual
+# workflow_dispatch while the scheduled run is still going) predictable.
+concurrency:
+  group: premarket
+  cancel-in-progress: false
+
+# contents: write -- premarket_check.py calls
+# state_mod.ensure_state_branch_checked_out() and reuses
+# heartbeat_check.py's push_status_marker() as a REAL writability
+# test (an actual commit+push), not a read-only probe.
+permissions:
+  contents: write
+
+jobs:
+  run-premarket-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pre-market check
+        env:
+          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+          ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
+          UPSTOX_ACCESS_TOKEN: ${{ secrets.UPSTOX_ACCESS_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_URL: https://github.com/${{ github.repository }}.git
+          # premarket_check.py's own docstring: an opt-out day sends
+          # one informational confirmation message and exits, rather
+          # than running the full diagnostic -- see its "Two outcomes
+          # on a day nothing should run" section.
+          SKIP_TRADING_TODAY: ${{ vars.SKIP_TRADING_TODAY }}
+        run: python scripts/premarket_check.py
