@@ -1,0 +1,92 @@
+# heartbeat.yml
+# -------------
+# Independent health check -- see heartbeat_check.py's module
+# docstring for why this MUST be its own separate workflow rather
+# than a step inside trader.yml: if the main job itself is stuck,
+# failing silently, or not triggering at all (e.g. an expired Upstox
+# token), a check embedded inside it would never fire. This workflow
+# checks the `state` branch's last commit time directly, plus Angel
+# One / Upstox / Telegram reachability and its own push-based test
+# that the state branch is actually writable.
+#
+# RECONSTRUCTED FILE -- see trader.yml's header comment for the same
+# caveat: this wasn't uploaded/shared, so every value below is derived
+# from cross-references (heartbeat_check.py, state.py, config.py,
+# README.md), not copied from an original. Double-check before relying
+# on this unattended.
+#
+# 13 runs/day, every 30 min across market hours (09:15-15:30 IST =
+# 03:45-10:00 UTC) -- matches README.md's "GitHub Actions minutes
+# budget" table exactly. This cadence is UNCHANGED by the trader.yml
+# 7->5 min edit -- heartbeat's own interval is independent of trader's.
+
+name: Heartbeat
+
+on:
+  schedule:
+    # All times UTC. IST = UTC+5:30.
+    # 03:45, then :15/:45 past every hour through 09:45 (13 runs) --
+    # heartbeat_check.py's own within_market_hours()/STARTUP_GRACE_MIN
+    # checks make this self-correcting even if the exact grid drifts
+    # slightly from trader.yml's, so this doesn't need to line up
+    # minute-for-minute with trader.yml's schedule.
+    - cron: '45 3 * * 1-5'
+    - cron: '15,45 4-9 * * 1-5'
+
+  # For an immediate on-demand health check rather than waiting for
+  # the next scheduled tick.
+  workflow_dispatch: {}
+
+# heartbeat.yml has ITS OWN concurrency group, deliberately separate
+# from trader.yml's -- see state.py's module docstring: "trader.yml is
+# normally the only writer, but heartbeat.yml also commits a small
+# status marker to this branch under its OWN concurrency group -- so
+# it CAN genuinely run at the same time as trader.yml. This is a real,
+# expected race, not a bug." push_status_marker() (heartbeat_check.py)
+# and save_state() (state.py) both pull-and-retry on a rejected push
+# specifically to handle this.
+concurrency:
+  group: heartbeat
+  cancel-in-progress: false
+
+# contents: write is required -- heartbeat_check.py's
+# push_status_marker() genuinely commits+pushes a status marker to the
+# `state` branch every run (a REAL writability test, not a read-only
+# probe -- see its own docstring), not just the state-read
+# trader.yml itself does.
+permissions:
+  contents: write
+
+jobs:
+  run-heartbeat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run heartbeat check
+        env:
+          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+          ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
+          UPSTOX_ACCESS_TOKEN: ${{ secrets.UPSTOX_ACCESS_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_URL: https://github.com/${{ github.repository }}.git
+          # heartbeat_check.py's own holiday_guard.should_run() /
+          # auth.trading_enabled_today() checks handle non-trading
+          # days and the opt-out day internally -- see its docstring's
+          # "Weekend/NSE holiday" and "SKIP_TRADING_TODAY=true" cases.
+          SKIP_TRADING_TODAY: ${{ vars.SKIP_TRADING_TODAY }}
+        run: python scripts/heartbeat_check.py
