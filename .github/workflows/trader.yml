@@ -1,5 +1,5 @@
 # trader.yml
-# ----------
+# -----------
 # Main job: runs scripts/main.py (scanner -> tracker -> notify -> save
 # state), one commit per run to the `state` branch. See README.md's
 # "One workflow, not two" note -- scanner and tracker share this same
