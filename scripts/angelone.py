@@ -79,6 +79,7 @@ from retry_utils import request_with_retry
 from exceptions import BrokerAPIError, InstrumentNotFound, AuthenticationError
 from cache import TTLCache
 from logging_setup import get_logger
+from config import STOCK_SYMBOLS
 
 IST = timezone(timedelta(hours=5, minutes=30))
 BASE_URL = "https://apiconnect.angelone.in"
@@ -304,12 +305,13 @@ class AngelOneBroker(Broker):
         # before matching rows, or every strike lookup silently returns
         # nothing and this raises InstrumentNotFound below.
         native_expiry = _iso_to_native_expiry(expiry_date)
-        strike_divisor = _detect_strike_divisor(master, name, native_expiry)
+        option_instrument_type = _option_instrument_type(name)
+        strike_divisor = _detect_strike_divisor(master, name, native_expiry, option_instrument_type)
 
         rows_by_strike = {}
         for row in master:
             if (row.get("name") != name or row.get("expiry") != native_expiry
-                    or row.get("instrumenttype") != "OPTIDX"):
+                    or row.get("instrumenttype") != option_instrument_type):
                 continue
             try:
                 strike = float(row["strike"]) / strike_divisor
@@ -485,11 +487,12 @@ class AngelOneBroker(Broker):
         # format, which could never match -- every Angel One
         # search_instrument() call would have raised InstrumentNotFound.
         native_expiry = _iso_to_native_expiry(expiry_date)
-        divisor = _detect_strike_divisor(master, name, native_expiry)
+        option_instrument_type = _option_instrument_type(name)
+        divisor = _detect_strike_divisor(master, name, native_expiry, option_instrument_type)
         target = round(strike * divisor)
         for row in master:
             if (row.get("name") != name or row.get("expiry") != native_expiry
-                    or row.get("instrumenttype") != "OPTIDX"):
+                    or row.get("instrumenttype") != option_instrument_type):
                 continue
             try:
                 row_strike = round(float(row["strike"]))
@@ -519,8 +522,9 @@ class AngelOneBroker(Broker):
         master = self._scrip_master()
         today = datetime.now(IST).date()
         expiries = set()
+        option_instrument_type = _option_instrument_type(symbol)
         for row in master:
-            if (row.get("name") != symbol or row.get("instrumenttype") != "OPTIDX"
+            if (row.get("name") != symbol or row.get("instrumenttype") != option_instrument_type
                     or row.get("exch_seg") != "NFO" or not row.get("expiry")):
                 continue
             try:
@@ -532,16 +536,45 @@ class AngelOneBroker(Broker):
             raise InstrumentNotFound(f"no upcoming expiry found for {symbol}")
         return upcoming[0].isoformat()
 
+    def resolve_equity_instrument_key(self, symbol: str) -> str:
+        """
+        Resolves `symbol` (e.g. "PNB") to its NSE cash-equity token,
+        returned as "NSE|<token>" to match this file's instrument_key
+        convention elsewhere (see _split_instrument_key()). Used for
+        STOCK underlyings (config.STOCK_SYMBOLS) -- see upstox.py's
+        method of the same name for the "why resolve dynamically
+        instead of hardcoding" reasoning; same logic applies here.
+
+        Schema assumption -- UNVERIFIED against a live scrip master
+        download: equity rows have instrumenttype == "EQ",
+        exch_seg == "NSE", and "name" equal to the plain trading
+        symbol. Confirm before depending on this live.
+        """
+        master = self._scrip_master()
+        for row in master:
+            if (row.get("name") == symbol and row.get("instrumenttype") == "EQ"
+                    and row.get("exch_seg") == "NSE"):
+                token = row.get("token")
+                if token:
+                    return f"NSE|{token}"
+        raise InstrumentNotFound(
+            f"no NSE equity token found for '{symbol}' in the Angel One scrip "
+            f"master -- confirm the symbol spelling and the 'name'/"
+            f"'instrumenttype'/'exch_seg' field assumptions above for equity rows"
+        )
+
     def resolve_current_month_future(self, symbol: str) -> str:
         """Same role as upstox.py's method of the same name -- see
         broker.py's docstring on why this isn't part of the required
         interface. Angel One scrip master instrumenttype for index
-        futures is "FUTIDX"."""
+        futures is "FUTIDX", for stock futures "FUTSTK" (see
+        _future_instrument_type())."""
         master = self._scrip_master()
         today = datetime.now(IST).date()
         candidates = []
+        future_instrument_type = _future_instrument_type(symbol)
         for row in master:
-            if row.get("name") != symbol or row.get("instrumenttype") != "FUTIDX":
+            if row.get("name") != symbol or row.get("instrumenttype") != future_instrument_type:
                 continue
             expiry_str = row.get("expiry")
             if not expiry_str:
@@ -594,6 +627,25 @@ def _iso_to_native_expiry(expiry_date_iso: str) -> str:
     return datetime.strptime(expiry_date_iso, "%Y-%m-%d").strftime("%d%b%Y").upper()
 
 
+def _option_instrument_type(name: str) -> str:
+    """
+    Angel One's scrip master uses DIFFERENT instrumenttype codes for
+    index options vs. stock options -- "OPTIDX" for NIFTY/BANKNIFTY/
+    MIDCPNIFTY, "OPTSTK" for individual stocks (config.STOCK_SYMBOLS).
+    Every scrip-master filter in this file that used to hardcode
+    "OPTIDX" now goes through this so stock symbols actually match
+    rows in the master instead of silently finding zero and raising
+    InstrumentNotFound on every call.
+    """
+    return "OPTSTK" if name in STOCK_SYMBOLS else "OPTIDX"
+
+
+def _future_instrument_type(name: str) -> str:
+    """Same split as _option_instrument_type() above, for futures:
+    "FUTIDX" for indices, "FUTSTK" for individual stocks."""
+    return "FUTSTK" if name in STOCK_SYMBOLS else "FUTIDX"
+
+
 def _underlying_name(underlying_key: str) -> str:
     """underlying_key may be a plain name ('NIFTY') or an
     'EXCHANGE|TOKEN' key -- option chain lookups only need the name,
@@ -604,7 +656,7 @@ def _underlying_name(underlying_key: str) -> str:
     return underlying_key.split("|")[-1] if "|" in underlying_key else underlying_key
 
 
-def _detect_strike_divisor(master: list, name: str, expiry_date: str) -> float:
+def _detect_strike_divisor(master: list, name: str, expiry_date: str, instrument_type: str = "OPTIDX") -> float:
     """
     Auto-detects whether this scrip master snapshot stores strike
     prices as plain floats ("24500.000000") or multiplied by 100
@@ -626,11 +678,20 @@ def _detect_strike_divisor(master: list, name: str, expiry_date: str) -> float:
     millions -- a gap divisibility can't distinguish but order of
     magnitude can. 100,000 is comfortably above any real strike and
     comfortably below any x100-scaled one.
+
+    CAVEAT ADDED FOR STOCKS (2026-07-17, UNVERIFIED): this 100,000
+    cutoff was calibrated for index-scale strikes. A lower-priced
+    stock's strike could sit well under 100,000 even AFTER being
+    scaled by 100 (e.g. a strike of 100 -> 10,000 scaled), which this
+    heuristic would then misread as "unscaled" and silently return
+    the wrong divisor. Confirm this against a real downloaded scrip
+    master for each STOCK_SYMBOLS entry before trusting it live --
+    don't assume the index-tuned cutoff transfers.
     """
     sample_strikes = [
         float(row["strike"]) for row in master
         if row.get("name") == name and row.get("expiry") == expiry_date
-        and row.get("instrumenttype") == "OPTIDX" and row.get("strike")
+        and row.get("instrumenttype") == instrument_type and row.get("strike")
     ][:20]
     if not sample_strikes:
         return 1.0  # nothing to detect against; caller will raise InstrumentNotFound anyway

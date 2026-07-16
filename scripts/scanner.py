@@ -81,6 +81,7 @@ these):
 from datetime import datetime, timezone, timedelta
 
 import market_data
+from logging_setup import get_logger
 from config import (
     SESSION_WINDOWS, STRIKE_STEP, STRIKE_RANGE, SYMBOLS,
     ENTRY_SCORE, T1_ATR_MULT,
@@ -90,6 +91,7 @@ from indicators import ema_trend_direction, compute_atr, market_regime, find_nea
 from option_chain import (
     UNDERLYING_INSTRUMENT_KEYS, current_expiry, _extract_leg,
     vwap_check, multi_timeframe_confirms, directional_bias, get_atm_strike,
+    resolve_underlying_key,
 )
 from filters import (
     oi_is_building, liquidity_ok, delta_acceptable, expiry_theta_ok,
@@ -98,6 +100,8 @@ from filters import (
 from levels import dynamic_trade_levels, estimated_holding_minutes
 from grading import example_quality_score, compute_grade, confidence_display, risk_rating
 from ranking import _grade_rank_key, rank_all
+
+_logger = get_logger("scanner")
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -129,7 +133,7 @@ def moneyness_offsets(direction: str) -> dict:
 
 
 def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_history) -> dict:
-    underlying_key = UNDERLYING_INSTRUMENT_KEYS[symbol]
+    underlying_key = resolve_underlying_key(symbol)
     expiry = current_expiry(symbol)
 
     chain = market_data.get_broker().get_option_chain(underlying_key, expiry)
@@ -167,9 +171,9 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
 
     ema_aligned = ema_trend_direction(candles_15m) == direction
     vwap_confirmed = vwap_check(symbol, spot_price, direction)
-    volume_confirmed = liquidity_ok(oi, volume, bid, ask, premium)  # see NOTE below
+    volume_confirmed = liquidity_ok(oi, volume, bid, ask, premium, symbol)  # see NOTE below
     oi_building = oi_is_building(oi_history, instrument_key, oi)
-    liquidity_pass = liquidity_ok(oi, volume, bid, ask, premium)
+    liquidity_pass = liquidity_ok(oi, volume, bid, ask, premium, symbol)
     mtf_confirmed = multi_timeframe_confirms(symbol, direction)
     delta_ok = delta_acceptable(moneyness, delta)
     expiry_ok = expiry_theta_ok(moneyness, delta, expiry)
@@ -222,6 +226,24 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     }
     quality_score = example_quality_score(strengths)
     grade = compute_grade(quality_score)
+
+    # Full visibility into every strike that clears the hard risk
+    # gates (liquidity/delta/theta) -- added 2026-07-17 alongside the
+    # weighted-scoring rewrite so it's possible to see near-misses
+    # (e.g. score=60, needed 65) in the Actions run log, not just
+    # final pass/fail. This fires for every hard-gate-passing strike,
+    # not just ones that end up alerting.
+    factor_summary = " ".join(
+        f"{k}={'Y' if factors.get(k) else 'N'}"
+        for k in ("ema_aligned", "vwap_confirmed", "volume_confirmed",
+                   "oi_building", "mtf_confirmed", "risk_reward_ok")
+    )
+    _logger.info(
+        f"SCORE {symbol} {direction} {moneyness} strike={strike} "
+        f"score={quality_score}/100 grade={grade} "
+        f"(entry_floor={ENTRY_SCORE}) | {factor_summary}"
+    )
+
     if grade == "Reject":
         return None
 
@@ -280,7 +302,7 @@ def detect_setups(symbol: str, oi_history: dict) -> list:
     if session is None:
         return []
 
-    underlying_key = UNDERLYING_INSTRUMENT_KEYS.get(symbol)
+    underlying_key = resolve_underlying_key(symbol)
     min_quality_score = ENTRY_SCORE  # floor matching the lowest grade, "Entry"
     if underlying_key:
         candles_15m = market_data.get_recent_underlying_candles(underlying_key, "15minute", 30)

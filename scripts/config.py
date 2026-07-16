@@ -39,7 +39,18 @@ SESSION_WINDOWS = [
 ]
 
 # --- Symbols + strike spacing (scanner.py) ---
-STRIKE_STEP = {"NIFTY": 50, "BANKNIFTY": 100}
+# STRIKE_STEP["MIDCPNIFTY"] = 25 added 2026-07-17 based on the
+# historically-cited value in trader discussions -- NOT independently
+# verified against a live NSE/broker contract spec (web research this
+# session found MIDCPNIFTY's expiry/lot-size history clearly, but
+# strike-interval sources were too inconsistent to trust). NSE has
+# revised strike intervals for other indices as recently as Nov 2025
+# (NIFTY's own monthly interval changed from 100 to 25), so this is
+# exactly the kind of value that can go stale silently. CONFIRM this
+# against an actual downloaded instrument file (filter instrument_type
+# OPTIDX/name=MIDCPNIFTY, diff consecutive strike_price values) before
+# trusting alerts on this symbol -- see the liquidity note below too.
+STRIKE_STEP = {"NIFTY": 50, "BANKNIFTY": 100, "MIDCPNIFTY": 25}
 
 # How many strikes on EACH side of ATM to evaluate. STRIKE_RANGE=1
 # (the default -- unchanged from before this was configurable)
@@ -54,10 +65,72 @@ STRIKE_STEP = {"NIFTY": 50, "BANKNIFTY": 100}
 # extra step roughly doubles per-symbol scanner API calls per run.
 STRIKE_RANGE = 1
 
-# SENSEX/MIDCPNIFTY are explicitly deferred -- see README "Explicitly
-# deferred" section for the exchange/expiry-day differences that need
-# handling before adding them here.
-SYMBOLS = ["NIFTY", "BANKNIFTY"]
+# MIDCPNIFTY added 2026-07-17. Confirmed (NSE's own MIDCPNIFTY F&O
+# page, checked this session): NSE, monthly-only since the Nov-2024
+# SEBI weekly-consolidation rule, expiry = last Tuesday of the month
+# (holiday -> previous trading day) -- same rule get_current_expiry()
+# in both broker files already applies generically, so no special-
+# casing was needed there. NOT independently confirmed: the strike
+# interval hardcoded in STRIKE_STEP above, and MIN_OI/MIN_OPTION_VOLUME/
+# MIN_PREMIUM/MAX_SPREAD_PCT below are still NIFTY/BANKNIFTY-tuned
+# globals shared across all symbols -- MIDCPNIFTY's genuinely thinner
+# liquidity may fail the liquidity_ok hard gate far more often than
+# the other two symbols, which would look like "MIDCPNIFTY never
+# alerts" but actually be "the shared threshold is wrong for it", not
+# a real absence of setups. Watch the SCORE log lines for this symbol
+# specifically before concluding either way.
+#
+# SENSEX remains deferred -- BSE (not NSE), different instrument-key
+# exchange prefix, thinner liquidity needing its own thresholds; see
+# README's original "Explicitly deferred" section for the details.
+SYMBOLS = ["NIFTY", "BANKNIFTY", "MIDCPNIFTY"]
+
+# --- Mid/Smallcap stock symbols (added 2026-07-17) ---
+# UNVERIFIED against the CURRENT NSE F&O-eligible stock list -- NSE
+# revises which stocks carry derivatives EVERY QUARTER (SEBI's
+# liquidity-based inclusion/exclusion review), so a symbol here can
+# drop out of F&O entirely with no code-level warning. CONFIRM every
+# one of these is still F&O-active (check the broker's instrument
+# master for instrument_type OPTSTK/FUTSTK rows with this name)
+# before this runs live -- same caution already asked of MIDCPNIFTY's
+# strike step and SENSEX's deferral above.
+STOCK_SYMBOLS = [
+    "PNB", "CANBK", "IDFCFIRSTB", "FEDERALBNK", "BHEL",
+    "SAIL", "NATIONALUM", "NMDC", "HINDCOPPER", "TATACHEM",
+]
+
+# Per-stock strike interval. ALSO UNVERIFIED -- unlike NIFTY/BANKNIFTY
+# (which rarely change), individual stock strike intervals get
+# revised by NSE more often as the underlying price moves, and are
+# NOT one-size-fits-all across stocks the way the index steps are.
+# CONFIRM each against a downloaded instrument file (filter
+# instrument_type OPTSTK, name=<symbol>, diff consecutive
+# strike_price values) before trusting alerts on these -- exactly the
+# verification MIDCPNIFTY's STRIKE_STEP entry above still needs too.
+STOCK_STRIKE_STEP = {
+    "PNB": 1, "CANBK": 5, "IDFCFIRSTB": 1, "FEDERALBNK": 2.5,
+    "BHEL": 5, "SAIL": 2.5, "NATIONALUM": 2.5, "NMDC": 2.5,
+    "HINDCOPPER": 5, "TATACHEM": 10,
+}
+STRIKE_STEP.update(STOCK_STRIKE_STEP)
+
+# Stock options trade at far lower OI/volume/premium than NIFTY/
+# BANKNIFTY -- applying MIN_OI/MIN_OPTION_VOLUME/MIN_PREMIUM above
+# unmodified would reject nearly every stock strike outright.
+# filters.liquidity_ok() uses these instead for any symbol in
+# STOCK_SYMBOLS, falling back to the index defaults otherwise.
+# THESE STARTING VALUES ARE A GUESS, not backtested -- watch the
+# SCORE log lines for these symbols the same way ENTRY_SCORE's
+# comment above describes doing for the weighted-score cutoff, and
+# tune from there.
+STOCK_MIN_OI = 5_000
+STOCK_MIN_OPTION_VOLUME = 500
+STOCK_MIN_PREMIUM = 2
+
+# Actually wire the stocks into the scan loop -- detect_all_setups()
+# just iterates SYMBOLS, so appending here is enough for scanner.py
+# to pick these up with no further change on its end.
+SYMBOLS = SYMBOLS + STOCK_SYMBOLS
 
 # --- Regime detection (scanner.py) ---
 EFFICIENCY_TRENDING_THRESHOLD = 0.30
@@ -75,7 +148,20 @@ REGIME_SCORE_PENALTY = {
 # Two-tier scheme (replaces the earlier A+/A/B+/B four-tier one):
 # ENTRY_SCORE is the floor to alert on at all; STRONG_ENTRY is the
 # higher-conviction tier above it.
-ENTRY_SCORE = 75
+# Two-tier scheme (replaces the earlier A+/A/B+/B four-tier one):
+# ENTRY_SCORE is the floor to alert on at all; STRONG_ENTRY is the
+# higher-conviction tier above it.
+#
+# Lowered from 75 to 65 on 2026-07-17: quality_gate() in filters.py
+# used to require ALL 6 directional/confluence signals (not just the
+# 3 hard risk gates) to be simultaneously True, which meant this
+# weighted score was always either 100 (everything passed the old
+# all-or-nothing gate) or the setup never reached scoring at all --
+# 26 consecutive live scan cycles produced zero alerts. Once that
+# gate was split (hard risk gates vs. weighted signal score), this
+# threshold is the real, meaningful cutoff. Revisit after a couple of
+# weeks of live data via the daily-summary win-rate check.
+ENTRY_SCORE = 65
 STRONG_ENTRY = 85
 
 GRADE_THRESHOLDS = [

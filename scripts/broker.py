@@ -138,3 +138,15 @@ class Broker(ABC):
     # brokers later:
     #
     #   def resolve_current_month_future(self, symbol: str) -> str: ...
+
+    # Same treatment as resolve_current_month_future() above, added
+    # 2026-07-17 for STOCK underlyings (config.STOCK_SYMBOLS):
+    # option_chain.py's resolve_underlying_key() calls
+    # market_data.get_broker().resolve_equity_instrument_key(symbol)
+    # for any symbol that isn't one of the hardcoded indices, so a
+    # stock's NSE_EQ/ISIN-based instrument_key never has to be
+    # hand-typed and re-verified the way the index keys are. Not
+    # abstract for the same reason resolve_current_month_future()
+    # isn't -- but any broker used for stock scanning must implement:
+    #
+    #   def resolve_equity_instrument_key(self, symbol: str) -> str: ...

@@ -10,6 +10,7 @@ from config import (
     MIN_OI, MIN_OPTION_VOLUME, MIN_PREMIUM, MAX_SPREAD_PCT,
     OI_BUILD_THRESHOLD_PCT, MIN_DELTA_OTM,
     EXPIRY_DAY_MIN_OTM_DELTA, EXPIRY_DAY_THRESHOLD_DAYS,
+    STOCK_SYMBOLS, STOCK_MIN_OI, STOCK_MIN_OPTION_VOLUME, STOCK_MIN_PREMIUM,
 )
 from option_chain import days_to_expiry
 
@@ -22,12 +23,26 @@ def oi_is_building(oi_history: dict, instrument_key: str, current_oi: float) -> 
     return (current_oi - previous) / previous >= OI_BUILD_THRESHOLD_PCT
 
 
-def liquidity_ok(oi: float, volume: float, bid: float, ask: float, premium: float) -> bool:
-    if oi < MIN_OI:
+def liquidity_ok(oi: float, volume: float, bid: float, ask: float, premium: float,
+                  symbol: str = None) -> bool:
+    """
+    symbol is optional (defaults to the index thresholds below for
+    backward compatibility) -- pass it for stock symbols so
+    STOCK_MIN_OI/STOCK_MIN_OPTION_VOLUME/STOCK_MIN_PREMIUM apply
+    instead of the NIFTY/BANKNIFTY-tuned globals, which are far too
+    strict for mid/smallcap stock options and would reject nearly
+    every stock strike outright otherwise.
+    """
+    is_stock = symbol in STOCK_SYMBOLS
+    min_oi = STOCK_MIN_OI if is_stock else MIN_OI
+    min_volume = STOCK_MIN_OPTION_VOLUME if is_stock else MIN_OPTION_VOLUME
+    min_premium = STOCK_MIN_PREMIUM if is_stock else MIN_PREMIUM
+
+    if oi < min_oi:
         return False
-    if volume < MIN_OPTION_VOLUME:
+    if volume < min_volume:
         return False
-    if premium < MIN_PREMIUM:
+    if premium < min_premium:
         return False
     spread_pct = (ask - bid) / premium
     if spread_pct > MAX_SPREAD_PCT:
@@ -64,11 +79,26 @@ def expiry_theta_ok(moneyness: str, delta: float, expiry_date_str: str, now=None
 
 
 def quality_gate(factors: dict) -> bool:
-    required = (
-        "ema_aligned", "vwap_confirmed", "volume_confirmed", "oi_building",
-        "liquidity_ok", "mtf_confirmed", "risk_reward_ok",
-        "delta_ok", "expiry_theta_ok",
-    )
+    """
+    HARD RISK GATES ONLY (as of 2026-07-17 rewrite).
+
+    These three are non-negotiable safety checks, not "how good does
+    this setup look" signals -- failing any one means the trade is
+    structurally unsafe (illiquid, wrong risk profile, or theta-
+    exposed) regardless of how strong the directional signals are.
+
+    Previously this required ALL 9 factors (including trend/volume/
+    OI/MTF/RR alignment) to be True simultaneously -- an unrealistic
+    AND across 6 semi-independent signals that, in 26 consecutive
+    live scan cycles, never once passed. The other 6 factors are now
+    scored on a weighted 0-100 scale via grading.py's
+    example_quality_score()+compute_grade() (already existed in the
+    codebase but was previously a no-op downstream of this gate,
+    since everything reaching it already had strengths=1.0 across the
+    board or was rejected here first). config.ENTRY_SCORE is the
+    live alert threshold on that weighted score.
+    """
+    required = ("liquidity_ok", "delta_ok", "expiry_theta_ok")
     return all(factors.get(k) is True for k in required)
 
 

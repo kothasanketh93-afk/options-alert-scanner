@@ -237,6 +237,14 @@ class FailoverBroker(Broker):
     def resolve_current_month_future(self, symbol: str) -> str:
         return self._call("resolve_current_month_future", symbol, count_failures=False)
 
+    def resolve_equity_instrument_key(self, symbol: str) -> str:
+        # Same reasoning as resolve_current_month_future() above: a
+        # missing/mismatched equity row is data-specific, not a
+        # primary-health signal, so it doesn't count toward the
+        # failover streak -- but a fresh InstrumentNotFound still
+        # falls through to the secondary broker for this one call.
+        return self._call("resolve_equity_instrument_key", symbol, count_failures=False)
+
     def get_current_expiry(self, symbol: str) -> str:
         # Same reasoning as search_instrument()/resolve_current_month_future()
         # above: an expiry-list lookup is data-specific, not a

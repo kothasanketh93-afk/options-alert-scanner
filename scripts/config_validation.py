@@ -91,3 +91,19 @@ def validate_startup_config(require_github: bool = True, require_upstox: bool = 
         "module docstring point 2. Verify one live response before relying "
         "on it unattended for real trades."
     )
+
+    # STOCK_SYMBOLS added 2026-07-17 -- unlike NIFTY/BANKNIFTY/MIDCPNIFTY,
+    # these have no static instrument key to sanity-check here at
+    # startup (resolved dynamically per-run via
+    # Broker.resolve_equity_instrument_key()), so the only check
+    # possible without making a live API call is this reminder.
+    import config as _config
+    if getattr(_config, "STOCK_SYMBOLS", None):
+        print(
+            "[config_validation] REMINDER: config.STOCK_SYMBOLS/"
+            "STOCK_STRIKE_STEP are UNVERIFIED placeholders -- confirm each "
+            "symbol is still NSE F&O-eligible (this list is revised every "
+            "quarter) and each strike step against a live downloaded "
+            "instrument master before trusting stock alerts unattended. "
+            f"Currently configured: {_config.STOCK_SYMBOLS}"
+        )

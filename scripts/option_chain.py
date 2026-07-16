@@ -9,7 +9,7 @@ chain, VWAP-on-futures check, and multi-timeframe / directional bias.
 from datetime import datetime, timezone, timedelta
 
 import market_data
-from config import STRIKE_STEP
+from config import STRIKE_STEP, STOCK_SYMBOLS
 from indicators import ema_trend_direction, compute_vwap, vwap_confirms
 
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -26,6 +26,13 @@ UNDERLYING_INSTRUMENT_KEYS = {
     # in vwap_check() is for).
     "NIFTY": "NSE_INDEX|Nifty 50",
     "BANKNIFTY": "NSE_INDEX|Nifty Bank",
+    # Added 2026-07-17. Upstox's own site displays this index as
+    # "NIFTY MID SELECT" (upstox.com/indices/nifty-mid-select-...),
+    # matching their NSE_INDEX|<display name> pattern used for the two
+    # keys above -- NOT verified against a downloaded instrument file
+    # the way NIFTY/BANKNIFTY's keys were. Confirm this resolves (no
+    # InstrumentNotFound) on the first live MIDCPNIFTY scan.
+    "MIDCPNIFTY": "NSE_INDEX|NIFTY MID SELECT",
 }
 
 # IMPORTANT: the raw index (NSE_INDEX|...) has no genuine traded
@@ -39,6 +46,36 @@ UNDERLYING_INSTRUMENT_KEYS = {
 # of vwap_check() below resolving the current-month contract fresh
 # each call via the broker's instrument master, which auto-rolls
 # forward every month forever with no code changes ever needed again.
+
+
+def resolve_underlying_key(symbol: str) -> str:
+    """
+    Single place every function below goes through to get `symbol`'s
+    underlying instrument_key -- indices resolve instantly from the
+    static UNDERLYING_INSTRUMENT_KEYS dict above (their NSE_INDEX|...
+    key never changes). Individual stocks (config.STOCK_SYMBOLS) have
+    no equivalent stable key to hand-type here -- an equity's
+    instrument_key is tied to its ISIN, which isn't something to
+    copy into source and trust -- so instead it's resolved fresh each
+    call via Broker.resolve_equity_instrument_key(symbol) (see
+    upstox.py), the same "resolve fresh from the instrument master,
+    don't hardcode" approach vwap_check() below already uses for the
+    futures contract key.
+
+    Raises NotImplementedError if `symbol` is neither a known index
+    nor in STOCK_SYMBOLS -- same failure mode the three functions
+    below used to raise individually before this was centralized.
+    """
+    underlying_key = UNDERLYING_INSTRUMENT_KEYS.get(symbol)
+    if underlying_key:
+        return underlying_key
+    if symbol in STOCK_SYMBOLS:
+        return market_data.get_broker().resolve_equity_instrument_key(symbol)
+    raise NotImplementedError(
+        f"No underlying instrument key resolution configured for '{symbol}' "
+        f"-- add it to UNDERLYING_INSTRUMENT_KEYS (index) or STOCK_SYMBOLS "
+        f"(stock) in config.py."
+    )
 
 
 def vwap_check(symbol: str, spot_price: float, direction: str) -> bool:
@@ -67,9 +104,7 @@ def vwap_check(symbol: str, spot_price: float, direction: str) -> bool:
 
 
 def multi_timeframe_confirms(symbol: str, candidate_direction: str) -> bool:
-    underlying_key = UNDERLYING_INSTRUMENT_KEYS.get(symbol)
-    if not underlying_key:
-        raise NotImplementedError(f"UNDERLYING_INSTRUMENT_KEYS['{symbol}'] not set.")
+    underlying_key = resolve_underlying_key(symbol)
     candles_15m = market_data.get_recent_underlying_candles(underlying_key, "15minute", 30)
     return ema_trend_direction(candles_15m) == candidate_direction
 
@@ -94,9 +129,7 @@ def directional_bias(symbol: str) -> list:
     timeframes disagree with each other in a way that shouldn't
     normally produce both), or [] if no bias / insufficient data.
     """
-    underlying_key = UNDERLYING_INSTRUMENT_KEYS.get(symbol)
-    if not underlying_key:
-        raise NotImplementedError(f"UNDERLYING_INSTRUMENT_KEYS['{symbol}'] not set.")
+    underlying_key = resolve_underlying_key(symbol)
 
     candles_5m = market_data.get_recent_underlying_candles(underlying_key, "5minute", 30)
     bias_5m = ema_trend_direction(candles_5m)
@@ -122,9 +155,7 @@ def get_atm_strike(symbol: str):
 
     Returns (atm_strike, spot_price).
     """
-    underlying_key = UNDERLYING_INSTRUMENT_KEYS.get(symbol)
-    if not underlying_key:
-        raise NotImplementedError(f"UNDERLYING_INSTRUMENT_KEYS['{symbol}'] not set.")
+    underlying_key = resolve_underlying_key(symbol)
     spot_price = market_data.get_broker().get_ltp(underlying_key)
     step = STRIKE_STEP[symbol]
     atm_strike = round(spot_price / step) * step

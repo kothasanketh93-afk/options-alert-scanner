@@ -85,6 +85,9 @@ _INTERVAL_UNIT_VALUE = {
 UNDERLYING_INSTRUMENT_KEYS = {
     "NIFTY": "NSE_INDEX|Nifty 50",
     "BANKNIFTY": "NSE_INDEX|Nifty Bank",
+    # Kept in sync with option_chain.py's copy -- see that file's
+    # comment for the verification caveat on this one.
+    "MIDCPNIFTY": "NSE_INDEX|NIFTY MID SELECT",
 }
 
 
@@ -242,14 +245,8 @@ class UpstoxBroker(Broker):
         # downloaded file before depending on this, field names/casing
         # have changed on Upstox before.
         for row in master:
-            row_expiry = row.get("expiry")
-            if isinstance(row_expiry, (int, float)):
-                # Same epoch-ms schema as resolve_current_month_future()
-                # above -- convert to "YYYY-MM-DD" before comparing
-                # against the caller's ISO expiry_date string.
-                row_expiry = datetime.fromtimestamp(row_expiry / 1000, tz=IST).date().isoformat()
             if (row.get("name") == symbol
-                    and row_expiry == expiry_date
+                    and row.get("expiry") == expiry_date
                     and float(row.get("strike_price", -1)) == strike
                     and row.get("instrument_type") == option_type):
                 return row["instrument_key"]
@@ -272,7 +269,11 @@ class UpstoxBroker(Broker):
         """
         underlying_key = UNDERLYING_INSTRUMENT_KEYS.get(symbol)
         if underlying_key is None:
-            raise InstrumentNotFound(f"no underlying instrument key configured for {symbol}")
+            # Not one of the hardcoded indices -- try it as a stock
+            # underlying instead (see resolve_equity_instrument_key()'s
+            # docstring for why that's resolved dynamically rather
+            # than hardcoded here the way the index keys above are).
+            underlying_key = self.resolve_equity_instrument_key(symbol)
 
         url = f"{BASE_URL}/option/contract"
         resp = request_with_retry("GET", url, headers=self._headers(), timeout=15,
@@ -289,6 +290,41 @@ class UpstoxBroker(Broker):
         if not upcoming:
             raise InstrumentNotFound(f"no upcoming expiry found for {symbol}")
         return upcoming[0].isoformat()
+
+    def resolve_equity_instrument_key(self, symbol: str) -> str:
+        """
+        Resolves `symbol` (e.g. "PNB") to its NSE cash-equity
+        instrument_key from the instrument master -- used for STOCK
+        underlyings (config.STOCK_SYMBOLS), which have no stable
+        hand-typed key the way "NSE_INDEX|Nifty 50" does: an equity's
+        instrument_key is tied to its ISIN, and an ISIN is not
+        something to hand-copy into source and trust. Resolved fresh
+        each call via the same cached _instrument_master() every other
+        instrument lookup in this file already uses.
+
+        Schema assumption -- UNVERIFIED against a live downloaded
+        file, same caveat as search_instrument()/
+        resolve_current_month_future() above: equity rows have
+        instrument_type == "EQ" and their "name" field equals the
+        plain NSE trading symbol (e.g. "PNB"). Confirm this before
+        depending on it live; if the assumption is wrong this raises
+        InstrumentNotFound rather than silently resolving to the
+        wrong instrument.
+
+        Raises InstrumentNotFound if no matching equity row exists.
+        """
+        master = self._instrument_master()
+        for row in master:
+            if row.get("name") == symbol and row.get("instrument_type") == "EQ":
+                key = row.get("instrument_key")
+                if key:
+                    return key
+        raise InstrumentNotFound(
+            f"no NSE equity instrument_key found for '{symbol}' in the "
+            f"instrument master -- confirm the symbol is spelled exactly "
+            f"as NSE lists it, and that the 'name'/'instrument_type' "
+            f"field assumptions above are correct for equity rows"
+        )
 
     def resolve_current_month_future(self, symbol: str) -> str:
         """
@@ -321,18 +357,23 @@ class UpstoxBroker(Broker):
             if not expiry_raw:
                 continue
             try:
-                if isinstance(expiry_raw, (int, float)):
-                    # Upstox's downloaded instrument master ships "expiry"
-                    # as epoch milliseconds (confirmed via reports on
-                    # Upstox's own developer community forum), NOT an ISO
-                    # date string -- unlike the authenticated
-                    # /v2/option/contract endpoint's "expiry" field used
-                    # in get_current_expiry() above, which really is
-                    # "YYYY-MM-DD". This is what fromisoformat() choked on.
-                    expiry_date = datetime.fromtimestamp(expiry_raw / 1000, tz=IST).date()
-                else:
+                if isinstance(expiry_raw, str):
                     expiry_date = datetime.fromisoformat(expiry_raw).date()
+                else:
+                    # Upstox's instrument-master JSON (NSE.json.gz) gives
+                    # F&O "expiry" as epoch MILLISECONDS (int/float), not
+                    # an ISO string -- unlike the /v2/option/contract API
+                    # used in get_current_expiry(), which does return
+                    # "YYYY-MM-DD" strings. That mismatch is what caused
+                    # the "argument must be str" crash: every row's real
+                    # expiry values are ms timestamps, so fromisoformat()
+                    # was never going to work on them.
+                    expiry_date = datetime.fromtimestamp(
+                        expiry_raw / 1000, tz=IST
+                    ).date()
             except (ValueError, TypeError, OSError):
+                # Malformed/unexpected value on this one row -- skip it,
+                # don't let it take down the whole scan.
                 continue
             if expiry_date >= today:
                 candidates.append((expiry_date, row.get("instrument_key")))
