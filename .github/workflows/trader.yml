@@ -1,5 +1,5 @@
 # trader.yml
-# -----------
+# ----------
 # Main job: runs scripts/main.py (scanner -> tracker -> notify -> save
 # state), one commit per run to the `state` branch. See README.md's
 # "One workflow, not two" note -- scanner and tracker share this same
@@ -35,42 +35,13 @@
 name: Trader
 
 on:
-  schedule:
-    # All times UTC. IST = UTC+5:30, so IST 09:15-15:30 = UTC 03:45-10:00.
-    #
-    # --- Phase 1: 09:15-11:35 IST (03:45-06:00 UTC) -- 5 min ---
-    # Active scanning session (scanner.py's SESSION_WINDOWS covers
-    # 09:30-10:35 within this phase; the run itself starts a few
-    # minutes earlier at market open so run_tracker_step can pick up
-    # any position from the very first candle).
-    - cron: '45,50,55 3 * * 1-5'
-    - cron: '*/5 4-5 * * 1-5'
-    - cron: '0 6 * * 1-5'
-
-    # --- Phase 2: 11:35-13:45 IST (06:05-08:05 UTC) -- 15 min, UNCHANGED ---
-    # Lunch gap: scanner.py's SESSION_WINDOWS excludes this window, so
-    # detect_setups() always returns [] here -- these runs exist only
-    # to keep run_tracker_step advancing any already-open trade's
-    # SL/T1/T2 tracking without the cost of a 5-min cadence when no
-    # new setup could possibly appear anyway. See README.md's "GitHub
-    # Actions minutes budget" section for the reasoning, and
-    # config.py's STALE_THRESHOLD_MIN comment for why this phase's
-    # cadence (not Phase 1/3's) governs heartbeat_check.py's staleness
-    # threshold.
-    - cron: '5,20,35,50 6-7 * * 1-5'
-    - cron: '5 8 * * 1-5'
-
-    # --- Phase 3: 13:45-15:30 IST (08:15-10:00 UTC) -- 5 min ---
-    # Active scanning session (SESSION_WINDOWS: 13:45-15:10), running
-    # a few minutes past market close to let the final EOD_CLOSED
-    # sweep and the ~15:25 IST daily summary (SUMMARY_HHMM) happen.
-    - cron: '15,20,25,30,35,40,45,50,55 8 * * 1-5'
-    - cron: '*/5 9 * * 1-5'
-    - cron: '0 10 * * 1-5'
-
-  # Manual trigger for testing / a one-off run outside market hours --
-  # main.py's own session-window and holiday_guard checks still apply,
-  # so this can't accidentally scan when the market's actually closed.
+  # GitHub's own `schedule:` cron trigger was removed here -- triggering
+  # is now handled externally by cronjob.com hitting this workflow's
+  # workflow_dispatch API endpoint on the same cadence the old cron
+  # entries covered (Phase 1/2/3 as described above, before this edit).
+  # main.py's own session-window and holiday_guard checks still apply
+  # regardless of what triggers the run, so this can't accidentally
+  # scan when the market's actually closed.
   workflow_dispatch: {}
 
 # One run at a time: README.md's "concurrency-protected" -- prevents
