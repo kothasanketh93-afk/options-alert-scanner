@@ -242,8 +242,14 @@ class UpstoxBroker(Broker):
         # downloaded file before depending on this, field names/casing
         # have changed on Upstox before.
         for row in master:
+            row_expiry = row.get("expiry")
+            if isinstance(row_expiry, (int, float)):
+                # Same epoch-ms schema as resolve_current_month_future()
+                # above -- convert to "YYYY-MM-DD" before comparing
+                # against the caller's ISO expiry_date string.
+                row_expiry = datetime.fromtimestamp(row_expiry / 1000, tz=IST).date().isoformat()
             if (row.get("name") == symbol
-                    and row.get("expiry") == expiry_date
+                    and row_expiry == expiry_date
                     and float(row.get("strike_price", -1)) == strike
                     and row.get("instrument_type") == option_type):
                 return row["instrument_key"]
@@ -311,12 +317,22 @@ class UpstoxBroker(Broker):
         for row in master:
             if row.get("name") != symbol or row.get("instrument_type") != "FUT":
                 continue
-            expiry_str = row.get("expiry")
-            if not expiry_str:
+            expiry_raw = row.get("expiry")
+            if not expiry_raw:
                 continue
             try:
-                expiry_date = datetime.fromisoformat(expiry_str).date()
-            except ValueError:
+                if isinstance(expiry_raw, (int, float)):
+                    # Upstox's downloaded instrument master ships "expiry"
+                    # as epoch milliseconds (confirmed via reports on
+                    # Upstox's own developer community forum), NOT an ISO
+                    # date string -- unlike the authenticated
+                    # /v2/option/contract endpoint's "expiry" field used
+                    # in get_current_expiry() above, which really is
+                    # "YYYY-MM-DD". This is what fromisoformat() choked on.
+                    expiry_date = datetime.fromtimestamp(expiry_raw / 1000, tz=IST).date()
+                else:
+                    expiry_date = datetime.fromisoformat(expiry_raw).date()
+            except (ValueError, TypeError, OSError):
                 continue
             if expiry_date >= today:
                 candidates.append((expiry_date, row.get("instrument_key")))
