@@ -5,7 +5,7 @@
 # than a step inside trader.yml: if the main job itself is stuck,
 # failing silently, or not triggering at all (e.g. an expired Upstox
 # token), a check embedded inside it would never fire. This workflow
-# checks the `state` branch's last commit time  directly, plus Angel
+# checks the `state` branch's last commit time directly, plus Angel
 # One / Upstox / Telegram reachability and its own push-based test
 # that the state branch is actually writable.
 #
@@ -23,18 +23,12 @@
 name: Heartbeat
 
 on:
-  schedule:
-    # All times UTC. IST = UTC+5:30.
-    # 03:45, then :15/:45 past every hour through 09:45 (13 runs) --
-    # heartbeat_check.py's own within_market_hours()/STARTUP_GRACE_MIN
-    # checks make this self-correcting even if the exact grid drifts
-    # slightly from trader.yml's, so this doesn't need to line up
-    # minute-for-minute with trader.yml's schedule.
-    - cron: '45 3 * * 1-5'
-    - cron: '15,45 4-9 * * 1-5'
-
-  # For an immediate on-demand health check rather than waiting for
-  # the next scheduled tick.
+  # GitHub's own `schedule:` cron trigger was removed here -- triggering
+  # is now handled externally by cronjob.com hitting this workflow's
+  # workflow_dispatch API endpoint on the same cadence the old cron
+  # entries covered. heartbeat_check.py's own within_market_hours()/
+  # STARTUP_GRACE_MIN checks still apply regardless of what triggers
+  # the run.
   workflow_dispatch: {}
 
 # heartbeat.yml has ITS OWN concurrency group, deliberately separate
