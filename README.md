@@ -15,10 +15,10 @@ server, no card details, minimal GitHub Actions usage.
 | `scripts/auth.py` | The only place credentials are read from the environment. Angel One's TOTP is generated automatically here (no manual login, ever). Also validates the Upstox token is actually usable (see its docstring on why "token refresh" isn't automatable for Upstox — this matters less now that Upstox is only the fallback broker). |
 | `scripts/config_validation.py` | Runs at startup (before any API calls) — fails fast with every missing secret listed at once (now including Angel One's 4 credentials), instead of failing deep in a run with a confusing error. Also warns loudly about angelone.py's known delta=None gap. |
 | `scripts/retry_utils.py` | One shared retry-with-backoff implementation (jitter + `Retry-After` header support + never-retry-auth-failures), used by Angel One, Upstox, and Telegram calls alike. |
-| `scripts/broker.py` | Abstract broker interface (`get_candles`, `get_ltp`, `get_option_chain`, `search_instrument`). Both `angelone.py` and `upstox.py` implement this — scanner.py/tracker.py never know which one actually served a call. |
-| `scripts/angelone.py` | Concrete Angel One SmartAPI implementation of `broker.py` — the **primary** broker. Automated TOTP login, no manual step ever. Known gap: Option Greeks (delta) not yet wired — see its module docstring. |
-| `scripts/upstox.py` | Concrete Upstox implementation of `broker.py` — now the **fallback** broker, used only when Angel One is unhealthy. |
-| `scripts/broker_failover.py` | Wraps both brokers behind the same `Broker` interface. Switches to Upstox after consecutive Angel One failures (auth, timeout, empty/stale data, etc.), logs every switch, and automatically tries Angel One first again on the next run — no persisted cross-run state needed. See its module docstring for the full design and reasoning. |
+| `scripts/broker.py` | Abstract broker interface (`get_candles`, `get_ltp`, `get_option_chain`, `search_instrument`, `get_current_expiry`). Both `angelone.py` and `upstox.py` implement this — scanner.py/tracker.py never know which one actually served a call. Also documents two non-abstract conventions both concrete brokers should implement if they support futures/stocks: `resolve_current_month_future()` and `resolve_equity_instrument_key()`. |
+| `scripts/angelone.py` | Concrete Angel One SmartAPI implementation of `broker.py` — the **primary** broker. Automated TOTP login, no manual step ever. Now handles both index (`OPTIDX`/`FUTIDX`) and stock (`OPTSTK`/`FUTSTK`) instrument-type codes for `config.STOCK_SYMBOLS` — see `_option_instrument_type()`/`_future_instrument_type()`. |
+| `scripts/upstox.py` | Concrete Upstox implementation of `broker.py` — now the **fallback** broker, used only when Angel One is unhealthy. Resolves stock underlyings dynamically via `resolve_equity_instrument_key()` (instrument master lookup) rather than a hardcoded key. |
+| `scripts/broker_failover.py` | Wraps both brokers behind the same `Broker` interface. Switches to Upstox after consecutive Angel One failures (auth, timeout, empty/stale data, etc.), logs every switch, and automatically tries Angel One first again on the next run — no persisted cross-run state needed. Passes through `resolve_current_month_future()` and `resolve_equity_instrument_key()` (both `count_failures=False`, same as other data-specific lookups). See its module docstring for the full design and reasoning. |
 | `scripts/cache.py` | Tiny in-process TTL cache (instrument master, option chain, underlying candles) scoped to one GitHub Actions run. |
 | `scripts/logging_setup.py` | Structured logging to named channels, written to stdout (captured by the Actions run log) rather than to disk files that would vanish with the ephemeral runner — see its docstring for the reasoning and how to add persisted log artifacts if you want them later. |
 | `scripts/state.py` | Loads/saves the daily state file via the `state` git branch; generates Trade IDs; same-symbol+direction suppression check; **circuit breaker + concurrent trade cap**; **auto-recovers from a corrupted state file** instead of crashing. |
@@ -89,6 +89,61 @@ You'll need to fill in `score_strike()` in `scanner.py` so each
 strike's OI/volume/delta is read individually rather than copying the
 ATM score across strikes — ITM and OTM have materially different risk
 profiles and should be scored on their own numbers.
+
+## Mid/smallcap stock options (added 2026-07-17)
+
+`config.SYMBOLS` now includes 10 mid/smallcap stocks in addition to
+NIFTY/BANKNIFTY/MIDCPNIFTY: `PNB`, `CANBK`, `IDFCFIRSTB`,
+`FEDERALBNK`, `BHEL`, `SAIL`, `NATIONALUM`, `NMDC`, `HINDCOPPER`,
+`TATACHEM` (`config.STOCK_SYMBOLS`). `scanner.py`/`option_chain.py`
+already scan them the same way as the indices — no per-symbol code
+branching needed on that side.
+
+What's different for stocks vs. indices, and where it's handled:
+
+- **Instrument key resolution** — indices use a static hand-typed
+  key (`option_chain.UNDERLYING_INSTRUMENT_KEYS`); stocks have no
+  equivalent stable key (an equity's key is ISIN-based), so it's
+  resolved fresh each run via `Broker.resolve_equity_instrument_key()`
+  — implemented in both `upstox.py` and `angelone.py`, routed through
+  `option_chain.resolve_underlying_key()`.
+- **Strike interval** — `config.STOCK_STRIKE_STEP`, merged into the
+  existing `STRIKE_STEP` dict.
+- **Liquidity thresholds** — `config.STOCK_MIN_OI` /
+  `STOCK_MIN_OPTION_VOLUME` / `STOCK_MIN_PREMIUM`, applied instead of
+  the index-tuned globals via `filters.liquidity_ok(..., symbol=...)`.
+- **Angel One instrument-type codes** — Angel One's scrip master uses
+  `OPTSTK`/`FUTSTK` for stocks vs. `OPTIDX`/`FUTIDX` for indices;
+  `angelone.py` now branches on this (`_option_instrument_type()` /
+  `_future_instrument_type()`) everywhere it used to hardcode the
+  index-only code.
+
+**UNVERIFIED — confirm before trusting live** (same standard this
+README already holds MIDCPNIFTY's strike step and the holiday list
+to): the 10 symbols are still NSE F&O-eligible (this list is revised
+every quarter), each stock's strike interval, and Angel One's
+strike-divisor auto-detect heuristic (`_detect_strike_divisor()`),
+which was magnitude-calibrated for index-scale prices and may
+misfire on a lower-priced stock. `config_validation.py` prints a
+startup reminder listing the configured stock symbols so this isn't
+easy to forget. `STOCK_MIN_OI`/`STOCK_MIN_OPTION_VOLUME`/
+`STOCK_MIN_PREMIUM` are a starting guess, not backtested — tune from
+the `SCORE` log lines the same way `ENTRY_SCORE`'s comment in
+`config.py` describes doing for the weighted-score cutoff.
+
+**Runtime / Actions-minutes impact**: `SYMBOLS` goes from 3 entries
+to 13 with this change — each extra symbol is its own set of broker
+calls per run (candles, option chain, VWAP futures resolution, ATM
+strike), so per-run wall-clock time will rise noticeably above the
+~40–55s figure the "GitHub Actions minutes budget" section below was
+measured against, and `trader.yml`'s `timeout-minutes: 10` has less
+headroom than it did at 3 symbols. No `.yml` file needed a code
+change for the stock symbols themselves (nothing in
+`.github/workflows/*.yml` hardcodes a symbol list or count), but
+re-check actual measured runtime (Settings → Billing and plans →
+Plans and usage → Actions minutes) after a week of live 13-symbol
+runs, the same way that section already recommends doing after any
+schedule change.
 
 ## Heartbeat check
 
@@ -436,6 +491,15 @@ after a week of live runs and this can be recalculated precisely.
 2. **Fill in your NSE holiday list** in `scripts/holiday_guard.py`
    (`NSE_HOLIDAYS_2026`) — copy it from your existing scanner so both
    stay in sync.
+
+2a. **Verify `config.STOCK_SYMBOLS` before trusting stock alerts** —
+    confirm each of the 10 symbols is still NSE F&O-eligible (revised
+    quarterly), confirm `STOCK_STRIKE_STEP` against a downloaded
+    instrument file, and spot-check Angel One's strike-divisor
+    detection on a real strike for each symbol (see "Mid/smallcap
+    stock options" above). None of this blocks NIFTY/BANKNIFTY/
+    MIDCPNIFTY scanning — it only matters once stock alerts start
+    firing.
 
 3. **Verify the Upstox candle endpoint** in `scripts/market_data.py`
    against Upstox's current API docs. I've used the standard v2
