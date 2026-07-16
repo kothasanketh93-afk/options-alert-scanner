@@ -1,5 +1,5 @@
 # premarket.yml
-# --------------
+# -------------
 # Runs ONCE per trading day, >=15 min before market open (09:15 IST)
 # -- see premarket_check.py's own module docstring for the full
 # rationale: catches a misconfiguration or outage BEFORE the trading
@@ -17,20 +17,12 @@
 name: Pre-market Check
 
 on:
-  schedule:
-    # 09:00 IST = 03:30 UTC, per premarket_check.py's own docstring.
-    # Runs daily; premarket_check.py's own holiday_guard.should_run()
-    # check skips weekends/NSE holidays internally -- but restricting
-    # the cron to weekdays too avoids paying for a run that will
-    # immediately no-op every single Saturday/Sunday (NSE holidays
-    # still fire the workflow and get skipped internally, since a cron
-    # schedule can't know the NSE calendar -- see holiday_guard.py).
-    - cron: '30 3 * * 1-5'
-
-  # premarket_check.py's docstring explicitly calls this out: "Can
-  # also be triggered on demand any time via this workflow's
-  # workflow_dispatch button for an immediate confirmation, rather
-  # than waiting for the 09:00 IST schedule."
+  # GitHub's own `schedule:` cron trigger was removed here -- triggering
+  # is now handled externally by cronjob.com hitting this workflow's
+  # workflow_dispatch API endpoint (was 09:00 IST / 03:30 UTC daily).
+  # premarket_check.py's own holiday_guard.should_run() check still
+  # skips weekends/NSE holidays internally regardless of what triggers
+  # the run.
   workflow_dispatch: {}
 
 # Own concurrency group (like heartbeat.yml, distinct from trader.yml)
