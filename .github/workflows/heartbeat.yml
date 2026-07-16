@@ -5,7 +5,7 @@
 # than a step inside trader.yml: if the main job itself is stuck,
 # failing silently, or not triggering at all (e.g. an expired Upstox
 # token), a check embedded inside it would never fire. This workflow
-# checks the `state` branch's last commit time directly, plus Angel
+# checks the `state` branch's last commit time  directly, plus Angel
 # One / Upstox / Telegram reachability and its own push-based test
 # that the state branch is actually writable.
 #
