@@ -118,18 +118,38 @@ What's different for stocks vs. indices, and where it's handled:
   `_future_instrument_type()`) everywhere it used to hardcode the
   index-only code.
 
-**UNVERIFIED — confirm before trusting live** (same standard this
-README already holds MIDCPNIFTY's strike step and the holiday list
-to): the 10 symbols are still NSE F&O-eligible (this list is revised
-every quarter), each stock's strike interval, and Angel One's
-strike-divisor auto-detect heuristic (`_detect_strike_divisor()`),
-which was magnitude-calibrated for index-scale prices and may
-misfire on a lower-priced stock. `config_validation.py` prints a
-startup reminder listing the configured stock symbols so this isn't
-easy to forget. `STOCK_MIN_OI`/`STOCK_MIN_OPTION_VOLUME`/
-`STOCK_MIN_PREMIUM` are a starting guess, not backtested — tune from
-the `SCORE` log lines the same way `ENTRY_SCORE`'s comment in
-`config.py` describes doing for the weighted-score cutoff.
+**KNOWN LIVE BUG, FIXED 2026-07-17**: the first live run failed on
+every stock with `InstrumentNotFound: no NSE equity instrument_key
+found for 'PNB'`. Cause: Upstox's instrument master gives equity
+(`instrument_type == "EQ"`) rows a `name` of the full listed company
+name ("Punjab National Bank"), not the short trading symbol — unlike
+derivative rows, where `name` is the underlying's short symbol. Both
+`upstox.py` and `angelone.py`'s `resolve_equity_instrument_key()` now
+match on the trading-symbol field first (`trading_symbol` / a
+`<SYMBOL>-EQ` convention respectively), falling back to `name`.
+
+**Verify before trusting live — `verify_stock_symbols.py`** (repo
+root): downloads the same two public instrument masters `upstox.py`/
+`angelone.py` use at runtime (no broker login needed) and checks,
+per symbol in `STOCK_SYMBOLS`: does an equity row actually resolve,
+is it currently F&O-eligible, and does the real strike interval
+match `STOCK_STRIKE_STEP`. Run it with `python verify_stock_symbols.py`
+after `pip install requests`, and again after every NSE quarterly F&O
+review. It can't check Angel One's strike-divisor heuristic (below)
+since that needs a live-quote sanity check, not just the raw master.
+
+**Still UNVERIFIED beyond what that script checks** (same standard
+this README already holds MIDCPNIFTY's strike step and the holiday
+list to): Angel One's strike-divisor auto-detect heuristic
+(`_detect_strike_divisor()`), which was magnitude-calibrated for
+index-scale prices and may misfire on a lower-priced stock — pull one
+known strike's premium from a live quote and sanity-check it against
+what the scanner computed. `config_validation.py` prints a startup
+reminder listing the configured stock symbols so this isn't easy to
+forget. `STOCK_MIN_OI`/`STOCK_MIN_OPTION_VOLUME`/`STOCK_MIN_PREMIUM`
+are a starting guess, not backtested — tune from the `SCORE` log
+lines the same way `ENTRY_SCORE`'s comment in `config.py` describes
+doing for the weighted-score cutoff.
 
 **Runtime / Actions-minutes impact**: `SYMBOLS` goes from 3 entries
 to 13 with this change — each extra symbol is its own set of broker
