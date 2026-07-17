@@ -87,6 +87,130 @@
           "grade": "Entry"
         }
       ],
+      "status": "ACTIVE",
+      "final_status": null,
+      "actual_entry_time": "2026-07-17T14:59:00+05:30",
+      "tracked_entry_price": 89.7,
+      "highest_since_entry": 97.75,
+      "lowest_since_entry": 85.05,
+      "max_favorable_pct": 8.97,
+      "max_adverse_pct": -5.18,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-07-17T15:00:00+05:30",
+      "messages_sent": [
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
+      ],
+      "streak_counted": false
+    },
+    "BANKNIFTY-CE-ITM-20260717-1500-01": {
+      "trade_id": "BANKNIFTY-CE-ITM-20260717-1500-01",
+      "symbol": "BANKNIFTY",
+      "direction": "CE",
+      "moneyness": "ITM",
+      "instrument_key": "NSE_FO|61899",
+      "strike": 58400,
+      "expiry": "2026-07-28",
+      "spot_price": 58515.1,
+      "alert_time": "2026-07-17T15:00:55.698526+05:30",
+      "alert_premium": 686.0,
+      "entry_low": 681.55,
+      "entry_high": 690.45,
+      "stop_loss": 626.65,
+      "target_1": 686.0,
+      "target_2": 686.0,
+      "session": "13:45-15:10",
+      "grade": "Entry",
+      "confidence_stars": "\u2605\u2605\u2605\u2606\u2606",
+      "confidence_label": "Moderate",
+      "risk_rating": "\ud83d\udfe2",
+      "risk_label": "Low",
+      "expected_holding_minutes": [
+        10,
+        20
+      ],
+      "why_reasons": [
+        "\u2713 EMA aligned",
+        "\u2713 Above VWAP",
+        "\u2713 Volume Expansion",
+        "\u2713 Excellent Liquidity",
+        "\u2713 15-minute Confirmed",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable"
+      ],
+      "alternatives": [
+        {
+          "symbol": "NIFTY",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "NIFTY",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "NIFTY",
+          "direction": "CE",
+          "moneyness": "OTM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "CE",
+          "moneyness": "OTM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "CE",
+          "moneyness": "OTM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BHEL",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BHEL",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BHEL",
+          "direction": "PE",
+          "moneyness": "OTM",
+          "grade": "Entry"
+        }
+      ],
       "status": "WAITING_ENTRY",
       "final_status": null,
       "actual_entry_time": null,
@@ -101,7 +225,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-17T14:58:06.407243+05:30",
+      "last_processed_ts": "2026-07-17T15:00:55.698526+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -109,22 +233,26 @@
     }
   },
   "next_seq": {
-    "NIFTY-CE-OTM": 1
+    "NIFTY-CE-OTM": 1,
+    "BANKNIFTY-CE-ITM": 1
   },
   "summary_sent": false,
   "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
-    "NSE_FO|57350": 4302025.0,
-    "NSE_FO|57352": 9859330.0,
-    "NSE_FO|57354": 5753020.0,
+    "NSE_FO|57350": 4227470.0,
+    "NSE_FO|57352": 9870250.0,
+    "NSE_FO|57354": 5556655.0,
     "NSE_FO|61895": 250050.0,
-    "NSE_FO|61899": 257700.0,
-    "NSE_FO|61901": 958650.0,
-    "NSE_FO|61903": 280410.0,
-    "NSE_FO|78202": 2709000.0,
-    "NSE_FO|36747": 942375.0,
-    "NSE_FO|78198": 4155375.0
+    "NSE_FO|61899": 254310.0,
+    "NSE_FO|61901": 947850.0,
+    "NSE_FO|61903": 280620.0,
+    "NSE_FO|78202": 2695875.0,
+    "NSE_FO|36747": 931875.0,
+    "NSE_FO|78198": 4131750.0,
+    "NSE_FO|63513": 40680.0,
+    "NSE_FO|63515": 93120.0,
+    "NSE_FO|63517": 44520.0
   }
 }
