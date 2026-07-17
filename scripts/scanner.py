@@ -139,6 +139,7 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     chain = market_data.get_broker().get_option_chain(underlying_key, expiry)
     leg = _extract_leg(chain, strike, direction)
     if leg is None:
+        _logger.info(f"SKIP {symbol} {direction} {moneyness} strike={strike}: leg not found in option chain")
         return None  # this strike isn't listed / no data -- not a gate failure, just absent
 
     instrument_key = leg["instrument_key"]
@@ -160,6 +161,7 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     # further below ran too late -- delta_ok/expiry_ok had already used
     # it by then).
     if delta is None:
+        _logger.info(f"SKIP {symbol} {direction} {moneyness} strike={strike}: delta unavailable (Greeks missing)")
         return None  # Greeks unavailable for this strike -- absent, not a gate failure
 
     # Same 15-min candles used by directional_bias()'s confirmation leg
@@ -167,6 +169,7 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     # S/R cap is computed against the same trend read as everything else.
     candles_15m = market_data.get_recent_underlying_candles(underlying_key, "15minute", 30)
     if not candles_15m:
+        _logger.info(f"SKIP {symbol} {direction} {moneyness} strike={strike}: no 15-min candles returned")
         return None
 
     ema_aligned = ema_trend_direction(candles_15m) == direction
@@ -181,6 +184,7 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     nearby_level = find_nearby_level(candles_15m, direction)
     atr_index_points = compute_atr(candles_15m)
     if atr_index_points is None or delta == 0:
+        _logger.info(f"SKIP {symbol} {direction} {moneyness} strike={strike}: ATR unavailable or delta==0")
         return None  # dynamic_trade_levels() would raise on this -- bail before it does
 
     # Provisional T1 distance (pre-cap) just to test room against the
@@ -205,7 +209,22 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         "delta_ok": delta_ok,
         "expiry_theta_ok": expiry_ok,
     }
-    if not quality_gate(factors):
+
+    # Full visibility into EVERY strike that reaches this point --
+    # BUGFIX 2026-07-17: this used to log only AFTER the
+    # `quality_gate()` check below, so a run where every single strike
+    # failed the hard gate (liquidity/delta/theta -- the common case,
+    # not an edge case) produced ZERO log lines, indistinguishable
+    # from the scan not running at all. Logging here, before the
+    # gate, means a fully-quiet day still shows exactly which hard
+    # gate(s) failed on which strikes.
+    hard_gate_pass = quality_gate(factors)
+    factor_summary = " ".join(f"{k}={'Y' if v else 'N'}" for k, v in factors.items() if k != "direction")
+    _logger.info(
+        f"GATE {symbol} {direction} {moneyness} strike={strike} "
+        f"hard_gate={'PASS' if hard_gate_pass else 'FAIL'} | {factor_summary}"
+    )
+    if not hard_gate_pass:
         return None
 
     # NOTE: volume_confirmed above reuses liquidity_ok()'s pass/fail as a
@@ -227,21 +246,9 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     quality_score = example_quality_score(strengths)
     grade = compute_grade(quality_score)
 
-    # Full visibility into every strike that clears the hard risk
-    # gates (liquidity/delta/theta) -- added 2026-07-17 alongside the
-    # weighted-scoring rewrite so it's possible to see near-misses
-    # (e.g. score=60, needed 65) in the Actions run log, not just
-    # final pass/fail. This fires for every hard-gate-passing strike,
-    # not just ones that end up alerting.
-    factor_summary = " ".join(
-        f"{k}={'Y' if factors.get(k) else 'N'}"
-        for k in ("ema_aligned", "vwap_confirmed", "volume_confirmed",
-                   "oi_building", "mtf_confirmed", "risk_reward_ok")
-    )
     _logger.info(
         f"SCORE {symbol} {direction} {moneyness} strike={strike} "
-        f"score={quality_score}/100 grade={grade} "
-        f"(entry_floor={ENTRY_SCORE}) | {factor_summary}"
+        f"score={quality_score}/100 grade={grade} (entry_floor={ENTRY_SCORE})"
     )
 
     if grade == "Reject":
@@ -300,7 +307,7 @@ def detect_setups(symbol: str, oi_history: dict) -> list:
     """
     session = current_session()
     if session is None:
-        return []
+        return []  # outside a scan window -- deliberately silent, this is expected most of the day
 
     underlying_key = resolve_underlying_key(symbol)
     min_quality_score = ENTRY_SCORE  # floor matching the lowest grade, "Entry"
@@ -309,8 +316,13 @@ def detect_setups(symbol: str, oi_history: dict) -> list:
         regime, penalty = market_regime(candles_15m)
         min_quality_score += penalty
 
+    biases = directional_bias(symbol)
+    if not biases:
+        _logger.info(f"BIAS {symbol}: no directional bias (5-min/15-min EMA disagree or insufficient data) -- no strikes scored this run")
+        return []
+
     candidates = []
-    for direction in directional_bias(symbol):
+    for direction in biases:
         atm_strike, spot_price = get_atm_strike(symbol)
         step = STRIKE_STEP[symbol]
         buckets = moneyness_offsets(direction)
