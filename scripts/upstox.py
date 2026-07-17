@@ -302,28 +302,48 @@ class UpstoxBroker(Broker):
         each call via the same cached _instrument_master() every other
         instrument lookup in this file already uses.
 
-        Schema assumption -- UNVERIFIED against a live downloaded
-        file, same caveat as search_instrument()/
-        resolve_current_month_future() above: equity rows have
-        instrument_type == "EQ" and their "name" field equals the
-        plain NSE trading symbol (e.g. "PNB"). Confirm this before
-        depending on it live; if the assumption is wrong this raises
-        InstrumentNotFound rather than silently resolving to the
-        wrong instrument.
+        BUGFIX (live failure, 2026-07-17): matching EQ rows on `name`
+        the way derivative rows are matched elsewhere in this file
+        (see search_instrument()) does NOT work for equities --
+        Upstox's instrument master gives EQ rows a `name` of the full
+        listed company name (e.g. "Punjab National Bank"), not the
+        short trading symbol, so `row["name"] == "PNB"` never matched
+        and every stock alert failed with InstrumentNotFound. Equity
+        rows carry the short symbol in `trading_symbol` instead (the
+        field name Upstox's own API docs use for this), so that's
+        matched first; `name` is kept as a fallback in case a given
+        master snapshot varies. Still not independently confirmed
+        against a live downloaded file for every symbol in
+        STOCK_SYMBOLS -- confirm before trusting a specific one live.
+        If more than one row matches (e.g. a same-named BSE listing),
+        an NSE-exchange row is preferred where the `exchange` field is
+        present.
 
         Raises InstrumentNotFound if no matching equity row exists.
         """
         master = self._instrument_master()
-        for row in master:
-            if row.get("name") == symbol and row.get("instrument_type") == "EQ":
-                key = row.get("instrument_key")
-                if key:
-                    return key
+        matches = [
+            row for row in master
+            if row.get("instrument_type") == "EQ"
+            and (row.get("trading_symbol") == symbol or row.get("name") == symbol)
+        ]
+        if not matches:
+            raise InstrumentNotFound(
+                f"no NSE equity instrument_key found for '{symbol}' in the "
+                f"instrument master (checked both 'trading_symbol' and "
+                f"'name' fields on instrument_type=='EQ' rows) -- confirm "
+                f"the symbol is spelled exactly as NSE lists it, and that "
+                f"the instrument master actually has an EQ row for it at all"
+            )
+        for row in matches:
+            if str(row.get("exchange", "")).upper().startswith("NSE") and row.get("instrument_key"):
+                return row["instrument_key"]
+        key = matches[0].get("instrument_key")
+        if key:
+            return key
         raise InstrumentNotFound(
-            f"no NSE equity instrument_key found for '{symbol}' in the "
-            f"instrument master -- confirm the symbol is spelled exactly "
-            f"as NSE lists it, and that the 'name'/'instrument_type' "
-            f"field assumptions above are correct for equity rows"
+            f"matched an EQ row for '{symbol}' but it has no instrument_key -- "
+            f"inspect the instrument master row directly"
         )
 
     def resolve_current_month_future(self, symbol: str) -> str:

@@ -545,22 +545,37 @@ class AngelOneBroker(Broker):
         method of the same name for the "why resolve dynamically
         instead of hardcoding" reasoning; same logic applies here.
 
-        Schema assumption -- UNVERIFIED against a live scrip master
-        download: equity rows have instrumenttype == "EQ",
-        exch_seg == "NSE", and "name" equal to the plain trading
-        symbol. Confirm before depending on this live.
+        Matches on "name" == symbol first (Angel One's convention
+        generally puts the plain symbol there for equities, unlike
+        Upstox -- see the BUGFIX note in upstox.py's version of this
+        method for why that field can't be trusted blindly across
+        brokers). Falls back to "symbol" == "<SYMBOL>-EQ", Angel One's
+        other common convention for the equity trading symbol field,
+        in case a given scrip master snapshot doesn't populate "name"
+        the expected way. STILL UNVERIFIED against a live download --
+        confirm before depending on this live, the same way the
+        Upstox equity match just needed a live-failure fix to get right.
         """
         master = self._scrip_master()
-        for row in master:
-            if (row.get("name") == symbol and row.get("instrumenttype") == "EQ"
-                    and row.get("exch_seg") == "NSE"):
+        eq_rows = [
+            row for row in master
+            if row.get("instrumenttype") == "EQ" and row.get("exch_seg") == "NSE"
+        ]
+        for row in eq_rows:
+            if row.get("name") == symbol:
+                token = row.get("token")
+                if token:
+                    return f"NSE|{token}"
+        for row in eq_rows:
+            if row.get("symbol") == f"{symbol}-EQ":
                 token = row.get("token")
                 if token:
                     return f"NSE|{token}"
         raise InstrumentNotFound(
             f"no NSE equity token found for '{symbol}' in the Angel One scrip "
-            f"master -- confirm the symbol spelling and the 'name'/"
-            f"'instrumenttype'/'exch_seg' field assumptions above for equity rows"
+            f"master (checked 'name' == '{symbol}' and 'symbol' == "
+            f"'{symbol}-EQ' on instrumenttype=='EQ' rows) -- confirm the "
+            f"symbol spelling and that an EQ row exists for it at all"
         )
 
     def resolve_current_month_future(self, symbol: str) -> str:
