@@ -1,18 +1,130 @@
 {
   "date": "2026-07-17",
-  "trades": {},
-  "next_seq": {},
+  "trades": {
+    "NIFTY-CE-OTM-20260717-1458-01": {
+      "trade_id": "NIFTY-CE-OTM-20260717-1458-01",
+      "symbol": "NIFTY",
+      "direction": "CE",
+      "moneyness": "OTM",
+      "instrument_key": "NSE_FO|57354",
+      "strike": 24350,
+      "expiry": "2026-07-21",
+      "spot_price": 24321.95,
+      "alert_time": "2026-07-17T14:58:06.407243+05:30",
+      "alert_premium": 93.35,
+      "entry_low": 92.31,
+      "entry_high": 94.39,
+      "stop_loss": 79.42,
+      "target_1": 106.36,
+      "target_2": 111.94,
+      "session": "13:45-15:10",
+      "grade": "Strong Entry",
+      "confidence_stars": "\u2605\u2605\u2605\u2605\u2605",
+      "confidence_label": "Very High",
+      "risk_rating": "\ud83d\udfe1",
+      "risk_label": "Medium",
+      "expected_holding_minutes": [
+        10,
+        20
+      ],
+      "why_reasons": [
+        "\u2713 EMA aligned",
+        "\u2713 Above VWAP",
+        "\u2713 Volume Expansion",
+        "\u2713 Strong OI Build-up",
+        "\u2713 Excellent Liquidity",
+        "\u2713 15-minute Confirmed",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable"
+      ],
+      "alternatives": [
+        {
+          "symbol": "NIFTY",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "NIFTY",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "CE",
+          "moneyness": "OTM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BHEL",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BHEL",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BHEL",
+          "direction": "PE",
+          "moneyness": "OTM",
+          "grade": "Entry"
+        }
+      ],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-07-17T14:58:06.407243+05:30",
+      "messages_sent": [
+        "NEW_TRADE_ALERT"
+      ],
+      "streak_counted": false
+    }
+  },
+  "next_seq": {
+    "NIFTY-CE-OTM": 1
+  },
   "summary_sent": false,
   "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
-    "NSE_FO|57350": 4327115.0,
-    "NSE_FO|57352": 9668815.0,
-    "NSE_FO|57354": 5633615.0,
+    "NSE_FO|57350": 4302025.0,
+    "NSE_FO|57352": 9859330.0,
+    "NSE_FO|57354": 5753020.0,
     "NSE_FO|61895": 250050.0,
-    "NSE_FO|61899": 255600.0,
-    "NSE_FO|61901": 954570.0,
-    "NSE_FO|61903": 277410.0
+    "NSE_FO|61899": 257700.0,
+    "NSE_FO|61901": 958650.0,
+    "NSE_FO|61903": 280410.0,
+    "NSE_FO|78202": 2709000.0,
+    "NSE_FO|36747": 942375.0,
+    "NSE_FO|78198": 4155375.0
   }
 }
