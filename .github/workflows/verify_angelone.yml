@@ -1,0 +1,38 @@
+# verify_angelone.yml
+# -------------------
+# Manual diagnostic workflow: runs ONLY scripts/verify_angelone_login.py
+# (login step in isolation, no scanning) so you can check Angel One
+# credentials any time without waiting for a live scan window or
+# reading through a full trader.yml run's log.
+#
+# Trigger: repo -> Actions tab -> "Verify Angel One Login" -> Run workflow.
+
+name: Verify Angel One Login
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  verify-login:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Verify Angel One login
+        working-directory: scripts
+        env:
+          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+          ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
+        run: python verify_angelone_login.py
