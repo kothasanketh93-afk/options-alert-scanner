@@ -95,7 +95,7 @@ SYMBOLS = ["NIFTY", "BANKNIFTY", "MIDCPNIFTY"]
 # before this runs live -- same caution already asked of MIDCPNIFTY's
 # strike step and SENSEX's deferral above.
 STOCK_SYMBOLS = [
-    "PNB", "CANBK", "IDFCFIRSTB", "FEDERALBNK", "BHEL",
+    "SBIN", "CANBK", "IDFCFIRSTB", "FEDERALBNK", "BHEL",
     "SAIL", "NATIONALUM", "NMDC", "HINDCOPPER", "TATACHEM",
 ]
 
@@ -108,7 +108,7 @@ STOCK_SYMBOLS = [
 # strike_price values) before trusting alerts on these -- exactly the
 # verification MIDCPNIFTY's STRIKE_STEP entry above still needs too.
 STOCK_STRIKE_STEP = {
-    "PNB": 1, "CANBK": 5, "IDFCFIRSTB": 1, "FEDERALBNK": 2.5,
+    "SBIN": 10, "CANBK": 5, "IDFCFIRSTB": 1, "FEDERALBNK": 2.5,
     "BHEL": 5, "SAIL": 2.5, "NATIONALUM": 2.5, "NMDC": 2.5,
     "HINDCOPPER": 5, "TATACHEM": 10,
 }
@@ -161,7 +161,18 @@ REGIME_SCORE_PENALTY = {
 # gate was split (hard risk gates vs. weighted signal score), this
 # threshold is the real, meaningful cutoff. Revisit after a couple of
 # weeks of live data via the daily-summary win-rate check.
-ENTRY_SCORE = 65
+# Lowered from 65 to 60 on 2026-07-17: testing whether near-miss
+# strikes (score 60-64) are common enough to be worth alerting on,
+# after several consecutive live cycles produced zero alerts. NOTE:
+# this only helps candidates that already clear the 3 hard risk gates
+# in filters.quality_gate() (liquidity/delta/theta) -- if those are
+# what's rejecting every strike (check the GATE log lines
+# scanner.py's score_strike() now prints), lowering this floor won't
+# change anything, since gate-failing strikes never reach the score
+# stage at all. Revisit again after a week of live data via the
+# daily-summary win-rate check -- a lower floor means more alerts but
+# each one is, by definition, lower-conviction.
+ENTRY_SCORE = 60
 STRONG_ENTRY = 85
 
 GRADE_THRESHOLDS = [
