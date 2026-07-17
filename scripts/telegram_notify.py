@@ -14,6 +14,8 @@ quality gate too, they're listed as text only -- never opened as
 separate trades.
 """
 
+from datetime import datetime
+
 from auth import get_telegram_credentials
 from retry_utils import request_with_retry
 from exceptions import TelegramFailure
@@ -21,6 +23,25 @@ from logging_setup import get_logger
 
 API_URL = f"https://api.telegram.org/bot{{token}}/sendMessage"
 log = get_logger("telegram")
+
+
+def _time_only(iso_ts: str) -> str:
+    """
+    tracker.py stores every timestamp (actual_entry_time, t1_hit_time,
+    t2_hit_time, sl_hit_time) as a full `datetime.isoformat()` string
+    -- date, seconds/microseconds, and the "+05:30" offset included
+    (e.g. "2026-07-17T15:05:41.234567+05:30") -- because
+    fmt_eod_closed()'s holding-duration math needs the full timestamp
+    to subtract. Telegram messages only need the clock time, so this
+    formats down to "HH:MM" for display without changing what's
+    actually stored. Falls back to returning the raw string unchanged
+    if it isn't a parseable ISO timestamp, so a malformed value shows
+    up visibly instead of crashing message formatting.
+    """
+    try:
+        return datetime.fromisoformat(iso_ts).strftime("%H:%M")
+    except (TypeError, ValueError):
+        return str(iso_ts)
 
 # Retry policy (thresholds in config.py, logic in retry_utils.py) is
 # unchanged from before this was centralized: only transient failures
@@ -85,7 +106,7 @@ def fmt_entry_activated(trade: dict) -> str:
     return (
         f"ENTRY ACTIVATED\n\n"
         f"Trade ID: {trade['trade_id']}\n"
-        f"Entry Time: {trade['actual_entry_time']}\n"
+        f"Entry Time: {_time_only(trade['actual_entry_time'])}\n"
         f"Tracked Entry: ₹{trade['tracked_entry_price']}\n\n"
         f"Target 1: ₹{trade['target_1']}\n"
         f"Target 2: ₹{trade['target_2']}\n"
@@ -98,8 +119,8 @@ def fmt_t1_hit(trade: dict, time_taken_min: int) -> str:
     return (
         f"TARGET 1 HIT\n\n"
         f"Trade ID: {trade['trade_id']}\n\n"
-        f"Entry Time: {trade['actual_entry_time']}\n"
-        f"T1 Hit Time: {trade['t1_hit_time']}\n"
+        f"Entry Time: {_time_only(trade['actual_entry_time'])}\n"
+        f"T1 Hit Time: {_time_only(trade['t1_hit_time'])}\n"
         f"Time Taken: {time_taken_min} minutes\n\n"
         f"Tracked Entry: ₹{trade['tracked_entry_price']}\n"
         f"T1: ₹{trade['target_1']}\n"
@@ -114,8 +135,8 @@ def fmt_t2_hit(trade: dict, time_taken_min: int) -> str:
     return (
         f"TARGET 2 HIT\n\n"
         f"Trade ID: {trade['trade_id']}\n\n"
-        f"Entry Time: {trade['actual_entry_time']}\n"
-        f"T2 Hit Time: {trade['t2_hit_time']}\n"
+        f"Entry Time: {_time_only(trade['actual_entry_time'])}\n"
+        f"T2 Hit Time: {_time_only(trade['t2_hit_time'])}\n"
         f"Time Taken: {time_taken_min} minutes\n\n"
         f"Tracked Entry: ₹{trade['tracked_entry_price']}\n"
         f"T2: ₹{trade['target_2']}\n"
@@ -130,8 +151,8 @@ def fmt_sl_hit(trade: dict, time_taken_min: int) -> str:
     return (
         f"STOP LOSS HIT\n\n"
         f"Trade ID: {trade['trade_id']}\n\n"
-        f"Entry Time: {trade['actual_entry_time']}\n"
-        f"SL Time: {trade['sl_hit_time']}\n"
+        f"Entry Time: {_time_only(trade['actual_entry_time'])}\n"
+        f"SL Time: {_time_only(trade['sl_hit_time'])}\n"
         f"Time Taken: {time_taken_min} minutes\n\n"
         f"Tracked Entry: ₹{trade['tracked_entry_price']}\n"
         f"SL: ₹{trade['stop_loss']}\n\n"
@@ -155,7 +176,7 @@ def fmt_eod_closed(trade: dict) -> str:
     return (
         f"EOD — TRADE UNRESOLVED\n\n"
         f"Trade ID: {trade['trade_id']}\n"
-        f"Entry: ₹{trade['tracked_entry_price']} at {trade['actual_entry_time']}\n"
+        f"Entry: ₹{trade['tracked_entry_price']} at {_time_only(trade['actual_entry_time'])}\n"
         f"Last Price: ₹{trade.get('eod_last_price', 'N/A')}\n\n"
         f"Max Favorable: {trade['max_favorable_pct']:+.2f}%\n"
         f"Max Adverse: {trade['max_adverse_pct']:+.2f}%\n\n"
