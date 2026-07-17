@@ -87,24 +87,25 @@
           "grade": "Entry"
         }
       ],
-      "status": "ACTIVE",
+      "status": "T1_HIT",
       "final_status": null,
       "actual_entry_time": "2026-07-17T14:59:00+05:30",
       "tracked_entry_price": 89.7,
-      "highest_since_entry": 103.5,
+      "highest_since_entry": 109.0,
       "lowest_since_entry": 85.05,
-      "max_favorable_pct": 15.38,
+      "max_favorable_pct": 21.52,
       "max_adverse_pct": -5.18,
-      "t1_hit": false,
-      "t1_hit_time": null,
+      "t1_hit": true,
+      "t1_hit_time": "2026-07-17T15:24:00+05:30",
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-17T15:19:00+05:30",
+      "last_processed_ts": "2026-07-17T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "T1_HIT"
       ],
       "streak_counted": false
     },
@@ -211,26 +212,28 @@
           "grade": "Entry"
         }
       ],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "T2_HIT",
+      "final_status": "T2_HIT",
       "actual_entry_time": "2026-07-17T15:01:00+05:30",
       "tracked_entry_price": 667.3,
-      "highest_since_entry": 685.95,
+      "highest_since_entry": 690.0,
       "lowest_since_entry": 630.35,
-      "max_favorable_pct": 2.79,
+      "max_favorable_pct": 3.4,
       "max_adverse_pct": -5.54,
-      "t1_hit": false,
-      "t1_hit_time": null,
-      "t2_hit": false,
-      "t2_hit_time": null,
+      "t1_hit": true,
+      "t1_hit_time": "2026-07-17T15:20:00+05:30",
+      "t2_hit": true,
+      "t2_hit_time": "2026-07-17T15:20:00+05:30",
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-17T15:19:00+05:30",
+      "last_processed_ts": "2026-07-17T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "T1_HIT",
+        "T2_HIT"
       ],
-      "streak_counted": false
+      "streak_counted": true
     },
     "MIDCPNIFTY-CE-ITM-20260717-1505-01": {
       "trade_id": "MIDCPNIFTY-CE-ITM-20260717-1505-01",
@@ -363,8 +366,8 @@
     "BANKNIFTY-CE-ITM": 1,
     "MIDCPNIFTY-CE-ITM": 1
   },
-  "summary_sent": false,
-  "consecutive_sl_streak": 1,
+  "summary_sent": true,
+  "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
