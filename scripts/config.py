@@ -95,8 +95,8 @@ SYMBOLS = ["NIFTY", "BANKNIFTY", "MIDCPNIFTY"]
 # before this runs live -- same caution already asked of MIDCPNIFTY's
 # strike step and SENSEX's deferral above.
 STOCK_SYMBOLS = [
-    "SBIN", "CANBK", "IDFCFIRSTB", "FEDERALBNK", "BHEL",
-    "SAIL", "NATIONALUM", "NMDC", "HINDCOPPER", "TATACHEM",
+    "TATASTEEL", "HINDALCO", "VEDL", "JINDALSTEL", "IDEA",
+    "SAIL", "NATIONALUM", "NMDC", "BHEL", "FEDERALBNK",
 ]
 
 # Per-stock strike interval. ALSO UNVERIFIED -- unlike NIFTY/BANKNIFTY
@@ -108,9 +108,8 @@ STOCK_SYMBOLS = [
 # strike_price values) before trusting alerts on these -- exactly the
 # verification MIDCPNIFTY's STRIKE_STEP entry above still needs too.
 STOCK_STRIKE_STEP = {
-    "SBIN": 10, "CANBK": 5, "IDFCFIRSTB": 1, "FEDERALBNK": 2.5,
-    "BHEL": 5, "SAIL": 2.5, "NATIONALUM": 2.5, "NMDC": 2.5,
-    "HINDCOPPER": 5, "TATACHEM": 10,
+    "TATASTEEL": 5, "HINDALCO": 10, "VEDL": 10, "JINDALSTEL": 20, "IDEA": 0.5,
+    "SAIL": 2.5, "NATIONALUM": 2.5, "NMDC": 2.5, "BHEL": 5, "FEDERALBNK": 2.5,
 }
 STRIKE_STEP.update(STOCK_STRIKE_STEP)
 

@@ -35,13 +35,12 @@ ANGELONE_MASTER_URL = "https://margincalculator.angelbroking.com/OpenAPI_File/fi
 
 # Keep this in sync with config.STOCK_SYMBOLS / config.STOCK_STRIKE_STEP.
 STOCK_SYMBOLS = [
-    "SBIN", "CANBK", "IDFCFIRSTB", "FEDERALBNK", "BHEL",
-    "SAIL", "NATIONALUM", "NMDC", "HINDCOPPER", "TATACHEM",
+    "TATASTEEL", "HINDALCO", "VEDL", "JINDALSTEL", "IDEA",
+    "SAIL", "NATIONALUM", "NMDC", "BHEL", "FEDERALBNK",
 ]
 CONFIGURED_STRIKE_STEP = {
-    "SBIN": 10, "CANBK": 5, "IDFCFIRSTB": 1, "FEDERALBNK": 2.5,
-    "BHEL": 5, "SAIL": 2.5, "NATIONALUM": 2.5, "NMDC": 2.5,
-    "HINDCOPPER": 5, "TATACHEM": 10,
+    "TATASTEEL": 5, "HINDALCO": 10, "VEDL": 10, "JINDALSTEL": 20, "IDEA": 0.5,
+    "SAIL": 2.5, "NATIONALUM": 2.5, "NMDC": 2.5, "BHEL": 5, "FEDERALBNK": 2.5,
 }
 
 
