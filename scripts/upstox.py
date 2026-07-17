@@ -362,6 +362,24 @@ class UpstoxBroker(Broker):
         futures is assumed to be "FUT", matching Upstox's convention
         (as distinct from "CE"/"PE" for options).
 
+        BUGFIX (live failure, 2026-07-17): matching purely on
+        `name == symbol` -- which works for NIFTY/BANKNIFTY, where
+        "name" already IS the short symbol -- failed live for BOTH
+        PNB and CANBK with InstrumentNotFound. Same root cause as the
+        equity bug in resolve_equity_instrument_key(): Upstox's
+        instrument master likely gives stock derivative rows a `name`
+        of the full listed company name too (e.g. "Canara Bank"), not
+        the short trading symbol, the same way it does for EQ rows.
+        Now also tries `trading_symbol` with the expiry/contract
+        suffix stripped (Upstox's stock-future trading_symbol
+        convention is "<SYMBOL><DDMMMYY>FUT", e.g. "CANBK26JULFUT") --
+        matching only rows whose trading_symbol STARTS WITH the plain
+        symbol and ends with "FUT". Still not independently confirmed
+        against a live downloaded file for every STOCK_SYMBOLS entry
+        -- if this still raises for a given stock, that stock likely
+        genuinely lacks a current-month future (or NSE F&O eligibility
+        changed) rather than a further field-name mismatch.
+
         Raises InstrumentNotFound if no unexpired futures contract for
         `symbol` exists in the instrument master -- shouldn't happen
         for NIFTY/BANKNIFTY under normal circumstances; if it does, the
@@ -371,7 +389,12 @@ class UpstoxBroker(Broker):
         today = datetime.now(IST).date()
         candidates = []
         for row in master:
-            if row.get("name") != symbol or row.get("instrument_type") != "FUT":
+            if row.get("instrument_type") != "FUT":
+                continue
+            trading_symbol = str(row.get("trading_symbol") or "")
+            name_matches = row.get("name") == symbol
+            trading_symbol_matches = trading_symbol.startswith(symbol) and trading_symbol.endswith("FUT")
+            if not (name_matches or trading_symbol_matches):
                 continue
             expiry_raw = row.get("expiry")
             if not expiry_raw:

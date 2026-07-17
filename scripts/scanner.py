@@ -355,6 +355,26 @@ def detect_all_setups(oi_history: dict) -> list:
     """
     all_candidates = []
     for symbol in SYMBOLS:
-        all_candidates.extend(detect_setups(symbol, oi_history))
+        # CRITICAL BUGFIX (live failure, 2026-07-17): this used to let
+        # a single symbol's exception propagate straight out of this
+        # function -- which meant one broken symbol (a stock's futures
+        # contract not resolving, a stale instrument master row,
+        # anything specific to that ONE symbol) killed the ENTIRE run,
+        # discarding every candidate already scored for every OTHER
+        # symbol that ran before it in this loop. Confirmed live: NIFTY
+        # scored 85/100 "Strong Entry" and BANKNIFTY scored 70/100
+        # "Entry" -- both should have alerted -- but PNB (later in
+        # SYMBOLS) crashed with InstrumentNotFound and the whole run
+        # aborted before main.py ever saw either result. Now: log the
+        # failing symbol and its error, then continue to the next
+        # symbol, so the rest of the run's alerts are never held
+        # hostage by one symbol's data problem.
+        try:
+            all_candidates.extend(detect_setups(symbol, oi_history))
+        except Exception as e:
+            _logger.error(
+                f"SYMBOL_FAILED {symbol}: {type(e).__name__}: {e} -- "
+                f"skipping this symbol for this run, continuing with the rest"
+            )
 
     return rank_all(all_candidates)
