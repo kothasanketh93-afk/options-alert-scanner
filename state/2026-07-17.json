@@ -101,7 +101,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-17T15:04:00+05:30",
+      "last_processed_ts": "2026-07-17T15:09:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -215,9 +215,9 @@
       "final_status": null,
       "actual_entry_time": "2026-07-17T15:01:00+05:30",
       "tracked_entry_price": 667.3,
-      "highest_since_entry": 667.65,
+      "highest_since_entry": 675.0,
       "lowest_since_entry": 630.35,
-      "max_favorable_pct": 0.05,
+      "max_favorable_pct": 1.15,
       "max_adverse_pct": -5.54,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -225,7 +225,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-17T15:04:00+05:30",
+      "last_processed_ts": "2026-07-17T15:09:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -335,23 +335,24 @@
           "grade": "Entry"
         }
       ],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
+      "actual_entry_time": "2026-07-17T15:06:00+05:30",
+      "tracked_entry_price": 179.95,
+      "highest_since_entry": 179.95,
+      "lowest_since_entry": 177.0,
       "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "max_adverse_pct": -1.64,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-17T15:05:29.368295+05:30",
+      "last_processed_ts": "2026-07-17T15:09:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
       ],
       "streak_counted": false
     }
