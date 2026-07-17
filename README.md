@@ -92,12 +92,25 @@ profiles and should be scored on their own numbers.
 
 ## Mid/smallcap stock options (added 2026-07-17)
 
-`config.SYMBOLS` now includes 10 mid/smallcap stocks in addition to
-NIFTY/BANKNIFTY/MIDCPNIFTY: `PNB`, `CANBK`, `IDFCFIRSTB`,
-`FEDERALBNK`, `BHEL`, `SAIL`, `NATIONALUM`, `NMDC`, `HINDCOPPER`,
-`TATACHEM` (`config.STOCK_SYMBOLS`). `scanner.py`/`option_chain.py`
-already scan them the same way as the indices — no per-symbol code
-branching needed on that side.
+`config.SYMBOLS` now includes 10 stocks in addition to NIFTY/
+BANKNIFTY/MIDCPNIFTY: `TATASTEEL`, `HINDALCO`, `VEDL`, `JINDALSTEL`,
+`IDEA`, `SAIL`, `NATIONALUM`, `NMDC`, `BHEL`, `FEDERALBNK`
+(`config.STOCK_SYMBOLS`). `scanner.py`/`option_chain.py` already scan
+them the same way as the indices — no per-symbol code branching
+needed on that side.
+
+This list went through two revisions after live failures (see "Bugs
+found and fixed" below): `PNB` and `CANBK` were both dropped after
+repeatedly failing futures-contract resolution live. The current 10
+were chosen for historically high, consistent option/futures volume
+(metals/PSU/telecom names) specifically to reduce the odds of hitting
+the same thin-liquidity-driven data gaps again — this is a risk
+reduction, not a guarantee; still run `verify_stock_symbols.py`
+before trusting any of them unattended. **`IDEA` is a special case**:
+its share price is very low (~₹7-10), close enough to
+`STOCK_MIN_PREMIUM` that it may get rejected by the liquidity gate
+more often than the others — watch its `GATE`/`SCORE` log lines
+specifically for the first few days.
 
 What's different for stocks vs. indices, and where it's handled:
 
@@ -118,38 +131,47 @@ What's different for stocks vs. indices, and where it's handled:
   `_future_instrument_type()`) everywhere it used to hardcode the
   index-only code.
 
-**KNOWN LIVE BUG, FIXED 2026-07-17**: the first live run failed on
-every stock with `InstrumentNotFound: no NSE equity instrument_key
-found for 'PNB'`. Cause: Upstox's instrument master gives equity
-(`instrument_type == "EQ"`) rows a `name` of the full listed company
-name ("Punjab National Bank"), not the short trading symbol — unlike
-derivative rows, where `name` is the underlying's short symbol. Both
-`upstox.py` and `angelone.py`'s `resolve_equity_instrument_key()` now
-match on the trading-symbol field first (`trading_symbol` / a
-`<SYMBOL>-EQ` convention respectively), falling back to `name`.
+**Debugging tools added alongside this feature:**
 
-**Verify before trusting live — `verify_stock_symbols.py`** (repo
-root): downloads the same two public instrument masters `upstox.py`/
-`angelone.py` use at runtime (no broker login needed) and checks,
-per symbol in `STOCK_SYMBOLS`: does an equity row actually resolve,
-is it currently F&O-eligible, and does the real strike interval
-match `STOCK_STRIKE_STEP`. Run it with `python verify_stock_symbols.py`
-after `pip install requests`, and again after every NSE quarterly F&O
-review. It can't check Angel One's strike-divisor heuristic (below)
-since that needs a live-quote sanity check, not just the raw master.
+- **`verify_stock_symbols.py`** (repo root) — downloads the same two
+  public instrument masters `upstox.py`/`angelone.py` use at runtime
+  (no broker login needed) and checks, per symbol in `STOCK_SYMBOLS`:
+  does an equity row actually resolve, is it currently F&O-eligible,
+  and does the real strike interval match `STOCK_STRIKE_STEP`. Run
+  with `python verify_stock_symbols.py` after `pip install requests`,
+  and again after every NSE quarterly F&O review. Can't check Angel
+  One's strike-divisor heuristic (below) since that needs a live-quote
+  sanity check, not just the raw master.
+- **`scripts/verify_angelone_login.py`** + **`.github/workflows/
+  verify_angelone.yml`** — tests ONLY the Angel One login step
+  (clientcode+PIN+TOTP), via a manual `workflow_dispatch` run, without
+  waiting for a live scan window. Useful for isolating "is it the
+  login, or something after login" when Angel One is failing.
+- **`scanner.py` per-strike logging** — `score_strike()`/
+  `detect_setups()` now log `BIAS`/`SKIP`/`GATE`/`SCORE` lines for
+  every symbol/strike evaluated, not just ones that end up alerting.
+  Before this, a fully-quiet day (nothing alerted) was
+  indistinguishable in the log from the scan not running at all.
+  `BIAS` = no directional bias this run; `SKIP` = strike/leg data
+  unavailable; `GATE` = hard risk gate (liquidity/delta/theta)
+  pass/fail with every factor; `SCORE` = weighted score/grade for
+  anything that cleared the hard gate.
 
-**Still UNVERIFIED beyond what that script checks** (same standard
-this README already holds MIDCPNIFTY's strike step and the holiday
-list to): Angel One's strike-divisor auto-detect heuristic
-(`_detect_strike_divisor()`), which was magnitude-calibrated for
-index-scale prices and may misfire on a lower-priced stock — pull one
-known strike's premium from a live quote and sanity-check it against
-what the scanner computed. `config_validation.py` prints a startup
-reminder listing the configured stock symbols so this isn't easy to
-forget. `STOCK_MIN_OI`/`STOCK_MIN_OPTION_VOLUME`/`STOCK_MIN_PREMIUM`
-are a starting guess, not backtested — tune from the `SCORE` log
-lines the same way `ENTRY_SCORE`'s comment in `config.py` describes
-doing for the weighted-score cutoff.
+**Still UNVERIFIED beyond what `verify_stock_symbols.py` checks**
+(same standard this README already holds MIDCPNIFTY's strike step
+and the holiday list to): Angel One's strike-divisor auto-detect
+heuristic (`_detect_strike_divisor()`), which was magnitude-calibrated
+for index-scale prices and may misfire on a lower-priced stock — pull
+one known strike's premium from a live quote and sanity-check it
+against what the scanner computed. `config_validation.py` prints a
+startup reminder listing the configured stock symbols so this isn't
+easy to forget. `STOCK_MIN_OI`/`STOCK_MIN_OPTION_VOLUME`/
+`STOCK_MIN_PREMIUM` are a starting guess, not backtested — tune from
+the `SCORE` log lines the same way `ENTRY_SCORE`'s comment in
+`config.py` describes doing for the weighted-score cutoff (also
+lowered, from 65 to 60, on 2026-07-17 while testing for near-miss
+alerts — see that comment for the caveat on what this does and
+doesn't fix).
 
 **Runtime / Actions-minutes impact**: `SYMBOLS` goes from 3 entries
 to 13 with this change — each extra symbol is its own set of broker
@@ -219,6 +241,47 @@ both now fixed and verified with simulation:
    added a 15-minute grace window after market open so the very first
    heartbeat check of the day doesn't compare against yesterday's last
    commit and false-alarm before the trader has had a chance to run.
+
+4. **`upstox.py`/`angelone.py`'s equity resolution matched the wrong
+   field for stocks (2026-07-17, live failure on `PNB`).** Both
+   brokers' `resolve_equity_instrument_key()` matched an instrument
+   master row's `name` field against the plain symbol -- true for
+   NIFTY/BANKNIFTY (where `name` already IS the short symbol) but not
+   for equity (`EQ`) rows, where Upstox's `name` is the full listed
+   company name ("Punjab National Bank", not "PNB"). Fixed: both now
+   match on the trading-symbol field first (`trading_symbol` for
+   Upstox, a `<SYMBOL>-EQ` convention for Angel One), falling back to
+   `name`.
+
+5. **`upstox.py`'s `resolve_current_month_future()` had the same
+   field-matching bug for stock FUTURES rows (2026-07-17, live
+   failure on `PNB` then `CANBK`).** Same root cause as #4, one level
+   up: `name` matched for index futures but not stock futures. Fixed:
+   now also matches `trading_symbol` rows starting with the plain
+   symbol and ending in `"FUT"` (Upstox's stock-future convention,
+   e.g. `"CANBK26JULFUT"`).
+
+6. **One symbol's exception killed the entire run, discarding every
+   other symbol's already-computed results (2026-07-17, live
+   failure).** `detect_all_setups()` iterated `SYMBOLS` and let any
+   exception from one symbol propagate straight out -- confirmed
+   live: NIFTY scored 85/100 "Strong Entry" and BANKNIFTY scored
+   70/100 "Entry" (both should have alerted), but a later stock in
+   the loop raised `InstrumentNotFound` and the whole run aborted
+   before `main.py` ever saw either result. Fixed: each symbol's
+   `detect_setups()` call is now wrapped in its own `try/except`,
+   logged as `SYMBOL_FAILED` and skipped, so one symbol's data
+   problem can never again block every other symbol's alerts for the
+   whole run.
+
+7. **No visibility into why a fully-quiet run had zero alerts
+   (2026-07-17).** Every rejection point in `score_strike()`/
+   `detect_setups()` (`quality_gate()` failing, missing directional
+   bias, missing leg/delta/candles/ATR) returned silently -- a
+   perfectly normal "nothing passed today" looked identical in the
+   log to the scan not running at all. Fixed: added `BIAS`/`SKIP`/
+   `GATE`/`SCORE` log lines covering every stage (see "Mid/smallcap
+   stock options" above for what each means).
 
 ## V2.0 — Professional Options Decision Engine (major rearchitecture)
 
@@ -520,6 +583,21 @@ after a week of live runs and this can be recalculated precisely.
     stock options" above). None of this blocks NIFTY/BANKNIFTY/
     MIDCPNIFTY scanning — it only matters once stock alerts start
     firing.
+
+2b. **Angel One historical-candle calls are still failing live, login
+    is not the problem (open issue, as of 2026-07-17).** Every trader
+    run's first Angel One call to `getCandleData` fails (flipping
+    between HTTP 400 and 403 across runs), triggering failover to
+    Upstox -- confirmed via `verify_angelone_login.py` that the login
+    step itself succeeds and returns a valid JWT, so the problem is
+    specifically in the historical-candle request that follows login,
+    not the credentials. Likely causes still to check: the instrument
+    token format sent to `getCandleData`, whether your Angel One
+    account's Historical Data API access needs separate enabling on
+    smartapi.angelone.in, or a JWT that's valid for login but expiring
+    before the candle call. Scanning still works throughout via the
+    Upstox fallback, so this isn't blocking alerts, but Angel One
+    (your primary broker) isn't actually being used right now.
 
 3. **Verify the Upstox candle endpoint** in `scripts/market_data.py`
    against Upstox's current API docs. I've used the standard v2
