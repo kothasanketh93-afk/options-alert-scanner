@@ -213,7 +213,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-20T14:50:00+05:30",
+      "last_processed_ts": "2026-07-20T14:55:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -332,7 +332,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-20T14:50:00+05:30",
+      "last_processed_ts": "2026-07-20T14:55:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -440,17 +440,17 @@
       "final_status": null,
       "actual_entry_time": "2026-07-20T14:46:00+05:30",
       "tracked_entry_price": 73.35,
-      "highest_since_entry": 74.9,
-      "lowest_since_entry": 68.1,
-      "max_favorable_pct": 2.11,
-      "max_adverse_pct": -7.16,
+      "highest_since_entry": 78.25,
+      "lowest_since_entry": 67.75,
+      "max_favorable_pct": 6.68,
+      "max_adverse_pct": -7.63,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-20T14:49:00+05:30",
+      "last_processed_ts": "2026-07-20T14:54:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -554,23 +554,24 @@
           "grade": "Entry"
         }
       ],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
+      "actual_entry_time": "2026-07-20T14:51:00+05:30",
+      "tracked_entry_price": 10.3,
+      "highest_since_entry": 10.3,
+      "lowest_since_entry": 10.2,
       "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "max_adverse_pct": -0.97,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-20T14:50:41.942433+05:30",
+      "last_processed_ts": "2026-07-20T14:55:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
       ],
       "streak_counted": false
     }
@@ -587,18 +588,18 @@
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
-    "NSE_FO|57348": 12525305.0,
-    "NSE_FO|57350": 12460760.0,
-    "NSE_FO|57352": 15289755.0,
-    "NSE_FO|61887": 214710.0,
-    "NSE_FO|61889": 1440900.0,
-    "NSE_FO|61891": 274230.0,
-    "NSE_FO|63517": 34680.0,
-    "NSE_FO|63519": 602520.0,
+    "NSE_FO|57348": 12385425.0,
+    "NSE_FO|57350": 12390690.0,
+    "NSE_FO|57352": 15271360.0,
+    "NSE_FO|61887": 218760.0,
+    "NSE_FO|61889": 1438020.0,
+    "NSE_FO|61891": 276360.0,
+    "NSE_FO|63517": 34920.0,
+    "NSE_FO|63519": 599160.0,
     "NSE_FO|63521": 36000.0,
     "NSE_FO|63515": 109920.0,
-    "NSE_FO|78198": 3966375.0,
-    "NSE_FO|78184": 1659000.0,
+    "NSE_FO|78198": 3958500.0,
+    "NSE_FO|78184": 1645875.0,
     "NSE_FO|78176": 4189500.0
   }
 }
