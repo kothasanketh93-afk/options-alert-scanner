@@ -1,10 +1,122 @@
 {
   "date": "2026-07-20",
-  "trades": {},
-  "next_seq": {},
+  "trades": {
+    "NIFTY-CE-ITM-20260720-1431-01": {
+      "trade_id": "NIFTY-CE-ITM-20260720-1431-01",
+      "symbol": "NIFTY",
+      "direction": "CE",
+      "moneyness": "ITM",
+      "instrument_key": "NSE_FO|57348",
+      "strike": 24200,
+      "expiry": "2026-07-21",
+      "spot_price": 24247.45,
+      "alert_time": "2026-07-20T14:31:03.759276+05:30",
+      "alert_premium": 106.8,
+      "entry_low": 105.55,
+      "entry_high": 108.05,
+      "stop_loss": 90.1,
+      "target_1": 113.84,
+      "target_2": 116.86,
+      "session": "13:45-15:10",
+      "grade": "Entry",
+      "confidence_stars": "\u2605\u2605\u2605\u2606\u2606",
+      "confidence_label": "Moderate",
+      "risk_rating": "\ud83d\udfe2",
+      "risk_label": "Low",
+      "expected_holding_minutes": [
+        10,
+        20
+      ],
+      "why_reasons": [
+        "\u2713 EMA aligned",
+        "\u2713 Above VWAP",
+        "\u2713 Volume Expansion",
+        "\u2713 Excellent Liquidity",
+        "\u2713 15-minute Confirmed",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable"
+      ],
+      "alternatives": [
+        {
+          "symbol": "NIFTY",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "CE",
+          "moneyness": "OTM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "CE",
+          "moneyness": "OTM",
+          "grade": "Entry"
+        }
+      ],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-07-20T14:31:03.759276+05:30",
+      "messages_sent": [
+        "NEW_TRADE_ALERT"
+      ],
+      "streak_counted": false
+    }
+  },
+  "next_seq": {
+    "NIFTY-CE-ITM": 1
+  },
   "summary_sent": false,
   "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
-  "oi_history": {}
+  "oi_history": {
+    "NSE_FO|57348": 13182650.0,
+    "NSE_FO|57350": 12664470.0,
+    "NSE_FO|57352": 16089515.0,
+    "NSE_FO|61887": 204870.0,
+    "NSE_FO|61889": 1437420.0,
+    "NSE_FO|61891": 276960.0,
+    "NSE_FO|63517": 34080.0,
+    "NSE_FO|63519": 605280.0,
+    "NSE_FO|63521": 36000.0
+  }
 }
