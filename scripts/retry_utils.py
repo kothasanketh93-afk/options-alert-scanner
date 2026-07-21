@@ -91,22 +91,10 @@ def request_with_retry(method: str, url: str, *, error_cls=RuntimeError,
         else:
             rate_limited_auth_failure = False
             if resp.status_code in AUTH_FAILURE_CODES:
-                # BUGFIX (2026-07-21, live failure): Angel One returns
-                # 403 for BOTH a genuine bad/expired token AND for
-                # "Access denied because of exceeding access rate" --
-                # its historical-candle endpoint has a strict per-
-                # second rate limit, and scanning 13 symbols in quick
-                # succession hits it. Treating every 403 as an
-                # immediately-fatal auth failure meant a routine,
-                # transient rate limit was triggering broker failover
-                # to Upstox on nearly every run -- discovered only
-                # after fixing the OTHER bug just above (this
-                # function used to discard resp.text entirely on 401/
-                # 403, so the real "exceeding access rate" message was
-                # never visible until that fix landed). A rate-limit
-                # 403 is now retried with backoff, same as a 429; only
-                # a 401/403 WITHOUT rate-limit wording in the body is
-                # treated as a real, non-retryable credentials failure.
+                # See the rate-limit note below -- same underlying
+                # Angel One condition, this is just the 401/403
+                # presentation of it (with the "exceeding access rate"
+                # wording actually present in the body).
                 body_lower = resp.text.lower()
                 if "exceed" in body_lower and ("rate" in body_lower or "limit" in body_lower):
                     rate_limited_auth_failure = True
@@ -116,13 +104,33 @@ def request_with_retry(method: str, url: str, *, error_cls=RuntimeError,
                         f"{resp.text[:300]}"
                     )
 
-            # NOTE: rate_limited_auth_failure deliberately falls into
-            # this same branch as a real 429 below (chained with elif,
-            # not a separate `if`) -- a separate `if` here would let a
-            # rate-limited 401/403 fall through into `elif status >=
-            # 400: raise` further down and get raised immediately
-            # anyway, undoing the retry this whole fix is for.
-            if resp.status_code == 429 or rate_limited_auth_failure:
+            # BUGFIX (2026-07-21, live failure, extended): Angel One's
+            # rate limit on its historical-candle endpoint doesn't
+            # always come back as a 403 with "exceeding access rate"
+            # in the body -- confirmed live, the SAME failure (2
+            # consecutive calls, immediately after a fresh run starts)
+            # also shows up as a 400 with a COMPLETELY EMPTY body. A
+            # genuinely malformed request (wrong params, bad
+            # instrument token) would be expected to say so in the
+            # body; an empty-body 400 from an endpoint we know has a
+            # tight rate limit is far more likely the same throttling
+            # wearing a different status code than a new, structurally
+            # broken request -- so it's retried too, rather than
+            # raised immediately. If this turns out wrong (a REAL
+            # malformed-request 400 also happens to have an empty
+            # body), this will incorrectly retry a few times before
+            # giving up instead of failing instantly -- a small time
+            # cost, not a correctness problem, since max_attempts still
+            # bounds it.
+            empty_body_400 = resp.status_code == 400 and not resp.text.strip()
+
+            # NOTE: rate_limited_auth_failure/empty_body_400 deliberately
+            # fall into this same branch as a real 429 below (chained
+            # with elif, not a separate `if`) -- a separate `if` here
+            # would let them fall through into `elif status >= 400:
+            # raise` further down and get raised immediately anyway,
+            # undoing the retry this whole fix is for.
+            if resp.status_code == 429 or rate_limited_auth_failure or empty_body_400:
                 retry_after = _parse_retry_after(resp)
                 last_exc = error_cls(
                     f"{resp.status_code} rate limited by {url}: {resp.text[:200]}" +
