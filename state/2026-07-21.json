@@ -136,7 +136,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-21T14:37:00+05:30",
+      "last_processed_ts": "2026-07-21T14:46:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -288,6 +288,148 @@
           "grade": "Entry"
         }
       ],
+      "status": "ACTIVE",
+      "final_status": null,
+      "actual_entry_time": "2026-07-21T14:38:00+05:30",
+      "tracked_entry_price": 3.03,
+      "highest_since_entry": 3.03,
+      "lowest_since_entry": 3.0,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": -0.99,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-07-21T14:46:00+05:30",
+      "messages_sent": [
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
+      ],
+      "streak_counted": false
+    },
+    "MIDCPNIFTY-CE-OTM-20260721-1445-01": {
+      "trade_id": "MIDCPNIFTY-CE-OTM-20260721-1445-01",
+      "symbol": "MIDCPNIFTY",
+      "direction": "CE",
+      "moneyness": "OTM",
+      "instrument_key": "NSE_FO|63521",
+      "strike": 14825,
+      "expiry": "2026-07-28",
+      "spot_price": 14809.45,
+      "alert_time": "2026-07-21T14:45:40.454767+05:30",
+      "alert_premium": 120.0,
+      "entry_low": 119.4,
+      "entry_high": 120.6,
+      "stop_loss": 112.57,
+      "target_1": 125.92,
+      "target_2": 128.45,
+      "session": "13:45-15:10",
+      "grade": "Strong Entry",
+      "confidence_stars": "\u2605\u2605\u2605\u2605\u2605",
+      "confidence_label": "Very High",
+      "risk_rating": "\ud83d\udfe1",
+      "risk_label": "Medium",
+      "expected_holding_minutes": [
+        10,
+        20
+      ],
+      "why_reasons": [
+        "\u2713 EMA aligned",
+        "\u2713 Volume Expansion",
+        "\u2713 Strong OI Build-up",
+        "\u2713 Excellent Liquidity",
+        "\u2713 15-minute Confirmed",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable"
+      ],
+      "alternatives": [
+        {
+          "symbol": "HINDALCO",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "Strong Entry"
+        },
+        {
+          "symbol": "HINDALCO",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Strong Entry"
+        },
+        {
+          "symbol": "HINDALCO",
+          "direction": "CE",
+          "moneyness": "OTM",
+          "grade": "Strong Entry"
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "PE",
+          "moneyness": "OTM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "TATASTEEL",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "TATASTEEL",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "VEDL",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "VEDL",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BHEL",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BHEL",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        }
+      ],
       "status": "WAITING_ENTRY",
       "final_status": null,
       "actual_entry_time": null,
@@ -302,7 +444,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-21T14:37:00+05:30",
+      "last_processed_ts": "2026-07-21T14:46:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -311,7 +453,8 @@
   },
   "next_seq": {
     "HINDALCO-CE-ITM": 1,
-    "SAIL-CE-ATM": 1
+    "SAIL-CE-ATM": 1,
+    "MIDCPNIFTY-CE-OTM": 1
   },
   "summary_sent": false,
   "consecutive_sl_streak": 0,
@@ -319,29 +462,33 @@
   "circuit_breaker_notified": false,
   "oi_history": {
     "NSE_FO|61890": 1431000.0,
-    "NSE_FO|61888": 298710.0,
-    "NSE_FO|61886": 345090.0,
-    "NSE_FO|63519": 686280.0,
-    "NSE_FO|63521": 56400.0,
+    "NSE_FO|61888": 285000.0,
+    "NSE_FO|61886": 351540.0,
+    "NSE_FO|63519": 672360.0,
+    "NSE_FO|63521": 58560.0,
     "NSE_FO|63523": 54360.0,
     "NSE_FO|98996": 432600.0,
-    "NSE_FO|101339": 1031800.0,
-    "NSE_FO|98998": 1229900.0,
-    "NSE_FO|38293": 3071650.0,
-    "NSE_FO|152835": 3395950.0,
+    "NSE_FO|101339": 1021300.0,
+    "NSE_FO|98998": 1238300.0,
+    "NSE_FO|38293": 3072800.0,
+    "NSE_FO|152835": 3384450.0,
     "NSE_FO|38299": 6841350.0,
     "NSE_FO|104964": 78551025.0,
     "NSE_FO|102404": 334788900.0,
     "NSE_FO|142322": 474700.0,
-    "NSE_FO|137865": 2476900.0,
-    "NSE_FO|142326": 723800.0,
+    "NSE_FO|137865": 2486300.0,
+    "NSE_FO|142326": 728500.0,
     "NSE_FO|78198": 3365250.0,
-    "NSE_FO|78184": 1661625.0,
-    "NSE_FO|78176": 3711750.0,
+    "NSE_FO|78184": 1656375.0,
+    "NSE_FO|78176": 3646125.0,
     "NSE_FO|91807": 1180000.0,
     "NSE_FO|91149": 2107500.0,
-    "NSE_FO|143955": 1347500.0,
-    "NSE_FO|143957": 4815250.0,
-    "NSE_FO|143959": 18664250.0
+    "NSE_FO|143955": 1333750.0,
+    "NSE_FO|143957": 4790500.0,
+    "NSE_FO|143959": 18650500.0,
+    "NSE_FO|61884": 289560.0,
+    "NSE_FO|63517": 30840.0,
+    "NSE_FO|152833": 1279950.0,
+    "NSE_FO|78173": 1223250.0
   }
 }
