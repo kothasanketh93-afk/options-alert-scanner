@@ -126,9 +126,9 @@
       "final_status": null,
       "actual_entry_time": "2026-07-21T14:32:00+05:30",
       "tracked_entry_price": 18.9,
-      "highest_since_entry": 20.75,
+      "highest_since_entry": 20.8,
       "lowest_since_entry": 18.9,
-      "max_favorable_pct": 9.79,
+      "max_favorable_pct": 10.05,
       "max_adverse_pct": 0.0,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -136,7 +136,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-21T15:19:00+05:30",
+      "last_processed_ts": "2026-07-21T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -293,16 +293,16 @@
       "actual_entry_time": "2026-07-21T14:38:00+05:30",
       "tracked_entry_price": 3.03,
       "highest_since_entry": 3.21,
-      "lowest_since_entry": 2.98,
+      "lowest_since_entry": 2.92,
       "max_favorable_pct": 5.94,
-      "max_adverse_pct": -1.65,
+      "max_adverse_pct": -3.63,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-21T15:19:00+05:30",
+      "last_processed_ts": "2026-07-21T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -444,7 +444,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-21T15:19:00+05:30",
+      "last_processed_ts": "2026-07-21T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -772,7 +772,7 @@
     "FEDERALBNK-CE-ATM": 1,
     "TATASTEEL-CE-ITM": 1
   },
-  "summary_sent": false,
+  "summary_sent": true,
   "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
