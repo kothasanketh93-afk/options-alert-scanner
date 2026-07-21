@@ -9,11 +9,26 @@ what scanner.py, tracker.py, and main.py already call, so introducing
 the broker abstraction (and later, failover) required ZERO changes to
 those three files.
 
-_broker is a FailoverBroker (Angel One primary, Upstox fallback) --
+_broker is a FailoverBroker (Upstox primary, Angel One fallback) --
 see broker_failover.py's module docstring for the failover design.
 Everything in this file that calls _broker.* automatically gets
 failover for free, since FailoverBroker implements the same Broker
 interface as any single concrete broker.
+
+SWAPPED 2026-07-21: Angel One was primary until this date, but its
+getCandleData (historical candle) endpoint hit a sustained rate
+limit ("Access denied because of exceeding access rate") that
+persisted across retries-with-backoff AND a deliberate 1-second
+per-call throttle (see config.ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS)
+-- notably, the failure happened on the very FIRST Angel One call of
+a fresh process, ruling out this process's own call pacing as the
+sole cause. Root cause undetermined (possibly an account-wide limit
+Angel One doesn't publish) -- Upstox served every single request
+reliably throughout that entire debugging session, so it's now
+primary instead of just a fallback. Angel One is kept as the fallback
+broker (not removed) in case its rate limit clears on its own or a
+support ticket resolves it -- swap the constructor args below back
+to restore the old order if so.
 """
 
 from angelone import AngelOneBroker
@@ -26,11 +41,10 @@ from cache import TTLCache
 # angelone.py/upstox.py's instrument-master/option-chain caching
 # actually useful (see cache.py's docstring for why that scope is the
 # right one). FailoverBroker always starts fresh on "primary"
-# (Angel One) every run -- see its docstring for why that's also what
-# gives you automatic restoration with no extra state to maintain.
+# (Upstox, as of 2026-07-21 -- see module docstring above) every run.
 _angelone = AngelOneBroker()
 _upstox = UpstoxBroker()
-_broker = FailoverBroker(_angelone, "AngelOne", _upstox, "Upstox")
+_broker = FailoverBroker(_upstox, "Upstox", _angelone, "AngelOne")
 
 # Underlying-index candles (NOT option candles) are frequently requested
 # more than once per run for the identical (instrument_key, interval)

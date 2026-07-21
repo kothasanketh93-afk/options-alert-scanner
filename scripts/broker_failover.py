@@ -262,10 +262,13 @@ class FailoverBroker(Broker):
         return self._active_name()
 
     def raw_primary(self) -> Broker:
-        """The underlying AngelOneBroker instance, unwrapped -- for
-        checks that must specifically target one broker (e.g.
-        auth.validate_upstox_token() needs the real UpstoxBroker, not
-        this wrapper)."""
+        """The underlying primary broker instance, unwrapped -- for
+        checks that must specifically target one broker regardless of
+        which is currently "primary" vs. "secondary" in this wrapper
+        (e.g. auth.validate_upstox_token() needs the real
+        UpstoxBroker, not this wrapper -- but note market_data.py's
+        get_upstox_broker()/get_angelone_broker() already give you
+        that directly and don't care which one is primary here)."""
         return self._primary
 
     def raw_secondary(self) -> Broker:
