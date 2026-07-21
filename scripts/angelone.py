@@ -71,6 +71,7 @@ before trading real money on this:
 """
 
 import time
+import requests
 from datetime import datetime, timezone, timedelta
 
 from broker import Broker, drop_incomplete_trailing_candle
@@ -105,10 +106,58 @@ _INTERVAL_MAP = {
 _CLIENT_ID_HEADERS = {
     "X-UserType": "USER",
     "X-SourceID": "WEB",
-    "X-ClientLocalIP": "127.0.0.1",
-    "X-ClientPublicIP": "127.0.0.1",
-    "X-MACAddress": "00:00:00:00:00:00",
 }
+
+_cached_public_ip = None
+
+
+def _detect_public_ip() -> str:
+    """
+    BUGFIX (live failure, ongoing as of 2026-07-21): every request to
+    Angel One previously sent X-ClientPublicIP: "127.0.0.1" -- a
+    hardcoded loopback address, obviously not this runner's real IP.
+    Angel One's historical-candle endpoint (getCandleData) appears to
+    reject requests carrying a fake/loopback public IP more often than
+    loginByPassword does, which would explain the exact pattern seen
+    live: login succeeds (JWT returned), but the very next call
+    (getCandleData) fails with a 400/403 that flips between the two
+    codes across runs -- consistent with a fraud/anomaly check on the
+    IP header rather than a credentials problem.
+
+    Looks up this machine's real outbound public IP via a plain HTTP
+    GET to a public IP-echo service (no auth needed) and caches it for
+    the process's lifetime -- it won't change mid-run on a GitHub
+    Actions runner. Falls back to the old loopback placeholder (with a
+    logged warning, not a crash) if every lookup attempt fails, so a
+    network hiccup here degrades back to prior (known-flaky) behavior
+    rather than blocking the whole broker.
+
+    UNVERIFIED as the definite root cause -- this is a strong,
+    well-known Angel One SmartAPI gotcha (fake IP/MAC headers being
+    rejected by some endpoints but not others), but if candle calls
+    still fail after this fix, the X-MACAddress placeholder below or
+    something else entirely may be the real cause instead.
+    """
+    global _cached_public_ip
+    if _cached_public_ip:
+        return _cached_public_ip
+    for url in ("https://api.ipify.org", "https://checkip.amazonaws.com"):
+        try:
+            resp = requests.get(url, timeout=5)
+            resp.raise_for_status()
+            ip = resp.text.strip()
+            if ip:
+                _cached_public_ip = ip
+                return ip
+        except Exception:
+            continue
+    log.warning(
+        "Could not detect real public IP for Angel One request headers -- "
+        "falling back to 127.0.0.1, which may itself cause getCandleData "
+        "to be rejected (see _detect_public_ip()'s docstring)."
+    )
+    _cached_public_ip = "127.0.0.1"
+    return _cached_public_ip
 
 
 class AngelOneBroker(Broker):
@@ -130,6 +179,10 @@ class AngelOneBroker(Broker):
     def _headers(self, authenticated: bool = True) -> dict:
         creds = get_angelone_credentials()
         headers = dict(_CLIENT_ID_HEADERS)
+        public_ip = _detect_public_ip()
+        headers["X-ClientLocalIP"] = public_ip  # no real LAN IP available on a CI runner; using the same real public IP is closer to genuine than a hardcoded loopback
+        headers["X-ClientPublicIP"] = public_ip
+        headers["X-MACAddress"] = "00:00:00:00:00:00"  # still a placeholder -- unlike the IP fields, no live-failure evidence points at this one yet
         headers["X-PrivateKey"] = creds["api_key"]
         headers["Content-Type"] = "application/json"
         headers["Accept"] = "application/json"
