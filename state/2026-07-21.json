@@ -126,9 +126,9 @@
       "final_status": null,
       "actual_entry_time": "2026-07-21T14:32:00+05:30",
       "tracked_entry_price": 18.9,
-      "highest_since_entry": 20.65,
+      "highest_since_entry": 20.75,
       "lowest_since_entry": 18.9,
-      "max_favorable_pct": 9.26,
+      "max_favorable_pct": 9.79,
       "max_adverse_pct": 0.0,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -136,7 +136,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-21T15:03:00+05:30",
+      "last_processed_ts": "2026-07-21T15:07:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -292,9 +292,9 @@
       "final_status": null,
       "actual_entry_time": "2026-07-21T14:38:00+05:30",
       "tracked_entry_price": 3.03,
-      "highest_since_entry": 3.11,
+      "highest_since_entry": 3.19,
       "lowest_since_entry": 2.98,
-      "max_favorable_pct": 2.64,
+      "max_favorable_pct": 5.28,
       "max_adverse_pct": -1.65,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -302,7 +302,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-21T15:03:00+05:30",
+      "last_processed_ts": "2026-07-21T15:07:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -444,7 +444,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-21T15:03:00+05:30",
+      "last_processed_ts": "2026-07-21T15:07:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -612,28 +612,178 @@
         "T2_HIT"
       ],
       "streak_counted": true
+    },
+    "TATASTEEL-CE-ITM-20260721-1505-01": {
+      "trade_id": "TATASTEEL-CE-ITM-20260721-1505-01",
+      "symbol": "TATASTEEL",
+      "direction": "CE",
+      "moneyness": "ITM",
+      "instrument_key": "NSE_FO|143955",
+      "strike": 180,
+      "expiry": "2026-07-28",
+      "spot_price": 187.08,
+      "alert_time": "2026-07-21T15:05:30.029345+05:30",
+      "alert_premium": 7.59,
+      "entry_low": 7.55,
+      "entry_high": 7.63,
+      "stop_loss": 7.09,
+      "target_1": 7.62,
+      "target_2": 7.64,
+      "session": "13:45-15:10",
+      "grade": "Strong Entry",
+      "confidence_stars": "\u2605\u2605\u2605\u2605\u2605",
+      "confidence_label": "Very High",
+      "risk_rating": "\ud83d\udfe2",
+      "risk_label": "Low",
+      "expected_holding_minutes": [
+        10,
+        20
+      ],
+      "why_reasons": [
+        "\u2713 EMA aligned",
+        "\u2713 Above VWAP",
+        "\u2713 Volume Expansion",
+        "\u2713 Strong OI Build-up",
+        "\u2713 Excellent Liquidity",
+        "\u2713 15-minute Confirmed",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable"
+      ],
+      "alternatives": [
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "PE",
+          "moneyness": "OTM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "CE",
+          "moneyness": "OTM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "TATASTEEL",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "HINDALCO",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "HINDALCO",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "HINDALCO",
+          "direction": "CE",
+          "moneyness": "OTM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BHEL",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BHEL",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "BHEL",
+          "direction": "PE",
+          "moneyness": "OTM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "FEDERALBNK",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "Entry"
+        },
+        {
+          "symbol": "FEDERALBNK",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Entry"
+        }
+      ],
+      "status": "ACTIVE",
+      "final_status": null,
+      "actual_entry_time": "2026-07-21T15:06:00+05:30",
+      "tracked_entry_price": 7.6,
+      "highest_since_entry": 7.6,
+      "lowest_since_entry": 7.6,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-07-21T15:07:00+05:30",
+      "messages_sent": [
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
+      ],
+      "streak_counted": false
     }
   },
   "next_seq": {
     "HINDALCO-CE-ITM": 1,
     "SAIL-CE-ATM": 1,
     "MIDCPNIFTY-CE-OTM": 1,
-    "FEDERALBNK-CE-ATM": 1
+    "FEDERALBNK-CE-ATM": 1,
+    "TATASTEEL-CE-ITM": 1
   },
   "summary_sent": false,
   "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
-    "NSE_FO|61890": 1409190.0,
-    "NSE_FO|61888": 273540.0,
-    "NSE_FO|61886": 347340.0,
-    "NSE_FO|63519": 673560.0,
-    "NSE_FO|63521": 57240.0,
-    "NSE_FO|63523": 56040.0,
-    "NSE_FO|98996": 431200.0,
-    "NSE_FO|101339": 1008700.0,
-    "NSE_FO|98998": 1253000.0,
+    "NSE_FO|61890": 1409280.0,
+    "NSE_FO|61888": 271230.0,
+    "NSE_FO|61886": 342600.0,
+    "NSE_FO|63519": 667800.0,
+    "NSE_FO|63521": 57720.0,
+    "NSE_FO|63523": 55320.0,
+    "NSE_FO|98996": 434000.0,
+    "NSE_FO|101339": 1010100.0,
+    "NSE_FO|98998": 1255100.0,
     "NSE_FO|38293": 3059000.0,
     "NSE_FO|152835": 3382150.0,
     "NSE_FO|38299": 6840200.0,
@@ -642,14 +792,14 @@
     "NSE_FO|142322": 474700.0,
     "NSE_FO|137865": 2486300.0,
     "NSE_FO|142326": 733200.0,
-    "NSE_FO|78198": 3325875.0,
-    "NSE_FO|78184": 1627500.0,
-    "NSE_FO|78176": 3635625.0,
+    "NSE_FO|78198": 3315375.0,
+    "NSE_FO|78184": 1622250.0,
+    "NSE_FO|78176": 3630375.0,
     "NSE_FO|91807": 1087500.0,
-    "NSE_FO|91149": 2267500.0,
-    "NSE_FO|143955": 1369500.0,
-    "NSE_FO|143957": 4738250.0,
-    "NSE_FO|143959": 18631250.0,
+    "NSE_FO|91149": 2300000.0,
+    "NSE_FO|143955": 1432750.0,
+    "NSE_FO|143957": 4765750.0,
+    "NSE_FO|143959": 18650500.0,
     "NSE_FO|61884": 287670.0,
     "NSE_FO|63517": 30840.0,
     "NSE_FO|152833": 1279950.0,
