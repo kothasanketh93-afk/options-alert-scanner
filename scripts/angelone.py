@@ -80,7 +80,7 @@ from retry_utils import request_with_retry
 from exceptions import BrokerAPIError, InstrumentNotFound, AuthenticationError
 from cache import TTLCache
 from logging_setup import get_logger
-from config import STOCK_SYMBOLS
+from config import STOCK_SYMBOLS, ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS
 
 IST = timezone(timedelta(hours=5, minutes=30))
 BASE_URL = "https://apiconnect.angelone.in"
@@ -109,20 +109,39 @@ _CLIENT_ID_HEADERS = {
 }
 
 _cached_public_ip = None
+_last_historical_call_ts = 0.0
+
+
+def _throttle_historical_call():
+    """
+    Enforces ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS between
+    consecutive getCandleData calls -- see that config constant's
+    comment for why: retrying after being rate-limited wasn't enough,
+    since the limit is sustained across a whole run's worth of calls,
+    not a one-off burst. Sleeps only as much as needed to reach the
+    minimum spacing; a call that's already naturally slower than the
+    interval (e.g. after a retry's own backoff) doesn't sleep at all.
+    """
+    global _last_historical_call_ts
+    elapsed = time.time() - _last_historical_call_ts
+    remaining = ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS - elapsed
+    if remaining > 0:
+        time.sleep(remaining)
+    _last_historical_call_ts = time.time()
 
 
 def _detect_public_ip() -> str:
     """
-    BUGFIX (live failure, ongoing as of 2026-07-21): every request to
-    Angel One previously sent X-ClientPublicIP: "127.0.0.1" -- a
-    hardcoded loopback address, obviously not this runner's real IP.
-    Angel One's historical-candle endpoint (getCandleData) appears to
-    reject requests carrying a fake/loopback public IP more often than
-    loginByPassword does, which would explain the exact pattern seen
-    live: login succeeds (JWT returned), but the very next call
-    (getCandleData) fails with a 400/403 that flips between the two
-    codes across runs -- consistent with a fraud/anomaly check on the
-    IP header rather than a credentials problem.
+    Every request to Angel One previously sent X-ClientPublicIP:
+    "127.0.0.1" -- a hardcoded loopback address, obviously not this
+    runner's real IP. This was tried as a fix for the getCandleData
+    400/403 failures (2026-07-21) but turned out NOT to be the actual
+    cause -- the real cause was a sustained rate limit on that
+    endpoint (see ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS in
+    config.py and _throttle_historical_call() below). Kept anyway as
+    reasonable hygiene -- sending a real public IP is still more
+    correct than a hardcoded loopback -- but don't expect this
+    function alone to fix a rate-limit-flavored failure.
 
     Looks up this machine's real outbound public IP via a plain HTTP
     GET to a public IP-echo service (no auth needed) and caches it for
@@ -132,11 +151,6 @@ def _detect_public_ip() -> str:
     network hiccup here degrades back to prior (known-flaky) behavior
     rather than blocking the whole broker.
 
-    UNVERIFIED as the definite root cause -- this is a strong,
-    well-known Angel One SmartAPI gotcha (fake IP/MAC headers being
-    rejected by some endpoints but not others), but if candle calls
-    still fail after this fix, the X-MACAddress placeholder below or
-    something else entirely may be the real cause instead.
     """
     global _cached_public_ip
     if _cached_public_ip:
@@ -270,6 +284,7 @@ class AngelOneBroker(Broker):
         """
         if interval not in _INTERVAL_MAP:
             raise BrokerAPIError(f"unsupported interval: {interval}")
+        _throttle_historical_call()
         exchange, token = _split_instrument_key(instrument_key)
 
         since_dt = None

@@ -269,3 +269,19 @@ STALE_DATA_THRESHOLD_MIN = 10
 RETRY_MAX_ATTEMPTS = 3
 RETRY_BACKOFF_SECONDS = 1.5
 RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
+
+# --- Angel One historical-candle throttle (angelone.py) ---
+# BUGFIX (live failure, 2026-07-21): retrying AFTER hitting Angel
+# One's historical-candle rate limit wasn't enough -- confirmed live,
+# the limit is sustained (every retry within the same call, and the
+# next symbol's call right after, kept getting rate-limited too), not
+# a one-off burst that clears itself. The real fix is to space our
+# OWN outgoing requests further apart so we never trigger the limit
+# in the first place. UNVERIFIED exact value -- Angel One doesn't
+# publish a precise number for this specific endpoint as far as this
+# comment's author could confirm; 1.0s (1 request/second) is a
+# deliberately conservative starting point given repeated live
+# failures even faster than that. If Angel One still rate-limits at
+# this spacing, raise it further; if it never does, this can likely
+# be lowered to speed up each run's total scan time.
+ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS = 1.0
