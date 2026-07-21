@@ -90,9 +90,17 @@ def request_with_retry(method: str, url: str, *, error_cls=RuntimeError,
             last_exc = error_cls(f"{method} {url} failed: {exc}")
         else:
             if resp.status_code in AUTH_FAILURE_CODES:
+                # BUGFIX (2026-07-21): this used to discard the actual
+                # response body and always say "token missing/expired/
+                # invalid" -- a guess, not what the broker actually
+                # said. Every OTHER status branch below already
+                # includes resp.text[:200]; auth failures didn't, which
+                # meant real live failures got debugged blind for days
+                # (guessing TOTP/IP/MAC issues) with the real reason
+                # sitting unread in the response body the whole time.
                 raise AuthenticationError(
                     f"{resp.status_code} authenticating against {url} -- "
-                    f"token missing/expired/invalid. Not retrying."
+                    f"{resp.text[:300]}"
                 )
             if resp.status_code == 429:
                 retry_after = _parse_retry_after(resp)
