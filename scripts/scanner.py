@@ -249,7 +249,7 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     underlying_key = resolve_underlying_key(symbol)
     expiry = current_expiry(symbol)
 
-    chain = market_data.get_broker().get_option_chain(underlying_key, expiry)
+    chain = market_data.get_option_chain(underlying_key, expiry)
     leg = _extract_leg(chain, strike, direction)
     if leg is None:
         _logger.info(f"SKIP {symbol} {direction} {moneyness} strike={strike}: leg not found in option chain")

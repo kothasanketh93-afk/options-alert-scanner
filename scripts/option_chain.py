@@ -92,6 +92,26 @@ def resolve_underlying_key(symbol: str) -> str:
 # risk carried across runs.
 _vwap_cache = {}
 
+# BUGFIX (2026-07-23, live perf issue, same incident as _option_chain_cache
+# in market_data.py): current_expiry() calls Broker.get_current_expiry(),
+# which is a live HTTP call on both brokers (Upstox: GET /v2/option/contract;
+# Angel One: a scrip-master lookup) -- not cached at all, regardless of
+# which one is currently primary (see market_data.py's docstring for the
+# current order). detect_setups()/score_strike() call it 3-5+ times per
+# symbol (once in get_atm_strike(), once in resolve_strike_candidates(),
+# once per strike scored), all for the same answer -- expiry can't change
+# mid-run. Keyed by symbol only, same no-cross-run-staleness reasoning as
+# _vwap_cache above.
+_expiry_cache = {}
+
+# Same issue, same fix: get_atm_strike()'s LTP fetch (market_data.get_broker()
+# .get_ltp()) isn't cached either, so it refetches the spot price a second
+# time on the rare run where directional_bias() returns both CE and PE for
+# one symbol. Caching also makes both directions score against the exact
+# same spot read within one cycle, which is arguably more correct, not
+# less. Keyed by symbol.
+_ltp_cache = {}
+
 
 def _futures_vwap(symbol: str):
     if symbol in _vwap_cache:
@@ -218,7 +238,11 @@ def get_atm_strike(symbol: str):
     Returns (atm_strike, spot_price).
     """
     underlying_key = resolve_underlying_key(symbol)
-    spot_price = market_data.get_broker().get_ltp(underlying_key)
+    if symbol in _ltp_cache:
+        spot_price = _ltp_cache[symbol]
+    else:
+        spot_price = market_data.get_broker().get_ltp(underlying_key)
+        _ltp_cache[symbol] = spot_price
 
     try:
         import instrument_master
@@ -272,7 +296,11 @@ def current_expiry(symbol: str) -> str:
     series when reasoning about expiry_theta_ok()'s
     EXPIRY_DAY_THRESHOLD_DAYS window.
     """
-    return market_data.get_broker().get_current_expiry(symbol)
+    if symbol in _expiry_cache:
+        return _expiry_cache[symbol]
+    expiry = market_data.get_broker().get_current_expiry(symbol)
+    _expiry_cache[symbol] = expiry
+    return expiry
 
 
 def days_to_expiry(expiry_date_str: str, now: datetime = None) -> int:

@@ -41,7 +41,7 @@ run at all."
 """
 
 import os
-from datetime import datetime, timezone, timedelta
+from datetime import timezone, timedelta
 
 import auth
 import config_validation

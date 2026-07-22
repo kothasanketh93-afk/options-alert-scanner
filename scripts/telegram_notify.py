@@ -51,6 +51,13 @@ def _time_only(iso_ts: str) -> str:
     except (TypeError, ValueError):
         return str(iso_ts)
 
+
+def _trade_header(trade: dict) -> str:
+    """Shared 'SYMBOL STRIKE DIRECTION (MONEYNESS)' line repeated across
+    every lifecycle message below -- one definition instead of six copies
+    that could silently drift out of sync with each other."""
+    return f"{trade['symbol']} {trade['strike']} {trade['direction']} ({trade['moneyness']})"
+
 # Retry policy (thresholds in config.py, logic in retry_utils.py) is
 # unchanged from before this was centralized: only transient failures
 # (network blips, rate limits, momentary 5xx) are retried; a malformed
@@ -154,7 +161,7 @@ def fmt_new_alert(trade: dict) -> str:
 def fmt_entry_activated(trade: dict) -> str:
     return (
         f"ENTRY ACTIVATED — {trade['display_label']}\n\n"
-        f"{trade['symbol']} {trade['strike']} {trade['direction']} ({trade['moneyness']})\n"
+        f"{_trade_header(trade)}\n"
         f"Entry Time: {_time_only(trade['actual_entry_time'])}\n"
         f"Tracked Entry: ₹{trade['tracked_entry_price']}\n\n"
         f"Target 1: ₹{trade['target_1']}\n"
@@ -167,7 +174,7 @@ def fmt_entry_activated(trade: dict) -> str:
 def fmt_t1_hit(trade: dict, time_taken_min: int) -> str:
     return (
         f"TARGET 1 HIT — {trade['display_label']}\n\n"
-        f"{trade['symbol']} {trade['strike']} {trade['direction']} ({trade['moneyness']})\n"
+        f"{_trade_header(trade)}\n"
         f"Entry Time: {_time_only(trade['actual_entry_time'])}\n"
         f"T1 Hit Time: {_time_only(trade['t1_hit_time'])}\n"
         f"Time Taken: {time_taken_min} minutes\n\n"
@@ -183,7 +190,7 @@ def fmt_t1_hit(trade: dict, time_taken_min: int) -> str:
 def fmt_t2_hit(trade: dict, time_taken_min: int) -> str:
     return (
         f"TARGET 2 HIT — {trade['display_label']}\n\n"
-        f"{trade['symbol']} {trade['strike']} {trade['direction']} ({trade['moneyness']})\n"
+        f"{_trade_header(trade)}\n"
         f"Entry Time: {_time_only(trade['actual_entry_time'])}\n"
         f"T2 Hit Time: {_time_only(trade['t2_hit_time'])}\n"
         f"Time Taken: {time_taken_min} minutes\n\n"
@@ -199,7 +206,7 @@ def fmt_sl_hit(trade: dict, time_taken_min: int) -> str:
     result = "T1 achieved, SL after T2 attempt" if trade["t1_hit"] else "FAILED"
     return (
         f"STOP LOSS HIT — {trade['display_label']}\n\n"
-        f"{trade['symbol']} {trade['strike']} {trade['direction']} ({trade['moneyness']})\n"
+        f"{_trade_header(trade)}\n"
         f"Entry Time: {_time_only(trade['actual_entry_time'])}\n"
         f"SL Time: {_time_only(trade['sl_hit_time'])}\n"
         f"Time Taken: {time_taken_min} minutes\n\n"
@@ -214,7 +221,7 @@ def fmt_sl_hit(trade: dict, time_taken_min: int) -> str:
 def fmt_not_entered(trade: dict) -> str:
     return (
         f"NOT ENTERED (EOD) — {trade['display_label']}\n\n"
-        f"{trade['symbol']} {trade['strike']} {trade['direction']} ({trade['moneyness']})\n"
+        f"{_trade_header(trade)}\n"
         f"Entry Zone: ₹{trade['entry_low']} - ₹{trade['entry_high']}\n"
         f"Never touched during market hours.\n\n"
         f"Status: NOT_ENTERED"
@@ -224,7 +231,7 @@ def fmt_not_entered(trade: dict) -> str:
 def fmt_eod_closed(trade: dict) -> str:
     return (
         f"EOD — TRADE UNRESOLVED — {trade['display_label']}\n"
-        f"{trade['symbol']} {trade['strike']} {trade['direction']} ({trade['moneyness']})\n"
+        f"{_trade_header(trade)}\n"
         f"Entry: ₹{trade['tracked_entry_price']} at {_time_only(trade['actual_entry_time'])}\n"
         f"Last Price: ₹{trade.get('eod_last_price', 'N/A')}\n\n"
         f"Max Favorable: {trade['max_favorable_pct']:+.2f}%\n"
@@ -236,7 +243,7 @@ def fmt_eod_closed(trade: dict) -> str:
 def fmt_ambiguous(trade: dict, candle: dict) -> str:
     return (
         f"AMBIGUOUS CANDLE — MANUAL REVIEW NEEDED — {trade['display_label']}\n"
-        f"{trade['symbol']} {trade['strike']} {trade['direction']} ({trade['moneyness']})\n"
+        f"{_trade_header(trade)}\n"
         f"Both SL and a target level were touched within one 1-min "
         f"candle; order can't be determined from OHLC.\n\n"
         f"Candle: O {candle['open']} H {candle['high']} "
@@ -264,7 +271,6 @@ def _holding_minutes(trade: dict):
     exit_ts = trade.get("t2_hit_time") or trade.get("sl_hit_time")
     if not exit_ts:
         return None
-    from datetime import datetime
     return int((datetime.fromisoformat(exit_ts) - datetime.fromisoformat(entry)).total_seconds() // 60)
 
 
@@ -309,8 +315,8 @@ def fmt_daily_summary(date_str: str, trades: list) -> str:
     if entered:
         best_t = max(entered, key=lambda t: t.get("max_favorable_pct", 0.0))
         worst_t = min(entered, key=lambda t: t.get("max_adverse_pct", 0.0))
-        best_line = f"{best_t['trade_id']} ({best_t.get('max_favorable_pct', 0.0):+.2f}%)"
-        worst_line = f"{worst_t['trade_id']} ({worst_t.get('max_adverse_pct', 0.0):+.2f}%)"
+        best_line = f"{best_t['display_label']} ({best_t.get('max_favorable_pct', 0.0):+.2f}%)"
+        worst_line = f"{worst_t['display_label']} ({worst_t.get('max_adverse_pct', 0.0):+.2f}%)"
 
     # Average holding time across trades with a clear T2/SL resolution.
     holding_times = [m for m in (_holding_minutes(t) for t in trades) if m is not None]

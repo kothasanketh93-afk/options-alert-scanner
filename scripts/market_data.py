@@ -9,26 +9,41 @@ what scanner.py, tracker.py, and main.py already call, so introducing
 the broker abstraction (and later, failover) required ZERO changes to
 those three files.
 
-_broker is a FailoverBroker (Upstox primary, Angel One fallback) --
+_broker is a FailoverBroker (Angel One primary, Upstox fallback) --
 see broker_failover.py's module docstring for the failover design.
 Everything in this file that calls _broker.* automatically gets
 failover for free, since FailoverBroker implements the same Broker
 interface as any single concrete broker.
 
-SWAPPED 2026-07-21: Angel One was primary until this date, but its
-getCandleData (historical candle) endpoint hit a sustained rate
-limit ("Access denied because of exceeding access rate") that
-persisted across retries-with-backoff AND a deliberate 1-second
-per-call throttle (see config.ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS)
--- notably, the failure happened on the very FIRST Angel One call of
-a fresh process, ruling out this process's own call pacing as the
-sole cause. Root cause undetermined (possibly an account-wide limit
-Angel One doesn't publish) -- Upstox served every single request
-reliably throughout that entire debugging session, so it's now
-primary instead of just a fallback. Angel One is kept as the fallback
-broker (not removed) in case its rate limit clears on its own or a
-support ticket resolves it -- swap the constructor args below back
-to restore the old order if so.
+SWAPPED BACK 2026-07-23 (explicit request) -- Angel One is primary
+again, Upstox fallback. History, so the next person editing this
+doesn't re-discover it the hard way:
+  - Originally Angel One primary.
+  - SWAPPED 2026-07-21: Angel One's getCandleData (historical candle)
+    endpoint hit a sustained rate limit ("Access denied because of
+    exceeding access rate") that persisted across retries-with-backoff
+    AND a 1-second per-call throttle -- notably on the very FIRST
+    Angel One call of a fresh process, ruling out this process's own
+    call pacing as the sole cause. Root cause undetermined (possibly
+    an account-wide limit Angel One doesn't publish). Upstox served
+    every request reliably throughout that debugging session, so it
+    became primary.
+  - SWAPPED BACK 2026-07-23: per explicit request, AND because the
+    throttle itself has since been strengthened -- it was previously
+    fixed-interval-only (guaranteed spacing between consecutive calls
+    but never checked a rolling total), and is now a genuine
+    rolling-window limiter enforcing BOTH the 1-second spacing and a
+    real 60-second-window cap (config.ANGELONE_HISTORICAL_MAX_CALLS_PER_MINUTE,
+    see angelone.py's _throttle_historical_call()) -- modeled on
+    OpenAlgo's (github.com/marketcalls/openalgo) own fix for the same
+    class of problem. This is NOT a confirmed fix -- Angel One's own
+    SmartAPI forum separately admits their rate-limit enforcement is
+    inconsistent even for well-under-limit clients, so the original
+    root cause may or may not actually be addressed. Watch the first
+    several live runs' logs for "Access denied because of exceeding
+    access rate" / empty-body 400s on Angel One calls specifically --
+    if it recurs, swap the constructor args below back to Upstox
+    primary again (same one-line change either direction).
 """
 
 from angelone import AngelOneBroker
@@ -41,10 +56,10 @@ from cache import TTLCache
 # angelone.py/upstox.py's instrument-master/option-chain caching
 # actually useful (see cache.py's docstring for why that scope is the
 # right one). FailoverBroker always starts fresh on "primary"
-# (Upstox, as of 2026-07-21 -- see module docstring above) every run.
+# (Angel One, as of 2026-07-23 -- see module docstring above) every run.
 _angelone = AngelOneBroker()
 _upstox = UpstoxBroker()
-_broker = FailoverBroker(_upstox, "Upstox", _angelone, "AngelOne")
+_broker = FailoverBroker(_angelone, "AngelOne", _upstox, "Upstox")
 
 # Underlying-index candles (NOT option candles) are frequently requested
 # more than once per run for the identical (instrument_key, interval)
@@ -55,6 +70,20 @@ _broker = FailoverBroker(_upstox, "Upstox", _angelone, "AngelOne")
 # first one within a run is served from memory instead of hitting the
 # broker again.
 _underlying_candle_cache = TTLCache(ttl_seconds=180)
+
+# BUGFIX (2026-07-23, live perf issue): scanner.score_strike() was
+# calling market_data.get_broker().get_option_chain() directly, once
+# PER STRIKE scored -- up to 3 moneyness buckets x up to 2 directions
+# per symbol, all for the exact same (underlying_key, expiry) chain,
+# which doesn't change within one run. That's up to 6x redundant
+# full-chain refetches per symbol, x ~35 symbols in the shortlist --
+# almost certainly the dominant cost behind runs taking ~2 minutes
+# during market hours (alerts arriving late enough to miss the entry
+# window). Same fix already applied to VWAP (_vwap_cache below) and
+# underlying candles (_underlying_candle_cache above) -- this call
+# site was just missed. Keyed by (underlying_key, expiry_date); same
+# 180s TTL rationale as _underlying_candle_cache above.
+_option_chain_cache = TTLCache(ttl_seconds=180)
 
 
 def get_broker():
@@ -121,6 +150,25 @@ def get_recent_underlying_candles(instrument_key: str, interval: str, count: int
         candles = _broker.get_candles(instrument_key, interval)
         _underlying_candle_cache.set(cache_key, candles)
     return candles[-count:] if len(candles) > count else candles
+
+
+def get_option_chain(underlying_key: str, expiry_date: str) -> list:
+    """
+    Fetches the full option chain for one (underlying_key, expiry_date)
+    -- one row per strike, with instrument_key/oi/volume/bid/ask/delta
+    per leg. Cached per (underlying_key, expiry_date) for this run: the
+    chain doesn't meaningfully change across the several strikes
+    scanner.score_strike() scores for the same symbol within one ~5-min
+    cycle, so every call after the first for a given symbol+expiry is
+    served from memory instead of re-hitting the broker. See
+    _option_chain_cache above for the incident this fixes.
+    """
+    cache_key = (underlying_key, expiry_date)
+    chain = _option_chain_cache.get(cache_key)
+    if chain is None:
+        chain = _broker.get_option_chain(underlying_key, expiry_date)
+        _option_chain_cache.set(cache_key, chain)
+    return chain
 
 
 def get_recent_futures_candles(symbol: str, interval: str, count: int) -> list:

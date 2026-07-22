@@ -71,6 +71,7 @@ before trading real money on this:
 """
 
 import time
+from collections import deque
 import requests
 from datetime import datetime, timezone, timedelta
 
@@ -80,7 +81,10 @@ from retry_utils import request_with_retry
 from exceptions import BrokerAPIError, InstrumentNotFound, AuthenticationError
 from cache import TTLCache
 from logging_setup import get_logger
-from config import STOCK_SYMBOLS, ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS
+from config import (
+    STOCK_SYMBOLS, ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS,
+    ANGELONE_HISTORICAL_MAX_CALLS_PER_MINUTE,
+)
 
 IST = timezone(timedelta(hours=5, minutes=30))
 BASE_URL = "https://apiconnect.angelone.in"
@@ -110,24 +114,52 @@ _CLIENT_ID_HEADERS = {
 
 _cached_public_ip = None
 _last_historical_call_ts = 0.0
+# Rolling window of the last ANGELONE_HISTORICAL_MAX_CALLS_PER_MINUTE
+# call timestamps -- see _throttle_historical_call()'s docstring.
+_historical_call_window = deque()
 
 
 def _throttle_historical_call():
     """
-    Enforces ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS between
-    consecutive getCandleData calls -- see that config constant's
-    comment for why: retrying after being rate-limited wasn't enough,
-    since the limit is sustained across a whole run's worth of calls,
-    not a one-off burst. Sleeps only as much as needed to reach the
-    minimum spacing; a call that's already naturally slower than the
-    interval (e.g. after a retry's own backoff) doesn't sleep at all.
+    BUGFIX (2026-07-23): the previous version of this function only
+    enforced ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS between
+    CONSECUTIVE calls -- fixed-interval spacing, which guarantees at
+    most 60 calls/min as a side effect but never actually checks a
+    rolling per-minute total. Angel One's own SmartAPI forum confirms
+    getCandleData has a SEPARATE 180-requests/minute cap on top of the
+    per-second one (see config.ANGELONE_HISTORICAL_MAX_CALLS_PER_MINUTE's
+    comment) -- a burst pattern that stays >=1s apart per call can
+    still approach that ceiling with zero headroom, and Angel One's
+    own forum separately admits their rate-limit enforcement is
+    inconsistent even for compliant clients. This now enforces BOTH:
+    the per-second minimum spacing (unchanged) AND a genuine rolling
+    60-second window cap, modeled on OpenAlgo's (github.com/marketcalls/
+    openalgo, an open-source Indian-broker trading framework) own
+    fix for the same class of problem -- their data-API throttle
+    commit caps total calls per rolling minute instead of only
+    spacing consecutive ones.
     """
     global _last_historical_call_ts
-    elapsed = time.time() - _last_historical_call_ts
+    now = time.time()
+
+    elapsed = now - _last_historical_call_ts
     remaining = ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS - elapsed
     if remaining > 0:
         time.sleep(remaining)
-    _last_historical_call_ts = time.time()
+        now = time.time()
+
+    while _historical_call_window and now - _historical_call_window[0] >= 60.0:
+        _historical_call_window.popleft()
+    if len(_historical_call_window) >= ANGELONE_HISTORICAL_MAX_CALLS_PER_MINUTE:
+        wait_seconds = 60.0 - (now - _historical_call_window[0])
+        if wait_seconds > 0:
+            time.sleep(wait_seconds)
+        now = time.time()
+        while _historical_call_window and now - _historical_call_window[0] >= 60.0:
+            _historical_call_window.popleft()
+
+    _last_historical_call_ts = now
+    _historical_call_window.append(now)
 
 
 def _detect_public_ip() -> str:

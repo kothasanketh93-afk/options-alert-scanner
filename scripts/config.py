@@ -133,10 +133,13 @@ FALLBACK_STOCK_WATCHLIST = [
 # detect_all_setups()'s per-symbol try/except turns into a clean skip
 # -- see that function's docstring), rather than guessing a step for a
 # stock nobody has verified one for.
+# Updated 2026-07-22 from verify_stock_symbols.py's live CI run against
+# both brokers' instrument masters -- 12 of 15 values below were stale
+# (see the run's MISMATCH lines); HINDALCO/SAIL/FEDERALBNK already matched.
 STOCK_STRIKE_STEP = {
-    "TATASTEEL": 5, "HINDALCO": 10, "VEDL": 10, "JINDALSTEL": 20, "IDEA": 0.5,
-    "SAIL": 2.5, "NATIONALUM": 2.5, "NMDC": 2.5, "BHEL": 5, "FEDERALBNK": 2.5,
-    "BANKBARODA": 5, "PFC": 10, "RECLTD": 10, "ASHOKLEY": 5, "MOTHERSON": 2.5,
+    "TATASTEEL": 2.5, "HINDALCO": 10, "VEDL": 5, "JINDALSTEL": 10, "IDEA": 1.0,
+    "SAIL": 2.5, "NATIONALUM": 5, "NMDC": 1.0, "BHEL": 2.5, "FEDERALBNK": 2.5,
+    "BANKBARODA": 1.0, "PFC": 5, "RECLTD": 5, "ASHOKLEY": 2.5, "MOTHERSON": 0.5,
 }
 STRIKE_STEP.update(STOCK_STRIKE_STEP)
 
@@ -476,11 +479,30 @@ RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 # next symbol's call right after, kept getting rate-limited too), not
 # a one-off burst that clears itself. The real fix is to space our
 # OWN outgoing requests further apart so we never trigger the limit
-# in the first place. UNVERIFIED exact value -- Angel One doesn't
-# publish a precise number for this specific endpoint as far as this
-# comment's author could confirm; 1.0s (1 request/second) is a
-# deliberately conservative starting point given repeated live
-# failures even faster than that. If Angel One still rate-limits at
-# this spacing, raise it further; if it never does, this can likely
-# be lowered to speed up each run's total scan time.
+# in the first place.
+#
+# CONFIRMED 2026-07-23 (was UNVERIFIED before -- see angelone.py's
+# _throttle_historical_call() for the fix this enables): Angel One's
+# own SmartAPI forum (smartapi.angelone.in/smartapi/forum, RateLimit
+# docs + admin reply on "Changes in API Rate Limit") confirms
+# getCandleData is subject to TWO separate caps, not one:
+#   1. 1 request/second (this constant)
+#   2. 180 requests/MINUTE -- "an additional cap on top of the
+#      per-second ratelimit" (Angel One admin's own words) -- a
+#      rolling-window cap the previous fixed-interval-only throttle
+#      never checked, only guaranteed <=60/min as a side effect of the
+#      1s spacing, with no headroom and no defense against other
+#      Angel One API calls (LTP, option chain, expiry) sharing the
+#      same account-wide bucket.
+# A SEPARATE Angel One forum thread ("API Rate Limit checks are not
+# perfect") reports clients running at 3-4x UNDER the documented limit
+# still receiving spurious 403 "exceeding access rate" errors -- i.e.
+# Angel One's own enforcement is inconsistent, not just this codebase
+# under-throttling. ANGELONE_HISTORICAL_MAX_CALLS_PER_MINUTE below is
+# set well under the documented 180 ceiling for that reason (same
+# margin-for-safety approach OpenAlgo -- github.com/marketcalls/openalgo,
+# an open-source Indian-broker trading framework -- takes: their own
+# historical-data throttle commit caps at 120/min against a similarly
+# generous documented ceiling elsewhere).
 ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS = 1.0
+ANGELONE_HISTORICAL_MAX_CALLS_PER_MINUTE = 100

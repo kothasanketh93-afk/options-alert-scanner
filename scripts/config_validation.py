@@ -100,10 +100,13 @@ def validate_startup_config(require_github: bool = True, require_upstox: bool = 
     import config as _config
     if getattr(_config, "STOCK_SYMBOLS", None):
         print(
-            "[config_validation] REMINDER: config.STOCK_SYMBOLS/"
-            "STOCK_STRIKE_STEP are UNVERIFIED placeholders -- confirm each "
-            "symbol is still NSE F&O-eligible (this list is revised every "
-            "quarter) and each strike step against a live downloaded "
-            "instrument master before trusting stock alerts unattended. "
+            "[config_validation] REMINDER: config.STOCK_STRIKE_STEP was last "
+            "verified 2026-07-22 via verify_stock_symbols.py's live CI run "
+            "(.github/workflows/verify-config.yml) -- 12 of 15 values were "
+            "corrected then. That check only re-runs if a matching quarterly "
+            "job exists on the cron-job.org dashboard (see \"Cron scheduling\" "
+            "in README.md) -- if not, these values will silently drift stale "
+            "again next quarter. Re-run verify_stock_symbols.py manually if "
+            "it's been a while, or if config.STOCK_SYMBOLS has changed since. "
             f"Currently configured: {_config.STOCK_SYMBOLS}"
         )

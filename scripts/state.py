@@ -34,6 +34,12 @@ STATE_DIR = "state"
 REPO_ROOT = Path(__file__).resolve().parent.parent
 STATE_CLONE_DIR = REPO_ROOT / ".state_branch"
 
+# Statuses that count as a still-live/exposed position (not yet resolved).
+# T1_HIT is included: a trade that hit T1 and is still tracking toward T2
+# is still open, not terminal. Shared by has_open_trade() and
+# count_open_trades() so the definition of "open" can't drift between them.
+OPEN_STATUSES = ("WAITING_ENTRY", "ACTIVE", "T1_HIT")
+
 
 def ist_now() -> datetime:
     return datetime.now(IST)
@@ -338,7 +344,7 @@ def has_open_trade(state: dict, symbol: str, direction: str) -> bool:
         if (
             t["symbol"] == symbol
             and t["direction"] == direction
-            and t["status"] in ("WAITING_ENTRY", "ACTIVE", "T1_HIT")
+            and t["status"] in OPEN_STATUSES
         ):
             return True
     return False
@@ -352,10 +358,7 @@ def count_open_trades(state: dict) -> int:
     it's tracker.py's status label for "not yet resolved", not a
     terminal state.
     """
-    return sum(
-        1 for t in state["trades"].values()
-        if t["status"] in ("WAITING_ENTRY", "ACTIVE", "T1_HIT")
-    )
+    return sum(1 for t in state["trades"].values() if t["status"] in OPEN_STATUSES)
 
 
 def concurrent_limit_reached(state: dict, max_concurrent: int = MAX_CONCURRENT_TRADES) -> bool:
