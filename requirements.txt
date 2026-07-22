@@ -1,2 +1,8 @@
-requests>=2.31.0
-pyotp>=2.9.0
+# Pinned to EXACT versions (2026-07-23) instead of the previous ">=" floors --
+# trader.yml runs `pip install -r requirements.txt` fresh on every single
+# invocation with no lockfile, so an unpinned floor means a new major/minor
+# release of either package could silently change behavior mid-trading-day
+# with zero code change on your end. Bump these deliberately (test locally,
+# then update the pin) rather than letting pip pick whatever's newest each run.
+requests==2.31.0
+pyotp==2.9.0

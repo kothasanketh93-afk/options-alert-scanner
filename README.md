@@ -18,7 +18,7 @@ server, no card details, minimal GitHub Actions usage.
 | `scripts/broker.py` | Abstract broker interface (`get_candles`, `get_ltp`, `get_option_chain`, `search_instrument`, `get_current_expiry`). Both `angelone.py` and `upstox.py` implement this — scanner.py/tracker.py never know which one actually served a call. Also documents two non-abstract conventions both concrete brokers should implement if they support futures/stocks: `resolve_current_month_future()` and `resolve_equity_instrument_key()`. |
 | `scripts/angelone.py` | Concrete Angel One SmartAPI implementation of `broker.py` — the **primary** broker. Automated TOTP login, no manual step ever. Now handles both index (`OPTIDX`/`FUTIDX`) and stock (`OPTSTK`/`FUTSTK`) instrument-type codes for `config.STOCK_SYMBOLS` — see `_option_instrument_type()`/`_future_instrument_type()`. |
 | `scripts/upstox.py` | Concrete Upstox implementation of `broker.py` — now the **fallback** broker, used only when Angel One is unhealthy. Resolves stock underlyings dynamically via `resolve_equity_instrument_key()` (instrument master lookup) rather than a hardcoded key. |
-| `scripts/broker_failover.py` | Wraps both brokers behind the same `Broker` interface. As of 2026-07-21, Upstox is primary and Angel One is fallback (swapped from the original Angel-One-primary design — see "Bugs found and fixed" #10) — switches to the fallback after consecutive primary failures (auth, timeout, empty/stale data, rate limits, etc.), logs every switch, and automatically tries the primary first again on the next run — no persisted cross-run state needed. Passes through `resolve_current_month_future()` and `resolve_equity_instrument_key()` (both `count_failures=False`, same as other data-specific lookups). See its module docstring for the full design and reasoning. |
+| `scripts/broker_failover.py` | Wraps both brokers behind the same `Broker` interface. As of 2026-07-23, Angel One is primary again and Upstox is fallback (swapped back from the 2026-07-21 Upstox-primary change — see "Bugs found and fixed" #10 and its follow-up note) — switches to the fallback after consecutive primary failures (auth, timeout, empty/stale data, rate limits, etc.), logs every switch, and automatically tries the primary first again on the next run — no persisted cross-run state needed. Passes through `resolve_current_month_future()` and `resolve_equity_instrument_key()` (both `count_failures=False`, same as other data-specific lookups). See its module docstring for the full design and reasoning. |
 | `scripts/cache.py` | Tiny in-process TTL cache (instrument master, option chain, underlying candles) scoped to one GitHub Actions run. |
 | `scripts/logging_setup.py` | Structured logging to named channels, written to stdout (captured by the Actions run log) rather than to disk files that would vanish with the ephemeral runner — see its docstring for the reasoning and how to add persisted log artifacts if you want them later. |
 | `scripts/state.py` | Loads/saves the daily state file via the `state` git branch; generates Trade IDs; same-symbol+direction suppression check; **circuit breaker + concurrent trade cap**; **auto-recovers from a corrupted state file** instead of crashing. |
@@ -446,6 +446,25 @@ both now fixed and verified with simulation:
     specific, and was previously worded as if it always returned
     Angel One specifically.
 
+    **FOLLOW-UP (2026-07-23): swapped back to Angel One primary, per
+    explicit request.** Two things changed since the above: (a)
+    Angel One's own SmartAPI forum was found to confirm `getCandleData`
+    has a genuine separate 180-requests/MINUTE cap on top of the
+    1-request/second one, and a different forum thread separately
+    admits Angel One's own rate-limit enforcement is inconsistent even
+    for well-under-limit clients; (b) `angelone.py`'s throttle was
+    upgraded from fixed-interval-only spacing to a real rolling
+    60-second-window limiter enforcing both caps
+    (`config.ANGELONE_HISTORICAL_MAX_CALLS_PER_MINUTE`), modeled on
+    OpenAlgo's (github.com/marketcalls/openalgo) own fix for the same
+    problem. This is a genuine strengthening, not just re-flipping a
+    switch -- but it's **not a confirmed fix**, since the original rate
+    limit's root cause was never pinned down. Watch the first several
+    live runs closely for "Access denied because of exceeding access
+    rate" / empty-body 400s specifically on Angel One calls; if it
+    recurs, swap `market_data.py`'s `FailoverBroker` constructor args
+    back to Upstox-primary (same one-line change either direction).
+
 11. **Telegram messages showed full ISO timestamps with date and
     `+05:30` offset instead of just a clock time (2026-07-21).**
     `tracker.py` stores `actual_entry_time`/`t1_hit_time`/
@@ -766,24 +785,32 @@ after a week of live runs and this can be recalculated precisely.
     scanning — it only matters once stock
     alerts start firing.
 
-2b. **RESOLVED (worked around) 2026-07-21 — Angel One historical-candle
-    calls were rate-limited, not an auth/credentials problem.**
-    `verify_angelone_login.py` confirmed login itself always succeeded;
-    the actual failure (visible only after fixing `retry_utils.py`'s
-    swallowed error body — see "Bugs found and fixed" #8) was Angel
-    One's `"Access denied because of exceeding access rate"` on
-    `getCandleData`, sometimes presenting as a 403 with that text and
-    sometimes as a 400 with an empty body. A 1-second per-call
-    throttle (`config.ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS`)
-    didn't fully clear it — the limit persisted even on a fresh
-    process's very first call, pointing at an account-wide or
-    cross-workflow limit outside this codebase's visibility rather
-    than this process's own call pacing. Rather than keep chasing an
-    undocumented limit, Upstox is now primary and Angel One is
-    fallback (see "Bugs found and fixed" #10) — Upstox served every
-    request reliably throughout the whole debugging session. Angel
-    One is kept as fallback, not removed, in case the limit clears or
-    a support ticket resolves it.
+2b. **RE-OPENED 2026-07-23 — Angel One is primary again; watch closely
+    for a recurrence.** Original issue (2026-07-21): `verify_angelone_login.py`
+    confirmed login itself always succeeded; the actual failure
+    (visible only after fixing `retry_utils.py`'s swallowed error body
+    — see "Bugs found and fixed" #8) was Angel One's `"Access denied
+    because of exceeding access rate"` on `getCandleData`, sometimes
+    presenting as a 403 with that text and sometimes as a 400 with an
+    empty body. A 1-second per-call throttle
+    (`config.ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS`) didn't fully
+    clear it then — the limit persisted even on a fresh process's very
+    first call, pointing at an account-wide or cross-workflow limit
+    outside this codebase's visibility. That led to swapping Upstox to
+    primary (see "Bugs found and fixed" #10). **Swapped back to Angel
+    One primary 2026-07-23, per explicit request**, alongside a real
+    fix rather than just re-flipping the switch: Angel One's own
+    SmartAPI forum confirms `getCandleData` has a genuine separate
+    180-requests/minute cap (not just the 1/second one), so the
+    throttle was upgraded from fixed-interval spacing to a real
+    rolling-window limiter enforcing both
+    (`config.ANGELONE_HISTORICAL_MAX_CALLS_PER_MINUTE`, see
+    "Bugs found and fixed" #10's follow-up note and
+    `angelone.py`'s `_throttle_historical_call()`). Still **not
+    confirmed** to fully resolve it — the original root cause was
+    never pinned down, and Angel One's own forum separately admits
+    their enforcement is inconsistent even for compliant clients.
+    Watch the first several live runs' logs closely.
 
 3. **Verify the Upstox candle endpoint** in `scripts/market_data.py`
    against Upstox's current API docs. I've used the standard v2
