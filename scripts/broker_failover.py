@@ -258,6 +258,57 @@ class FailoverBroker(Broker):
     def resolve_current_month_future(self, symbol: str) -> str:
         return self._call("resolve_current_month_future", symbol, count_failures=False)
 
+    def resolve_and_fetch_current_month_future_candles(self, symbol: str, interval: str) -> list:
+        """
+        BUGFIX (2026-07-22, live failure): resolve_current_month_future()
+        and get_candles() used to be called as two INDEPENDENT _call()s
+        from option_chain.py's _futures_vwap(). Each one independently
+        decides primary vs. secondary based on the CURRENT
+        _active_is_primary flag at the moment IT runs -- so a
+        resolve-time single-call fallback to secondary (which never
+        flips _active_is_primary, by design -- see resolve_current_month_
+        future()'s count_failures=False above) could hand back an
+        instrument_key in the SECONDARY broker's format, which the very
+        next get_candles() call -- still routed to primary, since the
+        flag never flipped -- then sent to the PRIMARY broker's API.
+        Instrument keys are broker-specific (Upstox: "NSE_FO|<key>",
+        Angel One: "NFO|<token>"), so mixing them produces a
+        guaranteed-invalid request. This is exactly what happened live:
+        GitHub Actions run 2026-07-22T09:20:41Z shows
+        "Upstox.resolve_current_month_future failed (single-call
+        fallback...)" immediately followed by a 400 from Upstox's API
+        for instrument key "NFO|61303" -- an Angel One-formatted key
+        (Angel One was the secondary that resolved it) sent to Upstox
+        (which was, and remained, primary) on the very next call.
+
+        This method makes resolution + fetch ONE atomic broker choice --
+        whichever broker resolves the key is guaranteed to be the same
+        broker that fetches candles for it. Returns the RAW (unsliced)
+        candle list, same shape get_candles() returns -- callers that
+        want only the most recent N candles slice it themselves (see
+        market_data.get_recent_futures_candles()).
+        """
+        if self._active_is_primary:
+            try:
+                key = self._primary.resolve_current_month_future(symbol)
+                candles = self._primary.get_candles(key, interval)
+            except _FAILOVER_TRIGGERS as exc:
+                log.warning(
+                    "%s.resolve_and_fetch_current_month_future_candles failed "
+                    "(single-call fallback only, not counted toward the "
+                    "failover streak -- primary stays active for other "
+                    "calls): %s: %s",
+                    self._primary_name, type(exc).__name__, exc
+                )
+                key = self._secondary.resolve_current_month_future(symbol)
+                candles = self._secondary.get_candles(key, interval)
+            else:
+                self._record_primary_success()
+        else:
+            key = self._secondary.resolve_current_month_future(symbol)
+            candles = self._secondary.get_candles(key, interval)
+        return candles
+
     def resolve_equity_instrument_key(self, symbol: str) -> str:
         # Same reasoning as resolve_current_month_future() above: a
         # missing/mismatched equity row is data-specific, not a
