@@ -39,6 +39,41 @@ server, no card details, minimal GitHub Actions usage.
 | `.github/workflows/trader.yml` | Main job: scanner + tracker, 5-min IST schedule (15-min during the lunch gap), concurrency-protected |
 | `.github/workflows/heartbeat.yml` | Runs every 30 min independently, alerts if state branch goes stale |
 | `.github/workflows/premarket.yml` | Runs once daily at 09:00 IST, own workflow, own concurrency group |
+| `.github/workflows/verify-config.yml` | `workflow_dispatch` only, triggered quarterly by an external cron-job.org job (see "Cron scheduling" below); posts a Telegram summary only on failure |
+
+## Cron scheduling
+
+None of the workflows above use GitHub Actions' native `schedule:`
+trigger — every `.yml` file is `workflow_dispatch`-only, and actual
+timing is driven by an external service, **cron-job.org**, whose jobs
+call the GitHub API's workflow-dispatch endpoint directly on a
+schedule cron-job.org controls (visible on the cron-job.org
+dashboard as `Trader-1` through `Trader-8`, `Heartbeat-1`/`Heartbeat-2`,
+`Premarket-1`, and now `verify-config`'s own job). Each call is an
+authenticated `POST` like:
+
+```
+POST https://api.github.com/repos/<owner>/<repo>/actions/workflows/<workflow-file>/dispatches
+Headers: Authorization: token <GITHUB_TOKEN>, Accept: application/vnd.github+json
+Body: {"ref": "main"}
+```
+
+Most likely reason for this over native `schedule:`: GitHub's own cron
+scheduler can queue/drift by several minutes under platform load,
+which is tolerable for a once-a-day or 30-min job but not for
+`trader.yml`'s 5-min scan cadence during market hours — splitting the
+trading day across 8 separate cron-job.org jobs (`Trader-1..8`,
+apparently one per time-slot) rather than one recurring job is
+presumably the same precision consideration, though the exact
+per-job time-slot breakdown lives in the cron-job.org dashboard, not
+in this repo.
+
+**Implication for anyone editing a workflow's timing**: changing a
+`.yml` file's trigger comment or adding a `schedule:` block here does
+**nothing** by itself — the actual schedule change has to be made on
+the cron-job.org dashboard (Cronjobs → the relevant job → Edit). Two
+places to keep in sync, not one.
+
 
 ## Phase 1–3 status (100-stock expansion + Trade Score Engine)
 
@@ -136,24 +171,38 @@ strike's OI/volume/delta is read individually rather than copying the
 ATM score across strikes — ITM and OTM have materially different risk
 profiles and should be scored on their own numbers.
 
-## Mid/smallcap stock options (added 2026-07-17)
+## Mid/smallcap stock options (added 2026-07-17, superseded by Phase 1)
 
-`config.SYMBOLS` now includes 10 stocks in addition to NIFTY/
-BANKNIFTY/MIDCPNIFTY: `TATASTEEL`, `HINDALCO`, `VEDL`, `JINDALSTEL`,
-`IDEA`, `SAIL`, `NATIONALUM`, `NMDC`, `BHEL`, `FEDERALBNK`
-(`config.STOCK_SYMBOLS`). `scanner.py`/`option_chain.py` already scan
-them the same way as the indices — no per-symbol code branching
-needed on that side.
+`config.SYMBOLS` includes stock options in addition to NIFTY/
+BANKNIFTY/MIDCPNIFTY. `scanner.py`/`option_chain.py` scan them the
+same way as the indices — no per-symbol code branching needed on
+that side.
 
-This list went through two revisions after live failures (see "Bugs
-found and fixed" below): `PNB` and `CANBK` were both dropped after
-repeatedly failing futures-contract resolution live. The current 10
-were chosen for historically high, consistent option/futures volume
-(metals/PSU/telecom names) specifically to reduce the odds of hitting
-the same thin-liquidity-driven data gaps again — this is a risk
-reduction, not a guarantee; still run `verify_stock_symbols.py`
-before trusting any of them unattended. **`IDEA` is a special case**:
-its share price is very low (~₹7-10), close enough to
+**This started as a fixed list, now it's dynamic** (full detail in
+"Phase 1–3 status" above): `config.STOCK_SYMBOLS` is refreshed every
+day via `config.refresh_symbols_for_today()` from Phase 1's computed
+opportunity shortlist — the top `config.TOP_N_STOCKS` (35) scored out
+of the ~100-stock `universe.MASTER_UNIVERSE`. The original fixed list
+now lives on as `config.FALLBACK_STOCK_WATCHLIST` — 15 symbols
+(`TATASTEEL`, `HINDALCO`, `VEDL`, `JINDALSTEL`, `IDEA`, `SAIL`,
+`NATIONALUM`, `NMDC`, `BHEL`, `FEDERALBNK`, `BANKBARODA`, `PFC`,
+`RECLTD`, `ASHOKLEY`, `MOTHERSON`) — used only as a safety net on a
+day the shortlist cache is missing (premarket pipeline hasn't run, or
+failed), so a bad day degrades to the old fixed-list behavior rather
+than scanning nothing.
+
+This fallback list went through two revisions after live failures
+(see "Bugs found and fixed" below): `PNB` and `CANBK` were both
+dropped after repeatedly failing futures-contract resolution live,
+before it grew to its current 15. These were chosen for historically
+high, consistent option/futures volume (metals/PSU/telecom/banking
+names) specifically to reduce the odds of hitting the same
+thin-liquidity-driven data gaps again — this is a risk reduction, not
+a guarantee. `.github/workflows/verify-config.yml` runs
+`verify_stock_symbols.py` quarterly to catch drift automatically
+across BOTH the fallback list and the live `universe.MASTER_UNIVERSE`
+pool, and you can also run it manually anytime. **`IDEA` is a special
+case**: its share price is very low (~₹7-10), close enough to
 `STOCK_MIN_PREMIUM` that it may get rejected by the liquidity gate
 more often than the others — watch its `GATE`/`SCORE` log lines
 specifically for the first few days.
@@ -181,13 +230,31 @@ What's different for stocks vs. indices, and where it's handled:
 
 - **`verify_stock_symbols.py`** (repo root) — downloads the same two
   public instrument masters `upstox.py`/`angelone.py` use at runtime
-  (no broker login needed) and checks, per symbol in `STOCK_SYMBOLS`:
-  does an equity row actually resolve, is it currently F&O-eligible,
-  and does the real strike interval match `STOCK_STRIKE_STEP`. Run
-  with `python verify_stock_symbols.py` after `pip install requests`,
-  and again after every NSE quarterly F&O review. Can't check Angel
-  One's strike-divisor heuristic (below) since that needs a live-quote
-  sanity check, not just the raw master.
+  (no broker login needed) and checks: the full `FALLBACK_STOCK_WATCHLIST`
+  (equity resolution, F&O eligibility, and strike interval vs.
+  `STOCK_STRIKE_STEP`), plus every remaining symbol in
+  `universe.MASTER_UNIVERSE` (equity/F&O eligibility only, since most
+  don't have a hand-verified strike step configured) — this second set
+  matters because on most days the live `STOCK_SYMBOLS` list is Phase 1's
+  computed shortlist out of the ~100-stock universe, not the fixed
+  fallback 15 (see `config.refresh_symbols_for_today()`). Both symbol
+  sets and the configured strike steps are imported directly from
+  `config.py`/`universe.py`, not hand-copied, so this script can't drift
+  out of sync with them. Run manually with `python verify_stock_symbols.py`
+  after `pip install requests`, or via `.github/workflows/verify-config.yml`
+  (below). Can't check Angel One's strike-divisor heuristic (below) since
+  that needs a live-quote sanity check, not just the raw master.
+- **`.github/workflows/verify-config.yml`** — runs `verify_stock_symbols.py`
+  on `workflow_dispatch` only, triggered quarterly by an external
+  **cron-job.org** job (same scheduling mechanism as `Heartbeat-1/2`,
+  `Premarket-1`, and `Trader-1..8` on the cron-job.org dashboard — this
+  project does NOT use GitHub Actions' native `schedule:` trigger
+  anywhere, see "Cron scheduling" below) calling the GitHub API's
+  workflow-dispatch endpoint directly, plus manual dispatch from the
+  Actions tab anytime. On any failure it posts a summary to Telegram via
+  `telegram_notify.py` (`TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID` secrets,
+  same as the main scanner alerts) — a clean pass stays silent, so this
+  doesn't add noise to the channel.
 - **`scripts/verify_angelone_login.py`** + **`.github/workflows/
   verify_angelone.yml`** — tests ONLY the Angel One login step
   (clientcode+PIN+TOTP), via a manual `workflow_dispatch` run, without
@@ -219,19 +286,26 @@ lowered, from 65 to 60, on 2026-07-17 while testing for near-miss
 alerts — see that comment for the caveat on what this does and
 doesn't fix).
 
-**Runtime / Actions-minutes impact**: `SYMBOLS` goes from 3 entries
-to 13 with this change — each extra symbol is its own set of broker
-calls per run (candles, option chain, VWAP futures resolution, ATM
-strike), so per-run wall-clock time will rise noticeably above the
-~40–55s figure the "GitHub Actions minutes budget" section below was
-measured against, and `trader.yml`'s `timeout-minutes: 10` has less
-headroom than it did at 3 symbols. No `.yml` file needed a code
-change for the stock symbols themselves (nothing in
-`.github/workflows/*.yml` hardcodes a symbol list or count), but
-re-check actual measured runtime (Settings → Billing and plans →
-Plans and usage → Actions minutes) after a week of live 13-symbol
-runs, the same way that section already recommends doing after any
-schedule change.
+**Runtime / Actions-minutes impact**: at the original 2026-07-17
+change, `SYMBOLS` went from 3 entries to 13 (3 indices + the fixed
+10-stock list back then). **Since Phase 1, this is higher and
+variable, not fixed**: `SYMBOLS` is now 3 indices +
+`config.TOP_N_STOCKS` (35) on a normal day the opportunity shortlist
+computed successfully, or 3 + 15 on a fallback day
+(`FALLBACK_STOCK_WATCHLIST`) — i.e. up to 38 entries, not 13. Each
+extra symbol is its own set of broker calls per run (candles, option
+chain, VWAP futures resolution, ATM strike), so per-run wall-clock
+time is well above the ~40–55s figure the "GitHub Actions minutes
+budget" section below was measured against, and `trader.yml`'s
+`timeout-minutes: 10` has much less headroom than it did at 3
+symbols. No `.yml` file needed a code change for the stock symbols
+themselves (nothing in `.github/workflows/*.yml` hardcodes a symbol
+list or count), but re-check actual measured runtime (Settings →
+Billing and plans → Plans and usage → Actions minutes) after a week
+of live ~38-symbol runs, the same way that section already
+recommends doing after any schedule change. If runtime becomes a
+problem, `config.TOP_N_STOCKS` is the lever to pull down before
+touching the schedule itself.
 
 ## Heartbeat check
 
@@ -676,13 +750,21 @@ after a week of live runs and this can be recalculated precisely.
    stay in sync.
 
 2a. **Verify `config.STOCK_SYMBOLS` before trusting stock alerts** —
-    confirm each of the 10 symbols is still NSE F&O-eligible (revised
-    quarterly), confirm `STOCK_STRIKE_STEP` against a downloaded
-    instrument file, and spot-check Angel One's strike-divisor
-    detection on a real strike for each symbol (see "Mid/smallcap
-    stock options" above). None of this blocks NIFTY/BANKNIFTY/
-    MIDCPNIFTY scanning — it only matters once stock alerts start
-    firing.
+    `.github/workflows/verify-config.yml` runs `verify_stock_symbols.py`
+    on `workflow_dispatch`, confirming every symbol in both
+    `config.FALLBACK_STOCK_WATCHLIST` (15 symbols) and
+    `universe.MASTER_UNIVERSE` (~100 symbols) is still NSE
+    F&O-eligible (revised quarterly), confirming `STOCK_STRIKE_STEP`
+    against a downloaded instrument file, and posting a Telegram
+    summary if anything fails. **This only runs on a schedule once you
+    add a matching quarterly job on the cron-job.org dashboard** (see
+    "Cron scheduling" above) — the `.yml` file alone won't trigger
+    itself. Still spot-check Angel One's strike-divisor detection
+    manually on a real strike for each symbol (see "Mid/smallcap
+    stock options" above) — that needs a live quote, not just the
+    instrument master. None of this blocks NIFTY/BANKNIFTY/MIDCPNIFTY
+    scanning — it only matters once stock
+    alerts start firing.
 
 2b. **RESOLVED (worked around) 2026-07-21 — Angel One historical-candle
     calls were rate-limited, not an auth/credentials problem.**
