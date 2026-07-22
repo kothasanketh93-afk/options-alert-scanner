@@ -117,7 +117,7 @@ MASTER_UNIVERSE = [
     {"symbol": "SIEMENS", "sector": "INFRA"},
     {"symbol": "ABB", "sector": "INFRA"},
     {"symbol": "CUMMINSIND", "sector": "INFRA"},
-    {"symbol": "GMRINFRA", "sector": "INFRA"},
+    {"symbol": "GMRAIRPORT", "sector": "INFRA"},  # renamed from GMRINFRA post GMR Group's airport/non-airport demerger -- confirmed 2026-07-22 via verify_stock_symbols.py showing GMRINFRA fully missing (equity+F&O, both brokers) plus a web search confirming the NSE symbol change
     {"symbol": "IRCTC", "sector": "INFRA"},
     {"symbol": "CONCOR", "sector": "INFRA"},
 
