@@ -88,6 +88,40 @@ class Broker(ABC):
         """Last traded price for one instrument."""
         raise NotImplementedError
 
+    # Added for Phase 1 (opportunity_score.py). get_candles() above only
+    # supports intraday intervals (_INTERVAL_UNIT_VALUE on Upstox /
+    # _INTERVAL_MAP on Angel One both stop at 15minute) -- Phase 1's
+    # scoring inputs (previous-day range, ATR, 5-day momentum, RVOL
+    # baseline) all need DAILY bars, which is a genuinely separate
+    # broker endpoint on both brokers, not a wider intraday window. Not
+    # abstract (mirrors resolve_current_month_future()'s reasoning) --
+    # but any broker used for Phase 1 scoring must implement:
+    #
+    #   def get_daily_candles(self, instrument_key: str, count: int) -> list: ...
+    #
+    # Same row shape as get_candles(): ascending-sorted OHLCV dicts
+    # with "timestamp"/"open"/"high"/"low"/"close"/"volume". Callers
+    # (market_data.get_recent_daily_candles()) treat count as "at
+    # least this many trading days back", same slicing convention as
+    # get_recent_underlying_candles().
+
+    # Added for Phase 1. A batch quote call across ~100 symbols in ONE
+    # request instead of ~100 individual get_ltp() calls -- this is
+    # the actual runtime/API-call lever the "don't fully analyze all
+    # 100 stocks" requirement depends on (see opportunity_score.py's
+    # module docstring). Not abstract, same reasoning as above:
+    #
+    #   def get_batch_quotes(self, instrument_keys: list) -> dict: ...
+    #
+    # Returns {instrument_key: {"ltp": float, "prev_close": float,
+    # "volume": float}, ...} -- entries missing from the response
+    # (broker returned partial data, or rejected a symbol) are simply
+    # absent from the dict rather than raising, matching this
+    # codebase's "skip what's missing, log why, keep going" convention
+    # -- opportunity_score.py logs each symbol absent from a batch
+    # response the same way instrument_master.validate_symbol() logs
+    # a skip reason.
+
     @abstractmethod
     def get_option_chain(self, underlying_key: str, expiry_date: str) -> list:
         """
@@ -150,3 +184,29 @@ class Broker(ABC):
     # isn't -- but any broker used for stock scanning must implement:
     #
     #   def resolve_equity_instrument_key(self, symbol: str) -> str: ...
+
+    # Added for Phase 2 (dynamic strike selection, instrument_master.py).
+    # Both concrete brokers ALREADY download and in-process-cache a raw
+    # instrument/scrip master internally (upstox.py's _instrument_master(),
+    # angelone.py's _scrip_master()) for search_instrument() /
+    # get_current_expiry() / resolve_equity_instrument_key() /
+    # resolve_current_month_future() to use. This method is a thin
+    # public wrapper around that SAME already-cached raw master, which
+    # additionally NORMALIZES it into one broker-agnostic row shape --
+    # so instrument_master.py never needs to know Upstox's vs. Angel
+    # One's native field names, expiry formats, or strike-scaling
+    # conventions, the same "normalize once, right after the broker
+    # call" principle get_option_chain() already applies for chain rows.
+    # Not abstract (a minimal options-only broker could reasonably skip
+    # it) -- but any broker used for Phase 2's dynamic strike engine
+    # must implement:
+    #
+    #   def download_instrument_master(self) -> list: ...
+    #
+    # Each returned row is a dict: symbol, underlying_symbol, exchange,
+    # contract_class ("INDEX_OPTION"|"STOCK_OPTION"|"INDEX_FUTURE"|
+    # "STOCK_FUTURE"|"EQUITY"), option_type ("CE"|"PE"|None), expiry
+    # ("YYYY-MM-DD" or None), strike_price (float or None, ALWAYS in
+    # real rupee terms -- any broker-native scaling, e.g. Angel One's
+    # x100 convention, must already be undone here), lot_size (int or
+    # None), trading_symbol, instrument_key.

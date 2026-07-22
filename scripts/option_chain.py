@@ -11,8 +11,11 @@ from datetime import datetime, timezone, timedelta
 import market_data
 from config import STRIKE_STEP, STOCK_SYMBOLS
 from indicators import ema_trend_direction, compute_vwap, vwap_confirms
+from logging_setup import get_logger
+from exceptions import ConfigurationError
 
 IST = timezone(timedelta(hours=5, minutes=30))
+_logger = get_logger("option_chain")
 
 # Environment/account-specific instrument identifiers -- NOT thresholds,
 # so these stay here next to the code that uses them rather than in
@@ -78,6 +81,28 @@ def resolve_underlying_key(symbol: str) -> str:
     )
 
 
+# Per-PROCESS cache only (one GitHub Actions run = one process): a
+# single scan cycle calls vwap_check()/vwap_distance_pct() once per
+# strike evaluated (up to 3 moneyness buckets x up to 2 directions per
+# symbol), which used to mean up to 6 redundant futures-VWAP
+# refetches per symbol per run for what's the same VWAP reading the
+# whole cycle. Keyed by symbol only -- VWAP over a 75-candle 5-min
+# window doesn't meaningfully change within one ~5-minute run cycle,
+# and every run is a fresh process anyway, so there's no staleness
+# risk carried across runs.
+_vwap_cache = {}
+
+
+def _futures_vwap(symbol: str):
+    if symbol in _vwap_cache:
+        return _vwap_cache[symbol]
+    futures_key = market_data.get_broker().resolve_current_month_future(symbol)
+    candles = market_data.get_recent_underlying_candles(futures_key, "5minute", 75)
+    vwap = compute_vwap(candles)
+    _vwap_cache[symbol] = vwap
+    return vwap
+
+
 def vwap_check(symbol: str, spot_price: float, direction: str) -> bool:
     """
     Fetches VWAP from the current-month FUTURES contract (not the
@@ -97,10 +122,25 @@ def vwap_check(symbol: str, spot_price: float, direction: str) -> bool:
     immediately than to have every trade quietly rejected with no
     explanation.
     """
-    futures_key = market_data.get_broker().resolve_current_month_future(symbol)
-    candles = market_data.get_recent_underlying_candles(futures_key, "5minute", 75)
-    vwap = compute_vwap(candles)
+    vwap = _futures_vwap(symbol)
     return vwap_confirms(spot_price, vwap, direction)
+
+
+def vwap_distance_pct(symbol: str, spot_price: float, direction: str):
+    """
+    Phase 3 (trade_score.py): SIGNED distance of spot from futures
+    VWAP, as a fraction of VWAP, in the direction that FAVORS the
+    trade -- positive means "confirms and by how much", negative means
+    "against, even if vwap_check() already gated this out upstream".
+    Returns None if VWAP is unavailable (same fail-closed posture as
+    vwap_confirms() -- the caller's continuous-strength math should
+    treat None as zero strength, not guess).
+    """
+    vwap = _futures_vwap(symbol)
+    if vwap is None or not vwap:
+        return None
+    raw_pct = (spot_price - vwap) / vwap
+    return raw_pct if direction == "CE" else -raw_pct
 
 
 def multi_timeframe_confirms(symbol: str, candidate_direction: str) -> bool:
@@ -147,17 +187,57 @@ def get_atm_strike(symbol: str):
     Fetches the current spot price for `symbol`'s underlying index via
     the broker's LTP endpoint (market_data.get_broker().get_ltp(),
     which gets failover for free the same as every other broker call
-    in this module) and rounds to the nearest strike (STRIKE_STEP[symbol]
-    -- 50 for NIFTY, 100 for BANKNIFTY). NSE strike grids are evenly
-    spaced multiples of that step starting from 0, so plain
-    round(spot / step) * step always lands on a listed strike with no
-    special-casing needed.
+    in this module).
+
+    Phase 2 (dynamic strike selection): the ATM strike itself is now
+    resolved from instrument_master.py's real listed strikes for
+    today's nearest expiry -- nearest-value lookup into the actual
+    sorted strike array, not `round(spot / STRIKE_STEP[symbol]) *
+    STRIKE_STEP[symbol]`. That arithmetic assumed evenly-spaced
+    strikes starting from 0, which holds for NIFTY/BANKNIFTY but isn't
+    reliably true for individual stock options (see config.py's own
+    "unverified"/"a guess" comments on STOCK_STRIKE_STEP).
+
+    FALLBACK: if instrument_master has no data yet for this symbol
+    today (premarket.yml's cache step hasn't run, or any lookup
+    error), this degrades to the exact pre-Phase-2 fixed-step
+    arithmetic rather than raising -- a bad/missing cache should never
+    be the reason a symbol gets skipped outright when the old
+    approach would have worked fine.
 
     Returns (atm_strike, spot_price).
     """
     underlying_key = resolve_underlying_key(symbol)
     spot_price = market_data.get_broker().get_ltp(underlying_key)
-    step = STRIKE_STEP[symbol]
+
+    try:
+        import instrument_master
+        expiry = current_expiry(symbol)
+        strikes = instrument_master.strikes_for(symbol, expiry, instrument_master.today_str())
+        if strikes:
+            nearest = min(strikes, key=lambda s: abs(s - spot_price))
+            return nearest, spot_price
+    except Exception as exc:
+        _logger.warning(
+            f"STRIKE_ENGINE {symbol}: instrument_master ATM lookup failed "
+            f"({type(exc).__name__}: {exc}) -- falling back to fixed STRIKE_STEP arithmetic"
+        )
+
+    step = STRIKE_STEP.get(symbol)
+    if step is None:
+        # Phase 1 (opportunity_score.py) can shortlist symbols that
+        # were never in the old hardcoded STOCK_STRIKE_STEP 15-stock
+        # dict -- instrument_master (above) is the primary path for
+        # ALL of them now, so this only bites when that ALSO had no
+        # data. No safe arithmetic step exists for a symbol with
+        # neither -- raising here (instead of guessing a step) is
+        # deliberate: detect_all_setups()'s per-symbol try/except
+        # already turns this into a clean skip-and-log for this one
+        # symbol, same as any other per-symbol failure.
+        raise ConfigurationError(
+            f"{symbol}: no instrument_master strikes AND no STRIKE_STEP fallback "
+            f"entry -- cannot resolve an ATM strike for this symbol today."
+        )
     atm_strike = round(spot_price / step) * step
     return atm_strike, spot_price
 

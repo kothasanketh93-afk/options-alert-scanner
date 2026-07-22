@@ -182,8 +182,10 @@ def load_state(date_str: str = None) -> dict:
     loaded.setdefault("circuit_breaker_tripped", False)
     loaded.setdefault("circuit_breaker_notified", False)
     loaded.setdefault("oi_history", {})
+    loaded.setdefault("next_display_num", len(loaded.get("trades", {})))
     for trade in loaded.get("trades", {}).values():
         trade.setdefault("streak_counted", False)
+        trade.setdefault("display_label", trade.get("trade_id", "Trade ?"))
     return loaded
 
 
@@ -192,6 +194,7 @@ def _fresh_state(date_str: str) -> dict:
         "date": date_str,
         "trades": {},          # trade_id -> trade dict
         "next_seq": {},        # "NIFTY-CE" -> int, for trade id numbering
+        "next_display_num": 0,  # simple sequential counter for "Trade N" Telegram labels
         "summary_sent": False,
         "consecutive_sl_streak": 0,      # resets to 0 on any T1/T2 win
         "circuit_breaker_tripped": False,
@@ -303,6 +306,20 @@ def next_trade_id(state: dict, symbol: str, direction: str, moneyness: str, aler
     return f"{symbol}-{direction}-{moneyness}-{date_part}-{time_part}-{seq:02d}"
 
 
+def next_display_number(state: dict) -> int:
+    """
+    Simple 1/2/3... counter for the "Trade N" label shown in Telegram
+    messages, added 2026-07-21 because the full trade_id
+    (SYMBOL-DIRECTION-MONEYNESS-YYYYMMDD-HHMM-SEQ) was confusing to
+    read/re-find across a trade's several follow-up messages (entry
+    activated, T1, T2, SL). Separate from next_trade_id()'s per-
+    symbol+direction+moneyness counter -- this one just counts up
+    once per NEW alert for the whole day, in the order alerts fire.
+    """
+    state["next_display_num"] = state.get("next_display_num", 0) + 1
+    return state["next_display_num"]
+
+
 def has_open_trade(state: dict, symbol: str, direction: str) -> bool:
     """
     V2.0: suppression is per symbol+direction ONLY (spec item 4 --
@@ -363,3 +380,17 @@ def record_trade_outcome_for_streak(state: dict, final_status: str):
 
 def circuit_breaker_active(state: dict) -> bool:
     return state.get("circuit_breaker_tripped", False)
+
+
+# ---------------------------------------------------------------------
+# Public aliases for daily_cache.py (Phase 1/2 instrument-master and
+# opportunity-shortlist persistence). daily_cache.py reuses this
+# module's git-clone/pull/push machinery instead of re-implementing it
+# -- these three names were previously private (leading underscore);
+# exposed here, unchanged in behavior, so a second module can share the
+# exact same `state` branch clone/pull/retry logic rather than cloning
+# the branch a second time or duplicating the retry loop.
+# ---------------------------------------------------------------------
+safe_pull = _safe_pull
+git_identity = _git_identity
+run_git = _run

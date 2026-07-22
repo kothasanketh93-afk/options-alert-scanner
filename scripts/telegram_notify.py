@@ -5,13 +5,21 @@ Sends formatted Telegram messages for each lifecycle event.
 Idempotency is enforced by the caller (main.py) via a `messages_sent`
 list on each trade — this module only formats and sends.
 
-V2.0 CHANGES: no raw numeric score or probability percentage ever
-appears in a message (per spec items REMOVE #1 and #5). Trade Grade
-(A+/A/B+/B), star-based Confidence, and emoji Risk Rating replace
-them. Every new-trade alert includes a "Why Recommended?" checklist
-and an expected holding-time range. If alternatives passed the
-quality gate too, they're listed as text only -- never opened as
-separate trades.
+V2.0 CHANGES (superseded, see PHASE 3 below): no raw numeric score or
+probability percentage ever appeared in a message. Trade Grade
+(A+/A/B+/B), star-based Confidence, and emoji Risk Rating replaced
+them.
+
+PHASE 3 CHANGE (explicit decision, reversing the above): fmt_new_alert()
+now shows the numeric Trade Score, Probability %, Confidence /10,
+Risk /10, Reward /10, and Expected R:R, per trade_score.py's engine --
+see that module's docstring for why. Grade/stars/risk-emoji are kept
+alongside the numbers as a backward-compatible companion display, not
+a replacement for them.
+
+Every new-trade alert includes a "Why Recommended?" checklist and an
+expected holding-time range. If alternatives passed the quality gate
+too, they're listed as text only -- never opened as separate trades.
 """
 
 from datetime import datetime
@@ -64,32 +72,73 @@ def send(text: str):
     return resp.json()
 
 
-def _fmt_alternatives(alternatives: list) -> str:
+def _fmt_alternatives(alternatives: list, max_shown: int = 5) -> str:
+    """
+    Only the top `max_shown` alternatives are listed individually --
+    changed 2026-07-21 after live feedback that a full 15-20 line
+    list (every gate-passing candidate, most identical grade) in
+    EVERY single alert message was the single biggest source of
+    clutter. Anything beyond max_shown is summarized as a count
+    instead of dropped silently, so the full picture (how many other
+    setups also passed) is still visible, just not itemized.
+
+    Caller (main.py) already deduplicates by symbol+direction before
+    this -- ITM/ATM/OTM of the SAME symbol+direction used to all show
+    up here as if they were 3 separate opportunities, when they're
+    really 3 strike choices for the same underlying signal. By the
+    time a list reaches this function, each entry is a genuinely
+    different symbol+direction.
+    """
     if not alternatives:
         return ""
+    shown, rest = alternatives[:max_shown], alternatives[max_shown:]
     lines = [
-        f"  • {a['symbol']} {a['direction']} {a['moneyness']} — Grade {a['grade']}"
-        for a in alternatives
+        f"  • {a['symbol']} {a['direction']} {a['moneyness']} — "
+        f"{a.get('trade_score', '?')}/100 (Grade {a['grade']})"
+        for a in shown
     ]
-    return "\nAlternatives considered (not opened):\n" + "\n".join(lines)
+    block = "\nAlternatives considered (not opened):\n" + "\n".join(lines)
+    if rest:
+        block += f"\n  …and {len(rest)} more"
+    return block
 
 
 def fmt_new_alert(trade: dict) -> str:
+    """
+    Phase 3: shows the numeric Trade Score / Probability / Confidence /
+    Risk / Reward / Expected R:R block, per the phase-3 spec's example
+    Telegram output -- an explicit decision reversing the earlier V2.0
+    "no raw numeric score or probability ever reaches Telegram" design
+    (see trade_score.py's module docstring). Grade/stars/risk-emoji are
+    still shown too, as a backward-compatible companion to the numbers,
+    not a replacement for them.
+    """
     low_min, high_min = trade["expected_holding_minutes"]
     why = "\n".join(trade.get("why_reasons", [])) or "—"
     alt_block = _fmt_alternatives(trade.get("alternatives", []))
+    direction_emoji = "🟢" if trade["direction"] == "CE" else "🔴"
+    checklist = "\n".join(trade.get("factor_checklist", [])) or "—"
 
     return (
-        f"🏆 BEST OPPORTUNITY\n\n"
+        f"🏆 BEST OPPORTUNITY — {trade['display_label']}\n\n"
         f"Trade ID: {trade['trade_id']}\n"
         f"Symbol: {trade['symbol']} | Direction: {trade['direction']} | "
         f"Strike: {trade['moneyness']}\n"
         f"Session: {trade['session']}\n"
         f"Spot: ₹{trade['spot_price']}\n"
         f"Strike Price: {trade['strike']} | Expiry: {trade['expiry']}\n\n"
-        f"Trade Grade: {trade['grade']}\n"
-        f"Confidence: {trade['confidence_stars']}  {trade['confidence_label']}\n"
-        f"Risk Rating: {trade['risk_rating']} {trade['risk_label']}\n\n"
+        f"━━━━━━━━━━━━━━\n"
+        f"{direction_emoji} {'BUY CE' if trade['direction'] == 'CE' else 'BUY PE'} SIGNAL\n"
+        f"Trade Score : {trade['trade_score']}/100\n"
+        f"Probability : {trade['probability_pct']}%\n"
+        f"Grade : {trade['grade']}\n"
+        f"Confidence : {trade['confidence_score']}/10\n"
+        f"Risk : {trade['risk_score']}/10\n"
+        f"Reward : {trade['reward_score']}/10\n"
+        f"Expected RR : {trade['expected_rr']}\n"
+        f"━━━━━━━━━━━━━━\n"
+        f"{checklist}\n"
+        f"━━━━━━━━━━━━━━\n\n"
         f"Premium: ₹{trade['alert_premium']}\n"
         f"Entry Zone: ₹{trade['entry_low']} - ₹{trade['entry_high']}\n"
         f"Stop Loss: ₹{trade['stop_loss']}\n"
@@ -104,8 +153,8 @@ def fmt_new_alert(trade: dict) -> str:
 
 def fmt_entry_activated(trade: dict) -> str:
     return (
-        f"ENTRY ACTIVATED\n\n"
-        f"Trade ID: {trade['trade_id']}\n"
+        f"ENTRY ACTIVATED — {trade['display_label']}\n\n"
+        f"{trade['symbol']} {trade['strike']} {trade['direction']} ({trade['moneyness']})\n"
         f"Entry Time: {_time_only(trade['actual_entry_time'])}\n"
         f"Tracked Entry: ₹{trade['tracked_entry_price']}\n\n"
         f"Target 1: ₹{trade['target_1']}\n"
@@ -117,8 +166,8 @@ def fmt_entry_activated(trade: dict) -> str:
 
 def fmt_t1_hit(trade: dict, time_taken_min: int) -> str:
     return (
-        f"TARGET 1 HIT\n\n"
-        f"Trade ID: {trade['trade_id']}\n\n"
+        f"TARGET 1 HIT — {trade['display_label']}\n\n"
+        f"{trade['symbol']} {trade['strike']} {trade['direction']} ({trade['moneyness']})\n"
         f"Entry Time: {_time_only(trade['actual_entry_time'])}\n"
         f"T1 Hit Time: {_time_only(trade['t1_hit_time'])}\n"
         f"Time Taken: {time_taken_min} minutes\n\n"
@@ -133,8 +182,8 @@ def fmt_t1_hit(trade: dict, time_taken_min: int) -> str:
 
 def fmt_t2_hit(trade: dict, time_taken_min: int) -> str:
     return (
-        f"TARGET 2 HIT\n\n"
-        f"Trade ID: {trade['trade_id']}\n\n"
+        f"TARGET 2 HIT — {trade['display_label']}\n\n"
+        f"{trade['symbol']} {trade['strike']} {trade['direction']} ({trade['moneyness']})\n"
         f"Entry Time: {_time_only(trade['actual_entry_time'])}\n"
         f"T2 Hit Time: {_time_only(trade['t2_hit_time'])}\n"
         f"Time Taken: {time_taken_min} minutes\n\n"
@@ -149,8 +198,8 @@ def fmt_t2_hit(trade: dict, time_taken_min: int) -> str:
 def fmt_sl_hit(trade: dict, time_taken_min: int) -> str:
     result = "T1 achieved, SL after T2 attempt" if trade["t1_hit"] else "FAILED"
     return (
-        f"STOP LOSS HIT\n\n"
-        f"Trade ID: {trade['trade_id']}\n\n"
+        f"STOP LOSS HIT — {trade['display_label']}\n\n"
+        f"{trade['symbol']} {trade['strike']} {trade['direction']} ({trade['moneyness']})\n"
         f"Entry Time: {_time_only(trade['actual_entry_time'])}\n"
         f"SL Time: {_time_only(trade['sl_hit_time'])}\n"
         f"Time Taken: {time_taken_min} minutes\n\n"
@@ -164,8 +213,8 @@ def fmt_sl_hit(trade: dict, time_taken_min: int) -> str:
 
 def fmt_not_entered(trade: dict) -> str:
     return (
-        f"NOT ENTERED (EOD)\n\n"
-        f"Trade ID: {trade['trade_id']}\n"
+        f"NOT ENTERED (EOD) — {trade['display_label']}\n\n"
+        f"{trade['symbol']} {trade['strike']} {trade['direction']} ({trade['moneyness']})\n"
         f"Entry Zone: ₹{trade['entry_low']} - ₹{trade['entry_high']}\n"
         f"Never touched during market hours.\n\n"
         f"Status: NOT_ENTERED"
@@ -174,8 +223,8 @@ def fmt_not_entered(trade: dict) -> str:
 
 def fmt_eod_closed(trade: dict) -> str:
     return (
-        f"EOD — TRADE UNRESOLVED\n\n"
-        f"Trade ID: {trade['trade_id']}\n"
+        f"EOD — TRADE UNRESOLVED — {trade['display_label']}\n"
+        f"{trade['symbol']} {trade['strike']} {trade['direction']} ({trade['moneyness']})\n"
         f"Entry: ₹{trade['tracked_entry_price']} at {_time_only(trade['actual_entry_time'])}\n"
         f"Last Price: ₹{trade.get('eod_last_price', 'N/A')}\n\n"
         f"Max Favorable: {trade['max_favorable_pct']:+.2f}%\n"
@@ -186,8 +235,8 @@ def fmt_eod_closed(trade: dict) -> str:
 
 def fmt_ambiguous(trade: dict, candle: dict) -> str:
     return (
-        f"AMBIGUOUS CANDLE — MANUAL REVIEW NEEDED\n\n"
-        f"Trade ID: {trade['trade_id']}\n"
+        f"AMBIGUOUS CANDLE — MANUAL REVIEW NEEDED — {trade['display_label']}\n"
+        f"{trade['symbol']} {trade['strike']} {trade['direction']} ({trade['moneyness']})\n"
         f"Both SL and a target level were touched within one 1-min "
         f"candle; order can't be determined from OHLC.\n\n"
         f"Candle: O {candle['open']} H {candle['high']} "

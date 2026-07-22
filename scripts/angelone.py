@@ -544,6 +544,196 @@ class AngelOneBroker(Broker):
         resp = request_with_retry("GET", SCRIP_MASTER_URL, timeout=60, error_cls=BrokerAPIError)
         return resp.json()
 
+    def download_instrument_master(self) -> list:
+        """
+        Phase 2 (instrument_master.py). Normalizes the SAME cached raw
+        scrip master _scrip_master() already provides (no extra
+        download) into the broker-agnostic row shape documented on
+        Broker.download_instrument_master() in broker.py.
+
+        Two Angel-One-specific corrections applied here so
+        instrument_master.py never has to know about them:
+
+        1. Expiry: native "DDMMMYYYY" (e.g. "17JUL2025") converted to
+           ISO via the same _iso_to_native_expiry()-inverse logic used
+           elsewhere in this file.
+        2. Strike scaling: this scrip master sometimes stores strikes
+           x100 (see this file's module docstring, point 1, and
+           _detect_strike_divisor()'s docstring). Unlike
+           _detect_strike_divisor() (which samples fresh from the full
+           master for ONE symbol+expiry+instrumenttype at a time --
+           fine for a single lookup, too slow to call per-group across
+           the WHOLE master here), this method groups rows by
+           (name, expiry, instrumenttype) in a single pass and applies
+           the same magnitude heuristic (average sample strike >
+           100,000 => scaled by 100) per group. Same caveat as
+           _detect_strike_divisor()'s docstring: calibrated for
+           index-scale strikes -- a lower-priced stock scaled by 100
+           could still land under the 100,000 cutoff and be misread as
+           unscaled. instrument_master.validate_symbol() logs strike
+           counts precisely so an obviously-wrong divisor (e.g. every
+           strike for a stock coming out at a wildly unrealistic price)
+           is visible in the logs rather than silently wrong.
+        """
+        master = self._scrip_master()
+
+        # Pass 1: collect up to 20 sample strikes per (name, expiry,
+        # instrumenttype) group, options rows only -- futures/EQ rows
+        # have no strike to scale.
+        samples = {}
+        for row in master:
+            if row.get("instrumenttype") not in ("OPTIDX", "OPTSTK"):
+                continue
+            key = (row.get("name"), row.get("expiry"), row.get("instrumenttype"))
+            bucket = samples.setdefault(key, [])
+            if len(bucket) < 20 and row.get("strike"):
+                try:
+                    bucket.append(float(row["strike"]))
+                except (TypeError, ValueError):
+                    pass
+
+        divisor_by_group = {}
+        for key, strikes in samples.items():
+            if not strikes:
+                divisor_by_group[key] = 1.0
+                continue
+            avg_strike = sum(strikes) / len(strikes)
+            divisor_by_group[key] = 100.0 if avg_strike > 100000 else 1.0
+
+        normalized = []
+        for row in master:
+            token = row.get("token")
+            exch_seg = row.get("exch_seg")
+            if not token or not exch_seg:
+                continue  # unusable row -- can't build an instrument_key
+            instrument_key = f"{exch_seg}|{token}"
+            raw_type = row.get("instrumenttype")
+            name = row.get("name")
+            trading_symbol = row.get("symbol")
+
+            option_type = None
+            if raw_type in ("OPTIDX", "OPTSTK") and trading_symbol:
+                suffix = trading_symbol[-2:]
+                option_type = suffix if suffix in ("CE", "PE") else None
+
+            contract_class = {
+                "OPTIDX": "INDEX_OPTION", "OPTSTK": "STOCK_OPTION",
+                "FUTIDX": "INDEX_FUTURE", "FUTSTK": "STOCK_FUTURE",
+                "EQ": "EQUITY",
+            }.get(raw_type, raw_type or "UNKNOWN")
+
+            expiry_native = row.get("expiry")
+            expiry_iso = None
+            if expiry_native:
+                try:
+                    expiry_iso = datetime.strptime(expiry_native, "%d%b%Y").date().isoformat()
+                except ValueError:
+                    expiry_iso = None
+
+            strike_price = None
+            if raw_type in ("OPTIDX", "OPTSTK") and row.get("strike"):
+                try:
+                    raw_strike = float(row["strike"])
+                    divisor = divisor_by_group.get((name, expiry_native, raw_type), 1.0)
+                    strike_price = raw_strike / divisor
+                except (TypeError, ValueError):
+                    strike_price = None
+
+            lot_size = row.get("lotsize")
+            try:
+                lot_size = int(float(lot_size)) if lot_size not in (None, "") else None
+            except (TypeError, ValueError):
+                lot_size = None
+
+            normalized.append({
+                "symbol": trading_symbol or name,
+                "underlying_symbol": name,
+                "exchange": exch_seg,
+                "contract_class": contract_class,
+                "option_type": option_type,
+                "expiry": expiry_iso,
+                "strike_price": strike_price,
+                "lot_size": lot_size,
+                "trading_symbol": trading_symbol,
+                "instrument_key": instrument_key,
+            })
+        return normalized
+
+    def get_daily_candles(self, instrument_key: str, count: int) -> list:
+        """
+        Phase 1 (opportunity_score.py). Reuses getCandleData (same
+        endpoint get_candles() above uses) with interval="ONE_DAY" --
+        Angel One's historical API supports daily bars on the exact
+        same endpoint, unlike Upstox where it's a distinct URL. `count`
+        is approximate calendar-day lookback, same trimming approach
+        as UpstoxBroker.get_daily_candles() -- see that method's
+        docstring for why.
+        """
+        _throttle_historical_call()
+        exchange, token = _split_instrument_key(instrument_key)
+        to_dt = datetime.now(IST).date() - timedelta(days=1)
+        from_dt = to_dt - timedelta(days=int(count * 1.6) + 5)
+
+        url = f"{BASE_URL}/rest/secure/angelbroking/historical/v1/getCandleData"
+        body = {
+            "exchange": exchange, "symboltoken": token, "interval": "ONE_DAY",
+            "fromdate": from_dt.strftime("%Y-%m-%d 00:00"),
+            "todate": to_dt.strftime("%Y-%m-%d 23:59"),
+        }
+        resp = request_with_retry("POST", url, json=body, headers=self._headers(),
+                                   timeout=15, error_cls=BrokerAPIError)
+        payload = resp.json()
+        if not payload.get("status"):
+            raise BrokerAPIError(f"getCandleData (ONE_DAY) rejected: {payload.get('message')}")
+
+        out = []
+        for c in payload.get("data") or []:
+            ts = datetime.fromisoformat(c[0])
+            out.append({
+                "timestamp": ts.isoformat(), "open": float(c[1]), "high": float(c[2]),
+                "low": float(c[3]), "close": float(c[4]),
+                "volume": float(c[5]) if len(c) > 5 and c[5] is not None else 0.0,
+            })
+        out.sort(key=lambda c: c["timestamp"])
+        return out[-count:] if len(out) > count else out
+
+    def get_batch_quotes(self, instrument_keys: list) -> dict:
+        """
+        Phase 1. Angel One's Market Quote API (quote/v1/) accepts a
+        batch of {exchange, symboltoken} pairs grouped by exchange --
+        this groups the "EXCHANGE|token"-format instrument_keys this
+        file uses everywhere else by exchange before calling, since the
+        API needs them pre-grouped. Chunked at 50 tokens/exchange/call
+        (documented Angel One limit as of this file's other endpoints
+        -- confirm against current API docs before relying on this
+        exact number, same "verify before trusting" caveat as this
+        file's other broker-specific magic numbers).
+        """
+        by_exchange = {}
+        for key in instrument_keys:
+            exchange, token = _split_instrument_key(key)
+            by_exchange.setdefault(exchange, []).append(token)
+
+        out = {}
+        url = f"{BASE_URL}/rest/secure/angelbroking/market/v1/quote/"
+        for exchange, tokens in by_exchange.items():
+            for i in range(0, len(tokens), 50):
+                chunk = tokens[i:i + 50]
+                body = {"mode": "FULL", "exchangeTokens": {exchange: chunk}}
+                resp = request_with_retry("POST", url, json=body, headers=self._headers(),
+                                           timeout=15, error_cls=BrokerAPIError)
+                payload = resp.json()
+                if not payload.get("status"):
+                    raise BrokerAPIError(f"quote rejected: {payload.get('message')}")
+                for row in payload.get("data", {}).get("fetched", []):
+                    key = f"{exchange}|{row.get('symbolToken')}"
+                    out[key] = {
+                        "ltp": float(row.get("ltp", 0) or 0),
+                        "prev_close": float(row.get("close", 0) or 0),
+                        "volume": float(row.get("tradeVolume", 0) or 0),
+                    }
+        return out
+
     def search_instrument(self, symbol: str, expiry_date: str, strike: float, option_type: str) -> str:
         master = self._scrip_master()
         name = symbol  # Angel One's scrip master "name" field matches NIFTY/BANKNIFTY directly

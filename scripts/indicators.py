@@ -98,6 +98,25 @@ def market_regime(candles_15m: list) -> tuple:
     return "SIDEWAYS", REGIME_SCORE_PENALTY["SIDEWAYS"]
 
 
+def momentum_pct(candles: list, lookback: int = 6):
+    """
+    Phase 3 (trade_score.py): signed price momentum over the last
+    `lookback` candles, as a fraction of the starting price -- e.g.
+    lookback=6 on 15-min candles is roughly the last 1.5 hours. Not
+    direction-aware itself (caller decides whether a positive or
+    negative reading favors CE vs. PE) -- same "pure math in, caller
+    applies direction" convention as ema_trend_direction() above.
+    Returns None if there aren't enough candles rather than guessing.
+    """
+    if len(candles) <= lookback:
+        return None
+    start_close = candles[-lookback - 1]["close"]
+    end_close = candles[-1]["close"]
+    if not start_close:
+        return None
+    return (end_close - start_close) / start_close
+
+
 def find_nearby_level(candles: list, direction: str, lookback: int = 20):
     window = candles[-lookback:]
     if not window:

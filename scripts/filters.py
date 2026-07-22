@@ -15,6 +15,22 @@ from config import (
 from option_chain import days_to_expiry
 
 
+def oi_change_pct(oi_history: dict, instrument_key: str, current_oi: float) -> float:
+    """
+    Phase 3 (trade_score.py): read-only signed % OI change since the
+    last reading -- same lookup oi_is_building() does internally, but
+    without mutating oi_history, so callers can get the CONTINUOUS
+    value for trade_score.oi_build_strength() and still call
+    oi_is_building() afterward for the existing binary gate/reasons
+    factor without double-writing history. Call this BEFORE
+    oi_is_building() for the same instrument_key in the same run.
+    """
+    previous = oi_history.get(instrument_key)
+    if previous is None or previous <= 0:
+        return 0.0
+    return (current_oi - previous) / previous
+
+
 def oi_is_building(oi_history: dict, instrument_key: str, current_oi: float) -> bool:
     previous = oi_history.get(instrument_key)
     oi_history[instrument_key] = current_oi
@@ -90,13 +106,12 @@ def quality_gate(factors: dict) -> bool:
     Previously this required ALL 9 factors (including trend/volume/
     OI/MTF/RR alignment) to be True simultaneously -- an unrealistic
     AND across 6 semi-independent signals that, in 26 consecutive
-    live scan cycles, never once passed. The other 6 factors are now
-    scored on a weighted 0-100 scale via grading.py's
-    example_quality_score()+compute_grade() (already existed in the
-    codebase but was previously a no-op downstream of this gate,
-    since everything reaching it already had strengths=1.0 across the
-    board or was rejected here first). config.ENTRY_SCORE is the
-    live alert threshold on that weighted score.
+    live scan cycles, never once passed. The other factors are now
+    scored on a weighted 0-100 scale via trade_score.py's Phase 3
+    Trade Score Engine (continuous strengths, not the binary ones
+    this factors dict still carries -- this dict is only used for the
+    three hard gates below plus reasons_from_factors()'s "why" text).
+    config.ENTRY_SCORE is the live alert threshold on that score.
     """
     required = ("liquidity_ok", "delta_ok", "expiry_theta_ok")
     return all(factors.get(k) is True for k in required)

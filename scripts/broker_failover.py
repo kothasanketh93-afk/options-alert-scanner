@@ -220,6 +220,27 @@ class FailoverBroker(Broker):
     def get_ltp(self, instrument_key: str) -> float:
         return self._call("get_ltp", instrument_key)
 
+    def get_daily_candles(self, instrument_key: str, count: int) -> list:
+        # Phase 1, premarket-only. Same reasoning as
+        # download_instrument_master() above: a bulk historical-data
+        # call succeeding or failing reflects that broker's daily-bar
+        # endpoint on that one call, not primary-broker health, so it
+        # doesn't count toward the failover streak -- but a failure
+        # still falls through to the secondary broker before
+        # opportunity_score.py drops the symbol from scoring entirely.
+        def validate(candles):
+            return (True, None) if candles else (False, "empty daily candle list")
+        return self._call("get_daily_candles", instrument_key, count,
+                           count_failures=False, result_ok=validate)
+
+    def get_batch_quotes(self, instrument_keys: list) -> dict:
+        # Phase 1, premarket-only. Same reasoning as get_daily_candles()
+        # above.
+        def validate(quotes):
+            return (True, None) if quotes else (False, "empty batch quote response")
+        return self._call("get_batch_quotes", instrument_keys,
+                           count_failures=False, result_ok=validate)
+
     def get_option_chain(self, underlying_key: str, expiry_date: str) -> list:
         def validate(chain):
             return (True, None) if chain else (False, "empty option chain")
@@ -252,6 +273,22 @@ class FailoverBroker(Broker):
         # failover streak -- but a fresh InstrumentNotFound still
         # falls through to the secondary broker for this one call.
         return self._call("get_current_expiry", symbol, count_failures=False)
+
+    def download_instrument_master(self) -> list:
+        # Phase 2 (instrument_master.py). Same reasoning as
+        # get_current_expiry() above: a large bulk data download
+        # succeeding or failing reflects that ONE broker's instrument
+        # master endpoint on that particular day, not primary-broker
+        # health in the sense the failover streak exists to detect --
+        # so this doesn't count toward it (count_failures=False), but
+        # a failure here still falls through to try the secondary
+        # broker's master before instrument_master.py gives up for the
+        # day and its caller (config.load_symbols_for_today()) falls
+        # back to the fixed watchlist.
+        def validate(rows):
+            return (True, None) if rows else (False, "empty instrument master")
+
+        return self._call("download_instrument_master", count_failures=False, result_ok=validate)
 
     # -----------------------------------------------------------------
     # Introspection -- for heartbeat_check.py / main.py, not part of

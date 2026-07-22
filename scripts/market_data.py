@@ -121,3 +121,28 @@ def get_recent_underlying_candles(instrument_key: str, interval: str, count: int
         candles = _broker.get_candles(instrument_key, interval)
         _underlying_candle_cache.set(cache_key, candles)
     return candles[-count:] if len(candles) > count else candles
+
+
+def get_recent_daily_candles(instrument_key: str, count: int) -> list:
+    """
+    Phase 1 (opportunity_score.py). Same shape and same per-run
+    in-process caching approach as get_recent_underlying_candles()
+    above, for DAILY bars instead of intraday ones -- see
+    broker.Broker's get_daily_candles() documentation for why this
+    needs a separate broker endpoint rather than a wider intraday
+    window.
+
+    Deliberately does NOT persist across runs the way
+    instrument_master.py's cache does: daily bars for the scoring
+    universe are only ever fetched once, in the single premarket run
+    that computes today's opportunity shortlist -- there's no
+    intraday re-fetch to save by persisting this across runs the way
+    there is for the instrument master (which trader.yml's ~50 runs/day
+    would otherwise each redownload).
+    """
+    cache_key = (instrument_key, "day")
+    candles = _underlying_candle_cache.get(cache_key)
+    if candles is None:
+        candles = _broker.get_daily_candles(instrument_key, count)
+        _underlying_candle_cache.set(cache_key, candles)
+    return candles[-count:] if len(candles) > count else candles

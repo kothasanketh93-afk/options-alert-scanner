@@ -85,7 +85,18 @@ STRIKE_RANGE = 1
 # README's original "Explicitly deferred" section for the details.
 SYMBOLS = ["NIFTY", "BANKNIFTY", "MIDCPNIFTY"]
 
-# --- Mid/Smallcap stock symbols (added 2026-07-17) ---
+# --- Mid/Smallcap stock symbols ---
+# RENAMED from STOCK_SYMBOLS (2026-07-17) to FALLBACK_STOCK_WATCHLIST
+# as of Phase 1 (opportunity_score.py, 2026-07-22): this fixed
+# 15-stock list is no longer the primary source of which stocks get
+# scanned -- see refresh_symbols_for_today() below, which populates
+# STOCK_SYMBOLS from today's computed ~100-stock-universe opportunity
+# shortlist instead. This list now only matters on a day the
+# shortlist cache is missing (build_opportunity_shortlist.py hasn't
+# run, or failed) -- STOCK_SYMBOLS falls back to exactly this list on
+# that day, so today's scan degrades to the OLD fixed-15-stock
+# behavior rather than scanning nothing.
+#
 # UNVERIFIED against the CURRENT NSE F&O-eligible stock list -- NSE
 # revises which stocks carry derivatives EVERY QUARTER (SEBI's
 # liquidity-based inclusion/exclusion review), so a symbol here can
@@ -93,10 +104,13 @@ SYMBOLS = ["NIFTY", "BANKNIFTY", "MIDCPNIFTY"]
 # one of these is still F&O-active (check the broker's instrument
 # master for instrument_type OPTSTK/FUTSTK rows with this name)
 # before this runs live -- same caution already asked of MIDCPNIFTY's
-# strike step and SENSEX's deferral above.
-STOCK_SYMBOLS = [
+# strike step and SENSEX's deferral above. This caveat now applies
+# equally to universe.MASTER_UNIVERSE (Phase 1's ~100-stock list) --
+# see that file's own comment.
+FALLBACK_STOCK_WATCHLIST = [
     "TATASTEEL", "HINDALCO", "VEDL", "JINDALSTEL", "IDEA",
     "SAIL", "NATIONALUM", "NMDC", "BHEL", "FEDERALBNK",
+    "BANKBARODA", "PFC", "RECLTD", "ASHOKLEY", "MOTHERSON",
 ]
 
 # Per-stock strike interval. ALSO UNVERIFIED -- unlike NIFTY/BANKNIFTY
@@ -107,9 +121,22 @@ STOCK_SYMBOLS = [
 # instrument_type OPTSTK, name=<symbol>, diff consecutive
 # strike_price values) before trusting alerts on these -- exactly the
 # verification MIDCPNIFTY's STRIKE_STEP entry above still needs too.
+#
+# As of Phase 2 (instrument_master.py), this dict is a FALLBACK ONLY
+# -- option_chain.get_atm_strike() and scanner.resolve_strike_candidates()
+# both try instrument_master's real listed strikes first and only
+# fall back to this fixed-step arithmetic if that has no data for the
+# symbol today. Kept scoped to the original 15 FALLBACK_STOCK_WATCHLIST
+# names on purpose: a symbol Phase 1 shortlists that ISN'T in here has
+# no safe fallback step (option_chain.get_atm_strike() raises
+# ConfigurationError for that symbol on a bad cache day, which
+# detect_all_setups()'s per-symbol try/except turns into a clean skip
+# -- see that function's docstring), rather than guessing a step for a
+# stock nobody has verified one for.
 STOCK_STRIKE_STEP = {
     "TATASTEEL": 5, "HINDALCO": 10, "VEDL": 10, "JINDALSTEL": 20, "IDEA": 0.5,
     "SAIL": 2.5, "NATIONALUM": 2.5, "NMDC": 2.5, "BHEL": 5, "FEDERALBNK": 2.5,
+    "BANKBARODA": 5, "PFC": 10, "RECLTD": 10, "ASHOKLEY": 5, "MOTHERSON": 2.5,
 }
 STRIKE_STEP.update(STOCK_STRIKE_STEP)
 
@@ -117,7 +144,10 @@ STRIKE_STEP.update(STOCK_STRIKE_STEP)
 # BANKNIFTY -- applying MIN_OI/MIN_OPTION_VOLUME/MIN_PREMIUM above
 # unmodified would reject nearly every stock strike outright.
 # filters.liquidity_ok() uses these instead for any symbol in
-# STOCK_SYMBOLS, falling back to the index defaults otherwise.
+# STOCK_SYMBOLS, falling back to the index defaults otherwise. Applies
+# equally to any of Phase 1's dynamically shortlisted stocks, not just
+# the FALLBACK_STOCK_WATCHLIST names -- filters.py checks membership
+# in STOCK_SYMBOLS (the live, refreshed list), not this fixed list.
 # THESE STARTING VALUES ARE A GUESS, not backtested -- watch the
 # SCORE log lines for these symbols the same way ENTRY_SCORE's
 # comment above describes doing for the weighted-score cutoff, and
@@ -126,10 +156,108 @@ STOCK_MIN_OI = 5_000
 STOCK_MIN_OPTION_VOLUME = 500
 STOCK_MIN_PREMIUM = 2
 
-# Actually wire the stocks into the scan loop -- detect_all_setups()
-# just iterates SYMBOLS, so appending here is enough for scanner.py
-# to pick these up with no further change on its end.
+# --- Phase 1 (opportunity_score.py) ---
+INDEX_SYMBOLS = list(SYMBOLS)  # ["NIFTY", "BANKNIFTY", "MIDCPNIFTY"] at this point -- captured before STOCK_SYMBOLS is appended below
+
+TOP_N_STOCKS = 35  # midpoint of the spec's "30-40 stocks" -- tune from opportunity-shortlist Telegram logs
+
+# Each ceiling is "the input value that earns the FULL weight for that
+# factor" -- e.g. OPP_SCORE_RVOL_CEILING=3.0 means 3x average volume
+# already earns full marks on the Relative Volume factor; going higher
+# doesn't earn more. NONE OF THESE ARE BACKTESTED -- same "starting
+# guess, tune from logs" caveat as STOCK_MIN_OI above.
+# build_opportunity_shortlist.py's Telegram summary logs the top 10
+# scores daily specifically so these are easy to sanity-check over time.
+OPP_SCORE_RVOL_CEILING = 3.0        # 3x the 20-day average volume
+OPP_SCORE_GAP_CEILING = 0.03        # 3% open-vs-prev-close gap
+OPP_SCORE_ATR_CEILING = 0.025       # ATR = 2.5% of previous close
+OPP_SCORE_MOM_CEILING = 0.08        # 8% five-trading-day price change
+OPP_SCORE_OI_CEILING = 0.15         # 15% OI change day-over-day
+OPP_SCORE_LIQUIDITY_CEILING = 500_000_000  # ₹50 crore 20-day avg daily traded value
+OPP_SCORE_VWAP_CEILING = 0.02       # 2% previous-close distance from previous VWAP
+OPP_SCORE_RANGE_CEILING = 0.04      # 4% previous-day (high-low)/close
+
+# Sums to 100. Gap-Up/Gap-Down and Price-Change% from the original
+# spec were collapsed into one "gap" factor (see the Phase 1 plan
+# document's "why these nine and not the full list" section) --
+# scoring both separately would silently double-count the same
+# "this stock is moving" signal under two names.
+OPPORTUNITY_SCORE_WEIGHTS = {
+    "rvol": 20, "gap": 15, "atr": 15, "momentum": 10, "oi_change": 10,
+    "sector": 10, "liquidity": 10, "vwap_dist": 5, "prev_range": 5,
+}
+
+# Live values -- start as the safe, no-I/O fallback (see
+# refresh_symbols_for_today()'s docstring for why `import config`
+# itself must never touch the state branch). Every module that does
+# `from config import SYMBOLS` / `from config import STOCK_SYMBOLS` at
+# import time binds to THESE list objects; refresh_symbols_for_today()
+# mutates them in place (.clear()+.extend()), never reassigns, so
+# every existing reference sees the update with no other code needing
+# to change -- see that function's docstring for the full reasoning.
+STOCK_SYMBOLS = list(FALLBACK_STOCK_WATCHLIST)
 SYMBOLS = SYMBOLS + STOCK_SYMBOLS
+
+
+def refresh_symbols_for_today() -> list:
+    """
+    Phase 1. Swaps STOCK_SYMBOLS/SYMBOLS from the safe import-time
+    fallback to today's real opportunity shortlist (top TOP_N_STOCKS
+    scored stocks out of universe.MASTER_UNIVERSE), if one has already
+    been computed and cached today by build_opportunity_shortlist.py's
+    premarket run.
+
+    MUST be called by any entry point that scans (main.py does, right
+    after state.ensure_state_branch_checked_out() and before the
+    scanner runs) -- and MUST NOT be called at `import config` time.
+    Reason: config.py is imported very early and very widely (by
+    scanner.py directly, and by main.py before main.py ever calls
+    ensure_state_branch_checked_out()) -- reading the state branch
+    that early would either hit a not-yet-cloned directory (silently
+    always falling back, defeating Phase 1 for every run) or force
+    every script that merely imports config -- including
+    config_validation.py and one-off diagnostics that have nothing to
+    do with trading -- to eagerly clone a git branch just to import a
+    config module. Keeping `import config` itself free of I/O, and
+    making the state-branch-dependent refresh an explicit separate
+    call, avoids both.
+
+    Mutates the STOCK_SYMBOLS/SYMBOLS list objects IN PLACE rather
+    than rebinding config.STOCK_SYMBOLS/config.SYMBOLS to new lists,
+    because scanner.py/option_chain.py/filters.py all already did
+    `from config import SYMBOLS` (or STOCK_SYMBOLS) at their own
+    import time, which binds THEIR name to the SAME list object
+    config.py created -- rebinding config's own attribute to a new
+    list would leave every one of those already-bound references
+    pointing at the stale fallback forever. In-place mutation means
+    every existing reference sees today's real shortlist with zero
+    other files needing to change -- this IS what "keep backward
+    compatibility" requires here.
+
+    Returns the (mutated in place) SYMBOLS list for convenience.
+    """
+    import daily_cache
+    from datetime import datetime, timezone, timedelta
+    IST = timezone(timedelta(hours=5, minutes=30))
+    today = datetime.now(IST).strftime("%Y-%m-%d")
+
+    cache = daily_cache.DailyCache("opportunity")
+    payload = cache.read(today)
+    if payload is None or not payload.get("shortlist"):
+        # No shortlist yet today (premarket step hasn't run, or
+        # failed) -- stay on whatever's already in place (the
+        # FALLBACK_STOCK_WATCHLIST set at import time). Degrading to
+        # the OLD fixed-15-stock behavior, not to zero stocks, is the
+        # entire point of this fallback -- see FALLBACK_STOCK_WATCHLIST's
+        # comment above.
+        return SYMBOLS
+
+    shortlist_symbols = [row["symbol"] for row in payload["shortlist"]]
+    STOCK_SYMBOLS.clear()
+    STOCK_SYMBOLS.extend(shortlist_symbols)
+    SYMBOLS.clear()
+    SYMBOLS.extend(INDEX_SYMBOLS + STOCK_SYMBOLS)
+    return SYMBOLS
 
 # --- Regime detection (scanner.py) ---
 EFFICIENCY_TRENDING_THRESHOLD = 0.30
@@ -184,6 +312,69 @@ CONFIDENCE_DISPLAY = {
     "Entry":        ("★★★☆☆", "Moderate"),
 }
 
+# --- Phase 3: Professional Trade Score Engine (trade_score.py) ---
+# Replaces the binary strengths (1.0/0.0 per factor) grading.py's
+# example_quality_score() used -- these are now CONTINUOUS 0-1 inputs
+# computed from data already gathered in scanner.score_strike().
+# Weights sum to 100, per the phase-3 spec's example distribution.
+# RSI and PCR were explicitly asked for in the spec but are NOT
+# calculated anywhere in this codebase (RSI is deliberately excluded
+# per the V2.0 spec; PCR was never implemented) -- rather than bolt on
+# two new indicators, these 10 factors are built entirely from
+# indicators already computed elsewhere (EMA, VWAP, ATR/regime,
+# OI build, liquidity, volume, 15-min MTF confirmation, R:R, and a
+# broad-index (NIFTY) efficiency-ratio read for "Market Strength").
+TRADE_SCORE_WEIGHTS = {
+    "trend": 20,            # efficiency ratio of THIS symbol's 15-min candles (trend cleanliness)
+    "volume": 15,           # option volume vs. the liquidity engine's own minimum, continuous
+    "oi": 15,               # OI build % since last reading, continuous
+    "momentum": 10,         # signed 15-min price momentum in the trade's direction
+    "vwap": 10,             # signed distance from futures VWAP in the trade's direction
+    "ema": 10,              # EMA9/21 spread as % of price (how cleanly separated, not just sign)
+    "risk_reward": 5,       # target distance / stop distance vs. a 1.5 baseline
+    "liquidity": 5,         # how far OI/volume clear the minimums + how tight the spread is
+    "market_strength": 5,   # NIFTY's own 15-min efficiency ratio -- broad-tape conviction proxy
+    "htf": 5,               # 15-min MTF confirmation (binary, same signal quality_gate() doesn't gate on alone)
+}
+assert sum(TRADE_SCORE_WEIGHTS.values()) == 100, "TRADE_SCORE_WEIGHTS must sum to 100"
+
+# Ceilings: the raw value at which a continuous factor's strength hits
+# 1.0 (100%). Same "clamp(x / ceiling, 0, 1)" convention as
+# OPP_SCORE_*_CEILING in opportunity_score.py -- tune from live SCORE
+# log lines the same way, not backtested yet.
+TS_EMA_SPREAD_CEILING_PCT = 0.006     # EMA9/21 spread >= 0.6% of price -> full strength
+TS_MOMENTUM_CEILING_PCT = 0.01        # 1% signed 15-min move -> full strength
+TS_VWAP_DIST_CEILING_PCT = 0.004      # 0.4% signed distance from futures VWAP -> full strength
+TS_OI_BUILD_CEILING_PCT = 0.04        # 2x OI_BUILD_THRESHOLD_PCT (0.02) -- full strength at 2x the
+                                       # hard OI-build gate. Kept as a literal, not a reference to
+                                       # OI_BUILD_THRESHOLD_PCT below, since this block sits above
+                                       # where that constant is defined further down this file -- if
+                                       # you retune OI_BUILD_THRESHOLD_PCT, update this to match.
+TS_VOLUME_CEILING_MULT = 3.0          # option volume >= 3x the liquidity-engine minimum -> full strength
+TS_LIQUIDITY_CEILING_MULT = 2.0       # OI/volume >= 2x their minimums -> full strength on those sub-parts
+TS_RR_BASELINE = 1.5                  # target-distance/SL-distance >= this -> full R:R strength
+
+# New Trade Grade vocabulary matching the phase-3 spec's example output
+# (A+/A/B+/B) -- distinct from the old Strong Entry/Entry GRADE_THRESHOLDS
+# above, which stays as-is for backward compatibility (nothing besides
+# the old grading.py path reads it anymore, but it isn't deleted).
+TRADE_SCORE_GRADE_THRESHOLDS = [
+    (90, "A+"),
+    (80, "A"),
+    (70, "B+"),
+    (60, "B"),
+]
+
+# Backward-compat display fields (confidence_stars/confidence_label still
+# populated on every trade dict, same as before) -- just re-keyed to the
+# new A+/A/B+/B grade vocabulary instead of the old Strong Entry/Entry one.
+CONFIDENCE_STARS_BY_TRADE_GRADE = {
+    "A+": ("★★★★★", "Very High"),
+    "A":  ("★★★★☆", "High"),
+    "B+": ("★★★☆☆", "Moderate"),
+    "B":  ("★★☆☆☆", "Fair"),
+}
+
 # --- Liquidity engine (scanner.py) ---
 MIN_OI = 15_000
 MIN_OPTION_VOLUME = 5_000
@@ -228,7 +419,15 @@ EXPIRY_DAY_THRESHOLD_DAYS = 1
 MARKET_CLOSE_HHMM = (15, 30)
 
 # --- Daily summary (main.py) ---
-SUMMARY_HHMM = (15, 25)
+# Moved from 15:25 to 15:31 on 2026-07-21 (per request) -- fires just
+# after market close (15:30) instead of 5 minutes before it, so the
+# summary reflects the fully-closed day rather than being sent while
+# the last few minutes of trading could still move an open position.
+# trader.yml already runs continuously through the day regardless of
+# SESSION_WINDOWS (maybe_send_daily_summary() is called unconditionally
+# every run, independent of session scanning), so this needed no
+# workflow/schedule change -- only this time moved.
+SUMMARY_HHMM = (15, 31)
 
 # --- Heartbeat check (heartbeat_check.py) ---
 # BUGFIX (comment, not value): this used to say "7-min trader cadence"

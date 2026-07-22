@@ -13,7 +13,11 @@ def _grade_rank_key(setup: dict) -> tuple:
     detect_setups() -- one definition of "what makes one candidate
     better than another" instead of two copies that could drift apart.
     """
-    grade_order = {"Strong Entry": 2, "Entry": 1}
+    # Phase 3: grade vocabulary is now A+/A/B+/B (trade_score.compute_grade()),
+    # replacing the old Strong Entry/Entry pair. setup["_quality_score"] is
+    # now the Trade Score itself (scanner.score_strike() sets it that way),
+    # so the tiebreak below is unchanged in spirit -- just a renamed source.
+    grade_order = {"A+": 4, "A": 3, "B+": 2, "B": 1}
     return (grade_order.get(setup.get("grade"), 0), setup.get("_quality_score", 0))
 
 

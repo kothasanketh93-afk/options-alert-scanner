@@ -35,6 +35,7 @@ import auth
 import config_validation
 from exceptions import TelegramFailure, BrokerAPIError
 from logging_setup import get_logger
+import config
 from config import SUMMARY_HHMM
 
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -42,9 +43,10 @@ TERMINAL_STATUSES = {"T2_HIT", "SL_HIT", "NOT_ENTERED", "AMBIGUOUS", "EOD_CLOSED
 log = get_logger("main")
 
 
-def new_trade_record(setup: dict, trade_id: str, alert_dt: datetime) -> dict:
+def new_trade_record(setup: dict, trade_id: str, alert_dt: datetime, display_label: str) -> dict:
     return {
         "trade_id": trade_id,
+        "display_label": display_label,  # short "Trade N" label for Telegram messages -- see state.next_display_number()
         "symbol": setup["symbol"],
         "direction": setup["direction"],
         "moneyness": setup["moneyness"],
@@ -61,9 +63,18 @@ def new_trade_record(setup: dict, trade_id: str, alert_dt: datetime) -> dict:
         "target_2": setup["target_2"],
         "session": setup["session"],
 
-        # V2.0: grade/confidence/risk replace the raw numeric score --
-        # telegram_notify.py must never display setup["_quality_score"].
         "grade": setup["grade"],
+        # Phase 3: numeric Trade Score Engine fields -- shown in Telegram
+        # per an explicit decision reversing the earlier V2.0 "no raw
+        # numeric score ever reaches Telegram" design (see trade_score.py).
+        "trade_score": setup["trade_score"],
+        "probability_pct": setup["probability_pct"],
+        "confidence_score": setup["confidence_score"],
+        "risk_score": setup["risk_score"],
+        "reward_score": setup["reward_score"],
+        "expected_rr": setup["expected_rr"],
+        "factor_checklist": setup["factor_checklist"],
+        # Backward-compat display fields, still carried too:
         "confidence_stars": setup["confidence_stars"],
         "confidence_label": setup["confidence_label"],
         "risk_rating": setup["risk_rating"],
@@ -140,15 +151,39 @@ def run_scanner_step(state: dict, now: datetime):
         # so nothing is hidden, just capped).
         return
 
+    # BUGFIX (live feedback, 2026-07-21): `ranked` can contain the SAME
+    # symbol+direction up to 3 times (once per ITM/ATM/OTM bucket --
+    # detect_setups() keeps the best strike from each bucket
+    # separately). Listing all three as "alternatives" isn't 3
+    # distinct opportunities, just 3 strike choices for the same
+    # underlying signal -- confusing noise, not real alternatives.
+    # `ranked` is already best-to-worst (rank_all()), so the first
+    # occurrence of each (symbol, direction) pair seen here is already
+    # its best-scoring moneyness; keep only that one per pair.
+    seen_symbol_direction = {(chosen["symbol"], chosen["direction"])}
+    deduped_alternatives = []
+    for c in ranked:
+        if c is chosen:
+            continue
+        key = (c["symbol"], c["direction"])
+        if key in seen_symbol_direction:
+            continue
+        seen_symbol_direction.add(key)
+        deduped_alternatives.append(c)
+
     chosen["alternatives"] = [
-        {"symbol": c["symbol"], "direction": c["direction"], "moneyness": c["moneyness"], "grade": c["grade"]}
-        for c in ranked if c is not chosen
+        {
+            "symbol": c["symbol"], "direction": c["direction"], "moneyness": c["moneyness"],
+            "grade": c["grade"], "trade_score": c["trade_score"],
+        }
+        for c in deduped_alternatives
     ]
 
     trade_id = state_mod.next_trade_id(
         state, chosen["symbol"], chosen["direction"], chosen["moneyness"], now
     )
-    trade = new_trade_record(chosen, trade_id, now)
+    display_label = f"Trade {state_mod.next_display_number(state)}"
+    trade = new_trade_record(chosen, trade_id, now, display_label)
     state["trades"][trade_id] = trade
 
     try:
@@ -273,6 +308,16 @@ def main():
     date_str = state_mod.trading_date_str(now)
 
     state_mod.ensure_state_branch_checked_out(repo_url, github_token)
+
+    # Phase 1 (opportunity_score.py): swap SYMBOLS/STOCK_SYMBOLS from
+    # the safe import-time fallback (config.FALLBACK_STOCK_WATCHLIST)
+    # to today's real opportunity shortlist, now that the state branch
+    # is actually checked out and daily_cache.py has something to
+    # read. MUST happen before run_scanner_step() below -- see
+    # config.refresh_symbols_for_today()'s docstring for why this
+    # can't just happen at `import config` time.
+    config.refresh_symbols_for_today()
+
     state = state_mod.load_state(date_str)
 
     if state.pop("_recovered_from_corruption", False):

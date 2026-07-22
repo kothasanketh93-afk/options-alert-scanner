@@ -90,6 +90,57 @@ UNDERLYING_INSTRUMENT_KEYS = {
     "MIDCPNIFTY": "NSE_INDEX|NIFTY MID SELECT",
 }
 
+# Names Upstox's instrument master uses for index derivatives' "name"
+# field -- used ONLY to classify a row as an index vs. stock contract
+# for download_instrument_master()'s contract_class (Upstox's own
+# instrument_type field distinguishes CE/PE/FUT/EQ, not index-vs-stock,
+# so this second check is needed the same way angelone.py's
+# _option_instrument_type() needs config.STOCK_SYMBOLS). Includes
+# SENSEX/FINNIFTY even though they're not in UNDERLYING_INSTRUMENT_KEYS
+# yet (still deferred per config.py) -- classification should be
+# correct the day either is wired in, not need a second edit here too.
+_INDEX_NAMES = {"NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY", "SENSEX"}
+
+
+def _contract_class(raw_instrument_type: str, name: str) -> str:
+    """
+    Upstox's instrument_type field is CONTRACT type (CE/PE/FUT/EQ), not
+    index-vs-stock -- this derives the broker-agnostic contract_class
+    (see broker.py's Broker.download_instrument_master() docstring) by
+    combining it with whether `name` is a known index.
+    """
+    is_index = name in _INDEX_NAMES
+    if raw_instrument_type in ("CE", "PE"):
+        return "INDEX_OPTION" if is_index else "STOCK_OPTION"
+    if raw_instrument_type == "FUT":
+        return "INDEX_FUTURE" if is_index else "STOCK_FUTURE"
+    if raw_instrument_type == "EQ":
+        return "EQUITY"
+    return raw_instrument_type or "UNKNOWN"
+
+
+def _normalize_expiry(expiry_raw) -> str:
+    """
+    Upstox's instrument-master JSON gives F&O "expiry" as epoch
+    MILLISECONDS (int/float) on some row types and an already-ISO
+    string on others -- the same inconsistency
+    resolve_current_month_future() above already has to handle for
+    futures rows (see that method's docstring). Reused here so
+    download_instrument_master() always returns "YYYY-MM-DD" or None,
+    regardless of which representation this particular row used.
+    """
+    if not expiry_raw:
+        return None
+    if isinstance(expiry_raw, str):
+        try:
+            return datetime.fromisoformat(expiry_raw).date().isoformat()
+        except ValueError:
+            return None
+    try:
+        return datetime.fromtimestamp(expiry_raw / 1000, tz=IST).date().isoformat()
+    except (TypeError, ValueError, OSError):
+        return None
+
 
 class UpstoxBroker(Broker):
     def __init__(self):
@@ -236,6 +287,141 @@ class UpstoxBroker(Broker):
         resp = request_with_retry("GET", INSTRUMENT_MASTER_URL, timeout=30,
                                    error_cls=BrokerAPIError)
         return json.loads(gzip.decompress(resp.content))
+
+    def download_instrument_master(self) -> list:
+        """
+        Phase 2 (instrument_master.py). Normalizes the SAME cached raw
+        master _instrument_master() already provides (no extra
+        download -- reuses the in-process TTLCache set up in __init__)
+        into the broker-agnostic row shape documented on
+        Broker.download_instrument_master() in broker.py.
+
+        Field-name mapping (per this file's other methods' documented
+        schema assumptions -- see their docstrings for the "confirm
+        against a real downloaded file" caveats, which apply here too):
+          name             -> underlying_symbol (index) / not used for equities
+          trading_symbol   -> symbol / trading_symbol
+          instrument_type  -> "CE"/"PE" for options, "FUT" for futures,
+                               "EQ" for equities (Upstox uses this field
+                               for CONTRACT type, not index-vs-stock --
+                               see _contract_class() below for how the
+                               INDEX_ vs STOCK_ split is derived)
+          strike_price     -> strike_price (already plain rupee terms on
+                               Upstox -- no x100-style scaling to undo,
+                               unlike Angel One's scrip master)
+          expiry           -> expiry, ISO string OR epoch-ms int depending
+                               on row type (same inconsistency
+                               resolve_current_month_future() already
+                               handles -- reused here via _normalize_expiry())
+          lot_size         -> lot_size
+          instrument_key   -> instrument_key
+          exchange         -> exchange
+        """
+        raw_master = self._instrument_master()
+        normalized = []
+        for row in raw_master:
+            instrument_key = row.get("instrument_key")
+            if not instrument_key:
+                continue  # unusable row -- no way to trade it even if everything else parsed
+            raw_type = row.get("instrument_type")
+            name = row.get("name")
+            trading_symbol = row.get("trading_symbol")
+            option_type = raw_type if raw_type in ("CE", "PE") else None
+            contract_class = _contract_class(raw_type, name)
+            expiry_iso = _normalize_expiry(row.get("expiry"))
+            strike_price = row.get("strike_price")
+            try:
+                strike_price = float(strike_price) if strike_price not in (None, "", 0) else None
+            except (TypeError, ValueError):
+                strike_price = None
+            normalized.append({
+                "symbol": trading_symbol or name,
+                "underlying_symbol": name,
+                "exchange": row.get("exchange") or row.get("segment"),
+                "contract_class": contract_class,
+                "option_type": option_type,
+                "expiry": expiry_iso,
+                "strike_price": strike_price,
+                "lot_size": row.get("lot_size"),
+                "trading_symbol": trading_symbol,
+                "instrument_key": instrument_key,
+            })
+        return normalized
+
+    def get_daily_candles(self, instrument_key: str, count: int) -> list:
+        """
+        Phase 1 (opportunity_score.py). Upstox's v3 historical-candle
+        endpoint takes an explicit unit ("days") and a from/to date
+        range rather than a candle count, so `count` here is
+        approximate: requests roughly count*1.6 CALENDAR days back
+        (accounting for weekends/holidays -- NOT using holiday_guard's
+        NSE holiday list, since over-requesting a few extra days and
+        trimming client-side is simpler and cheaper than importing
+        that dependency here) and trims to the last `count` rows.
+
+        UNVERIFIED URL PATTERN: modeled on the same
+        "/v3/historical-candle/{instrument_key}/{unit}/{value}/{to}/{from}"
+        shape as the intraday endpoint above -- confirm the exact path
+        and date-format against a live Upstox v3 API response before
+        relying on this (same caveat this file already carries for
+        MIDCPNIFTY's instrument key and the STOCK_SYMBOLS instrument-key
+        resolution path -- see their docstrings).
+        """
+        to_dt = datetime.now(IST).date() - timedelta(days=1)  # yesterday -- today's daily candle doesn't exist pre-market
+        from_dt = to_dt - timedelta(days=int(count * 1.6) + 5)
+
+        url = (f"{BASE_URL_V3}/historical-candle/{instrument_key}/days/1/"
+               f"{to_dt.isoformat()}/{from_dt.isoformat()}")
+        resp = request_with_retry("GET", url, headers=self._headers(), timeout=15,
+                                   error_cls=BrokerAPIError)
+        payload = resp.json()
+        raw_candles = payload.get("data", {}).get("candles", [])
+        out = []
+        for c in raw_candles:
+            ts = datetime.fromisoformat(c[0])
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=IST)
+            out.append({
+                "timestamp": ts.isoformat(), "open": float(c[1]), "high": float(c[2]),
+                "low": float(c[3]), "close": float(c[4]),
+                "volume": float(c[5]) if len(c) > 5 and c[5] is not None else 0.0,
+            })
+        out.sort(key=lambda c: c["timestamp"])
+        return out[-count:] if len(out) > count else out
+
+    def get_batch_quotes(self, instrument_keys: list) -> dict:
+        """
+        Phase 1. Upstox's /v2 quotes endpoint accepts a comma-separated
+        `instrument_key` query param covering many symbols in one call
+        -- this is the actual API-call-count reduction Phase 1's
+        "don't fully call out to all 100 stocks individually"
+        requirement depends on. UNVERIFIED response-key format
+        (Upstox's quote response keys each entry by instrument_key with
+        `:` replaced by `%7C`-style escaping in some SDK versions --
+        confirm against a live response before trusting this
+        unescape-check, same caveat as get_daily_candles() above).
+        Chunked at 500 keys/request (documented Upstox limit as of this
+        file's other endpoints) even though Phase 1's ~100-symbol
+        universe will never actually hit that in one call.
+        """
+        out = {}
+        chunk_size = 500
+        for i in range(0, len(instrument_keys), chunk_size):
+            chunk = instrument_keys[i:i + chunk_size]
+            url = f"{BASE_URL}/market-quote/quotes"
+            resp = request_with_retry("GET", url, headers=self._headers(), timeout=15,
+                                       params={"instrument_key": ",".join(chunk)},
+                                       error_cls=BrokerAPIError)
+            payload = resp.json().get("data", {})
+            for raw_key, row in payload.items():
+                key = row.get("instrument_token") or raw_key.replace("%7C", "|")
+                ohlc = row.get("ohlc", {})
+                out[key] = {
+                    "ltp": float(row.get("last_price", 0) or 0),
+                    "prev_close": float(ohlc.get("close", 0) or 0),
+                    "volume": float(row.get("volume", 0) or 0),
+                }
+        return out
 
     def search_instrument(self, symbol: str, expiry_date: str, strike: float, option_type: str) -> str:
         master = self._instrument_master()

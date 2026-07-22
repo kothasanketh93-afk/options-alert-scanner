@@ -12,22 +12,26 @@ cross-symbol opportunity ranking -- is the V2.0 framework around it.
 
 NOTE ON THIS SPLIT: the framework pieces now live in their own
 modules so this file stays focused on the detection flow itself:
-  - indicators.py    EMA/ATR/VWAP/efficiency-ratio/regime/S-R level
+  - indicators.py    EMA/ATR/VWAP/efficiency-ratio/regime/S-R level/momentum
   - option_chain.py  broker calls: instrument keys, expiry, ATM
-                      strike, leg extraction, VWAP-on-futures check,
-                      multi-timeframe confirmation, directional bias
+                      strike, leg extraction, VWAP-on-futures check
+                      (boolean + signed distance), multi-timeframe
+                      confirmation, directional bias
   - filters.py       quality-gate factor checks + the gate itself
   - levels.py        dynamic ATR-based SL/target/entry-zone sizing
-  - grading.py       quality score, grade, confidence, risk rating
+  - grading.py       OLD (V2.0) binary-strengths scoring -- unused by
+                      this file since Phase 3, kept only as a
+                      reference/fallback; nothing else imports it
+  - trade_score.py   PHASE 3: continuous-strength Trade Score Engine
+                      (Trade Score, Probability, Confidence, Risk/
+                      Reward scores, Grade, Expected R:R) -- this is
+                      what score_strike() actually calls now
   - ranking.py       shared sort key + cross-symbol ranking
 This file (scanner.py) wires them together: current_session(),
 moneyness_offsets(), score_strike(), detect_setups(), and
 detect_all_setups() -- the top-level detection flow.
 
 WHAT CHANGED FROM V1:
-- No numeric score reaches Telegram. Internally a 0-100 quality score
-  still exists (compute_grade() needs it), but the trade dict now
-  carries "grade" ("Strong Entry"/"Entry") and "confidence_stars" instead.
 - Fixed % SL/target replaced with ATR-based dynamic levels (see
   dynamic_trade_levels()), capped against nearby support/resistance.
 - Trade Quality Gate: ALL of {EMA trend, VWAP, volume, OI, liquidity,
@@ -51,12 +55,16 @@ WHAT CHANGED FROM V1:
 DELIBERATELY NOT USED (per spec): RSI, MACD, Bollinger Bands,
 SuperTrend, Stochastic, Ichimoku, CCI, extra MA crossovers, ML/AI of
 any kind. Every function below is plain deterministic arithmetic.
+This also means Phase 3's Trade Score Engine (trade_score.py) does
+NOT use RSI or PCR, even though the phase-3 spec assumed both were
+already being calculated -- neither was, so trade_score.py's 10
+factors are built entirely from what's already computed here instead
+(see that module's docstring for the full explanation).
 
-Required output schema per accepted setup (unchanged surface, new
-fields added -- state.py/tracker.py/telegram_notify.py already handle
-these):
+Required output schema per accepted setup (state.py/tracker.py/
+telegram_notify.py already handle these):
 {
-  "symbol": "NIFTY" | "BANKNIFTY",
+  "symbol": "NIFTY" | "BANKNIFTY" | ... (100-stock universe, Phase 1),
   "direction": "CE" | "PE",
   "moneyness": "ITM" | "ATM" | "OTM",     # winner among ranked candidates
   "instrument_key": "...",
@@ -66,44 +74,88 @@ these):
   "alert_premium": 121.2,
   "entry_low": 120.0, "entry_high": 123.6,   # ATR-based width now, see dynamic_trade_levels()
   "stop_loss": 108.4, "target_1": 145.9, "target_2": 168.2,  # ATR-based now
-  "grade": "Strong Entry",            # replaces setup_score in Telegram
-  "confidence_stars": "★★★★★",
-  "confidence_label": "Very High",
+  "grade": "A+",                       # trade_score.py's A+/A/B+/B (Phase 3)
+  "trade_score": 92,                   # 0-100, trade_score.compute_trade_score() (Phase 3)
+  "probability_pct": 91,               # Phase 3
+  "confidence_score": 9.4,             # X/10, Phase 3
+  "risk_score": 2.3,                   # X/10, higher = riskier, Phase 3
+  "reward_score": 9.1,                 # X/10, Phase 3
+  "expected_rr": "1:2.7",              # Phase 3
+  "factor_checklist": ["Trend ✅", "Volume ✅", ...],  # Phase 3, for Telegram
+  "confidence_stars": "★★★★★",         # backward-compat display field, still populated
+  "confidence_label": "Very High",     # backward-compat display field, still populated
   "risk_rating": "🟡",
   "risk_label": "Medium",
   "expected_holding_minutes": (20, 40),
   "why_reasons": ["EMA aligned", "Above VWAP", "Strong OI Build-up", ...],
   "session": "10:35-11:35",
-  "alternatives": [ {symbol, direction, moneyness, grade}, ... ],  # text-only
+  "alternatives": [ {symbol, direction, moneyness, grade, trade_score}, ... ],  # text-only
 }
 """
 
 from datetime import datetime, timezone, timedelta
 
 import market_data
+import instrument_master
 from logging_setup import get_logger
+from exceptions import ConfigurationError
 from config import (
     SESSION_WINDOWS, STRIKE_STEP, STRIKE_RANGE, SYMBOLS,
     ENTRY_SCORE, T1_ATR_MULT,
 )
 
-from indicators import ema_trend_direction, compute_atr, market_regime, find_nearby_level
+from indicators import (
+    ema_trend_direction, compute_atr, compute_ema, market_regime, find_nearby_level,
+    momentum_pct, efficiency_ratio,
+)
 from option_chain import (
     UNDERLYING_INSTRUMENT_KEYS, current_expiry, _extract_leg,
-    vwap_check, multi_timeframe_confirms, directional_bias, get_atm_strike,
-    resolve_underlying_key,
+    vwap_check, vwap_distance_pct, multi_timeframe_confirms, directional_bias,
+    get_atm_strike, resolve_underlying_key, days_to_expiry,
 )
 from filters import (
-    oi_is_building, liquidity_ok, delta_acceptable, expiry_theta_ok,
+    oi_is_building, oi_change_pct, liquidity_ok, delta_acceptable, expiry_theta_ok,
     quality_gate, reasons_from_factors,
 )
 from levels import dynamic_trade_levels, estimated_holding_minutes
-from grading import example_quality_score, compute_grade, confidence_display, risk_rating
+# Phase 3: Professional Trade Score Engine (replaces grading.py's binary-
+# strengths example_quality_score() in this file's active path -- grading.py
+# itself is left in place, unused, as a reference/fallback).
+import trade_score
 from ranking import _grade_rank_key, rank_all
 
 _logger = get_logger("scanner")
 
 IST = timezone(timedelta(hours=5, minutes=30))
+
+# Per-PROCESS cache (one Actions run = one process, same rationale as
+# option_chain._vwap_cache): NIFTY's own 15-min efficiency ratio is
+# read once per run for trade_score.market_strength(), not once per
+# strike -- every symbol/direction/moneyness this run shares the same
+# broad-market conviction read, and it doesn't meaningfully change
+# within one ~5-minute cycle anyway.
+_market_strength_cache = {}
+
+
+def _broad_market_efficiency_ratio() -> float:
+    """
+    Phase 3: NIFTY's own 15-min efficiency_ratio() as the "Market
+    Strength" factor -- independent of whatever symbol/direction is
+    currently being scored. Falls back to 0.0 (neutral, not a crash)
+    on any data problem, same "don't take down the whole run over one
+    soft signal" posture as opportunity_score._safe_total_oi().
+    """
+    if "value" in _market_strength_cache:
+        return _market_strength_cache["value"]
+    try:
+        nifty_key = UNDERLYING_INSTRUMENT_KEYS["NIFTY"]
+        candles = market_data.get_recent_underlying_candles(nifty_key, "15minute", 30)
+        value = efficiency_ratio(candles) if candles else 0.0
+    except Exception as exc:
+        _logger.info(f"MARKET_STRENGTH: NIFTY efficiency-ratio read failed ({type(exc).__name__}: {exc}) -- scoring as neutral (0.0)")
+        value = 0.0
+    _market_strength_cache["value"] = value
+    return value
 
 
 def current_session(now: datetime = None):
@@ -130,6 +182,67 @@ def moneyness_offsets(direction: str) -> dict:
     if direction == "CE":
         return {"ITM": list(range(-1, -n - 1, -1)), "ATM": [0], "OTM": list(range(1, n + 1))}
     return {"ITM": list(range(1, n + 1)), "ATM": [0], "OTM": list(range(-1, -n - 1, -1))}
+
+
+def resolve_strike_candidates(symbol: str, direction: str, atm_strike, spot_price: float, expiry: str) -> dict:
+    """
+    Phase 2 (dynamic strike selection). Returns real per-bucket strike
+    lists: {"ITM": [...], "ATM": [strike], "OTM": [...]} -- sourced
+    from instrument_master.py's actual listed strikes whenever
+    available, so this never assumes uniform spacing the way the old
+    `atm_strike + offset_steps * STRIKE_STEP[symbol]` arithmetic did
+    (a real gap for individual stock options -- see config.py's own
+    "unverified"/"a guess" comments on STOCK_STRIKE_STEP).
+
+    FALLBACK, not a hard dependency: if instrument_master has nothing
+    for this symbol/expiry today (premarket.yml's cache step hasn't
+    run yet, a genuinely thin/delisted symbol, or any lookup error),
+    this degrades to the exact pre-Phase-2 fixed-step behavior via
+    moneyness_offsets() + STRIKE_STEP -- a bad cache day means "back to
+    how this worked before", never "zero candidates for the whole
+    symbol". This is what makes Phase 2 additive rather than a new
+    single point of failure.
+    """
+    try:
+        offsets = instrument_master.nearest_atm_and_offsets(
+            symbol, spot_price, n_each_side=STRIKE_RANGE, expiry=expiry,
+        )
+    except Exception as exc:
+        _logger.warning(
+            f"STRIKE_ENGINE {symbol}: instrument_master lookup failed "
+            f"({type(exc).__name__}: {exc}) -- falling back to fixed STRIKE_STEP arithmetic"
+        )
+        offsets = None
+
+    if offsets is not None:
+        # instrument_master returns unsigned "LOWER"/"HIGHER" walks from
+        # ATM by strike value. For a CE, ITM = lower strikes (already
+        # in-the-money), OTM = higher strikes; for a PE it's reversed --
+        # same ITM/OTM-per-direction convention moneyness_offsets()
+        # already encodes for the legacy path below.
+        if direction == "CE":
+            return {"ITM": offsets["LOWER"], "ATM": offsets["ATM"], "OTM": offsets["HIGHER"]}
+        return {"ITM": offsets["HIGHER"], "ATM": offsets["ATM"], "OTM": offsets["LOWER"]}
+
+    step = STRIKE_STEP.get(symbol)
+    if step is None:
+        # Same guard as option_chain.get_atm_strike()'s fallback -- see
+        # that function's docstring. In practice this function is only
+        # ever called right after get_atm_strike() already succeeded
+        # for the same symbol+expiry (detect_setups() below), so
+        # STRIKE_STEP[symbol] having a value here is usually already
+        # guaranteed by that earlier call NOT raising -- this guard is
+        # defensive insurance in case that call ordering ever changes,
+        # not the primary safety net.
+        raise ConfigurationError(
+            f"{symbol}: no instrument_master strikes AND no STRIKE_STEP fallback "
+            f"entry -- cannot resolve strike candidates for this symbol today."
+        )
+    buckets = moneyness_offsets(direction)
+    return {
+        moneyness: [atm_strike + offset_steps * step for offset_steps in offset_list]
+        for moneyness, offset_list in buckets.items()
+    }
 
 
 def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_history) -> dict:
@@ -175,6 +288,7 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     ema_aligned = ema_trend_direction(candles_15m) == direction
     vwap_confirmed = vwap_check(symbol, spot_price, direction)
     volume_confirmed = liquidity_ok(oi, volume, bid, ask, premium, symbol)  # see NOTE below
+    oi_delta_pct = oi_change_pct(oi_history, instrument_key, oi)  # read BEFORE oi_is_building mutates oi_history
     oi_building = oi_is_building(oi_history, instrument_key, oi)
     liquidity_pass = liquidity_ok(oi, volume, bid, ask, premium, symbol)
     mtf_confirmed = multi_timeframe_confirms(symbol, direction)
@@ -228,37 +342,65 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         return None
 
     # NOTE: volume_confirmed above reuses liquidity_ok()'s pass/fail as a
-    # placeholder -- liquidity_ok() checks OI/volume/premium/spread
-    # jointly, not "is volume expanding vs. its recent average" (that
-    # needs a rolling average this function doesn't have inputs for).
-    # If your existing scanner tracks recent average option volume,
-    # swap this for a real expansion check; example_quality_score()'s
-    # "volume_strength" docstring shows the intended shape.
+    # placeholder for the OLD binary "reasons" factor only --
+    # trade_score.volume_strength() below is a genuinely continuous read
+    # (raw option volume vs. the liquidity engine's own minimum), so the
+    # Trade Score's Volume factor isn't just this same binary reused
+    # again.
+
+    # Levels are computed here (pre-grade) rather than after grading, as
+    # in the old flow -- pure ATR arithmetic, no extra API calls, so the
+    # (small) extra compute on strikes that end up "Reject" is cheap, and
+    # trade_score's risk_reward/reward/expected-RR all need premium-terms
+    # target/SL distances from these SAME capped levels (not the pre-cap
+    # provisional_t1_distance above, which is index-points, not premium,
+    # and only intended for the risk_reward_ok gate input).
+    levels = dynamic_trade_levels(premium, atr_index_points, delta, direction, spot_price, nearby_level)
+
+    ema9 = compute_ema([c["close"] for c in candles_15m], 9)
+    ema21 = compute_ema([c["close"] for c in candles_15m], 21)
+    raw_momentum = momentum_pct(candles_15m)
+    signed_momentum = None
+    if raw_momentum is not None:
+        signed_momentum = raw_momentum if direction == "CE" else -raw_momentum
+    signed_vwap_dist = vwap_distance_pct(symbol, spot_price, direction)
+    target_distance = levels["target_1"] - premium
+    sl_distance = premium - levels["stop_loss"]
 
     strengths = {
-        "ema_strength": 1.0 if ema_aligned else 0.0,
-        "mtf_agreement": 1.0 if mtf_confirmed else 0.0,
-        "volume_strength": 1.0 if volume_confirmed else 0.0,
-        "oi_build_strength": 1.0 if oi_building else 0.0,
-        "liquidity_strength": 1.0 if liquidity_pass else 0.0,
-        "risk_reward_strength": 1.0 if risk_reward_ok else 0.0,
+        "trend": trade_score.trend_strength(efficiency_ratio(candles_15m)),
+        "volume": trade_score.volume_strength(volume, symbol),
+        "oi": trade_score.oi_build_strength(oi_delta_pct),
+        "momentum": trade_score.momentum_strength(signed_momentum),
+        "vwap": trade_score.vwap_strength(signed_vwap_dist),
+        "ema": trade_score.ema_strength(ema9, ema21, spot_price) if ema9 is not None and ema21 is not None else 0.0,
+        "risk_reward": trade_score.risk_reward_strength(target_distance, sl_distance),
+        "liquidity": trade_score.liquidity_strength(oi, volume, bid, ask, premium, symbol),
+        "market_strength": trade_score.market_strength(_broad_market_efficiency_ratio()),
+        "htf": trade_score.htf_strength(mtf_confirmed),
     }
-    quality_score = example_quality_score(strengths)
-    grade = compute_grade(quality_score)
+    score = trade_score.compute_trade_score(strengths)
+    grade = trade_score.compute_grade(score)
 
     _logger.info(
         f"SCORE {symbol} {direction} {moneyness} strike={strike} "
-        f"score={quality_score}/100 grade={grade} (entry_floor={ENTRY_SCORE})"
+        f"trade_score={score}/100 grade={grade} (entry_floor={ENTRY_SCORE}) | "
+        + " ".join(f"{k}={v:.2f}" for k, v in strengths.items())
     )
 
     if grade == "Reject":
         return None
 
-    levels = dynamic_trade_levels(premium, atr_index_points, delta, direction, spot_price, nearby_level)
-    stars, confidence_label = confidence_display(grade)
+    stars, confidence_label = trade_score.confidence_display(grade)
+    expiry_days = days_to_expiry(expiry)
     atr_pct = (atr_index_points / spot_price) if spot_price else 0.0
-    risk_emoji, risk_label = risk_rating(atr_pct, moneyness)
-    target_distance = levels["target_1"] - premium
+    risk_score = trade_score.compute_risk_score(atr_pct, moneyness, expiry_days)
+    risk_emoji, risk_label = trade_score.risk_emoji_label(risk_score)
+    rr_ratio = (target_distance / sl_distance) if sl_distance else 0.0
+    reward_score = trade_score.compute_reward_score(rr_ratio)
+    probability_pct = trade_score.compute_probability_pct(score)
+    confidence_score = trade_score.compute_confidence_score(score)
+    expected_rr = trade_score.expected_rr_text(premium, levels["stop_loss"], levels["target_1"])
     holding_minutes = estimated_holding_minutes(atr_index_points, target_distance / abs(delta) if delta else 0)
 
     return {
@@ -276,6 +418,16 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         "target_1": levels["target_1"],
         "target_2": levels["target_2"],
         "grade": grade,
+        # Phase 3: new numeric fields shown in Telegram (per an explicit
+        # decision reversing the earlier "hide all numbers" design).
+        "trade_score": score,
+        "probability_pct": probability_pct,
+        "confidence_score": confidence_score,
+        "risk_score": risk_score,
+        "reward_score": reward_score,
+        "expected_rr": expected_rr,
+        "factor_checklist": trade_score.factor_checklist(strengths),
+        # Backward-compat display fields, still populated:
         "confidence_stars": stars,
         "confidence_label": confidence_label,
         "risk_rating": risk_emoji,
@@ -284,7 +436,7 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         "why_reasons": reasons_from_factors(factors),
         "session": session,
         "alternatives": [],  # filled in by main.py's run_scanner_step, not here
-        "_quality_score": quality_score,
+        "_quality_score": score,  # ranking.py's tiebreak key -- now the Trade Score itself
     }
 
 
@@ -310,7 +462,7 @@ def detect_setups(symbol: str, oi_history: dict) -> list:
         return []  # outside a scan window -- deliberately silent, this is expected most of the day
 
     underlying_key = resolve_underlying_key(symbol)
-    min_quality_score = ENTRY_SCORE  # floor matching the lowest grade, "Entry"
+    min_quality_score = ENTRY_SCORE  # floor matching the lowest grade, "B" (trade_score.py, Phase 3)
     if underlying_key:
         candles_15m = market_data.get_recent_underlying_candles(underlying_key, "15minute", 30)
         regime, penalty = market_regime(candles_15m)
@@ -324,13 +476,12 @@ def detect_setups(symbol: str, oi_history: dict) -> list:
     candidates = []
     for direction in biases:
         atm_strike, spot_price = get_atm_strike(symbol)
-        step = STRIKE_STEP[symbol]
-        buckets = moneyness_offsets(direction)
+        expiry = current_expiry(symbol)
+        buckets = resolve_strike_candidates(symbol, direction, atm_strike, spot_price, expiry)
 
-        for moneyness, offset_list in buckets.items():
+        for moneyness, strike_list in buckets.items():
             bucket_setups = []
-            for offset_steps in offset_list:
-                strike = atm_strike + offset_steps * step
+            for strike in strike_list:
                 setup = score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_history)
                 if setup and setup.get("_quality_score", 0) >= min_quality_score:
                     bucket_setups.append(setup)
