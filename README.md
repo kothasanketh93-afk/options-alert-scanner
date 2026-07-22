@@ -18,14 +18,20 @@ server, no card details, minimal GitHub Actions usage.
 | `scripts/broker.py` | Abstract broker interface (`get_candles`, `get_ltp`, `get_option_chain`, `search_instrument`, `get_current_expiry`). Both `angelone.py` and `upstox.py` implement this — scanner.py/tracker.py never know which one actually served a call. Also documents two non-abstract conventions both concrete brokers should implement if they support futures/stocks: `resolve_current_month_future()` and `resolve_equity_instrument_key()`. |
 | `scripts/angelone.py` | Concrete Angel One SmartAPI implementation of `broker.py` — the **primary** broker. Automated TOTP login, no manual step ever. Now handles both index (`OPTIDX`/`FUTIDX`) and stock (`OPTSTK`/`FUTSTK`) instrument-type codes for `config.STOCK_SYMBOLS` — see `_option_instrument_type()`/`_future_instrument_type()`. |
 | `scripts/upstox.py` | Concrete Upstox implementation of `broker.py` — now the **fallback** broker, used only when Angel One is unhealthy. Resolves stock underlyings dynamically via `resolve_equity_instrument_key()` (instrument master lookup) rather than a hardcoded key. |
-| `scripts/broker_failover.py` | Wraps both brokers behind the same `Broker` interface. Switches to Upstox after consecutive Angel One failures (auth, timeout, empty/stale data, etc.), logs every switch, and automatically tries Angel One first again on the next run — no persisted cross-run state needed. Passes through `resolve_current_month_future()` and `resolve_equity_instrument_key()` (both `count_failures=False`, same as other data-specific lookups). See its module docstring for the full design and reasoning. |
+| `scripts/broker_failover.py` | Wraps both brokers behind the same `Broker` interface. As of 2026-07-21, Upstox is primary and Angel One is fallback (swapped from the original Angel-One-primary design — see "Bugs found and fixed" #10) — switches to the fallback after consecutive primary failures (auth, timeout, empty/stale data, rate limits, etc.), logs every switch, and automatically tries the primary first again on the next run — no persisted cross-run state needed. Passes through `resolve_current_month_future()` and `resolve_equity_instrument_key()` (both `count_failures=False`, same as other data-specific lookups). See its module docstring for the full design and reasoning. |
 | `scripts/cache.py` | Tiny in-process TTL cache (instrument master, option chain, underlying candles) scoped to one GitHub Actions run. |
 | `scripts/logging_setup.py` | Structured logging to named channels, written to stdout (captured by the Actions run log) rather than to disk files that would vanish with the ephemeral runner — see its docstring for the reasoning and how to add persisted log artifacts if you want them later. |
 | `scripts/state.py` | Loads/saves the daily state file via the `state` git branch; generates Trade IDs; same-symbol+direction suppression check; **circuit breaker + concurrent trade cap**; **auto-recovers from a corrupted state file** instead of crashing. |
 | `scripts/tracker.py` | Chronological 1-min candle processing: entry activation, T1/T2/SL, ambiguous-candle detection, EOD handling |
 | `scripts/market_data.py` | Thin compatibility wrapper over `broker.py`/`broker_failover.py` — preserves the exact function signatures scanner.py/tracker.py already call, so the broker abstraction (and later, failover) required zero changes to either. |
 | `scripts/telegram_notify.py` | All message templates (new alert, entry, T1, T2, SL, not-entered, EOD, ambiguous, daily summary) — message formats untouched by the architecture work; only the send-plumbing changed. |
-| `scripts/scanner.py` | **Plug your existing EMA/OI/volume/delta detection logic in here** — now scans ATM + ITM + OTM per direction. `directional_bias()`/`get_atm_strike()`/`score_strike()` are still stubs — this is next up. |
+| `scripts/scanner.py` | Detection flow: universe → opportunity shortlist (Phase 1) → dynamic strike selection (Phase 2) → Trade Score Engine (Phase 3, via `trade_score.py`). Scans ATM + ITM + OTM per direction, one best strike per symbol+direction alerted. |
+| `scripts/trade_score.py` | **Phase 3**: continuous-strength Trade Score Engine — Trade Score /100, Probability %, Confidence /10, Risk /10, Reward /10, Grade (A+/A/B+/B), Expected R:R. Replaces `grading.py`'s old binary-strengths scoring in the active path (`grading.py` itself is left in place, unused, as a fallback/reference). |
+| `scripts/universe.py` | **Phase 1**: the ~100-stock master universe (F&O-eligible, liquid, sector-tagged, configurable). |
+| `scripts/opportunity_score.py` | **Phase 1**: pre-market Opportunity Score (0-100) — rvol, gap, ATR, momentum, OI change, sector strength, liquidity, VWAP distance, prev-day range. |
+| `scripts/build_opportunity_shortlist.py` | **Phase 1**: daily pipeline that scores the full universe and shortlists the top `TOP_N_STOCKS` for detailed scanning. |
+| `scripts/instrument_master.py` | **Phase 2**: dynamic strike engine — downloads/caches the instrument master once/day, validates F&O eligibility/expiry/lot size/strike availability with skip-reasons, resolves ATM/ITM/OTM from real listed strikes (no hardcoded steps). |
+| `scripts/build_instrument_master_cache.py` | **Phase 2**: once-daily instrument master download/cache-build script. |
 | `scripts/heartbeat_check.py` | Independent staleness check — verifies Angel One reachability, Upstox reachability+auth, Telegram reachability, and state-branch writability every run (not just staleness), and actually checks git's exit code instead of assuming success |
 | `scripts/premarket_check.py` | Runs once daily, ≥15 min before market open — same diagnostics as heartbeat_check.py, so a misconfiguration or outage is caught before the trading day starts rather than 45+ minutes into it |
 | `scripts/holiday_guard.py` | Weekend + NSE holiday check, skips runs on non-trading days |
@@ -34,7 +40,47 @@ server, no card details, minimal GitHub Actions usage.
 | `.github/workflows/heartbeat.yml` | Runs every 30 min independently, alerts if state branch goes stale |
 | `.github/workflows/premarket.yml` | Runs once daily at 09:00 IST, own workflow, own concurrency group |
 
-## Removed
+## Phase 1–3 status (100-stock expansion + Trade Score Engine)
+
+**Phase 1 — Opportunity Score Engine: done.** `universe.py` holds the
+~100-stock master universe; `opportunity_score.py` computes the
+pre-market 0-100 score; `build_opportunity_shortlist.py` picks the
+top `config.TOP_N_STOCKS` (35) for detailed scanning, cutting API
+calls/runtime by ignoring the rest.
+
+**Phase 2 — Dynamic Strike Selection: done.** `instrument_master.py`
+downloads/caches the instrument master once/day and resolves
+ATM/ITM/OTM from real listed strikes — no hardcoded strike tables or
+divisors anywhere. Skips log a reason for every skip.
+
+**Phase 3 — Professional Trade Score Engine: done, with two explicit
+decisions worth knowing about:**
+1. **Numbers are shown in Telegram again.** An earlier rewrite
+   (documented below as "V2.0") deliberately removed all raw
+   numbers from alerts in favor of Grade + stars + emoji only. Phase
+   3 reverses that — Trade Score, Probability %, Confidence, Risk,
+   Reward, and Expected R:R are now all shown (see
+   `telegram_notify.py`'s `fmt_new_alert()`), with the old
+   grade/stars/emoji kept alongside them, not replaced.
+2. **RSI and PCR are NOT used**, even though the phase-3 spec assumed
+   both were already being calculated. Neither was (RSI is
+   deliberately excluded — see scanner.py's docstring; PCR was never
+   implemented) — rather than bolt on two new indicators, the
+   10-factor formula (`trade_score.py`) is built entirely from what's
+   already computed elsewhere: EMA, VWAP, ATR/trend-efficiency, OI
+   build, liquidity, option volume, 15-min MTF confirmation, and R:R.
+   "Market Strength" is filled by NIFTY's own trend-efficiency reading
+   as a broad-tape-conviction proxy, since nothing more specific
+   (sector breadth, advance/decline) is wired in yet.
+
+None of the weights, ceilings, or the probability/risk/reward
+calibration formulas in `trade_score.py` are backtested — they're
+reasoned starting points, same caveat as `opportunity_score.py`'s
+weights. Tune both from live `SCORE`/`GATE` log lines once real
+outcomes accumulate, same feedback loop already described for grading
+further down this file.
+
+
 
 - **`expiry_day.py`** — removed, the daily expiry note was firing too often
   (NIFTY expiry is weekly) to be useful.
@@ -283,6 +329,59 @@ both now fixed and verified with simulation:
    `GATE`/`SCORE` log lines covering every stage (see "Mid/smallcap
    stock options" above for what each means).
 
+8. **`retry_utils.py` discarded the real error body on every 401/403,
+   always printing a generic guessed message (2026-07-21).** Every
+   OTHER status branch (429, 5xx, other 4xx) already included
+   `resp.text[:200]`; the 401/403 branch instead always said "token
+   missing/expired/invalid" regardless of what Angel One actually
+   returned. This meant days of live debugging (TOTP, IP headers, MAC
+   address) happened blind, guessing at a cause instead of reading
+   it. Fixed: 401/403 now surfaces the real response body too.
+
+9. **Angel One's historical-candle endpoint was rate-limiting nearly
+   every run, and every 401/403 was being treated as a fatal,
+   non-retryable auth failure regardless of cause (2026-07-21).** Once
+   bug #8's fix let the real body through, the actual message turned
+   out to be `"Access denied because of exceeding access rate"` --
+   not a credentials problem. The same underlying condition also
+   showed up as a `400` with a completely empty body. Fixed in two
+   layers: (a) `retry_utils.py` now retries a 401/403/400 that looks
+   rate-limited (matching wording, or an empty-body 400) instead of
+   raising immediately -- verified with unit tests covering all four
+   cases (rate-limited 403, genuine 403, empty-body 400, genuine 400
+   with a real message); (b) `angelone.py` added a deliberate
+   `ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS` (1.0s, see `config.py`)
+   throttle between historical-candle calls, plus swapped the
+   hardcoded `127.0.0.1` client-IP header for a real detected public
+   IP (`_detect_public_ip()`) as a secondary hardening measure (this
+   turned out NOT to be the actual cause, but is harmless to keep).
+
+10. **Angel One's rate limit persisted even with the throttle above,
+    including on the very first call of a fresh process (2026-07-21)**
+    -- ruling out this process's own call pacing as the sole cause
+    (nothing to throttle against yet on a cold start). Root cause
+    undetermined (an account-wide or cross-workflow limit outside
+    this codebase's visibility). Rather than continue chasing an
+    undocumented limit, `market_data.py` now constructs `FailoverBroker`
+    with **Upstox as primary and Angel One as fallback** (previously
+    the reverse) -- Upstox served every single request reliably
+    throughout the entire debugging session. Angel One is kept as
+    fallback, not removed, in case its limit clears or a support
+    ticket resolves it. `broker_failover.py`'s `raw_primary()`
+    docstring was also corrected -- it's generic, not Angel-One-
+    specific, and was previously worded as if it always returned
+    Angel One specifically.
+
+11. **Telegram messages showed full ISO timestamps with date and
+    `+05:30` offset instead of just a clock time (2026-07-21).**
+    `tracker.py` stores `actual_entry_time`/`t1_hit_time`/
+    `t2_hit_time`/`sl_hit_time` as full `datetime.isoformat()` strings
+    (needed for `fmt_eod_closed()`'s holding-duration math), but
+    `telegram_notify.py` was displaying those raw strings verbatim.
+    Fixed: added a `_time_only()` display helper in `telegram_notify.py`
+    that formats down to `HH:MM` for every message; the underlying
+    stored values are untouched.
+
 ## V2.0 — Professional Options Decision Engine (major rearchitecture)
 
 Rewritten per a detailed V2.0 spec prioritizing quality over quantity
@@ -467,18 +566,17 @@ spec compliance:
 
 Every V2.0 requirement has a tested, working implementation in the
 **framework** (gate, grading, ATR levels, VWAP, regime, liquidity,
-ranking, fallback, circuit breaker, daily summary). What's still
-**stub-only, by necessity** — because it depends on proprietary
-detection logic only you have — is `directional_bias()`,
-`get_atm_strike()`, and `score_strike()`'s actual EMA/breakout/volume
-reads. Until those three are filled in, the system is architecturally
-complete but will not generate a single trade — this isn't a bug, it's
-the honest state of a scaffold waiting for its detection logic. The
-fastest unblock, in order: (1) `UNDERLYING_INSTRUMENT_KEYS` +
-`VWAP_INSTRUMENT_KEYS`, both trivial lookups from Upstox's instrument
-master; (2) `get_atm_strike()`; (3) `directional_bias()`; (4)
-`score_strike()`, which can lean on `example_quality_score()` as a
-starting point rather than building factor-weighting from scratch.
+ranking, fallback, circuit breaker, daily summary). `directional_bias()`,
+`get_atm_strike()`, and `score_strike()` are no longer stubs as of
+Phase 2/Phase 3 — `get_atm_strike()` resolves real listed strikes via
+`instrument_master.py` (Phase 2, no hardcoded steps/divisors), and
+`score_strike()` runs the full Phase 3 Trade Score Engine
+(`trade_score.py`) against real EMA/VWAP/OI/volume/momentum reads, not
+placeholder logic. What's still worth independently verifying before
+trusting this live: the weight/ceiling constants throughout
+`trade_score.py` and `opportunity_score.py` are reasoned starting
+points, not backtested — see the "Phase 1–3 status" section above for
+what to tune once real outcomes accumulate.
 
 ## Confluence layer (V1, still active under the hood)
 
@@ -566,10 +664,12 @@ If your actual measured runtime per job differs a lot from the
 after a week of live runs and this can be recalculated precisely.
 ## What you still need to do
 
-1. **Merge your real scanner logic into `scripts/scanner.py`** — the EMA9/21,
-   breakout, volume, OI, delta, and scoring logic you already have.
-   The only requirement is that `detect_setups()` returns dicts matching
-   the schema documented at the top of that file.
+1. **Nothing to merge here anymore** — `scanner.py`'s detection logic
+   (EMA9/21, VWAP, volume, OI, delta, and Phase 3's Trade Score Engine)
+   is implemented, not a stub. Worth doing instead: tune
+   `trade_score.py`'s/`opportunity_score.py`'s weight and ceiling
+   constants against your own live `SCORE`/`GATE` log lines once real
+   outcomes accumulate — none of those are backtested yet.
 
 2. **Fill in your NSE holiday list** in `scripts/holiday_guard.py`
    (`NSE_HOLIDAYS_2026`) — copy it from your existing scanner so both
@@ -584,20 +684,24 @@ after a week of live runs and this can be recalculated precisely.
     MIDCPNIFTY scanning — it only matters once stock alerts start
     firing.
 
-2b. **Angel One historical-candle calls are still failing live, login
-    is not the problem (open issue, as of 2026-07-17).** Every trader
-    run's first Angel One call to `getCandleData` fails (flipping
-    between HTTP 400 and 403 across runs), triggering failover to
-    Upstox -- confirmed via `verify_angelone_login.py` that the login
-    step itself succeeds and returns a valid JWT, so the problem is
-    specifically in the historical-candle request that follows login,
-    not the credentials. Likely causes still to check: the instrument
-    token format sent to `getCandleData`, whether your Angel One
-    account's Historical Data API access needs separate enabling on
-    smartapi.angelone.in, or a JWT that's valid for login but expiring
-    before the candle call. Scanning still works throughout via the
-    Upstox fallback, so this isn't blocking alerts, but Angel One
-    (your primary broker) isn't actually being used right now.
+2b. **RESOLVED (worked around) 2026-07-21 — Angel One historical-candle
+    calls were rate-limited, not an auth/credentials problem.**
+    `verify_angelone_login.py` confirmed login itself always succeeded;
+    the actual failure (visible only after fixing `retry_utils.py`'s
+    swallowed error body — see "Bugs found and fixed" #8) was Angel
+    One's `"Access denied because of exceeding access rate"` on
+    `getCandleData`, sometimes presenting as a 403 with that text and
+    sometimes as a 400 with an empty body. A 1-second per-call
+    throttle (`config.ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS`)
+    didn't fully clear it — the limit persisted even on a fresh
+    process's very first call, pointing at an account-wide or
+    cross-workflow limit outside this codebase's visibility rather
+    than this process's own call pacing. Rather than keep chasing an
+    undocumented limit, Upstox is now primary and Angel One is
+    fallback (see "Bugs found and fixed" #10) — Upstox served every
+    request reliably throughout the whole debugging session. Angel
+    One is kept as fallback, not removed, in case the limit clears or
+    a support ticket resolves it.
 
 3. **Verify the Upstox candle endpoint** in `scripts/market_data.py`
    against Upstox's current API docs. I've used the standard v2
