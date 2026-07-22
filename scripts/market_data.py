@@ -123,6 +123,37 @@ def get_recent_underlying_candles(instrument_key: str, interval: str, count: int
     return candles[-count:] if len(candles) > count else candles
 
 
+def get_recent_futures_candles(symbol: str, interval: str, count: int) -> list:
+    """
+    BUGFIX (2026-07-22): companion to get_recent_underlying_candles()
+    above, but specifically for the current-month FUTURES contract,
+    which -- unlike an index's fixed instrument_key -- must be resolved
+    fresh via resolve_current_month_future() first. That resolution and
+    the candle fetch used to be two independent calls through
+    market_data.get_broker() (in option_chain.py's _futures_vwap()),
+    which could resolve the key via one broker (on a single-call
+    failover fallback) and then fetch candles for it via the OTHER
+    broker, since each call independently checks which broker is
+    currently active. Instrument keys are broker-specific format, so
+    that mismatch produced a guaranteed-invalid request and a live 400
+    error on every affected stock -- see
+    broker_failover.FailoverBroker.resolve_and_fetch_current_month_future_candles()
+    for the full incident writeup. That method now guarantees resolve +
+    fetch happen against the SAME broker.
+
+    Cached by (symbol, interval) rather than (instrument_key, interval)
+    -- the resolved instrument_key can legitimately differ between
+    calls within one run if a failover happens mid-run, so caching on
+    the broker-agnostic symbol is what's actually stable here.
+    """
+    cache_key = (symbol, interval, "futures")
+    candles = _underlying_candle_cache.get(cache_key)
+    if candles is None:
+        candles = _broker.resolve_and_fetch_current_month_future_candles(symbol, interval)
+        _underlying_candle_cache.set(cache_key, candles)
+    return candles[-count:] if len(candles) > count else candles
+
+
 def get_recent_daily_candles(instrument_key: str, count: int) -> list:
     """
     Phase 1 (opportunity_score.py). Same shape and same per-run
