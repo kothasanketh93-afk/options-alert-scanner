@@ -1,0 +1,42 @@
+name: Verify Stock Config
+
+on:
+  # NOTE: unlike a typical repo, scheduling here is NOT done via GitHub
+  # Actions' native `schedule:` trigger -- this project uses an external
+  # cron-job.org job that calls GitHub's workflow_dispatch API endpoint
+  # directly (see Heartbeat-1/2, Premarket-1, Trader-1..8 on the
+  # cron-job.org dashboard), almost certainly because native `schedule:`
+  # cron can drift/queue by several minutes under GitHub's load, which
+  # matters for the 5-min trading interval but doesn't for this quarterly
+  # job. workflow_dispatch is kept as the only trigger here so this one
+  # follows the same pattern -- add a new cron-job.org job (quarterly,
+  # e.g. 1st of Jan/Apr/Jul/Oct) pointed at this workflow's dispatch URL:
+  #   POST https://api.github.com/repos/<owner>/<repo>/actions/workflows/verify-config.yml/dispatches
+  #   Headers: Authorization: token <GITHUB_TOKEN>, Accept: application/vnd.github+json
+  #   Body: {"ref": "main"}
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      # TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID let the script post a failure
+      # summary via telegram_notify.py (same channel as trading alerts) so a
+      # broken symbol gets noticed without checking the Actions tab. The
+      # script itself only sends on failure -- a clean pass stays silent.
+      - name: Run verification
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python verify_stock_symbols.py
