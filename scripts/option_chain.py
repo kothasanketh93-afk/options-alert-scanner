@@ -96,8 +96,18 @@ _vwap_cache = {}
 def _futures_vwap(symbol: str):
     if symbol in _vwap_cache:
         return _vwap_cache[symbol]
-    futures_key = market_data.get_broker().resolve_current_month_future(symbol)
-    candles = market_data.get_recent_underlying_candles(futures_key, "5minute", 75)
+    # BUGFIX (2026-07-22): this used to be two independent calls --
+    # market_data.get_broker().resolve_current_month_future(symbol) then
+    # market_data.get_recent_underlying_candles(futures_key, ...) -- each
+    # of which independently picks primary vs. secondary broker at the
+    # moment it runs. A resolve-time single-call failover fallback could
+    # return an instrument_key in the SECONDARY broker's format, which
+    # the very next (still-primary-routed) candle fetch then sent to the
+    # PRIMARY broker's API -- a guaranteed-invalid request (see
+    # broker_failover.FailoverBroker.resolve_and_fetch_current_month_future_candles()
+    # for the full incident writeup). get_recent_futures_candles() below
+    # keeps resolution + fetch as one atomic broker choice.
+    candles = market_data.get_recent_futures_candles(symbol, "5minute", 75)
     vwap = compute_vwap(candles)
     _vwap_cache[symbol] = vwap
     return vwap
