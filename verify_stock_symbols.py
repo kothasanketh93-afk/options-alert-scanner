@@ -4,7 +4,7 @@ verify_stock_symbols.py
 Run this BEFORE trusting live alerts on config.STOCK_SYMBOLS. It downloads
 the same two public instrument masters upstox.py / angelone.py already use
 at runtime -- no broker login/API key needed, these files are public -- and
-checks, for every symbol in STOCK_SYMBOLS:
+checks, for every symbol:
 
   1. Does an NSE equity (EQ) row exist at all, and under which field?
      (this is exactly the check that failed live for PNB on Upstox --
@@ -12,9 +12,21 @@ checks, for every symbol in STOCK_SYMBOLS:
   2. Is the symbol currently F&O-eligible (an OPTSTK/OPTSTK-equivalent
      row exists for the nearest expiry)?
   3. What's the REAL strike interval (diff of consecutive strike prices)
-     vs. what config.STOCK_STRIKE_STEP currently has hardcoded?
+     vs. what config.STOCK_STRIKE_STEP currently has hardcoded (where a
+     configured step exists to compare against)?
   4. What's the REAL lot size, if you want to sanity-check
      STOCK_MIN_OI/STOCK_MIN_OPTION_VOLUME against it?
+
+CHANGED (post Phase-1 opportunity_score.py): config.STOCK_SYMBOLS is no
+longer a fixed 15-stock list -- on most days it's populated at runtime
+from universe.MASTER_UNIVERSE's top-scored shortlist (~35 of ~100
+candidates), with the old 15-stock list (config.FALLBACK_STOCK_WATCHLIST)
+only used as the fallback on a day the shortlist cache is missing. This
+script now checks BOTH sets instead of a hardcoded copy of the old list,
+so a symbol that's F&O-broken in either set gets caught, not just the
+fallback names. STOCK_SYMBOLS and STOCK_STRIKE_STEP are imported directly
+from config.py rather than duplicated here, so this script can't silently
+drift out of sync with config.py the way a hand-copied list can.
 
 Usage:
     pip install requests
@@ -26,24 +38,29 @@ automatically before the quarterly F&O review each time.
 """
 import gzip
 import json
+import os
 import sys
 
 import requests
 
+# config.py / universe.py live in scripts/, this script lives at repo root.
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "scripts"))
+import config
+import universe
+
 UPSTOX_MASTER_URL = "https://assets.upstox.com/market-quote/instruments/exchange/NSE.json.gz"
 ANGELONE_MASTER_URL = "https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json"
 
-# Keep this in sync with config.STOCK_SYMBOLS / config.STOCK_STRIKE_STEP.
-STOCK_SYMBOLS = [
-    "TATASTEEL", "HINDALCO", "VEDL", "JINDALSTEL", "IDEA",
-    "SAIL", "NATIONALUM", "NMDC", "BHEL", "FEDERALBNK",
-    "BANKBARODA", "PFC", "RECLTD", "ASHOKLEY", "MOTHERSON",
-]
-CONFIGURED_STRIKE_STEP = {
-    "TATASTEEL": 5, "HINDALCO": 10, "VEDL": 10, "JINDALSTEL": 20, "IDEA": 0.5,
-    "SAIL": 2.5, "NATIONALUM": 2.5, "NMDC": 2.5, "BHEL": 5, "FEDERALBNK": 2.5,
-    "BANKBARODA": 5, "PFC": 10, "RECLTD": 10, "ASHOKLEY": 5, "MOTHERSON": 2.5,
-}
+# Fallback 15-stock watchlist: gets a full check including strike step,
+# since config.STOCK_STRIKE_STEP has a hand-verified value for each of these.
+FALLBACK_SYMBOLS = list(config.FALLBACK_STOCK_WATCHLIST)
+CONFIGURED_STRIKE_STEP = dict(config.STOCK_STRIKE_STEP)
+
+# The full ~100-stock scoring pool: this is what actually gets scanned most
+# days (see config.refresh_symbols_for_today()). No configured strike step
+# to compare most of these against -- checked for equity/F&O eligibility
+# only, with the live-inferred step printed for information.
+UNIVERSE_SYMBOLS = sorted({row["symbol"] for row in universe.MASTER_UNIVERSE} - set(FALLBACK_SYMBOLS))
 
 
 def fetch_upstox_master():
@@ -108,8 +125,86 @@ def strike_step_from(strikes):
     return diffs[0] if diffs else None
 
 
+def check_symbol(symbol, upstox_master, angelone_master, check_step: bool) -> list:
+    """
+    Runs the equity/F&O/(optional) strike-step checks for one symbol
+    against both masters. Returns a list of failure-reason strings
+    (empty list = symbol fully passed).
+    """
+    failures = []
+    configured = CONFIGURED_STRIKE_STEP.get(symbol) if check_step else None
+
+    if upstox_master is not None:
+        key, note = check_upstox_equity(upstox_master, symbol)
+        if key:
+            print(f"  [Upstox]    EQUITY OK  -> {key}  ({note})")
+        else:
+            print(f"  [Upstox]    EQUITY MISSING -- {note}")
+            failures.append(f"{symbol}: Upstox equity missing")
+
+        strikes = check_upstox_stock_options(upstox_master, symbol)
+        if strikes:
+            step = strike_step_from(strikes)
+            if check_step:
+                match = "OK" if step == configured else f"MISMATCH (config has {configured})"
+                print(f"  [Upstox]    F&O OK -- {len(strikes)} strikes, step={step} [{match}]")
+                if step != configured:
+                    failures.append(f"{symbol}: Upstox strike step mismatch (live={step}, config={configured})")
+            else:
+                print(f"  [Upstox]    F&O OK -- {len(strikes)} strikes, step={step} (no configured step to compare)")
+        else:
+            print(f"  [Upstox]    F&O MISSING -- no CE rows found for '{symbol}' "
+                  f"(not F&O-eligible right now, or 'name' field assumption is wrong)")
+            failures.append(f"{symbol}: Upstox F&O missing")
+
+    if angelone_master is not None:
+        token, note = check_angelone_equity(angelone_master, symbol)
+        if token:
+            print(f"  [AngelOne]  EQUITY OK  -> token {token}  ({note})")
+        else:
+            print(f"  [AngelOne]  EQUITY MISSING -- {note}")
+            failures.append(f"{symbol}: AngelOne equity missing")
+
+        strikes = check_angelone_stock_options(angelone_master, symbol)
+        if strikes:
+            step = strike_step_from(strikes)
+            if check_step:
+                match = "OK" if step == configured else f"MISMATCH (config has {configured})"
+                print(f"  [AngelOne]  F&O OK -- {len(strikes)} strikes, step={step} [{match}]")
+                if step != configured:
+                    failures.append(f"{symbol}: AngelOne strike step mismatch (live={step}, config={configured})")
+            else:
+                print(f"  [AngelOne]  F&O OK -- {len(strikes)} strikes, step={step} (no configured step to compare)")
+        else:
+            print(f"  [AngelOne]  F&O MISSING -- no OPTSTK rows found for '{symbol}' "
+                  f"(not F&O-eligible right now, or instrumenttype/name assumption is wrong)")
+            failures.append(f"{symbol}: AngelOne F&O missing")
+
+    return failures
+
+
+def notify_failure(all_failures: list):
+    """
+    Best-effort Telegram alert on failure -- reuses telegram_notify.send()
+    so this shows up the same way other scanner alerts do. Never lets a
+    Telegram problem mask the real verification failure: prints a warning
+    and still exits 1 either way.
+    """
+    try:
+        import telegram_notify
+        lines = "\n".join(f"- {f}" for f in all_failures[:20])
+        more = f"\n...and {len(all_failures) - 20} more" if len(all_failures) > 20 else ""
+        telegram_notify.send(
+            "STOCK CONFIG VERIFICATION FAILED\n\n"
+            f"{len(all_failures)} issue(s) found:\n{lines}{more}\n\n"
+            "Fix config.py / universe.py before trusting stock alerts unattended."
+        )
+    except Exception as e:
+        print(f"  (Telegram notification also failed: {e})")
+
+
 def main():
-    all_ok = True
+    all_failures = []
 
     try:
         upstox_master = fetch_upstox_master()
@@ -123,60 +218,28 @@ def main():
         print(f"  Could not download Angel One master: {e}")
         angelone_master = None
 
-    for symbol in STOCK_SYMBOLS:
+    print(f"\n{'#' * 60}\n# FALLBACK_STOCK_WATCHLIST ({len(FALLBACK_SYMBOLS)} symbols) -- full check incl. strike step\n{'#' * 60}")
+    for symbol in FALLBACK_SYMBOLS:
         print(f"\n=== {symbol} ===")
+        all_failures.extend(check_symbol(symbol, upstox_master, angelone_master, check_step=True))
 
-        if upstox_master is not None:
-            key, note = check_upstox_equity(upstox_master, symbol)
-            if key:
-                print(f"  [Upstox]    EQUITY OK  -> {key}  ({note})")
-            else:
-                print(f"  [Upstox]    EQUITY MISSING -- {note}")
-                all_ok = False
-
-            strikes = check_upstox_stock_options(upstox_master, symbol)
-            if strikes:
-                step = strike_step_from(strikes)
-                configured = CONFIGURED_STRIKE_STEP.get(symbol)
-                match = "OK" if step == configured else f"MISMATCH (config has {configured})"
-                print(f"  [Upstox]    F&O OK -- {len(strikes)} strikes, step={step} [{match}]")
-                if step != configured:
-                    all_ok = False
-            else:
-                print(f"  [Upstox]    F&O MISSING -- no CE rows found for '{symbol}' "
-                      f"(not F&O-eligible right now, or 'name' field assumption is wrong)")
-                all_ok = False
-
-        if angelone_master is not None:
-            token, note = check_angelone_equity(angelone_master, symbol)
-            if token:
-                print(f"  [AngelOne]  EQUITY OK  -> token {token}  ({note})")
-            else:
-                print(f"  [AngelOne]  EQUITY MISSING -- {note}")
-                all_ok = False
-
-            strikes = check_angelone_stock_options(angelone_master, symbol)
-            if strikes:
-                step = strike_step_from(strikes)
-                configured = CONFIGURED_STRIKE_STEP.get(symbol)
-                match = "OK" if step == configured else f"MISMATCH (config has {configured})"
-                print(f"  [AngelOne]  F&O OK -- {len(strikes)} strikes, step={step} [{match}]")
-                if step != configured:
-                    all_ok = False
-            else:
-                print(f"  [AngelOne]  F&O MISSING -- no OPTSTK rows found for '{symbol}' "
-                      f"(not F&O-eligible right now, or instrumenttype/name assumption is wrong)")
-                all_ok = False
+    print(f"\n{'#' * 60}\n# universe.MASTER_UNIVERSE -- remaining {len(UNIVERSE_SYMBOLS)} symbols -- equity/F&O only\n{'#' * 60}")
+    for symbol in UNIVERSE_SYMBOLS:
+        print(f"\n=== {symbol} ===")
+        all_failures.extend(check_symbol(symbol, upstox_master, angelone_master, check_step=False))
 
     print("\n" + "=" * 60)
-    if all_ok:
+    if not all_failures:
         print("ALL SYMBOLS PASSED. Still spot-check Angel One's strike-divisor")
         print("heuristic manually (see angelone.py's _detect_strike_divisor()) --")
         print("this script assumes un-scaled strikes, which this check can't verify.")
         sys.exit(0)
     else:
-        print("ONE OR MORE SYMBOLS FAILED -- fix config.py / the resolver code")
-        print("before trusting live alerts on the failing symbol(s).")
+        print(f"{len(all_failures)} ISSUE(S) FOUND -- fix config.py / universe.py / the resolver code")
+        print("before trusting live alerts on the failing symbol(s):")
+        for f in all_failures:
+            print(f"  - {f}")
+        notify_failure(all_failures)
         sys.exit(1)
 
 
