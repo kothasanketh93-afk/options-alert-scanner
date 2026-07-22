@@ -90,28 +90,46 @@ def check_upstox_equity(master, symbol):
 
 
 def check_upstox_stock_options(master, symbol):
+    # BUGFIX 2026-07-22: 'name' on Upstox F&O rows holds the full company
+    # name (e.g. "TATA STEEL LIMITED"), not the bare symbol -- confirmed via
+    # debug_instrument_masters.py raw output. 'asset_symbol' and
+    # 'underlying_symbol' both hold the bare symbol and agree with each
+    # other on every row checked so far; match on those instead. (BHEL
+    # matched under the old 'name'-based check purely by coincidence --
+    # Upstox's 'name' for BHEL happens to equal "BHEL" -- which is why this
+    # bug wasn't caught immediately: 110/111 other stocks failed silently.)
     strikes = sorted({
         float(row["strike_price"]) for row in master
-        if row.get("name") == symbol and row.get("instrument_type") == "CE"
+        if row.get("asset_symbol") == symbol and row.get("instrument_type") == "CE"
         and row.get("strike_price")
     })
     return strikes
 
 
 def check_angelone_equity(master, symbol):
-    eq_rows = [r for r in master if r.get("instrumenttype") == "EQ" and r.get("exch_seg") == "NSE"]
-    for row in eq_rows:
-        if row.get("name") == symbol:
-            return row.get("token"), "matched via 'name'"
-    for row in eq_rows:
+    # BUGFIX 2026-07-22: instrumenttype=='EQ' matched ZERO rows out of
+    # 166,335 in the live master (confirmed via debug_instrument_masters.py
+    # -- "Sample EQ row: null"). Angel One's real convention for cash
+    # equity is instrumenttype=='' (empty string), not 'EQ'. Matching on
+    # symbol=='<SYM>-EQ' with exch_seg=='NSE' first, since that's the more
+    # specific/reliable signal; 'name' is kept as a fallback.
+    candidates = [r for r in master if r.get("exch_seg") == "NSE" and r.get("instrumenttype", "") == ""]
+    for row in candidates:
         if row.get("symbol") == f"{symbol}-EQ":
             return row.get("token"), "matched via 'symbol'=='<SYM>-EQ'"
-    return None, "NO EQ ROW FOUND (checked name and symbol=='<SYM>-EQ')"
+    for row in candidates:
+        if row.get("name") == symbol:
+            return row.get("token"), "matched via 'name'"
+    return None, "NO EQ ROW FOUND (checked symbol=='<SYM>-EQ' and name, exch_seg=='NSE', instrumenttype=='')"
 
 
 def check_angelone_stock_options(master, symbol):
+    # BUGFIX 2026-07-22: Angel One strikes are quoted in paise (2 implied
+    # decimals x 100), confirmed via debug_instrument_masters.py raw output
+    # -- e.g. BHEL's "strike": "42500.000000" is really Rs.425.00, a
+    # plausible price for BHEL; the un-scaled value (42500) is not.
     strikes = sorted({
-        float(row["strike"]) for row in master
+        float(row["strike"]) / 100.0 for row in master
         if row.get("name") == symbol and row.get("instrumenttype") == "OPTSTK"
         and row.get("strike")
     })
