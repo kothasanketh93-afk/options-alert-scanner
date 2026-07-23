@@ -59,10 +59,10 @@ MASTER_UNIVERSE = [
     {"symbol": "HCLTECH", "sector": "IT"},
     {"symbol": "WIPRO", "sector": "IT"},
     {"symbol": "TECHM", "sector": "IT"},
-    {"symbol": "LTIM", "sector": "IT"},
     {"symbol": "PERSISTENT", "sector": "IT"},
     {"symbol": "COFORGE", "sector": "IT"},
     {"symbol": "MPHASIS", "sector": "IT"},
+    {"symbol": "LTTS", "sector": "IT"},
 
     # --- Energy / Oil & Gas ---
     {"symbol": "RELIANCE", "sector": "ENERGY"},
@@ -79,11 +79,10 @@ MASTER_UNIVERSE = [
     {"symbol": "TATAPOWER", "sector": "POWER"},
     {"symbol": "ADANIPOWER", "sector": "POWER"},
     {"symbol": "NHPC", "sector": "POWER"},
-    {"symbol": "TORNTPOWER", "sector": "POWER"},
+    {"symbol": "JSWENERGY", "sector": "POWER"},
 
     # --- Auto / Auto Ancillaries ---
     {"symbol": "MARUTI", "sector": "AUTO"},
-    {"symbol": "TATAMOTORS", "sector": "AUTO"},
     {"symbol": "M&M", "sector": "AUTO"},
     {"symbol": "BAJAJ-AUTO", "sector": "AUTO"},
     {"symbol": "EICHERMOT", "sector": "AUTO"},
@@ -92,6 +91,7 @@ MASTER_UNIVERSE = [
     {"symbol": "MOTHERSON", "sector": "AUTO"},
     {"symbol": "TVSMOTOR", "sector": "AUTO"},
     {"symbol": "BOSCHLTD", "sector": "AUTO"},
+    {"symbol": "BHARATFORG", "sector": "AUTO"},
 
     # --- Metals & Mining ---
     {"symbol": "TATASTEEL", "sector": "METALS"},
@@ -108,8 +108,8 @@ MASTER_UNIVERSE = [
     {"symbol": "ULTRACEMCO", "sector": "CEMENT"},
     {"symbol": "SHREECEM", "sector": "CEMENT"},
     {"symbol": "AMBUJACEM", "sector": "CEMENT"},
-    {"symbol": "ACC", "sector": "CEMENT"},
     {"symbol": "DALBHARAT", "sector": "CEMENT"},
+    {"symbol": "JKCEMENT", "sector": "CEMENT"},
 
     # --- Infrastructure / Capital Goods / Engineering ---
     {"symbol": "LT", "sector": "INFRA"},
@@ -117,8 +117,8 @@ MASTER_UNIVERSE = [
     {"symbol": "SIEMENS", "sector": "INFRA"},
     {"symbol": "ABB", "sector": "INFRA"},
     {"symbol": "CUMMINSIND", "sector": "INFRA"},
-    {"symbol": "IRCTC", "sector": "INFRA"},
     {"symbol": "CONCOR", "sector": "INFRA"},
+    {"symbol": "POLYCAB", "sector": "INFRA"},
 
     # --- Pharma / Healthcare ---
     {"symbol": "SUNPHARMA", "sector": "PHARMA"},
@@ -148,15 +148,20 @@ MASTER_UNIVERSE = [
     {"symbol": "DMART", "sector": "CONSUMER"},
     {"symbol": "PAGEIND", "sector": "CONSUMER"},
     {"symbol": "ASIANPAINT", "sector": "CONSUMER"},
+    {"symbol": "DIXON", "sector": "CONSUMER"},
+    {"symbol": "HAVELLS", "sector": "CONSUMER"},
 
     # --- Telecom ---
     {"symbol": "BHARTIARTL", "sector": "TELECOM"},
     {"symbol": "IDEA", "sector": "TELECOM"},
     {"symbol": "INDUSTOWER", "sector": "TELECOM"},
 
-    # --- Media / Realty / Diversified ---
-    {"symbol": "ZEEL", "sector": "MEDIA"},
-    {"symbol": "SUNTV", "sector": "MEDIA"},
+    # --- Realty / Diversified ---
+    # (ZEEL/SUNTV removed 2026-07-24 -- F&O verification failure; no other
+    # liquid F&O-eligible MEDIA name to replace them with, so their two
+    # slots went to CONSUMER above (DIXON, HAVELLS) instead of leaving a
+    # singleton MEDIA sector, which would skew opportunity_score.py's
+    # per-sector percentile ranking.)
     {"symbol": "DLF", "sector": "REALTY"},
     {"symbol": "OBEROIRLTY", "sector": "REALTY"},
     {"symbol": "LODHA", "sector": "REALTY"},
