@@ -41,6 +41,20 @@ server, no card details, minimal GitHub Actions usage.
 | `.github/workflows/premarket.yml` | Runs once daily at 09:00 IST, own workflow, own concurrency group |
 | `.github/workflows/verify-config.yml` | `workflow_dispatch` only, triggered quarterly by an external cron-job.org job (see "Cron scheduling" below); posts a Telegram summary only on failure |
 
+**BTST (overnight) module — separate from everything above, see its own section below:**
+
+| File | Purpose |
+|---|---|
+| `scripts/btst_config.py` | Every BTST-specific tunable — symbol universe, entry window, wider SL/target %, min days-to-expiry, concurrent-position cap. Not imported by any intraday file. |
+| `scripts/btst_levels.py` | Overnight SL/target sizing — plain percentage-of-premium math, independent of `levels.py`'s intraday ATR engine. |
+| `scripts/btst_calendar.py` | Next/previous NSE trading-day lookup, reusing `holiday_guard.py`'s holiday data. |
+| `scripts/btst_earnings_guard.py` | Manual earnings/event blackout list for BTST stocks — **defaults to blocking a symbol, not allowing it**, until a human has reviewed and entered its calendar. Currently empty — see "What you still need to do" below. |
+| `scripts/btst_state.py` | Overnight position persistence, built on `daily_cache.py`'s existing git read/write (own subdir, never touches `state.py`'s intraday `state/<date>.json` files). |
+| `scripts/btst_scanner.py` | Evening entry scan — reuses `scanner.score_strike()` unmodified for signal detection, swaps in overnight levels/filters on top. |
+| `scripts/btst_tracker.py` | Exit-day candle processing: gap-check at the open, then T1/T2/SL/force-exit. |
+| `scripts/btst_telegram.py` | BTST message templates, reusing `telegram_notify.send()`. |
+| `scripts/btst_main.py` | Orchestrator — `python btst_main.py --entry` (run near market close) and `--exit` (run through the next trading day). No `.yml` workflow wired up yet — see below. |
+
 ## Cron scheduling
 
 None of the workflows above use GitHub Actions' native `schedule:`
@@ -866,6 +880,111 @@ after a week of live runs and this can be recalculated precisely.
   no longer fails the whole run. Auth errors (401/403) and
   other 4xx responses are NOT retried; those need a human, not a
   retry loop, so they fail loudly and immediately instead.
+
+## BTST (Buy Today, Sell Tomorrow) — overnight module (added 2026-07-23)
+
+A **separate, opt-in** module for carrying options positions
+overnight — NIFTY/BANKNIFTY + a small starter list of liquid stocks.
+Built alongside the intraday system, not inside it: no existing file
+(`state.py`, `tracker.py`, `scanner.py`, `main.py`, `config.py`,
+`telegram_notify.py`) was modified to add this. The intraday pipeline
+has zero knowledge this module exists, and a bug in BTST cannot break
+same-day tracking.
+
+### Why it's a separate module, not a mode of the existing one
+
+The intraday system's core assumptions don't hold overnight:
+`state.py` creates one fresh JSON file per calendar day and
+`tracker.py` force-closes everything at market close — both correct
+for a same-day hold, both wrong for a position meant to survive to
+the next trading day. Reusing them would have meant changing their
+behavior for every intraday trade too. Instead:
+
+- **State**: `btst_state.py` writes to its own subdir (`btst/<entry-
+  date>.json` on the same `state` branch) via `daily_cache.py`'s
+  existing git plumbing — no new git logic, no shared files with the
+  intraday state.
+- **Detection**: `btst_scanner.py` reuses `scanner.score_strike()`
+  completely unmodified for the actual signal detection (EMA/VWAP/OI/
+  liquidity gates + the Trade Score Engine) — only the SL/target
+  levels and the entry filters around it are BTST-specific.
+- **Levels**: `btst_levels.py` is plain percentage-of-premium math
+  (25% SL / 20% T1 / 40% T2 of entry premium by default), deliberately
+  NOT built on `levels.py`'s ATR engine — that engine is calibrated
+  for a 5–60 minute hold, and an 18-hour overnight window needs
+  meaningfully more room before normal noise stops false-triggering a
+  same-day-tight stop.
+
+### Lifecycle
+
+```
+Evening (btst_main.py --entry, within BTST_ENTRY_WINDOW_HHMM):
+  scan BTST_SYMBOLS -> score via scanner.score_strike() -> apply
+  BTST_MIN_TRADE_SCORE floor + min-days-to-expiry + earnings blackout
+  -> open position(s), status OPEN, entered at the EOD quote
+
+Next trading day (btst_main.py --exit, run repeatedly through the day):
+  OPEN -> GAP_SL_HIT     (exit day's first candle already gapped past SL)
+  OPEN -> T1_HIT -> T2_HIT
+  OPEN -> SL_HIT          (SL touched intraday, not a gap)
+  OPEN -> FORCE_EXIT      (neither hit by BTST_FORCE_EXIT_HHMM)
+  OPEN -> AMBIGUOUS       (SL and a target in the same candle)
+```
+
+`run_exit_step()` deliberately re-checks the last
+`BTST_LOOKBACK_TRADING_DAYS` (5) trading days' files, not just
+yesterday's — a single missed/failed exit-workflow run can't
+permanently orphan an open position with real money in it.
+
+### Stock-specific safety: earnings/event blackout
+
+Overnight gaps on individual stocks are far more often driven by a
+scheduled event (results, board meeting) than index-level gaps are.
+`btst_earnings_guard.BLACKOUT_DATES` is a manual dict, same
+"deliberately not a live API call" posture as `holiday_guard.py`'s own
+movable-holiday list (see that file's docstring for why). **It ships
+empty** — every BTST stock is unconditionally skipped
+(`is_configured()` returns `False`) until a human populates it from
+NSE's event calendar. This is intentional: an unpopulated list is
+treated as "never checked", never as "confirmed safe".
+
+### Probability / confidence — deliberately not shown for BTST
+
+`btst_scanner.py` carries over `trade_score`/`grade` from
+`score_strike()`'s output, but **not** `probability_pct` /
+`confidence_score` / `expected_rr`. Those numbers are a function of
+`trade_score`, but `trade_score` itself partly reflects
+`risk_reward_strength()` computed against the *intraday* ATR-based SL/
+target distances, before `btst_scanner.py` overwrites them with the
+wider BTST percentage-based levels — so the number would describe a
+risk/reward shape this position no longer has. Showing it would be
+more misleading than not showing it. See `btst_main.
+new_position_record()`'s docstring for the full reasoning if this
+needs revisiting later — a real BTST probability model needs its own
+calibration against BTST's actual SL/T1/T2 percentages and live
+overnight outcomes, not a reuse of the intraday number.
+
+### What's NOT backtested / needs live validation
+
+Same honesty this README already applies to `config.py`'s intraday
+weights: **`BTST_SL_PCT` / `BTST_T1_PCT` / `BTST_T2_PCT` (25%/20%/40%)
+are a starting estimate, not backtested.** Validate against a few
+weeks of real overnight moves before trusting them with size.
+
+### What you still need to do before this touches real money
+
+1. **Populate `btst_earnings_guard.BLACKOUT_DATES`** for every symbol
+   in `btst_config.BTST_STOCK_SYMBOLS`, from NSE's corporate-
+   announcements/event calendar. Every stock is skipped until you do.
+2. **Add GitHub Actions workflows** calling `python scripts/btst_main.py
+   --entry` once near 15:00–15:20 IST and `--exit` on a 5–15 min
+   cadence through the following trading day — none exist yet
+   (`.github/workflows/` wasn't part of this repo export). Reuses the
+   same repo secrets as `trader.yml` (Angel One, Upstox, Telegram,
+   `GITHUB_TOKEN`) — no new secrets needed.
+3. **Live-validate the SL/T1/T2 percentages** against real overnight
+   gaps for a few weeks before increasing size or widening
+   `BTST_STOCK_SYMBOLS` beyond the current 10-name starter list.
 
 ## On "more accurate" results
 
