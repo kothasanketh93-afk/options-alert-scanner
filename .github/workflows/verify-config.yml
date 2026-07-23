@@ -41,6 +41,7 @@ jobs:
         run: |
           cd scripts
           python - <<'PY'
+          import html
           import os
           import sys
           sys.path.insert(0, os.getcwd())
@@ -52,10 +53,21 @@ jobs:
           # Telegram messages have a ~4096-char cap -- keep this well under
           # it and point at the Actions run for the full log.
           tail = output[-2500:]
+
+          # BUGFIX (found in a live run, 2026-07-23): send() always sends
+          # with parse_mode="HTML" -- verify_stock_symbols.py's own output
+          # contains literal placeholder text like "<SYM>-EQ", which
+          # Telegram's HTML parser then tries to read as a real (and
+          # unsupported) start tag, failing the whole send with a 400
+          # "can't parse entities" error instead of notifying at all.
+          # html.escape() neutralizes any <, >, & in the raw output before
+          # it goes anywhere near parse_mode=HTML.
+          tail_escaped = html.escape(tail)
+
           run_url = f"{os.environ.get('GITHUB_SERVER_URL')}/{os.environ.get('GITHUB_REPOSITORY')}/actions/runs/{os.environ.get('GITHUB_RUN_ID')}"
           tg.send(
               "\u26a0\ufe0f verify_stock_symbols.py FAILED\n\n"
-              f"Last output:\n{tail}\n\nFull log: {run_url}"
+              f"Last output:\n{tail_escaped}\n\nFull log: {html.escape(run_url)}"
           )
           PY
 
