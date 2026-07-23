@@ -1,34 +1,26 @@
-# test_telegram.yml
-# ------------------
-# Manual, one-off: sends a single real Telegram message via
-# telegram_notify.send() to confirm the alert path actually works
-# (credentials + chat_id + delivery), not just that Telegram's API is
-# reachable. Trigger it from the Actions tab -> "Test Telegram Alert"
-# -> "Run workflow". Safe to delete once you've confirmed it works;
-# it doesn't touch brokers, state, or the trading schedule.
+name: Test Telegram
 
-name: Test Telegram Alert
-
+# Manual dispatch only -- sends one real message via telegram_notify.send(),
+# the same function every live alert uses, so a pass here means the full
+# credentials/retry/chat_id path works end to end. See
+# scripts/test_telegram.py's docstring.
 on:
   workflow_dispatch: {}
 
 jobs:
-  send-test-message:
+  test-telegram:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Send test message
+      - name: Send test Telegram message
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}

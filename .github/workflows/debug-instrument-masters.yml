@@ -1,24 +1,37 @@
 name: Debug Instrument Masters
 
+# Manual dispatch only -- one-off diagnostic (see debug_instrument_masters.py's
+# docstring). No broker login or secrets needed, only public instrument-master
+# downloads, so this can be triggered anytime, market open or not. Output is
+# written to the run's Job Summary and uploaded as an artifact so it's easy
+# to copy/paste back for review without digging through raw logs.
 on:
-  # Manual trigger only -- this is a one-off diagnostic, not a scheduled job.
-  # Run it from the Actions tab: Actions -> Debug Instrument Masters -> Run workflow.
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 jobs:
-  debug:
+  debug-instrument-masters:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: pip install requests
 
-      - name: Run diagnostic
-        run: python debug_instrument_masters.py
+      - name: Run debug_instrument_masters.py
+        run: |
+          python debug_instrument_masters.py | tee debug_output.txt
+          {
+            echo '```'
+            cat debug_output.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload output as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: instrument-master-debug-output
+          path: debug_output.txt

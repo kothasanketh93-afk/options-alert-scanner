@@ -1,42 +1,64 @@
-name: Verify Stock Config
+name: Verify Config
 
+# workflow_dispatch ONLY -- this project deliberately does not use GitHub
+# Actions' native `schedule:` trigger anywhere (see README's "Cron
+# scheduling" section). Quarterly runs come from an external cron-job.org
+# job calling the GitHub API's workflow-dispatch endpoint; this button also
+# lets you trigger it manually anytime from the Actions tab, market hours
+# or not -- verify_stock_symbols.py only reads public instrument-master
+# files, no broker login/live quote needed.
 on:
-  # NOTE: unlike a typical repo, scheduling here is NOT done via GitHub
-  # Actions' native `schedule:` trigger -- this project uses an external
-  # cron-job.org job that calls GitHub's workflow_dispatch API endpoint
-  # directly (see Heartbeat-1/2, Premarket-1, Trader-1..8 on the
-  # cron-job.org dashboard), almost certainly because native `schedule:`
-  # cron can drift/queue by several minutes under GitHub's load, which
-  # matters for the 5-min trading interval but doesn't for this quarterly
-  # job. workflow_dispatch is kept as the only trigger here so this one
-  # follows the same pattern -- add a new cron-job.org job (quarterly,
-  # e.g. 1st of Jan/Apr/Jul/Oct) pointed at this workflow's dispatch URL:
-  #   POST https://api.github.com/repos/<owner>/<repo>/actions/workflows/verify-config.yml/dispatches
-  #   Headers: Authorization: token <GITHUB_TOKEN>, Accept: application/vnd.github+json
-  #   Body: {"ref": "main"}
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 jobs:
-  verify:
+  verify-config:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install requests
+        run: pip install -r requirements.txt
 
-      # TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID let the script post a failure
-      # summary via telegram_notify.py (same channel as trading alerts) so a
-      # broken symbol gets noticed without checking the Actions tab. The
-      # script itself only sends on failure -- a clean pass stays silent.
-      - name: Run verification
+      - name: Run verify_stock_symbols.py
+        id: verify
+        # Don't let a non-zero exit kill the job before the Telegram step
+        # below can run -- we want to notify on failure, not just stop.
+        run: |
+          set +e
+          python verify_stock_symbols.py 2>&1 | tee verify_output.txt
+          echo "exit_code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+        shell: bash
+
+      - name: Notify Telegram on failure
+        if: steps.verify.outputs.exit_code != '0'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python verify_stock_symbols.py
+        run: |
+          cd scripts
+          python - <<'PY'
+          import os
+          import sys
+          sys.path.insert(0, os.getcwd())
+          import telegram_notify as tg
+
+          with open("../verify_output.txt", "r", errors="ignore") as f:
+              output = f.read()
+
+          # Telegram messages have a ~4096-char cap -- keep this well under
+          # it and point at the Actions run for the full log.
+          tail = output[-2500:]
+          run_url = f"{os.environ.get('GITHUB_SERVER_URL')}/{os.environ.get('GITHUB_REPOSITORY')}/actions/runs/{os.environ.get('GITHUB_RUN_ID')}"
+          tg.send(
+              "\u26a0\ufe0f verify_stock_symbols.py FAILED\n\n"
+              f"Last output:\n{tail}\n\nFull log: {run_url}"
+          )
+          PY
+
+      - name: Fail the job if verification failed
+        if: steps.verify.outputs.exit_code != '0'
+        run: exit 1
