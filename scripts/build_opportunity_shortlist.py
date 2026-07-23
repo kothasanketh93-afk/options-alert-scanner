@@ -46,7 +46,7 @@ def main():
         github_token = os.environ["GITHUB_TOKEN"]
         state_mod.ensure_state_branch_checked_out(repo_url, github_token)
     except Exception as exc:
-        log.error(f"Could not check out the state branch -- aborting shortlist build: {exc}")
+        log.error(f"Could not check out the state branch -- aborting shortlist build: {exc}", exc_info=True)
         _notify_best_effort(f"⚠️ Opportunity shortlist build FAILED: could not check out the "
                              f"state branch ({type(exc).__name__}: {exc}). Today's stock scan "
                              f"will fall back to the fixed 15-stock watchlist.")
@@ -57,7 +57,7 @@ def main():
     try:
         payload = opportunity_score.build_shortlist(trading_date)
     except Exception as exc:
-        log.error(f"Opportunity scoring failed: {type(exc).__name__}: {exc}")
+        log.error(f"Opportunity scoring failed: {type(exc).__name__}: {exc}", exc_info=True)
         _notify_best_effort(f"⚠️ Opportunity shortlist build FAILED today "
                              f"({type(exc).__name__}: {exc}). Today's stock scan will fall "
                              f"back to the fixed 15-stock watchlist.")

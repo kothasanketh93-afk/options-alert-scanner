@@ -125,6 +125,11 @@ def fmt_new_alert(trade: dict) -> str:
     alt_block = _fmt_alternatives(trade.get("alternatives", []))
     direction_emoji = "🟢" if trade["direction"] == "CE" else "🔴"
     checklist = "\n".join(trade.get("factor_checklist", [])) or "—"
+    # Phase 4: signed per-factor points breakdown ("+15 Trend Alignment",
+    # "-5 Liquidity", ...) -- see trade_score.scoring_reasons().
+    breakdown = "\n".join(trade.get("score_breakdown", [])) or "—"
+    prob_label = trade.get("probability_label", "")
+    prob_trend = trade.get("probability_trend", "Stable")
 
     return (
         f"🏆 BEST OPPORTUNITY — {trade['display_label']}\n\n"
@@ -137,7 +142,7 @@ def fmt_new_alert(trade: dict) -> str:
         f"━━━━━━━━━━━━━━\n"
         f"{direction_emoji} {'BUY CE' if trade['direction'] == 'CE' else 'BUY PE'} SIGNAL\n"
         f"Trade Score : {trade['trade_score']}/100\n"
-        f"Probability : {trade['probability_pct']}%\n"
+        f"Probability : {trade['probability_pct']}% ({prob_label}, {prob_trend})\n"
         f"Grade : {trade['grade']}\n"
         f"Confidence : {trade['confidence_score']}/10\n"
         f"Risk : {trade['risk_score']}/10\n"
@@ -145,6 +150,8 @@ def fmt_new_alert(trade: dict) -> str:
         f"Expected RR : {trade['expected_rr']}\n"
         f"━━━━━━━━━━━━━━\n"
         f"{checklist}\n"
+        f"━━━━━━━━━━━━━━\n"
+        f"Score Breakdown:\n{breakdown}\n"
         f"━━━━━━━━━━━━━━\n\n"
         f"Premium: ₹{trade['alert_premium']}\n"
         f"Entry Zone: ₹{trade['entry_low']} - ₹{trade['entry_high']}\n"
@@ -274,7 +281,8 @@ def _holding_minutes(trade: dict):
     return int((datetime.fromisoformat(exit_ts) - datetime.fromisoformat(entry)).total_seconds() // 60)
 
 
-def fmt_daily_summary(date_str: str, trades: list) -> str:
+def fmt_daily_summary(date_str: str, trades: list, daily_stats: dict = None,
+                       probability_stats: dict = None) -> str:
     entered = [t for t in trades if t["status"] not in ("WAITING_ENTRY", "NOT_ENTERED")]
     not_entered = [t for t in trades if t["status"] == "NOT_ENTERED"]
     t2 = [t for t in trades if t.get("final_status") == "T2_HIT"]
@@ -322,6 +330,28 @@ def fmt_daily_summary(date_str: str, trades: list) -> str:
     holding_times = [m for m in (_holding_minutes(t) for t in trades) if m is not None]
     avg_holding = f"{sum(holding_times) / len(holding_times):.0f} minutes" if holding_times else "N/A"
 
+    # Medium priority (EOD daily statistics): Scanned Symbols / Valid
+    # Signals / Rejected Signals / Average-Highest-Lowest Probability /
+    # Broker Errors / API Failures. Both params default to None so any
+    # OTHER future caller that only passes (date_str, trades) still
+    # gets a valid message -- this section is just omitted for them,
+    # not a KeyError.
+    scan_block = ""
+    if daily_stats:
+        scan_block += (
+            f"\nScanned Symbols: {daily_stats.get('scanned_symbols', 0)}\n"
+            f"Valid Signals: {daily_stats.get('valid_signals', 0)}\n"
+            f"Rejected Signals: {daily_stats.get('rejected_signals', 0)}\n"
+            f"Broker Errors: {daily_stats.get('broker_errors', 0)}\n"
+            f"API Failures: {daily_stats.get('api_failures', 0)}\n"
+        )
+    if probability_stats and probability_stats.get("average") is not None:
+        scan_block += (
+            f"Average Probability: {probability_stats['average']}%\n"
+            f"Highest Probability: {probability_stats['highest']}%\n"
+            f"Lowest Probability: {probability_stats['lowest']}%\n"
+        )
+
     return (
         f"DAILY SCANNER SUMMARY\n\n"
         f"Date: {date_str}\n\n"
@@ -337,5 +367,6 @@ def fmt_daily_summary(date_str: str, trades: list) -> str:
         f"Best Trade: {best_line}\n"
         f"Worst Trade: {worst_line}\n"
         f"Average Holding Time: {avg_holding}\n\n"
-        f"Resolved Success Rate:\n{win_rate}"
+        f"Resolved Success Rate:\n{win_rate}\n"
+        f"{scan_block}"
     )

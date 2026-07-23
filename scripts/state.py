@@ -34,6 +34,18 @@ STATE_DIR = "state"
 REPO_ROOT = Path(__file__).resolve().parent.parent
 STATE_CLONE_DIR = REPO_ROOT / ".state_branch"
 
+# Medium priority (EOD daily statistics) -- see _fresh_state() and
+# record_scan_stats() below. A plain dict, not a dataclass, to match
+# every other piece of state in this file (all plain JSON-serializable
+# dicts, since the whole state file round-trips through json.dump).
+_EMPTY_DAILY_STATS = {
+    "scanned_symbols": 0,
+    "valid_signals": 0,
+    "rejected_signals": 0,
+    "api_failures": 0,
+    "broker_errors": 0,
+}
+
 # Statuses that count as a still-live/exposed position (not yet resolved).
 # T1_HIT is included: a trade that hit T1 and is still tracking toward T2
 # is still open, not terminal. Shared by has_open_trade() and
@@ -188,6 +200,8 @@ def load_state(date_str: str = None) -> dict:
     loaded.setdefault("circuit_breaker_tripped", False)
     loaded.setdefault("circuit_breaker_notified", False)
     loaded.setdefault("oi_history", {})
+    loaded.setdefault("probability_history", {})
+    loaded.setdefault("daily_stats", _EMPTY_DAILY_STATS.copy())
     loaded.setdefault("next_display_num", len(loaded.get("trades", {})))
     for trade in loaded.get("trades", {}).values():
         trade.setdefault("streak_counted", False)
@@ -206,7 +220,75 @@ def _fresh_state(date_str: str) -> dict:
         "circuit_breaker_tripped": False,
         "circuit_breaker_notified": False,
         "oi_history": {},       # instrument_key -> last-seen OI, for build-up detection
+        # Phase 4: "SYMBOL-DIRECTION" -> [{"time": "HH:MM", "pct": int}, ...]
+        # for the current trading day only (this whole file already
+        # resets daily) -- powers the probability-evolution log/display
+        # and the Increasing/Stable/Decreasing trend read.
+        "probability_history": {},
+        # Medium priority (EOD daily statistics): accumulated ACROSS all
+        # of today's runs (trader.yml fires every 5-15 minutes -- each
+        # run only scans once, so these are summed run-over-run, not
+        # overwritten). Reset for free every day since this whole file
+        # is date-keyed and starts fresh each morning.
+        "daily_stats": _EMPTY_DAILY_STATS.copy(),
     }
+
+
+def record_probability(state: dict, symbol: str, direction: str, probability_pct: int, now: datetime):
+    """
+    Appends this scan's probability reading for symbol+direction to
+    today's history. Called for every candidate that clears the hard
+    quality gate (not just the one chosen as the active trade), so the
+    evolution is visible even for setups that never became a trade.
+    """
+    key = f"{symbol}-{direction}"
+    history = state.setdefault("probability_history", {}).setdefault(key, [])
+    history.append({"time": now.strftime("%H:%M"), "pct": probability_pct})
+
+
+def probability_series(state: dict, symbol: str, direction: str) -> list:
+    """Today's [{"time", "pct"}, ...] readings for symbol+direction, oldest first."""
+    return state.get("probability_history", {}).get(f"{symbol}-{direction}", [])
+
+
+def probability_stats(state: dict) -> dict:
+    """
+    Average/highest/lowest probability across every reading recorded
+    today via record_probability() (every candidate that cleared the
+    hard gate on every run, not just the one chosen as the active
+    trade). Powers the EOD summary's Average/Highest/Lowest Probability
+    lines. Returns None for all three if nothing was scored yet today.
+    """
+    all_pct = [
+        reading["pct"]
+        for readings in state.get("probability_history", {}).values()
+        for reading in readings
+    ]
+    if not all_pct:
+        return {"average": None, "highest": None, "lowest": None}
+    return {
+        "average": round(sum(all_pct) / len(all_pct), 1),
+        "highest": max(all_pct),
+        "lowest": min(all_pct),
+    }
+
+
+def record_scan_stats(state: dict, scan_stats: dict, broker_errors: int = 0):
+    """
+    Accumulates one run's scanner.get_last_scan_stats() (scanned_symbols/
+    valid_signals/rejected_signals/api_failures) plus that run's broker
+    switch count into today's running total. Summed rather than
+    overwritten because trader.yml runs the scanner every 5-15 minutes
+    -- the EOD summary needs the WHOLE day's totals, not just the last
+    run's. Unknown keys in scan_stats are ignored rather than raising,
+    so this stays forward-compatible if scanner.py's stats dict grows.
+    """
+    totals = state.setdefault("daily_stats", _EMPTY_DAILY_STATS.copy())
+    for key in _EMPTY_DAILY_STATS:
+        if key == "broker_errors":
+            continue
+        totals[key] = totals.get(key, 0) + scan_stats.get(key, 0)
+    totals["broker_errors"] = totals.get("broker_errors", 0) + broker_errors
 
 
 def save_state(state: dict, commit_message: str, max_retries: int = 3):
@@ -348,6 +430,31 @@ def has_open_trade(state: dict, symbol: str, direction: str) -> bool:
         ):
             return True
     return False
+
+
+def cooldown_active(state: dict, symbol: str, direction: str, now: datetime,
+                     cooldown_minutes: int) -> bool:
+    """
+    True if this symbol+direction's most recent alert (WAITING_ENTRY
+    through any terminal status -- open or already closed) fired less
+    than `cooldown_minutes` ago. Complements has_open_trade(): that
+    function only suppresses while a trade is still live, so a setup
+    that closes (T2/SL/EOD) and immediately re-triggers next scan would
+    otherwise re-alert right away. cooldown_minutes <= 0 disables this
+    (every candidate is eligible again, same as before this existed).
+    """
+    if cooldown_minutes <= 0:
+        return False
+    most_recent = None
+    for t in state["trades"].values():
+        if t["symbol"] != symbol or t["direction"] != direction:
+            continue
+        alert_dt = datetime.fromisoformat(t["alert_time"])
+        if most_recent is None or alert_dt > most_recent:
+            most_recent = alert_dt
+    if most_recent is None:
+        return False
+    return (now - most_recent) < timedelta(minutes=cooldown_minutes)
 
 
 def count_open_trades(state: dict) -> int:

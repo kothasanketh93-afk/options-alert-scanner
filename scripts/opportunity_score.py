@@ -36,7 +36,7 @@ from config import (
     OPPORTUNITY_SCORE_WEIGHTS, OPP_SCORE_RVOL_CEILING, OPP_SCORE_GAP_CEILING,
     OPP_SCORE_ATR_CEILING, OPP_SCORE_MOM_CEILING, OPP_SCORE_OI_CEILING,
     OPP_SCORE_LIQUIDITY_CEILING, OPP_SCORE_VWAP_CEILING, OPP_SCORE_RANGE_CEILING,
-    TOP_N_STOCKS,
+    TOP_N_STOCKS, USE_DYNAMIC_FNO_UNIVERSE, DYNAMIC_UNIVERSE_TOP_N,
 )
 from daily_cache import DailyCache
 from logging_setup import get_logger
@@ -76,12 +76,19 @@ def _resolve_instrument_key(symbol: str, trading_date: str) -> str:
 
 
 def compute_symbol_inputs(symbol: str, trading_date: str, batch_quotes: dict,
-                           instrument_key: str, prior_day_payload: dict) -> dict:
+                           instrument_key: str, prior_day_payload: dict,
+                           fetch_oi: bool = True) -> dict:
     """
     Gathers every raw input compute_opportunity_score() needs for one
     symbol. Returns None (logged) if there isn't enough data to score
     this symbol today -- same "skip, log why, keep the rest of the
     run alive" convention as instrument_master.validate_symbol().
+
+    fetch_oi=False (Phase 5) skips _safe_total_oi()'s per-symbol
+    option-chain call -- oi_chg_pct/total_oi come back as 0.0/None
+    instead. Used for the cheap momentum+liquidity prefilter pass over
+    the full ~200-250 name F&O universe; the expensive OI fetch then
+    only runs for the DYNAMIC_UNIVERSE_TOP_N symbols that survive it.
     """
     quote = batch_quotes.get(instrument_key)
     if not quote:
@@ -91,7 +98,10 @@ def compute_symbol_inputs(symbol: str, trading_date: str, batch_quotes: dict,
     try:
         daily = market_data.get_recent_daily_candles(instrument_key, _DAILY_LOOKBACK)
     except Exception as exc:
-        _logger.info(f"SKIP {symbol}: daily candle fetch failed ({type(exc).__name__}: {exc})")
+        _logger.info(
+            f"SKIP {symbol}: daily candle fetch failed ({type(exc).__name__}: {exc})",
+            exc_info=True,
+        )
         return None
 
     if len(daily) < 6:
@@ -132,9 +142,9 @@ def compute_symbol_inputs(symbol: str, trading_date: str, batch_quotes: dict,
     trade_values = [c["close"] * c["volume"] for c in daily[-20:]]
     adtv = sum(trade_values) / len(trade_values) if trade_values else 0.0
 
-    total_oi = _safe_total_oi(symbol, trading_date)
+    total_oi = _safe_total_oi(symbol, trading_date) if fetch_oi else None
     oi_chg_pct = 0.0
-    if prior_day_payload and total_oi:
+    if fetch_oi and prior_day_payload and total_oi:
         prior_row = next(
             (r for r in prior_day_payload.get("all_scored", []) if r["symbol"] == symbol), None
         )
@@ -169,7 +179,10 @@ def _safe_total_oi(symbol: str, trading_date: str) -> float:
         chain = market_data.get_broker().get_option_chain(underlying_key, expiry)
         return sum((row.get("call_oi") or 0) + (row.get("put_oi") or 0) for row in chain)
     except Exception as exc:
-        _logger.info(f"{symbol}: OI lookup failed ({type(exc).__name__}: {exc}) -- oi_change scored as neutral")
+        _logger.info(
+            f"{symbol}: OI lookup failed ({type(exc).__name__}: {exc}) -- oi_change scored as neutral",
+            exc_info=True,
+        )
         return None
 
 
@@ -187,6 +200,22 @@ def compute_opportunity_score(inputs: dict, sector_ranks: dict) -> int:
         "prev_range": _clamp01(inputs["prev_range_pct"] / OPP_SCORE_RANGE_CEILING) * w["prev_range"],
     }
     return round(sum(parts.values()))
+
+
+def _momentum_liquidity_prescore(inputs: dict) -> float:
+    """
+    Phase 5: cheap 0-1 prefilter score using ONLY momentum (mom_5d) and
+    liquidity (adtv) -- the two factors the "top N high momentum and
+    liquidity stocks" request explicitly asked for -- so the full
+    ~200-250 name F&O universe can be cut down to DYNAMIC_UNIVERSE_TOP_N
+    BEFORE the expensive per-symbol OI fetch and full 9-factor scoring
+    run. Reuses the same OPP_SCORE_MOM_CEILING/OPP_SCORE_LIQUIDITY_CEILING
+    the full compute_opportunity_score() uses, so a symbol that prefilters
+    well is scored on the same scale later, not a different one.
+    """
+    mom = _clamp01(abs(inputs["mom_5d"]) / OPP_SCORE_MOM_CEILING)
+    liq = _clamp01(inputs["adtv"] / OPP_SCORE_LIQUIDITY_CEILING)
+    return (mom + liq) / 2
 
 
 def rank_sectors(all_inputs: list) -> dict:
@@ -210,21 +239,44 @@ def rank_sectors(all_inputs: list) -> dict:
 
 def build_shortlist(trading_date: str = None) -> dict:
     """
-    Full Phase 1 pipeline: batch-fetch quotes for the whole universe
-    (ONE call, see broker.Broker.get_batch_quotes()'s docstring for
-    why this matters), fetch per-symbol daily history + OI, score, and
+    Full Phase 1 pipeline (extended by Phase 5's dynamic universe +
+    prefilter): batch-fetch quotes for the whole candidate pool (ONE
+    call, see broker.Broker.get_batch_quotes()'s docstring for why
+    this matters), fetch per-symbol daily history, prefilter on
+    momentum+liquidity alone, THEN fetch OI + score the survivors, and
     keep the top TOP_N_STOCKS. Returns the payload shape
     build_opportunity_shortlist.py caches via daily_cache.py:
 
       {"trading_date": ..., "shortlist": [{"symbol", "score"}, ...],
        "all_scored": [{"symbol", "score", "total_oi"}, ...]}
 
-    "all_scored" (every universe symbol, not just the shortlist) is
-    kept specifically so TOMORROW's run can read it back as
+    "all_scored" (every scored symbol, not just the shortlist) is kept
+    specifically so TOMORROW's run can read it back as
     prior_day_payload for oi_chg_pct -- see compute_symbol_inputs().
+
+    PHASE 5 (2026-07-24): the candidate pool is now
+    universe.fno_eligible_stock_symbols() -- the real, exchange-wide
+    F&O list (~200-250 names, read live from the broker's instrument
+    master) -- instead of the ~112-name hand-curated MASTER_UNIVERSE,
+    when config.USE_DYNAMIC_FNO_UNIVERSE is True and that lookup
+    succeeds. Falls back to universe.universe_symbols() (the old
+    static list) on any lookup failure or empty result, same
+    "degrade, don't go dark" posture as elsewhere in this codebase.
+    Because that pool is much bigger, the expensive per-symbol OI
+    fetch (_safe_total_oi()) is deferred: every candidate is first
+    scored cheaply (fetch_oi=False) on momentum+liquidity alone
+    (_momentum_liquidity_prescore()) and cut to
+    config.DYNAMIC_UNIVERSE_TOP_N; only those survivors get the OI
+    fetch and the full 9-factor compute_opportunity_score() pass
+    below. TOP_N_STOCKS still applies on top of that, unchanged.
     """
     trading_date = trading_date or instrument_master.today_str()
-    symbols = universe.universe_symbols()
+
+    symbols = []
+    if USE_DYNAMIC_FNO_UNIVERSE:
+        symbols = universe.fno_eligible_stock_symbols(trading_date)
+    if not symbols:
+        symbols = universe.universe_symbols()
 
     instrument_keys = {}
     for symbol in symbols:
@@ -240,9 +292,32 @@ def build_shortlist(trading_date: str = None) -> dict:
     yesterday = (datetime.strptime(trading_date, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
     prior_day_payload = cache.read(yesterday)
 
-    all_inputs = []
+    # Cheap pass (no OI fetch) over the FULL pool -- this is what makes
+    # a ~200-250 name pool affordable at all.
+    cheap_inputs = []
     for symbol, instrument_key in instrument_keys.items():
-        inputs = compute_symbol_inputs(symbol, trading_date, batch_quotes, instrument_key, prior_day_payload)
+        inputs = compute_symbol_inputs(symbol, trading_date, batch_quotes, instrument_key,
+                                        prior_day_payload, fetch_oi=False)
+        if inputs is not None:
+            cheap_inputs.append(inputs)
+
+    if USE_DYNAMIC_FNO_UNIVERSE and len(cheap_inputs) > DYNAMIC_UNIVERSE_TOP_N:
+        cheap_inputs.sort(key=_momentum_liquidity_prescore, reverse=True)
+        survivors = cheap_inputs[:DYNAMIC_UNIVERSE_TOP_N]
+        _logger.info(
+            f"Momentum/liquidity prefilter: {len(cheap_inputs)} scored, "
+            f"top {len(survivors)} advance to full scoring (incl. OI)."
+        )
+    else:
+        survivors = cheap_inputs
+
+    # Full pass (OI + all 9 factors) over just the survivors.
+    all_inputs = []
+    for row in survivors:
+        symbol = row["symbol"]
+        instrument_key = instrument_keys[symbol]
+        inputs = compute_symbol_inputs(symbol, trading_date, batch_quotes, instrument_key,
+                                        prior_day_payload, fetch_oi=True)
         if inputs is not None:
             all_inputs.append(inputs)
 
@@ -256,7 +331,7 @@ def build_shortlist(trading_date: str = None) -> dict:
     shortlist = scored[:TOP_N_STOCKS]
 
     _logger.info(
-        f"Opportunity scoring: {len(symbols)} in universe, {len(all_inputs)} scored, "
+        f"Opportunity scoring: {len(symbols)} in pool, {len(all_inputs)} fully scored, "
         f"top {len(shortlist)} shortlisted. Top 10: "
         + ", ".join(f"{r['symbol']}={r['score']}" for r in scored[:10])
     )

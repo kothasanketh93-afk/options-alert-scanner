@@ -36,7 +36,8 @@ import config_validation
 from exceptions import TelegramFailure, BrokerAPIError
 from logging_setup import get_logger
 import config
-from config import SUMMARY_HHMM
+import trade_score
+from config import SUMMARY_HHMM, TELEGRAM_MIN_PROBABILITY
 
 IST = timezone(timedelta(hours=5, minutes=30))
 TERMINAL_STATUSES = {"T2_HIT", "SL_HIT", "NOT_ENTERED", "AMBIGUOUS", "EOD_CLOSED"}
@@ -69,6 +70,8 @@ def new_trade_record(setup: dict, trade_id: str, alert_dt: datetime, display_lab
         # numeric score ever reaches Telegram" design (see trade_score.py).
         "trade_score": setup["trade_score"],
         "probability_pct": setup["probability_pct"],
+        "probability_label": setup.get("probability_label"),
+        "score_breakdown": setup.get("score_breakdown", []),
         "confidence_score": setup["confidence_score"],
         "risk_score": setup["risk_score"],
         "reward_score": setup["reward_score"],
@@ -131,6 +134,27 @@ def run_scanner_step(state: dict, now: datetime):
 
     ranked = scanner.detect_all_setups(state["oi_history"])
 
+    # Medium priority (EOD daily statistics): fold this run's counts
+    # into today's running total. market_data.get_broker().switch_log
+    # is THIS RUN's list of primary->secondary broker switches (see
+    # broker_failover.py -- switch_log is per-process, not persisted),
+    # so its length is this run's broker-error contribution.
+    state_mod.record_scan_stats(
+        state, scanner.get_last_scan_stats(),
+        broker_errors=len(market_data.get_broker().switch_log),
+    )
+
+    # Phase 4: fresh probability recalculated THIS scan for every
+    # candidate that cleared the gate (not reused from a prior run) --
+    # logged into today's history so the evolution and trend
+    # (Increasing/Stable/Decreasing) can be shown even for candidates
+    # that never became the chosen trade.
+    for candidate in ranked:
+        state_mod.record_probability(
+            state, candidate["symbol"], candidate["direction"],
+            candidate["probability_pct"], now,
+        )
+
     chosen = None
     for candidate in ranked:
         if state_mod.has_open_trade(state, candidate["symbol"], candidate["direction"]):
@@ -138,6 +162,14 @@ def run_scanner_step(state: dict, now: datetime):
             # -- skip it and fall through to the next-best candidate
             # rather than alerting nothing for the whole run just
             # because the single top-ranked pick happened to conflict.
+            continue
+        if state_mod.cooldown_active(
+            state, candidate["symbol"], candidate["direction"], now,
+            config.DUPLICATE_ALERT_COOLDOWN_MINUTES,
+        ):
+            # Same symbol+direction alerted (and possibly already
+            # closed) within the configured cooldown window -- skip to
+            # avoid re-alerting the same setup back-to-back.
             continue
         chosen = candidate
         break
@@ -184,7 +216,31 @@ def run_scanner_step(state: dict, now: datetime):
     )
     display_label = f"Trade {state_mod.next_display_number(state)}"
     trade = new_trade_record(chosen, trade_id, now, display_label)
+
+    # Phase 4: today's probability evolution for this symbol+direction
+    # (includes the reading just recorded above) plus the derived
+    # Increasing/Stable/Decreasing trend, for the Telegram message.
+    series = state_mod.probability_series(state, trade["symbol"], trade["direction"])
+    trade["probability_history"] = series
+    trade["probability_trend"] = trade_score.probability_trend([r["pct"] for r in series])
+
     state["trades"][trade_id] = trade
+
+    # Phase 4: internal tracking/scoring happens for everything that
+    # clears ENTRY_SCORE (so win-rate stats below 80% probability
+    # aren't lost), but per an explicit "only send Telegram alerts when
+    # probability >= 80%" requirement, the message itself is gated
+    # separately here. Below-floor trades are still tracked normally by
+    # run_tracker_step and still appear in the daily summary -- they
+    # just never get a NEW_TRADE_ALERT message.
+    if trade["probability_pct"] < TELEGRAM_MIN_PROBABILITY:
+        log.info(
+            "WATCHLIST %s: probability %d%% (%s) is below the %d%% Telegram floor -- "
+            "tracked internally, no alert sent.",
+            trade_id, trade["probability_pct"], trade.get("probability_label"),
+            TELEGRAM_MIN_PROBABILITY,
+        )
+        return
 
     try:
         notify_once(trade, "NEW_TRADE_ALERT", tg.fmt_new_alert, trade)
@@ -279,7 +335,11 @@ def maybe_send_daily_summary(state: dict, now: datetime):
     trades = list(state["trades"].values())
     if not trades:
         return
-    text = tg.fmt_daily_summary(state["date"], trades)
+    text = tg.fmt_daily_summary(
+        state["date"], trades,
+        daily_stats=state.get("daily_stats"),
+        probability_stats=state_mod.probability_stats(state),
+    )
     try:
         tg.send(text)
         state["summary_sent"] = True
@@ -351,7 +411,7 @@ def main():
     except Exception as exc:
         run_error = exc
         log.error("Unexpected error during run (%s: %s) -- saving whatever progress "
-                   "was made before re-raising.", type(exc).__name__, exc)
+                   "was made before re-raising.", type(exc).__name__, exc, exc_info=True)
 
     state_mod.cleanup_old_state_files(keep_today=date_str)
     commit_message = f"update {date_str} @ {now.strftime('%H:%M:%S')}"

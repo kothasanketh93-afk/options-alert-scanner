@@ -36,6 +36,12 @@ UNDERLYING_INSTRUMENT_KEYS = {
     # the way NIFTY/BANKNIFTY's keys were. Confirm this resolves (no
     # InstrumentNotFound) on the first live MIDCPNIFTY scan.
     "MIDCPNIFTY": "NSE_INDEX|NIFTY MID SELECT",
+    # Added 2026-07-23. Verified against Upstox's own SDK/code examples
+    # (multiple independent sources use this exact key for SENSEX's
+    # index quote) -- BSE_INDEX prefix, not NSE_INDEX, since SENSEX is
+    # a BSE index. See config.py's SYMBOLS comment for the broader
+    # "verify against your own account" caveat this addition carries.
+    "SENSEX": "BSE_INDEX|SENSEX",
 }
 
 # IMPORTANT: the raw index (NSE_INDEX|...) has no genuine traded
@@ -254,7 +260,8 @@ def get_atm_strike(symbol: str):
     except Exception as exc:
         _logger.warning(
             f"STRIKE_ENGINE {symbol}: instrument_master ATM lookup failed "
-            f"({type(exc).__name__}: {exc}) -- falling back to fixed STRIKE_STEP arithmetic"
+            f"({type(exc).__name__}: {exc}) -- falling back to fixed STRIKE_STEP arithmetic",
+            exc_info=True,
         )
 
     step = STRIKE_STEP.get(symbol)

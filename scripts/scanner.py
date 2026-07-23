@@ -115,7 +115,7 @@ from option_chain import (
 )
 from filters import (
     oi_is_building, oi_change_pct, liquidity_ok, delta_acceptable, expiry_theta_ok,
-    quality_gate, reasons_from_factors,
+    quality_gate, reasons_from_factors, rejection_reasons,
 )
 from levels import dynamic_trade_levels, estimated_holding_minutes
 # Phase 3: Professional Trade Score Engine (replaces grading.py's binary-
@@ -125,6 +125,14 @@ import trade_score
 from ranking import _grade_rank_key, rank_all
 
 _logger = get_logger("scanner")
+
+# Reset and populated once per detect_all_setups() call -- read back via
+# get_last_scan_stats() right after main.py calls detect_all_setups(),
+# so the EOD summary can report Rejected Signals without changing
+# detect_all_setups()'s return type (still just the ranked candidate
+# list, same as every other caller/spec expects).
+_rejection_count = 0
+_last_scan_stats = {}
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -152,7 +160,10 @@ def _broad_market_efficiency_ratio() -> float:
         candles = market_data.get_recent_underlying_candles(nifty_key, "15minute", 30)
         value = efficiency_ratio(candles) if candles else 0.0
     except Exception as exc:
-        _logger.info(f"MARKET_STRENGTH: NIFTY efficiency-ratio read failed ({type(exc).__name__}: {exc}) -- scoring as neutral (0.0)")
+        _logger.info(
+            f"MARKET_STRENGTH: NIFTY efficiency-ratio read failed ({type(exc).__name__}: {exc}) -- scoring as neutral (0.0)",
+            exc_info=True,
+        )
         value = 0.0
     _market_strength_cache["value"] = value
     return value
@@ -210,7 +221,8 @@ def resolve_strike_candidates(symbol: str, direction: str, atm_strike, spot_pric
     except Exception as exc:
         _logger.warning(
             f"STRIKE_ENGINE {symbol}: instrument_master lookup failed "
-            f"({type(exc).__name__}: {exc}) -- falling back to fixed STRIKE_STEP arithmetic"
+            f"({type(exc).__name__}: {exc}) -- falling back to fixed STRIKE_STEP arithmetic",
+            exc_info=True,
         )
         offsets = None
 
@@ -339,6 +351,12 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         f"hard_gate={'PASS' if hard_gate_pass else 'FAIL'} | {factor_summary}"
     )
     if not hard_gate_pass:
+        global _rejection_count
+        _rejection_count += 1
+        _logger.info(
+            f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
+            f"Reasons: {', '.join(rejection_reasons(factors))}"
+        )
         return None
 
     # NOTE: volume_confirmed above reuses liquidity_ok()'s pass/fail as a
@@ -389,6 +407,10 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     )
 
     if grade == "Reject":
+        _logger.info(
+            f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
+            f"Reasons: Low Score ({score}/100, floor={ENTRY_SCORE})"
+        )
         return None
 
     stars, confidence_label = trade_score.confidence_display(grade)
@@ -399,7 +421,14 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     rr_ratio = (target_distance / sl_distance) if sl_distance else 0.0
     reward_score = trade_score.compute_reward_score(rr_ratio)
     probability_pct = trade_score.compute_probability_pct(score)
+    probability_band = trade_score.probability_label(probability_pct)
+    score_breakdown = trade_score.scoring_reasons(strengths)
     confidence_score = trade_score.compute_confidence_score(score)
+    _logger.info(
+        f"PROBABILITY {symbol} {direction} {moneyness} strike={strike} "
+        f"probability={probability_pct}% ({probability_band}) | "
+        + " | ".join(score_breakdown) + f" | Final Probability = {probability_pct}%"
+    )
     expected_rr = trade_score.expected_rr_text(premium, levels["stop_loss"], levels["target_1"])
     holding_minutes = estimated_holding_minutes(atr_index_points, target_distance / abs(delta) if delta else 0)
 
@@ -422,6 +451,8 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         # decision reversing the earlier "hide all numbers" design).
         "trade_score": score,
         "probability_pct": probability_pct,
+        "probability_label": probability_band,
+        "score_breakdown": score_breakdown,
         "confidence_score": confidence_score,
         "risk_score": risk_score,
         "reward_score": reward_score,
@@ -462,7 +493,7 @@ def detect_setups(symbol: str, oi_history: dict) -> list:
         return []  # outside a scan window -- deliberately silent, this is expected most of the day
 
     underlying_key = resolve_underlying_key(symbol)
-    min_quality_score = ENTRY_SCORE  # floor matching the lowest grade, "B" (trade_score.py, Phase 3)
+    min_quality_score = ENTRY_SCORE  # floor matching the lowest grade, "Watchlist" (trade_score.py, Phase 3/4)
     if underlying_key:
         candles_15m = market_data.get_recent_underlying_candles(underlying_key, "15minute", 30)
         regime, penalty = market_regime(candles_15m)
@@ -504,6 +535,9 @@ def detect_all_setups(oi_history: dict) -> list:
     ends up chosen should have the rest of this list (minus itself)
     attached as its "alternatives" for the Telegram message.
     """
+    global _rejection_count
+    _rejection_count = 0
+    api_failures = 0
     all_candidates = []
     for symbol in SYMBOLS:
         # CRITICAL BUGFIX (live failure, 2026-07-17): this used to let
@@ -523,9 +557,32 @@ def detect_all_setups(oi_history: dict) -> list:
         try:
             all_candidates.extend(detect_setups(symbol, oi_history))
         except Exception as e:
+            api_failures += 1
             _logger.error(
                 f"SYMBOL_FAILED {symbol}: {type(e).__name__}: {e} -- "
-                f"skipping this symbol for this run, continuing with the rest"
+                f"skipping this symbol for this run, continuing with the rest",
+                exc_info=True,
             )
 
-    return rank_all(all_candidates)
+    ranked = rank_all(all_candidates)
+    _last_scan_stats.update({
+        "scanned_symbols": len(SYMBOLS),
+        "valid_signals": len(ranked),
+        "rejected_signals": _rejection_count,
+        "api_failures": api_failures,
+    })
+    return ranked
+
+
+def get_last_scan_stats() -> dict:
+    """
+    Counts from the most recent detect_all_setups() call in this
+    process -- scanned symbols, signals that passed the quality gate,
+    signals rejected at the hard gate, and per-symbol exceptions
+    swallowed by the try/except above. main.py reads this right after
+    calling detect_all_setups() and folds it into state["daily_stats"]
+    so the EOD summary can report it (Medium priority: EOD daily
+    statistics). Returns a copy so callers can't mutate scanner.py's
+    internal dict.
+    """
+    return dict(_last_scan_stats)

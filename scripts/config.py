@@ -29,6 +29,15 @@ MAX_CONSECUTIVE_SL = 2
 # Mostly a backstop now that only one best-ranked setup opens per run.
 MAX_CONCURRENT_TRADES = 4
 
+# Minimum minutes that must pass after a symbol+direction's most recent
+# alert (open OR already closed) before a new alert for that SAME
+# symbol+direction can fire. has_open_trade() alone only blocks while a
+# trade is still live -- without this, a trade that closes (T2/SL/EOD)
+# could be immediately followed by a fresh alert on the same setup one
+# scan later, which reads as a duplicate even though it's technically a
+# new trade_id. 0 disables the cooldown (restores the old behavior).
+DUPLICATE_ALERT_COOLDOWN_MINUTES = 15
+
 # --- Session windows (scanner.py) ---
 # When NEW setups can be scanned for. Outside these windows,
 # detect_setups() returns [] immediately (still tracks open trades).
@@ -50,7 +59,7 @@ SESSION_WINDOWS = [
 # against an actual downloaded instrument file (filter instrument_type
 # OPTIDX/name=MIDCPNIFTY, diff consecutive strike_price values) before
 # trusting alerts on this symbol -- see the liquidity note below too.
-STRIKE_STEP = {"NIFTY": 50, "BANKNIFTY": 100, "MIDCPNIFTY": 25}
+STRIKE_STEP = {"NIFTY": 50, "BANKNIFTY": 100, "MIDCPNIFTY": 25, "SENSEX": 100}
 
 # How many strikes on EACH side of ATM to evaluate. STRIKE_RANGE=1
 # (the default -- unchanged from before this was configurable)
@@ -80,10 +89,27 @@ STRIKE_RANGE = 1
 # a real absence of setups. Watch the SCORE log lines for this symbol
 # specifically before concluding either way.
 #
-# SENSEX remains deferred -- BSE (not NSE), different instrument-key
-# exchange prefix, thinner liquidity needing its own thresholds; see
-# README's original "Explicitly deferred" section for the details.
-SYMBOLS = ["NIFTY", "BANKNIFTY", "MIDCPNIFTY"]
+# SENSEX added 2026-07-23 -- previously deferred (BSE, not NSE;
+# different instrument-key exchange prefix). Broker support added in
+# angelone.py (BFO exch_seg, auto-detected via _exchange_segment())
+# and upstox.py (BSE_INDEX|SENSEX + a second BSE.json.gz instrument-
+# master fetch merged with NSE's). SAME caveat as MIDCPNIFTY above,
+# and then some: MIN_OI/MIN_OPTION_VOLUME/MIN_PREMIUM/MAX_SPREAD_PCT
+# below are NIFTY/BANKNIFTY-tuned and SENSEX liquidity is thinner and
+# less mature than NIFTY's even at reasonable strikes -- watch the
+# SCORE log lines closely before trusting this symbol's alerts.
+# UNVERIFIED LIVE (2026-07-23): the broker-layer BFO/BSE_FO code paths
+# below have NOT been exercised against a live account -- this was
+# built from Angel One/Upstox's own documentation and forum threads,
+# not a live test run (see angelone.py's and upstox.py's module
+# docstrings for specifics, including two DIFFERENT live forum reports
+# of Angel One getLtpData and Upstox order-placement both rejecting
+# valid-looking SENSEX/BFO/BSE_FO requests as of late 2025 -- run this
+# against your own account and watch the logs closely before trusting
+# it unattended). Remove "SENSEX" from this list to fall back to the
+# previous NIFTY/BANKNIFTY/MIDCPNIFTY-only behavior with zero other
+# changes needed.
+SYMBOLS = ["NIFTY", "BANKNIFTY", "MIDCPNIFTY", "SENSEX"]
 
 # --- Mid/Smallcap stock symbols ---
 # RENAMED from STOCK_SYMBOLS (2026-07-17) to FALLBACK_STOCK_WATCHLIST
@@ -155,14 +181,41 @@ STRIKE_STEP.update(STOCK_STRIKE_STEP)
 # SCORE log lines for these symbols the same way ENTRY_SCORE's
 # comment above describes doing for the weighted-score cutoff, and
 # tune from there.
-STOCK_MIN_OI = 5_000
-STOCK_MIN_OPTION_VOLUME = 500
+# Relaxed 2026-07-24 (Phase 4 "increase alert volume" pass): these were
+# tuned tight enough that borderline-but-tradeable stock strikes (a hair
+# under the old OI/volume floor, otherwise clean setups) were being
+# rejected outright by filters.liquidity_ok(). liquidity_strength() in
+# trade_score.py still scores the SOFT version of this on a 0-1 scale,
+# so a strike that only just clears these floors still shows up as a
+# weaker Liquidity contributor in the score breakdown -- this only
+# changes the hard pass/fail line, not how good the trade LOOKS.
+STOCK_MIN_OI = 4_000
+STOCK_MIN_OPTION_VOLUME = 400
 STOCK_MIN_PREMIUM = 2
 
 # --- Phase 1 (opportunity_score.py) ---
 INDEX_SYMBOLS = list(SYMBOLS)  # ["NIFTY", "BANKNIFTY", "MIDCPNIFTY"] at this point -- captured before STOCK_SYMBOLS is appended below
 
-TOP_N_STOCKS = 35  # midpoint of the spec's "30-40 stocks" -- tune from opportunity-shortlist Telegram logs
+TOP_N_STOCKS = 20  # narrowed from 35 to 20 (2026-07-24) -- fewer, higher-liquidity
+                    # names scanned per run means fewer broker calls and less
+                    # exposure to the thinner end of the stock-options book;
+                    # tune further from opportunity-shortlist Telegram logs
+
+# --- Phase 5 (2026-07-24): dynamic F&O universe + momentum/liquidity prefilter ---
+# Per an explicit request to widen the candidate pool beyond the ~112-name
+# hand-curated MASTER_UNIVERSE: when True, opportunity_score.build_shortlist()
+# sources its candidate pool from universe.fno_eligible_stock_symbols()
+# (the REAL, exchange-wide F&O list, ~200-250 names, read live from the
+# broker's instrument master) instead of universe.universe_symbols().
+# That full pool is then cheaply pre-ranked on momentum + liquidity ALONE
+# (mom_5d + adtv, reusing OPP_SCORE_MOM_CEILING/OPP_SCORE_LIQUIDITY_CEILING
+# below) and cut down to DYNAMIC_UNIVERSE_TOP_N before the expensive
+# per-symbol OI fetch and full 9-factor scoring run -- so widening the pool
+# doesn't multiply the option-chain-fetch cost by 2x, only the cheap
+# daily-candle prefilter step. Falls back to the static MASTER_UNIVERSE
+# (and skips the prefilter) if the instrument-master lookup returns nothing.
+USE_DYNAMIC_FNO_UNIVERSE = True
+DYNAMIC_UNIVERSE_TOP_N = 150
 
 # Each ceiling is "the input value that earns the FULL weight for that
 # factor" -- e.g. OPP_SCORE_RVOL_CEILING=3.0 means 3x average volume
@@ -302,7 +355,15 @@ REGIME_SCORE_PENALTY = {
 # stage at all. Revisit again after a week of live data via the
 # daily-summary win-rate check -- a lower floor means more alerts but
 # each one is, by definition, lower-conviction.
-ENTRY_SCORE = 60
+# Lowered from 60 to 55 on 2026-07-24 (Phase 4 "increase alert volume"
+# pass): with the 3-hard-gate design (liquidity/delta/theta) already in
+# place, 55-59 setups are near-misses on the weighted score, not gate
+# failures -- worth surfacing as low-tier "Watchlist" alerts (see
+# trade_score.probability_label()) rather than discarded, since
+# Telegram sends are separately gated at TELEGRAM_MIN_PROBABILITY below
+# regardless of this floor. Revisit via the daily-summary win-rate
+# check same as the last two changes to this constant.
+ENTRY_SCORE = 55
 STRONG_ENTRY = 85
 
 GRADE_THRESHOLDS = [
@@ -361,28 +422,76 @@ TS_RR_BASELINE = 1.5                  # target-distance/SL-distance >= this -> f
 # (A+/A/B+/B) -- distinct from the old Strong Entry/Entry GRADE_THRESHOLDS
 # above, which stays as-is for backward compatibility (nothing besides
 # the old grading.py path reads it anymore, but it isn't deleted).
+#
+# BUGFIX (2026-07-24, found during code review): this list used to
+# bottom out at 60 ("B"), so score_strike()'s `if grade == "Reject":
+# return None` silently discarded every 55-59 setup before it could
+# ever reach ENTRY_SCORE's own 55 floor in detect_setups() --
+# contradicting this exact file's Phase 4 "increase alert volume"
+# comment on ENTRY_SCORE below, which explicitly says 55-59 setups
+# are near-misses worth surfacing as low-tier "Watchlist" alerts, not
+# gate failures. Adding the (ENTRY_SCORE, "Watchlist") tier here is
+# what actually wires that documented intent into compute_grade() --
+# ENTRY_SCORE is referenced (not a literal 55) so the two stay in
+# sync if this floor is ever retuned again.
 TRADE_SCORE_GRADE_THRESHOLDS = [
     (90, "A+"),
     (80, "A"),
     (70, "B+"),
     (60, "B"),
+    (ENTRY_SCORE, "Watchlist"),  # ENTRY_SCORE is defined earlier in this
+                                   # file (currently 55) -- referenced, not
+                                   # duplicated, so retuning ENTRY_SCORE
+                                   # automatically keeps this tier in sync.
 ]
 
 # Backward-compat display fields (confidence_stars/confidence_label still
 # populated on every trade dict, same as before) -- just re-keyed to the
 # new A+/A/B+/B grade vocabulary instead of the old Strong Entry/Entry one.
+# "Watchlist" added alongside the TRADE_SCORE_GRADE_THRESHOLDS bugfix above
+# so a 55-59 setup gets a real star display instead of confidence_display()'s
+# ("☆☆☆☆☆", "N/A") fallback.
 CONFIDENCE_STARS_BY_TRADE_GRADE = {
-    "A+": ("★★★★★", "Very High"),
-    "A":  ("★★★★☆", "High"),
-    "B+": ("★★★☆☆", "Moderate"),
-    "B":  ("★★☆☆☆", "Fair"),
+    "A+":        ("★★★★★", "Very High"),
+    "A":         ("★★★★☆", "High"),
+    "B+":        ("★★★☆☆", "Moderate"),
+    "B":         ("★★☆☆☆", "Fair"),
+    "Watchlist": ("★☆☆☆☆", "Low"),
 }
 
+# --- Phase 4: probability bands + Telegram send gate (2026-07-24) ---
+# Independent of TRADE_SCORE_GRADE_THRESHOLDS above (which grades the
+# 0-100 trade_score) -- this bands trade_score.compute_probability_pct()'s
+# output for display/transparency, and separately controls which of
+# those bands actually reach Telegram. Every candidate that clears the
+# ENTRY_SCORE gate still gets scored, logged, and tracked internally
+# (so win-rate stats aren't skewed by what got messaged) -- this only
+# gates the notification, per an explicit "only send Telegram alerts
+# when probability >= 80%" requirement. Ordered highest-first;
+# probability_label() in trade_score.py walks this the same way
+# compute_grade() walks TRADE_SCORE_GRADE_THRESHOLDS.
+PROBABILITY_BANDS = [
+    (90, "Strong Institutional Setup"),
+    (80, "High Probability Trade"),
+    (70, "Potential Trade"),
+    (60, "Watchlist"),
+    (0,  "Ignore"),
+]
+TELEGRAM_MIN_PROBABILITY = 80
+
 # --- Liquidity engine (scanner.py) ---
-MIN_OI = 15_000
-MIN_OPTION_VOLUME = 5_000
+# Relaxed 2026-07-24 (Phase 4 "increase alert volume" pass, per an
+# explicit "relax liquidity slightly" instruction): MIN_OI/
+# MIN_OPTION_VOLUME lowered ~20%, MAX_SPREAD_PCT widened from 3% to
+# 4%. These are still hard hygiene gates (an option book this thin or
+# this wide can't be entered/exited cleanly regardless of signal
+# quality) -- only the line moved, not the principle. The old, tighter
+# values are the ones to revert to if live fills on the newly-admitted
+# strikes turn out worse than the rest.
+MIN_OI = 12_000
+MIN_OPTION_VOLUME = 4_000
 MIN_PREMIUM = 60             # reject strikes priced below this (rupees)
-MAX_SPREAD_PCT = 0.03        # bid-ask spread must be <= 3% of premium.
+MAX_SPREAD_PCT = 0.04        # bid-ask spread must be <= 4% of premium (was 3%).
                               # Percentage-of-premium, not absolute rupees --
                               # a flat rupee cap unfairly penalizes cheap
                               # OTM contracts and is too loose on expensive

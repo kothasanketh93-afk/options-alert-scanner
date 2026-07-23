@@ -34,6 +34,7 @@ from config import (
     TS_RR_BASELINE, MIN_OI, MIN_OPTION_VOLUME, MAX_SPREAD_PCT,
     STOCK_SYMBOLS, STOCK_MIN_OI, STOCK_MIN_OPTION_VOLUME,
     ATR_VOLATILE_PCT_THRESHOLD, EXPIRY_DAY_THRESHOLD_DAYS,
+    PROBABILITY_BANDS,
 )
 
 
@@ -166,6 +167,88 @@ def compute_probability_pct(trade_score: int) -> int:
     feedback loop, mentioned in README.md, was built for).
     """
     return round(_clamp01((trade_score - 60) / 40) * 32 + 65)
+
+
+def probability_label(probability_pct: int) -> str:
+    """
+    Bands compute_probability_pct()'s output per config.PROBABILITY_BANDS
+    (Ignore / Watchlist / Potential Trade / High Probability Trade /
+    Strong Institutional Setup) -- display/transparency only, walked
+    the same way compute_grade() walks TRADE_SCORE_GRADE_THRESHOLDS.
+    Not a second gate: config.TELEGRAM_MIN_PROBABILITY (checked by the
+    caller, not here) is what actually decides whether a Telegram
+    message goes out.
+    """
+    for threshold, label in PROBABILITY_BANDS:
+        if probability_pct >= threshold:
+            return label
+    return "Ignore"
+
+
+# Human-readable labels for the scoring-reasons breakdown below --
+# deliberately separate from _CHECKLIST_LABELS further down, since that
+# one is a flat ✅/⚠️ pass-mark list while this one needs a directional,
+# case-specific phrase per factor (matching the phase-4 spec's "+15
+# Trend Alignment" / "-5 Slightly High RSI" style example output).
+_REASON_LABELS = {
+    "trend": "Trend Alignment",
+    "volume": "Volume Spike",
+    "oi": "OI Build-up",
+    "momentum": "Momentum",
+    "vwap": "VWAP Positioning",
+    "ema": "EMA Alignment",
+    "risk_reward": "Risk:Reward",
+    "liquidity": "Liquidity",
+    "market_strength": "Market Strength",
+    "htf": "Higher-Timeframe Confirmation",
+}
+
+
+def scoring_reasons(strengths: dict) -> list:
+    """
+    Turns the same 0-1 `strengths` dict compute_trade_score() consumes
+    into a signed, per-factor points breakdown that sums to
+    compute_trade_score()'s output -- e.g. "+15 Trend Alignment", "-5
+    Liquidity". A factor contributes its full weight at strength 1.0;
+    below half-strength it's shown as a NEGATIVE number (how many
+    points short of that factor's own midpoint it is), so weak
+    contributors read as visible deductions rather than just small
+    positives -- matching the phase-4 spec's example mix of + and -
+    lines. Sorted strongest-contribution-first. This is pure display
+    math over numbers scanner.py already computed; it does not change
+    compute_trade_score()'s own total.
+    """
+    reasons = []
+    for key, weight in TRADE_SCORE_WEIGHTS.items():
+        value = max(0.0, min(1.0, strengths.get(key, 0.0)))
+        label = _REASON_LABELS.get(key, key)
+        midpoint = weight / 2
+        points = value * weight
+        if points >= midpoint:
+            reasons.append((points, f"+{round(points)} {label}"))
+        else:
+            reasons.append((points, f"-{round(midpoint - points)} {label}"))
+    reasons.sort(key=lambda r: r[0], reverse=True)
+    return [text for _, text in reasons]
+
+
+def probability_trend(history_pct: list) -> str:
+    """
+    "Increasing" / "Stable" / "Decreasing" off the last two readings in
+    a same-day probability history list (oldest-first, as maintained by
+    state.py's probability_history). Fewer than 2 readings -> "Stable"
+    (nothing to compare yet). A flat 1-point wobble either way still
+    reads as "Stable" -- only a >=2-point move counts as a real
+    direction change, so display doesn't flap on scan-to-scan noise.
+    """
+    if len(history_pct) < 2:
+        return "Stable"
+    delta = history_pct[-1] - history_pct[-2]
+    if delta >= 2:
+        return "Increasing"
+    if delta <= -2:
+        return "Decreasing"
+    return "Stable"
 
 
 def compute_confidence_score(trade_score: int) -> float:

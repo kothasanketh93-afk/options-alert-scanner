@@ -117,7 +117,6 @@ MASTER_UNIVERSE = [
     {"symbol": "SIEMENS", "sector": "INFRA"},
     {"symbol": "ABB", "sector": "INFRA"},
     {"symbol": "CUMMINSIND", "sector": "INFRA"},
-    {"symbol": "GMRAIRPORT", "sector": "INFRA"},  # renamed from GMRINFRA post GMR Group's airport/non-airport demerger -- confirmed 2026-07-22 via verify_stock_symbols.py showing GMRINFRA fully missing (equity+F&O, both brokers) plus a web search confirming the NSE symbol change
     {"symbol": "IRCTC", "sector": "INFRA"},
     {"symbol": "CONCOR", "sector": "INFRA"},
 
@@ -172,6 +171,49 @@ MASTER_UNIVERSE = [
 
 def universe_symbols() -> list:
     return [row["symbol"] for row in MASTER_UNIVERSE]
+
+
+def fno_eligible_stock_symbols(trading_date: str = None) -> list:
+    """
+    Phase 5 (2026-07-24): the REAL, exchange-wide F&O-eligible stock
+    list for `trading_date`, read straight from the broker's instrument
+    master (contract_class == "STOCK_OPTION") instead of the ~112-name
+    hand-curated MASTER_UNIVERSE above. NSE revises F&O eligibility
+    every quarter (SEBI's liquidity-based review) -- reading this from
+    the instrument master means that revision is picked up automatically
+    the next time premarket.yml refreshes the cache, with no manual
+    edit to this file ever needed. Currently runs to roughly 200-250
+    symbols exchange-wide (NOT thousands -- India's F&O segment is a
+    curated liquid subset of all NSE-listed stocks, so "top 500" isn't
+    achievable here regardless of scoring; see README's Phase 5 note).
+
+    Returns [] (not an exception) on any lookup problem -- callers
+    (opportunity_score.build_shortlist()) fall back to the static
+    MASTER_UNIVERSE via universe_symbols() in that case, same
+    "degrade, don't go dark" posture as config.refresh_symbols_for_today().
+    Index underlyings (NIFTY/BANKNIFTY/...) are excluded -- this is a
+    STOCK list, indices are handled separately via config.SYMBOLS.
+    """
+    try:
+        import instrument_master
+        import config as _config
+        rows = instrument_master.load_instrument_master(trading_date)
+    except Exception as exc:
+        _logger = __import__("logging_setup").get_logger("universe")
+        _logger.warning(
+            f"fno_eligible_stock_symbols: instrument master lookup failed "
+            f"({type(exc).__name__}: {exc}) -- falling back to MASTER_UNIVERSE",
+            exc_info=True,
+        )
+        return []
+
+    symbols = {
+        row.get("underlying_symbol")
+        for row in rows
+        if row.get("contract_class") == "STOCK_OPTION" and row.get("underlying_symbol")
+    }
+    symbols -= set(_config.INDEX_SYMBOLS)
+    return sorted(symbols)
 
 
 def sector_of(symbol: str) -> str:

@@ -28,7 +28,7 @@ tracking of already-open real positions, and vice versa).
 import sys
 import os
 import argparse
-from datetime import datetime, timezone, timedelta
+from datetime import timezone, timedelta
 
 sys.path.insert(0, os.path.dirname(__file__))
 

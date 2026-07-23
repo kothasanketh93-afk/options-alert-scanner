@@ -2,9 +2,10 @@
 retry_utils.py
 --------------
 One retry-with-backoff implementation, used by every outbound HTTP call
-in the project (Upstox via upstox.py, Telegram via telegram_notify.py).
-Before this, both files had their own nearly-identical retry loop --
-duplicate code. Now there's exactly one, and the policy is centralized:
+in the project (Angel One via angelone.py, Upstox via upstox.py,
+Telegram via telegram_notify.py). Before this, these files had their
+own nearly-identical retry loops -- duplicate code. Now there's exactly
+one, and the policy is centralized:
 
 - Retry: connection errors, timeouts, HTTP 429, and momentary 5xx
   (500/502/503/504).

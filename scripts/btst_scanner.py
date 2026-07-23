@@ -75,7 +75,10 @@ def scan_candidates(now: datetime = None) -> list:
         try:
             biases = option_chain.directional_bias(symbol)
         except Exception as exc:
-            _logger.error(f"BTST_SYMBOL_FAILED {symbol}: directional_bias failed ({type(exc).__name__}: {exc})")
+            _logger.error(
+                f"BTST_SYMBOL_FAILED {symbol}: directional_bias failed ({type(exc).__name__}: {exc})",
+                exc_info=True,
+            )
             continue
         if not biases:
             continue
@@ -84,7 +87,10 @@ def scan_candidates(now: datetime = None) -> list:
             atm_strike, spot_price = option_chain.get_atm_strike(symbol)
             expiry = option_chain.current_expiry(symbol)
         except Exception as exc:
-            _logger.error(f"BTST_SYMBOL_FAILED {symbol}: strike/expiry resolution failed ({type(exc).__name__}: {exc})")
+            _logger.error(
+                f"BTST_SYMBOL_FAILED {symbol}: strike/expiry resolution failed ({type(exc).__name__}: {exc})",
+                exc_info=True,
+            )
             continue
 
         if option_chain.days_to_expiry(expiry, now) < btst_config.BTST_MIN_DAYS_TO_EXPIRY:
@@ -100,7 +106,10 @@ def scan_candidates(now: datetime = None) -> list:
                     try:
                         setup = scanner.score_strike(symbol, direction, moneyness, strike, spot_price, "BTST-EOD", oi_history)
                     except Exception as exc:
-                        _logger.error(f"BTST_STRIKE_FAILED {symbol} {direction} {moneyness} {strike}: {type(exc).__name__}: {exc}")
+                        _logger.error(
+                            f"BTST_STRIKE_FAILED {symbol} {direction} {moneyness} {strike}: {type(exc).__name__}: {exc}",
+                            exc_info=True,
+                        )
                         continue
                     if setup is None:
                         continue

@@ -195,7 +195,11 @@ def _detect_public_ip() -> str:
             if ip:
                 _cached_public_ip = ip
                 return ip
-        except Exception:
+        except Exception as exc:
+            log.warning(
+                "Public-IP lookup via %s failed (%s: %s) -- trying next provider.",
+                url, type(exc).__name__, exc, exc_info=True,
+            )
             continue
     log.warning(
         "Could not detect real public IP for Angel One request headers -- "
@@ -431,7 +435,7 @@ class AngelOneBroker(Broker):
         # Batch-quote every token in groups of <=50 per Angel One's
         # documented /market/v1/quote/ limit.
         all_tokens = [row["token"] for pair in rows_by_strike.values() for row in pair.values()]
-        quotes_by_token = self._batch_quotes("NFO", all_tokens)
+        quotes_by_token = self._batch_quotes(_exchange_segment(name), all_tokens)
 
         # One Greeks call covers every strike for this name+expiry (see
         # module docstring, point 2) -- fetched once here, not per-strike.
@@ -448,7 +452,7 @@ class AngelOneBroker(Broker):
                 if not row:
                     continue
                 token = row["token"]
-                entry[key_name] = f"NFO|{token}"
+                entry[key_name] = f"{_exchange_segment(name)}|{token}"
                 quote = quotes_by_token.get(token, {})
                 prefix = "call_" if option_type == "CE" else "put_"
                 entry[prefix + "oi"] = quote.get("opnInterest", 0.0)
@@ -789,7 +793,7 @@ class AngelOneBroker(Broker):
             except (KeyError, ValueError):
                 continue
             if row_strike == target and row.get("symbol", "")[-2:] == option_type:
-                return f"NFO|{row['token']}"
+                return f"{_exchange_segment(name)}|{row['token']}"
         raise InstrumentNotFound(
             f"no contract found: {symbol} {expiry_date} {strike}{option_type} "
             f"(expired, delisted, strike not listed, or the strike-divisor "
@@ -815,7 +819,7 @@ class AngelOneBroker(Broker):
         option_instrument_type = _option_instrument_type(symbol)
         for row in master:
             if (row.get("name") != symbol or row.get("instrumenttype") != option_instrument_type
-                    or row.get("exch_seg") != "NFO" or not row.get("expiry")):
+                    or row.get("exch_seg") != _exchange_segment(symbol) or not row.get("expiry")):
                 continue
             try:
                 expiries.add(datetime.strptime(row["expiry"], "%d%b%Y").date())
@@ -897,7 +901,7 @@ class AngelOneBroker(Broker):
                 f"function are wrong for your account segment"
             )
         candidates.sort(key=lambda pair: pair[0])
-        return f"NFO|{candidates[0][1]}"
+        return f"{_exchange_segment(symbol)}|{candidates[0][1]}"
 
 
 def _safe_float(value):
@@ -949,6 +953,24 @@ def _future_instrument_type(name: str) -> str:
     """Same split as _option_instrument_type() above, for futures:
     "FUTIDX" for indices, "FUTSTK" for individual stocks."""
     return "FUTSTK" if name in STOCK_SYMBOLS else "FUTIDX"
+
+
+# Angel One's scrip master puts SENSEX (and BSE index derivatives
+# generally) on exch_seg "BFO" (BSE F&O), NOT "NFO" (NSE F&O) --
+# confirmed from Angel One's own SmartAPI forum announcement of BSE-
+# BFO support, including a real scrip-master row example:
+# {"name":"SENSEX","instrumenttype":"OPTIDX","exch_seg":"BFO",...}.
+# Every "NFO"-hardcoding call site in this file now goes through this
+# instead, so every OTHER symbol (NIFTY/BANKNIFTY/MIDCPNIFTY/stocks)
+# gets the exact same "NFO" it always did -- this only branches for
+# SENSEX. UNVERIFIED LIVE: see config.py's SYMBOLS comment for a real
+# forum report of Angel One's getLtpData rejecting a correctly-BFO'd
+# SENSEX request as of Feb 2025 -- confirm against your own account.
+_BFO_SYMBOLS = {"SENSEX"}
+
+
+def _exchange_segment(name: str) -> str:
+    return "BFO" if name in _BFO_SYMBOLS else "NFO"
 
 
 def _underlying_name(underlying_key: str) -> str:

@@ -58,11 +58,22 @@ from auth import get_upstox_token
 from retry_utils import request_with_retry
 from exceptions import BrokerAPIError, InstrumentNotFound
 from cache import TTLCache
+from logging_setup import get_logger
+from config import SYMBOLS
 
 IST = timezone(timedelta(hours=5, minutes=30))
 BASE_URL = "https://api.upstox.com/v2"
 BASE_URL_V3 = "https://api.upstox.com/v3"
 INSTRUMENT_MASTER_URL = "https://assets.upstox.com/market-quote/instruments/exchange/NSE.json.gz"
+# Added 2026-07-23 for SENSEX -- the NSE-only master above has no BFO/
+# BSE_FO rows at all, confirmed via Upstox's own per-exchange file
+# naming convention (NSE.json.gz / BSE.json.gz / MCX.json.gz /
+# complete.json.gz, documented on their Instruments page). Only
+# fetched when SENSEX is actually in config.SYMBOLS -- see
+# _fetch_instrument_master()'s docstring for why, and config.py's
+# SYMBOLS comment for the "remove SENSEX to revert" promise this keeps.
+INSTRUMENT_MASTER_URL_BSE = "https://assets.upstox.com/market-quote/instruments/exchange/BSE.json.gz"
+log = get_logger("api")
 
 # v3 intraday candle endpoint: /v3/historical-candle/intraday/{instrument_key}/{unit}/{interval}
 # -- "minutes"/<N> replaces v2's fixed "1minute"/"30minute" interval
@@ -88,6 +99,9 @@ UNDERLYING_INSTRUMENT_KEYS = {
     # Kept in sync with option_chain.py's copy -- see that file's
     # comment for the verification caveat on this one.
     "MIDCPNIFTY": "NSE_INDEX|NIFTY MID SELECT",
+    # Added 2026-07-23, kept in sync with option_chain.py's copy --
+    # see that file's comment for the verification caveat.
+    "SENSEX": "BSE_INDEX|SENSEX",
 }
 
 # Names Upstox's instrument master uses for index derivatives' "name"
@@ -286,7 +300,38 @@ class UpstoxBroker(Broker):
         # this kind of static-asset URL has moved before on other brokers.
         resp = request_with_retry("GET", INSTRUMENT_MASTER_URL, timeout=30,
                                    error_cls=BrokerAPIError)
-        return json.loads(gzip.decompress(resp.content))
+        master = json.loads(gzip.decompress(resp.content))
+
+        if "SENSEX" in SYMBOLS:
+            # NSE.json.gz has no BFO/BSE_FO rows at all -- SENSEX
+            # search_instrument()/get_current_expiry()/
+            # resolve_current_month_future() below all iterate this
+            # SAME merged list with no exchange filtering of their own
+            # (they already match on name/expiry/strike_price/
+            # instrument_type, which is exchange-agnostic), so merging
+            # BSE's rows in here is the only change those methods need
+            # -- see this file's UNDERLYING_INSTRUMENT_KEYS entry for
+            # SENSEX and _INDEX_NAMES above for the rest of the wiring.
+            #
+            # Degrades gracefully (logs, does NOT raise) if this
+            # second fetch fails -- a BSE-side hiccup must never take
+            # down NIFTY/BANKNIFTY's own instrument master, which this
+            # same method already serves. A SENSEX lookup on a master
+            # missing its BSE half just raises the same
+            # InstrumentNotFound every other "symbol not in master"
+            # case already does -- not a new failure mode.
+            try:
+                bse_resp = request_with_retry("GET", INSTRUMENT_MASTER_URL_BSE, timeout=30,
+                                               error_cls=BrokerAPIError)
+                master = master + json.loads(gzip.decompress(bse_resp.content))
+            except BrokerAPIError as exc:
+                log.error(
+                    "Failed to fetch BSE instrument master (needed for SENSEX) -- "
+                    "SENSEX lookups will raise InstrumentNotFound this run, NIFTY/"
+                    "BANKNIFTY/MIDCPNIFTY are unaffected. Error: %s", exc,
+                )
+
+        return master
 
     def download_instrument_master(self) -> list:
         """

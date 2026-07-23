@@ -117,6 +117,41 @@ def quality_gate(factors: dict) -> bool:
     return all(factors.get(k) is True for k in required)
 
 
+_REJECTION_LABELS = {
+    "liquidity_ok": "Low Liquidity",
+    "delta_ok": "Weak Delta (deep OTM)",
+    "expiry_theta_ok": "Theta Risk Too High (near expiry, OTM)",
+    "ema_aligned": "Weak Trend",
+    "vwap_confirmed": "Against VWAP",
+    "volume_confirmed": "Low Volume",
+    "oi_building": "No OI Build-up",
+    "mtf_confirmed": "15-min Not Confirmed",
+    "risk_reward_ok": "Poor Risk Reward",
+}
+
+
+def rejection_reasons(factors: dict, hard_gate_keys=("liquidity_ok", "delta_ok", "expiry_theta_ok")) -> list:
+    """
+    Phase 4: human-readable "why was this rejected" list for the
+    REJECTED log line in scanner.py, built from the same `factors`
+    dict quality_gate() and reasons_from_factors() already use --
+    just the False entries instead of the True ones. Only the hard
+    gate keys can actually cause a rejection (quality_gate() only
+    requires those three), so this checks those first; the remaining
+    keys are included too when False, purely as extra context on an
+    otherwise-passing setup (they don't gate anything by themselves,
+    see filters.quality_gate()'s docstring), matching the "Weak Trend
+    / Wide Spread / Low OI" style example rejection output.
+    """
+    reasons = [_REJECTION_LABELS[k] for k in hard_gate_keys if factors.get(k) is not True]
+    for k, label in _REJECTION_LABELS.items():
+        if k in hard_gate_keys:
+            continue
+        if factors.get(k) is False:
+            reasons.append(label)
+    return reasons or ["Low Score"]
+
+
 def reasons_from_factors(factors: dict) -> list:
     labels = {
         "ema_aligned": "EMA aligned",

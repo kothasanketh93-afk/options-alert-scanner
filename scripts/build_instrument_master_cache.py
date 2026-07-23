@@ -68,7 +68,7 @@ def main():
         github_token = os.environ["GITHUB_TOKEN"]
         state_mod.ensure_state_branch_checked_out(repo_url, github_token)
     except Exception as exc:
-        log.error(f"Could not check out the state branch -- aborting cache build: {exc}")
+        log.error(f"Could not check out the state branch -- aborting cache build: {exc}", exc_info=True)
         _notify_best_effort(f"⚠️ Instrument master build FAILED: could not check out the "
                              f"state branch ({type(exc).__name__}: {exc}). Today's scan will "
                              f"fall back to the legacy fixed-step strike arithmetic.")
@@ -79,7 +79,7 @@ def main():
     try:
         rows = instrument_master.download_and_cache_instrument_master(trading_date)
     except Exception as exc:
-        log.error(f"Instrument master download failed: {type(exc).__name__}: {exc}")
+        log.error(f"Instrument master download failed: {type(exc).__name__}: {exc}", exc_info=True)
         _notify_best_effort(f"⚠️ Instrument master download FAILED today "
                              f"({type(exc).__name__}: {exc}). Today's scan will fall back to "
                              f"the legacy fixed-step strike arithmetic for every symbol.")

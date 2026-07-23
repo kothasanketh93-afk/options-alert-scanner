@@ -9,15 +9,15 @@ what scanner.py, tracker.py, and main.py already call, so introducing
 the broker abstraction (and later, failover) required ZERO changes to
 those three files.
 
-_broker is a FailoverBroker (Upstox primary, Angel One fallback) --
+_broker is a FailoverBroker (Angel One primary, Upstox fallback) --
 see broker_failover.py's module docstring for the failover design.
 Everything in this file that calls _broker.* automatically gets
 failover for free, since FailoverBroker implements the same Broker
 interface as any single concrete broker.
 
-SWAPPED BACK TO UPSTOX PRIMARY 2026-07-23 (confirmed recurrence) --
-full history, so the next person editing this doesn't re-discover it
-the hard way:
+SWAPPED BACK 2026-07-23 (explicit request) -- Angel One is primary
+again, Upstox fallback. History, so the next person editing this
+doesn't re-discover it the hard way:
   - Originally Angel One primary.
   - SWAPPED 2026-07-21: Angel One's getCandleData (historical candle)
     endpoint hit a sustained rate limit ("Access denied because of
@@ -28,27 +28,22 @@ the hard way:
     an account-wide limit Angel One doesn't publish). Upstox served
     every request reliably throughout that debugging session, so it
     became primary.
-  - SWAPPED BACK to Angel One primary 2026-07-23 (explicit request),
-    on the strength of a genuinely improved throttle -- upgraded from
-    fixed-interval-only spacing to a rolling-window limiter enforcing
-    both the 1-second spacing AND a real 60-second-window cap
-    (config.ANGELONE_HISTORICAL_MAX_CALLS_PER_MINUTE, see
-    angelone.py's _throttle_historical_call()), modeled on OpenAlgo's
-    (github.com/marketcalls/openalgo) own fix for the same class of
-    problem.
-  - SWAPPED BACK TO UPSTOX PRIMARY the same day (2026-07-23), after a
-    live run's log showed the exact same failure recurring on the
-    very FIRST Angel One call of that run -- 2 consecutive 400s ("rate
-    limited by .../getCandleData"), clean failover to Upstox, run
-    completed fine. The strengthened throttle did not prevent it, same
-    as the 07-21 finding -- confirms this genuinely isn't this
-    process's own call-pacing (the improved throttle addressed that
-    already), further pointing at an account-wide or Angel-One-side
-    enforcement issue outside this codebase's control. Angel One
-    stays wired in as fallback, not removed, in case it clears or a
-    support ticket resolves it -- swap the constructor args below back
-    to Angel-One-primary if it ever does (same one-line change either
-    direction).
+  - SWAPPED BACK 2026-07-23: per explicit request, AND because the
+    throttle itself has since been strengthened -- it was previously
+    fixed-interval-only (guaranteed spacing between consecutive calls
+    but never checked a rolling total), and is now a genuine
+    rolling-window limiter enforcing BOTH the 1-second spacing and a
+    real 60-second-window cap (config.ANGELONE_HISTORICAL_MAX_CALLS_PER_MINUTE,
+    see angelone.py's _throttle_historical_call()) -- modeled on
+    OpenAlgo's (github.com/marketcalls/openalgo) own fix for the same
+    class of problem. This is NOT a confirmed fix -- Angel One's own
+    SmartAPI forum separately admits their rate-limit enforcement is
+    inconsistent even for well-under-limit clients, so the original
+    root cause may or may not actually be addressed. Watch the first
+    several live runs' logs for "Access denied because of exceeding
+    access rate" / empty-body 400s on Angel One calls specifically --
+    if it recurs, swap the constructor args below back to Upstox
+    primary again (same one-line change either direction).
 """
 
 from angelone import AngelOneBroker
@@ -61,10 +56,10 @@ from cache import TTLCache
 # angelone.py/upstox.py's instrument-master/option-chain caching
 # actually useful (see cache.py's docstring for why that scope is the
 # right one). FailoverBroker always starts fresh on "primary"
-# (Upstox, as of 2026-07-23 -- see module docstring above) every run.
+# (Angel One, as of 2026-07-23 -- see module docstring above) every run.
 _angelone = AngelOneBroker()
 _upstox = UpstoxBroker()
-_broker = FailoverBroker(_upstox, "Upstox", _angelone, "AngelOne")
+_broker = FailoverBroker(_angelone, "AngelOne", _upstox, "Upstox")
 
 # Underlying-index candles (NOT option candles) are frequently requested
 # more than once per run for the identical (instrument_key, interval)
