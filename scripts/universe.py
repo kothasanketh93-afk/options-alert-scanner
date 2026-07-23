@@ -62,7 +62,10 @@ MASTER_UNIVERSE = [
     {"symbol": "PERSISTENT", "sector": "IT"},
     {"symbol": "COFORGE", "sector": "IT"},
     {"symbol": "MPHASIS", "sector": "IT"},
-    {"symbol": "LTTS", "sector": "IT"},
+    # NOTE: 8 members, was 9 -- LTIM removed 2026-07-24 (F&O verification
+    # failure), LTTS tried as replacement same day but ALSO failed live
+    # F&O check (no CE/OPTSTK rows on either broker's master) -- left at
+    # 8 rather than guess again with no way to verify from this session.
 
     # --- Energy / Oil & Gas ---
     {"symbol": "RELIANCE", "sector": "ENERGY"},
@@ -109,7 +112,11 @@ MASTER_UNIVERSE = [
     {"symbol": "SHREECEM", "sector": "CEMENT"},
     {"symbol": "AMBUJACEM", "sector": "CEMENT"},
     {"symbol": "DALBHARAT", "sector": "CEMENT"},
-    {"symbol": "JKCEMENT", "sector": "CEMENT"},
+    # NOTE: 4 members, was 5 -- ACC removed 2026-07-24 (F&O verification
+    # failure), JKCEMENT tried as replacement same day but ALSO failed
+    # live F&O check (no CE/OPTSTK rows on either broker's master) --
+    # left at 4 rather than guess again with no way to verify from this
+    # session.
 
     # --- Infrastructure / Capital Goods / Engineering ---
     {"symbol": "LT", "sector": "INFRA"},
