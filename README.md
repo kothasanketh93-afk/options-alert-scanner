@@ -881,6 +881,87 @@ after a week of live runs and this can be recalculated precisely.
   other 4xx responses are NOT retried; those need a human, not a
   retry loop, so they fail loudly and immediately instead.
 
+## SENSEX support (added 2026-07-23)
+
+Previously deferred (see the old note this replaced in `config.py`):
+SENSEX trades on BSE, not NSE, which every broker file assumed until
+now. Added by making the exchange segment symbol-dependent instead of
+hardcoded, everywhere it was hardcoded — not by adding a parallel
+code path, so there's exactly one place each broker decides NFO vs
+BFO / NSE vs BSE_FO.
+
+### What changed
+
+- **`config.py`**: `SENSEX` added to `SYMBOLS`, `STRIKE_STEP["SENSEX"]
+  = 100` (confirmed: BSE's own SENSEX options page).
+- **`option_chain.py` / `upstox.py`**: `"SENSEX": "BSE_INDEX|SENSEX"`
+  added to `UNDERLYING_INSTRUMENT_KEYS` (both copies, kept in sync per
+  `upstox.py`'s existing comment) — confirmed against multiple
+  independent Upstox SDK/code examples using this exact key.
+- **`upstox.py`**: a second instrument-master file (`BSE.json.gz`,
+  parallel to the existing `NSE.json.gz`) is now fetched and merged —
+  **only when `"SENSEX" in SYMBOLS`**, so removing SENSEX from
+  `SYMBOLS` restores the exact previous single-download behavior with
+  zero other changes. Degrades gracefully (logs an error, does not
+  raise) if the BSE fetch specifically fails — a BSE-side hiccup can't
+  take down NIFTY/BANKNIFTY's own instrument master, which the same
+  method serves. Every other Upstox method (`search_instrument()`,
+  `get_current_expiry()`, `resolve_current_month_future()`) already
+  matched rows generically by name/expiry/strike/instrument_type with
+  no exchange filtering of its own, so merging BSE's rows into the
+  same in-memory list was the only change those needed.
+- **`angelone.py`**: new `_exchange_segment(name)` helper (`"BFO"` for
+  SENSEX, `"NFO"` for everything else — verified: Angel One's own
+  SmartAPI forum thread announcing BFO support includes a real
+  scrip-master row for SENSEX). Replaces every hardcoded `"NFO"`
+  string in `get_option_chain()`, `search_instrument()`,
+  `get_current_expiry()`, and `resolve_current_month_future()`. The
+  ×100 strike-price scaling (`_detect_strike_divisor()`) and
+  `instrumenttype` classification (`OPTIDX`/`FUTIDX`) already worked
+  generically and needed no changes — confirmed against a real Angel
+  One SENSEX scrip-master row (`strike: 6640000` for an actual 66,400
+  strike, `instrumenttype: OPTIDX`, same as NIFTY/BANKNIFTY).
+
+### Verified vs. not verified — read this before trusting it live
+
+Verified this session, from each broker's own public documentation
+and forum threads, WITHOUT a live API call (no live broker credentials
+available in the environment this was built in):
+- The exact exchange segment strings (`BFO`, `BSE_FO`) and instrument
+  key format (`BSE_INDEX|SENSEX`)
+- A real Angel One scrip-master row shape for a SENSEX option
+- SENSEX's ₹100 strike interval
+- Upstox's per-exchange instrument-master file naming convention
+
+**NOT verified — a live run against your own account is the only way
+to confirm these:**
+- That `_fetch_instrument_master()`'s BSE.json.gz merge produces a
+  usable master on a live run (only tested against synthetic mock
+  data above, not the real file)
+- **A live Angel One SmartAPI forum thread (Feb 2025) reports
+  `getLtpData` rejecting a correctly-BFO'd SENSEX request that the
+  identical code path handles fine for NIFTY** — unresolved as of
+  that thread; may or may not still apply
+- **A live Upstox community forum thread (Oct 2025) reports BSE_FO
+  order-placement calls returning HTTP 404 while the identical NSE_FO
+  call works** — this project never places orders (alert-only), so
+  this specific endpoint isn't used here, but it's a signal that
+  BSE_FO support on Upstox's API is newer/less exercised than NSE_FO's
+
+**Run this against your own account first and watch the logs closely
+before trusting SENSEX alerts unattended.** If it doesn't work,
+removing `"SENSEX"` from `config.SYMBOLS` reverts every behavior
+change above with no other edits needed.
+
+### Same caveat as MIDCPNIFTY, plus liquidity
+
+`MIN_OI` / `MIN_OPTION_VOLUME` / `MIN_PREMIUM` / `MAX_SPREAD_PCT` are
+still the same NIFTY/BANKNIFTY-tuned globals, now shared across four
+symbols instead of three. SENSEX's options liquidity is generally
+thinner than NIFTY's even at reasonable strikes — watch the `SCORE`
+log lines for this symbol specifically; "SENSEX never alerts" may mean
+the shared threshold doesn't fit it, not that no setups exist.
+
 ## BTST (Buy Today, Sell Tomorrow) — overnight module (added 2026-07-23)
 
 A **separate, opt-in** module for carrying options positions
@@ -976,12 +1057,31 @@ weeks of real overnight moves before trusting them with size.
 1. **Populate `btst_earnings_guard.BLACKOUT_DATES`** for every symbol
    in `btst_config.BTST_STOCK_SYMBOLS`, from NSE's corporate-
    announcements/event calendar. Every stock is skipped until you do.
-2. **Add GitHub Actions workflows** calling `python scripts/btst_main.py
-   --entry` once near 15:00–15:20 IST and `--exit` on a 5–15 min
-   cadence through the following trading day — none exist yet
-   (`.github/workflows/` wasn't part of this repo export). Reuses the
-   same repo secrets as `trader.yml` (Angel One, Upstox, Telegram,
-   `GITHUB_TOKEN`) — no new secrets needed.
+2. **Wire `btst_main.py` into your EXISTING `trader.yml` job as extra
+   steps — do NOT give it its own cron workflow.** `trader.yml`
+   already runs every 5 min through 09:15-15:30 IST, which fully
+   covers both BTST's entry window (15:00-15:20, inside `trader.yml`'s
+   own Phase 3) and its exit-tracking window. A standalone
+   `btst-exit.yml` on a similar cadence would run ~91 times/day on top
+   of what's already close to the free 2,000-min/month tier (see
+   "GitHub Actions minutes budget" above) — roughly **1,500-1,840
+   extra minutes/month**, likely pushing total usage to 3,200-3,900
+   min/month. Add two steps to `trader.yml`'s existing job instead
+   (after the main `python scripts/main.py` step), reusing the same
+   checkout/`setup-python`/secrets already in that job — this costs
+   only the few extra seconds `btst_main.py` itself takes to run, not
+   a second runner spin-up:
+   ```yaml
+   - name: Run BTST entry scan
+     run: python scripts/btst_main.py --entry
+   - name: Run BTST exit tracking
+     run: python scripts/btst_main.py --exit
+   ```
+   Both are cheap no-ops outside their respective windows
+   (`_in_entry_window()` / `run_exit_step()`'s own checks), so running
+   them on every `trader.yml` tick is safe. `trader.yml` wasn't part
+   of this repo export, so this couldn't be wired in directly here —
+   add those two steps to your actual file.
 3. **Live-validate the SL/T1/T2 percentages** against real overnight
    gaps for a few weeks before increasing size or widening
    `BTST_STOCK_SYMBOLS` beyond the current 10-name starter list.
