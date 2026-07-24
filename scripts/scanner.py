@@ -501,7 +501,13 @@ def detect_setups(symbol: str, oi_history: dict) -> list:
 
     biases = directional_bias(symbol)
     if not biases:
-        _logger.info(f"BIAS {symbol}: no directional bias (5-min/15-min EMA disagree or insufficient data) -- no strikes scored this run")
+        # As of the 2026-07-24 fix, directional_bias() no longer
+        # returns [] on 5-min/15-min EMA disagreement (that's a score
+        # penalty now, not a gate -- see option_chain.directional_bias()'s
+        # docstring). This branch is only reached when the symbol's
+        # underlying instrument itself can't be resolved at all -- a
+        # genuinely absent/misconfigured symbol, not a bias question.
+        _logger.info(f"BIAS {symbol}: underlying instrument could not be resolved -- no strikes scored this run")
         return []
 
     candidates = []

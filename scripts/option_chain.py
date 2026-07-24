@@ -187,35 +187,82 @@ def multi_timeframe_confirms(symbol: str, candidate_direction: str) -> bool:
 
 def directional_bias(symbol: str) -> list:
     """
-    5-min EMA9/21 crossover as the primary directional signal,
-    confirmed by 15-min agreement via multi_timeframe_confirms() --
-    this is the minimum confluence bar (2 independent timeframes
-    agreeing) the module docstring's "confluence principle" asks for.
-    Volume/breakout confirmation is layered on top inside score_strike()
-    (volume_confirmed factor), not here -- this function only decides
-    WHICH direction(s), if any, are even worth scoring strikes for.
+    5-min EMA9/21 crossover is still the primary directional signal;
+    15-min agreement is still read here too -- but as of the
+    2026-07-24 "adaptive scanner" fix, 15-min DISAGREEMENT no longer
+    stops this function from returning a direction. It used to (return
+    [] on disagreement), which meant detect_setups() bailed for the
+    ENTIRE symbol -- zero strikes scored, zero probability computed,
+    zero Telegram alert possible -- on nothing more than two
+    timeframes being momentarily out of step. Live logs confirmed this
+    was the actual cause of full "no directional bias" empty scan
+    cycles, not a genuine absence of any tradeable signal.
+
+    NEW BEHAVIOUR: 15-min disagreement is now a SCORE PENALTY, applied
+    downstream where it already belongs -- scanner.score_strike()
+    still calls multi_timeframe_confirms() itself and feeds it into
+    trade_score.htf_strength() (one of the 10 weighted Trade Score
+    factors), so a disagreeing 15-min trend still costs a candidate
+    real points instead of erasing it before scoring even starts. This
+    function's only job is now picking WHICH direction(s) are worth
+    scoring strikes for, not gating on how strong the agreement is --
+    the score handles that.
+
+    Resolution order, always producing at least one direction unless
+    there's truly no EMA data on either timeframe:
+      1. 5-min EMA9/21 cross, if readable -- used regardless of
+         whether 15-min agrees (disagreement is logged and left to
+         the Trade Score penalty above).
+      2. 15-min EMA9/21 cross, if 5-min isn't readable (e.g. right
+         after market open, not enough 5-min candles yet).
+      3. Both CE and PE, scored as "Unknown" bias, if neither
+         timeframe has enough data for a read -- this is the only
+         remaining bias-related reason detect_setups() would otherwise
+         return zero strikes for a symbol, so both directions are
+         tried rather than skipping the symbol outright (Fix 9: no
+         empty scans just because bias is inconclusive).
 
     NOTE: this is a reasonable default, not necessarily YOUR existing
     strategy. If your current scanner uses a different primary signal
     (e.g. price breakout above/below a range, not an EMA cross), swap
-    the 5-min leg below for that logic and leave the 15-min
-    confirmation call as-is.
+    the 5-min leg below for that logic and leave the 15-min read as-is.
 
-    Returns ["CE"], ["PE"], both (rare -- would mean the two
-    timeframes disagree with each other in a way that shouldn't
-    normally produce both), or [] if no bias / insufficient data.
+    Returns ["CE"], ["PE"], ["CE", "PE"] (only in the no-data fallback
+    above), or [] -- [] now only happens if resolve_underlying_key()
+    itself has nothing for this symbol (a genuinely absent instrument,
+    not a bias question).
     """
     underlying_key = resolve_underlying_key(symbol)
+    if not underlying_key:
+        return []  # no instrument to read candles for at all -- not a bias question
 
     candles_5m = market_data.get_recent_underlying_candles(underlying_key, "5minute", 30)
+    candles_15m = market_data.get_recent_underlying_candles(underlying_key, "15minute", 30)
     bias_5m = ema_trend_direction(candles_5m)
-    if bias_5m is None:
-        return []  # flat/insufficient 5-min data -- nothing to act on
+    bias_15m = ema_trend_direction(candles_15m)
 
-    if not multi_timeframe_confirms(symbol, bias_5m):
-        return []  # 15-min trend disagrees -- fails the confluence bar
+    if bias_5m is not None:
+        if bias_15m is not None and bias_15m != bias_5m:
+            _logger.info(
+                f"BIAS {symbol}: 5-min EMA={bias_5m} 15-min EMA={bias_15m} disagree -- "
+                f"scoring {bias_5m} anyway with a penalty applied via the htf Trade "
+                f"Score factor, instead of skipping this symbol."
+            )
+        return [bias_5m]
 
-    return [bias_5m]
+    if bias_15m is not None:
+        _logger.info(
+            f"BIAS {symbol}: 5-min EMA trend unavailable (insufficient candles) -- "
+            f"falling back to 15-min EMA={bias_15m}."
+        )
+        return [bias_15m]
+
+    _logger.info(
+        f"BIAS {symbol}: no 5-min or 15-min EMA trend available (insufficient candle "
+        f"data on both timeframes) -- scoring BOTH CE and PE as Unknown bias instead "
+        f"of skipping this symbol."
+    )
+    return ["CE", "PE"]
 
 
 def get_atm_strike(symbol: str):
