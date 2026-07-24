@@ -185,7 +185,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-24T15:05:00+05:30",
+      "last_processed_ts": "2026-07-24T15:09:00+05:30",
       "messages_sent": [
         "ENTRY_ACTIVATED"
       ],
@@ -653,22 +653,24 @@
           "trade_score": 59
         }
       ],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
-      "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "actual_entry_time": "2026-07-24T15:06:00+05:30",
+      "tracked_entry_price": 88.25,
+      "highest_since_entry": 90.0,
+      "lowest_since_entry": 81.95,
+      "max_favorable_pct": 1.98,
+      "max_adverse_pct": -7.14,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-24T15:05:38.830473+05:30",
-      "messages_sent": [],
+      "last_processed_ts": "2026-07-24T15:09:00+05:30",
+      "messages_sent": [
+        "ENTRY_ACTIVATED"
+      ],
       "streak_counted": false,
       "probability_history": [
         {
@@ -925,7 +927,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 1045,
+    "scanned_symbols": 1064,
     "valid_signals": 41,
     "rejected_signals": 23,
     "api_failures": 234,
