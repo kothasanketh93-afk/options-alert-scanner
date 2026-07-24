@@ -176,16 +176,16 @@
       "actual_entry_time": "2026-07-24T14:11:00+05:30",
       "tracked_entry_price": 391.5,
       "highest_since_entry": 399.9,
-      "lowest_since_entry": 350.8,
+      "lowest_since_entry": 342.0,
       "max_favorable_pct": 2.15,
-      "max_adverse_pct": -10.4,
+      "max_adverse_pct": -12.64,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-24T14:20:00+05:30",
+      "last_processed_ts": "2026-07-24T14:25:00+05:30",
       "messages_sent": [
         "ENTRY_ACTIVATED"
       ],
@@ -298,16 +298,16 @@
       "actual_entry_time": "2026-07-24T14:16:00+05:30",
       "tracked_entry_price": 82.2,
       "highest_since_entry": 82.55,
-      "lowest_since_entry": 71.75,
+      "lowest_since_entry": 66.0,
       "max_favorable_pct": 0.43,
-      "max_adverse_pct": -12.71,
+      "max_adverse_pct": -19.71,
       "t1_hit": true,
       "t1_hit_time": "2026-07-24T14:18:00+05:30",
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-24T14:20:00+05:30",
+      "last_processed_ts": "2026-07-24T14:25:00+05:30",
       "messages_sent": [
         "ENTRY_ACTIVATED",
         "T1_HIT"
@@ -324,37 +324,144 @@
         }
       ],
       "probability_trend": "Stable"
+    },
+    "BHEL-CE-ITM-20260724-1425-01": {
+      "trade_id": "BHEL-CE-ITM-20260724-1425-01",
+      "display_label": "Trade 4",
+      "symbol": "BHEL",
+      "direction": "CE",
+      "moneyness": "ITM",
+      "instrument_key": "NSE_FO|76674",
+      "strike": 412.5,
+      "expiry": "2026-07-28",
+      "spot_price": 414.75,
+      "alert_time": "2026-07-24T14:25:30.035011+05:30",
+      "alert_premium": 5.05,
+      "entry_low": 4.95,
+      "entry_high": 5.15,
+      "stop_loss": 3.7,
+      "target_1": 5.26,
+      "target_2": 5.35,
+      "session": "13:45-15:10",
+      "grade": "B",
+      "trade_score": 63,
+      "probability_pct": 67,
+      "probability_label": "Watchlist",
+      "score_breakdown": [
+        "+15 Volume Spike",
+        "+15 OI Build-up",
+        "+10 VWAP Positioning",
+        "-0 Trend Alignment",
+        "+8 Momentum",
+        "+3 Liquidity",
+        "-1 Market Strength",
+        "-2 Risk:Reward",
+        "-5 EMA Alignment",
+        "-2 Higher-Timeframe Confirmation"
+      ],
+      "confidence_score": 6.3,
+      "risk_score": 2.5,
+      "reward_score": 0.5,
+      "expected_rr": "1:0.2",
+      "factor_checklist": [
+        "Trend \u26a0\ufe0f",
+        "Volume \u2705",
+        "OI \u2705",
+        "Momentum \u2705",
+        "VWAP \u2705",
+        "EMA \u26a0\ufe0f",
+        "Risk Reward \u26a0\ufe0f",
+        "Liquidity \u2705",
+        "Market Strength \u26a0\ufe0f",
+        "HTF \u26a0\ufe0f"
+      ],
+      "confidence_stars": "\u2605\u2605\u2606\u2606\u2606",
+      "confidence_label": "Fair",
+      "risk_rating": "\ud83d\udfe2",
+      "risk_label": "Low",
+      "expected_holding_minutes": [
+        10,
+        20
+      ],
+      "why_reasons": [
+        "\u2713 Above VWAP",
+        "\u2713 Volume Expansion",
+        "\u2713 Excellent Liquidity",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable"
+      ],
+      "alternatives": [
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "Watchlist",
+          "trade_score": 56
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Watchlist",
+          "trade_score": 55
+        }
+      ],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-07-24T14:25:30.035011+05:30",
+      "messages_sent": [],
+      "streak_counted": false,
+      "probability_history": [
+        {
+          "time": "14:25",
+          "pct": 67
+        }
+      ],
+      "probability_trend": "Stable"
     }
   },
   "next_seq": {
     "BANKNIFTY-CE-ATM": 2,
-    "MIDCPNIFTY-CE-OTM": 1
+    "MIDCPNIFTY-CE-OTM": 1,
+    "BHEL-CE-ITM": 1
   },
-  "next_display_num": 3,
+  "next_display_num": 4,
   "summary_sent": false,
   "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
     "NSE_FO|63925": 5777070.0,
-    "NSE_FO|63927": 2862600.0,
-    "NSE_FO|63929": 9910225.0,
+    "NSE_FO|63927": 2913365.0,
+    "NSE_FO|63929": 9783930.0,
     "NSE_FO|61849": 594300.0,
-    "NSE_FO|61851": 174600.0,
-    "NSE_FO|61853": 367950.0,
+    "NSE_FO|61851": 169470.0,
+    "NSE_FO|61853": 384900.0,
     "NSE_FO|63483": 244680.0,
-    "NSE_FO|63485": 132000.0,
-    "NSE_FO|63487": 948120.0,
+    "NSE_FO|63485": 114360.0,
+    "NSE_FO|63487": 944280.0,
     "BSE_FO|1144884": 205820.0,
-    "BSE_FO|1138891": 615660.0,
-    "BSE_FO|1150248": 404620.0,
+    "BSE_FO|1138891": 611900.0,
+    "BSE_FO|1150248": 391440.0,
     "NSE_FO|78175": 2401875.0,
-    "NSE_FO|76674": 693000.0,
-    "NSE_FO|78183": 1795500.0,
-    "NSE_FO|61858": 569100.0,
-    "NSE_FO|63489": 141960.0,
-    "NSE_FO|63933": 5238545.0,
-    "BSE_FO|1139837": 379840.0,
+    "NSE_FO|76674": 661500.0,
+    "NSE_FO|78183": 1779750.0,
+    "NSE_FO|61858": 558330.0,
+    "NSE_FO|63489": 136560.0,
+    "NSE_FO|63933": 4867135.0,
+    "BSE_FO|1139837": 372980.0,
     "NSE_FO|76676": 556500.0,
     "NSE_FO|61863": 273900.0,
     "NSE_FO|63491": 273120.0,
@@ -393,6 +500,10 @@
       {
         "time": "14:20",
         "pct": 65
+      },
+      {
+        "time": "14:25",
+        "pct": 65
       }
     ],
     "MIDCPNIFTY-CE": [
@@ -403,14 +514,28 @@
       {
         "time": "14:15",
         "pct": 65
+      },
+      {
+        "time": "14:25",
+        "pct": 65
+      },
+      {
+        "time": "14:25",
+        "pct": 65
+      }
+    ],
+    "BHEL-CE": [
+      {
+        "time": "14:25",
+        "pct": 67
       }
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 874,
-    "valid_signals": 10,
-    "rejected_signals": 12,
-    "api_failures": 111,
-    "broker_errors": 33
+    "scanned_symbols": 893,
+    "valid_signals": 14,
+    "rejected_signals": 13,
+    "api_failures": 125,
+    "broker_errors": 34
   }
 }
