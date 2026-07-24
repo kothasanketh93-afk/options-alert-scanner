@@ -67,22 +67,24 @@
         "\u2713 Theta Risk Acceptable"
       ],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
-      "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "actual_entry_time": "2026-07-24T13:51:00+05:30",
+      "tracked_entry_price": 388.3,
+      "highest_since_entry": 420.0,
+      "lowest_since_entry": 380.65,
+      "max_favorable_pct": 8.16,
+      "max_adverse_pct": -1.97,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-24T13:50:43.385876+05:30",
-      "messages_sent": [],
+      "last_processed_ts": "2026-07-24T13:55:00+05:30",
+      "messages_sent": [
+        "ENTRY_ACTIVATED"
+      ],
       "streak_counted": false,
       "probability_history": [
         {
@@ -103,36 +105,47 @@
   "circuit_breaker_notified": false,
   "oi_history": {
     "NSE_FO|63925": 5777070.0,
-    "NSE_FO|63927": 4107545.0,
-    "NSE_FO|63929": 10438870.0,
+    "NSE_FO|63927": 4079075.0,
+    "NSE_FO|63929": 10947170.0,
     "NSE_FO|61849": 594300.0,
-    "NSE_FO|61851": 235950.0,
-    "NSE_FO|61853": 356370.0,
+    "NSE_FO|61851": 246120.0,
+    "NSE_FO|61853": 372240.0,
     "NSE_FO|63483": 244680.0,
-    "NSE_FO|63485": 133800.0,
-    "NSE_FO|63487": 967440.0,
+    "NSE_FO|63485": 133560.0,
+    "NSE_FO|63487": 970680.0,
     "BSE_FO|1144884": 205820.0,
-    "BSE_FO|1138891": 657880.0,
-    "BSE_FO|1150248": 380020.0,
+    "BSE_FO|1138891": 645140.0,
+    "BSE_FO|1150248": 396260.0,
     "NSE_FO|78175": 2401875.0,
-    "NSE_FO|76674": 732375.0,
-    "NSE_FO|78183": 1798125.0,
-    "NSE_FO|61858": 474750.0,
-    "NSE_FO|63489": 137160.0
+    "NSE_FO|76674": 719250.0,
+    "NSE_FO|78183": 1813875.0,
+    "NSE_FO|61858": 476640.0,
+    "NSE_FO|63489": 137400.0,
+    "NSE_FO|63933": 5002725.0,
+    "BSE_FO|1139837": 361920.0,
+    "NSE_FO|76676": 559125.0
   },
   "probability_history": {
     "BANKNIFTY-CE": [
       {
         "time": "13:50",
         "pct": 65
+      },
+      {
+        "time": "13:55",
+        "pct": 65
+      },
+      {
+        "time": "13:55",
+        "pct": 65
       }
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 760,
-    "valid_signals": 1,
-    "rejected_signals": 3,
-    "api_failures": 28,
-    "broker_errors": 27
+    "scanned_symbols": 779,
+    "valid_signals": 3,
+    "rejected_signals": 4,
+    "api_failures": 42,
+    "broker_errors": 28
   }
 }
