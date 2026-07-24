@@ -1,35 +1,138 @@
 {
   "date": "2026-07-24",
-  "trades": {},
-  "next_seq": {},
-  "next_display_num": 0,
+  "trades": {
+    "BANKNIFTY-CE-ATM-20260724-1350-01": {
+      "trade_id": "BANKNIFTY-CE-ATM-20260724-1350-01",
+      "display_label": "Trade 1",
+      "symbol": "BANKNIFTY",
+      "direction": "CE",
+      "moneyness": "ATM",
+      "instrument_key": "NSE_FO|61853",
+      "strike": 56700.0,
+      "expiry": "2026-07-28",
+      "spot_price": 56674.15,
+      "alert_time": "2026-07-24T13:50:43.385876+05:30",
+      "alert_premium": 393.05,
+      "entry_low": 387.54,
+      "entry_high": 398.56,
+      "stop_loss": 319.61,
+      "target_1": 426.32,
+      "target_2": 440.58,
+      "session": "13:45-15:10",
+      "grade": "Watchlist",
+      "trade_score": 55,
+      "probability_pct": 65,
+      "probability_label": "Watchlist",
+      "score_breakdown": [
+        "+15 Volume Spike",
+        "+15 OI Build-up",
+        "+7 VWAP Positioning",
+        "-4 Trend Alignment",
+        "-0 Momentum",
+        "+5 Liquidity",
+        "-1 Risk:Reward",
+        "-2 Market Strength",
+        "-5 EMA Alignment",
+        "-2 Higher-Timeframe Confirmation"
+      ],
+      "confidence_score": 5.5,
+      "risk_score": 2.0,
+      "reward_score": 1.5,
+      "expected_rr": "1:0.5",
+      "factor_checklist": [
+        "Trend \u26a0\ufe0f",
+        "Volume \u2705",
+        "OI \u2705",
+        "Momentum \u26a0\ufe0f",
+        "VWAP \u2705",
+        "EMA \u26a0\ufe0f",
+        "Risk Reward \u26a0\ufe0f",
+        "Liquidity \u2705",
+        "Market Strength \u26a0\ufe0f",
+        "HTF \u26a0\ufe0f"
+      ],
+      "confidence_stars": "\u2605\u2606\u2606\u2606\u2606",
+      "confidence_label": "Low",
+      "risk_rating": "\ud83d\udfe2",
+      "risk_label": "Low",
+      "expected_holding_minutes": [
+        10,
+        20
+      ],
+      "why_reasons": [
+        "\u2713 Above VWAP",
+        "\u2713 Volume Expansion",
+        "\u2713 Excellent Liquidity",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable"
+      ],
+      "alternatives": [],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-07-24T13:50:43.385876+05:30",
+      "messages_sent": [],
+      "streak_counted": false,
+      "probability_history": [
+        {
+          "time": "13:50",
+          "pct": 65
+        }
+      ],
+      "probability_trend": "Stable"
+    }
+  },
+  "next_seq": {
+    "BANKNIFTY-CE-ATM": 1
+  },
+  "next_display_num": 1,
   "summary_sent": false,
   "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
-    "NSE_FO|63925": 5564650.0,
-    "NSE_FO|63927": 3835260.0,
-    "NSE_FO|63929": 9975355.0,
+    "NSE_FO|63925": 5777070.0,
+    "NSE_FO|63927": 4107545.0,
+    "NSE_FO|63929": 10438870.0,
     "NSE_FO|61849": 594300.0,
-    "NSE_FO|61851": 227880.0,
-    "NSE_FO|61853": 370770.0,
+    "NSE_FO|61851": 235950.0,
+    "NSE_FO|61853": 356370.0,
     "NSE_FO|63483": 244680.0,
-    "NSE_FO|63485": 133560.0,
-    "NSE_FO|63487": 959400.0,
-    "BSE_FO|1144884": 199840.0,
-    "BSE_FO|1138891": 633720.0,
-    "BSE_FO|1150248": 384440.0,
-    "NSE_FO|78175": 2407125.0,
+    "NSE_FO|63485": 133800.0,
+    "NSE_FO|63487": 967440.0,
+    "BSE_FO|1144884": 205820.0,
+    "BSE_FO|1138891": 657880.0,
+    "BSE_FO|1150248": 380020.0,
+    "NSE_FO|78175": 2401875.0,
     "NSE_FO|76674": 732375.0,
-    "NSE_FO|78183": 1795500.0
+    "NSE_FO|78183": 1798125.0,
+    "NSE_FO|61858": 474750.0,
+    "NSE_FO|63489": 137160.0
   },
-  "probability_history": {},
+  "probability_history": {
+    "BANKNIFTY-CE": [
+      {
+        "time": "13:50",
+        "pct": 65
+      }
+    ]
+  },
   "daily_stats": {
-    "scanned_symbols": 741,
-    "valid_signals": 0,
-    "rejected_signals": 2,
-    "api_failures": 14,
-    "broker_errors": 26
+    "scanned_symbols": 760,
+    "valid_signals": 1,
+    "rejected_signals": 3,
+    "api_failures": 28,
+    "broker_errors": 27
   }
 }
