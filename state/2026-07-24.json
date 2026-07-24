@@ -107,25 +107,28 @@
   "circuit_breaker_notified": false,
   "oi_history": {
     "NSE_FO|63925": 5777070.0,
-    "NSE_FO|63927": 3295305.0,
-    "NSE_FO|63929": 10269285.0,
+    "NSE_FO|63927": 3057665.0,
+    "NSE_FO|63929": 10111010.0,
     "NSE_FO|61849": 594300.0,
     "NSE_FO|61851": 215280.0,
-    "NSE_FO|61853": 348690.0,
+    "NSE_FO|61853": 334380.0,
     "NSE_FO|63483": 244680.0,
     "NSE_FO|63485": 132000.0,
-    "NSE_FO|63487": 968160.0,
+    "NSE_FO|63487": 950040.0,
     "BSE_FO|1144884": 205820.0,
     "BSE_FO|1138891": 636400.0,
-    "BSE_FO|1150248": 389520.0,
+    "BSE_FO|1150248": 411140.0,
     "NSE_FO|78175": 2401875.0,
-    "NSE_FO|76674": 703500.0,
-    "NSE_FO|78183": 1782375.0,
-    "NSE_FO|61858": 500400.0,
-    "NSE_FO|63489": 137640.0,
-    "NSE_FO|63933": 5032690.0,
-    "BSE_FO|1139837": 367720.0,
-    "NSE_FO|76676": 548625.0
+    "NSE_FO|76674": 700875.0,
+    "NSE_FO|78183": 1795500.0,
+    "NSE_FO|61858": 532290.0,
+    "NSE_FO|63489": 140160.0,
+    "NSE_FO|63933": 5461300.0,
+    "BSE_FO|1139837": 368920.0,
+    "NSE_FO|76676": 540750.0,
+    "NSE_FO|61863": 279630.0,
+    "NSE_FO|63491": 240240.0,
+    "BSE_FO|1136363": 349160.0
   },
   "probability_history": {
     "BANKNIFTY-CE": [
@@ -140,14 +143,22 @@
       {
         "time": "13:55",
         "pct": 65
+      },
+      {
+        "time": "14:05",
+        "pct": 65
+      },
+      {
+        "time": "14:05",
+        "pct": 65
       }
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 798,
-    "valid_signals": 3,
-    "rejected_signals": 5,
-    "api_failures": 56,
-    "broker_errors": 29
+    "scanned_symbols": 817,
+    "valid_signals": 5,
+    "rejected_signals": 6,
+    "api_failures": 69,
+    "broker_errors": 30
   }
 }
