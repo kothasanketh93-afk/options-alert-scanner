@@ -171,25 +171,26 @@
           "trade_score": 55
         }
       ],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-07-24T14:11:00+05:30",
       "tracked_entry_price": 391.5,
       "highest_since_entry": 399.9,
-      "lowest_since_entry": 327.2,
+      "lowest_since_entry": 316.75,
       "max_favorable_pct": 2.15,
-      "max_adverse_pct": -16.42,
+      "max_adverse_pct": -19.09,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-07-24T15:11:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-24T15:09:00+05:30",
+      "last_processed_ts": "2026-07-24T15:14:00+05:30",
       "messages_sent": [
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "SL_HIT"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "probability_history": [
         {
           "time": "13:50",
@@ -653,25 +654,27 @@
           "trade_score": 59
         }
       ],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "T2_HIT",
+      "final_status": "T2_HIT",
       "actual_entry_time": "2026-07-24T15:06:00+05:30",
       "tracked_entry_price": 88.25,
-      "highest_since_entry": 90.0,
+      "highest_since_entry": 97.05,
       "lowest_since_entry": 81.95,
-      "max_favorable_pct": 1.98,
+      "max_favorable_pct": 9.97,
       "max_adverse_pct": -7.14,
-      "t1_hit": false,
-      "t1_hit_time": null,
-      "t2_hit": false,
-      "t2_hit_time": null,
+      "t1_hit": true,
+      "t1_hit_time": "2026-07-24T15:13:00+05:30",
+      "t2_hit": true,
+      "t2_hit_time": "2026-07-24T15:14:00+05:30",
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-24T15:09:00+05:30",
+      "last_processed_ts": "2026-07-24T15:14:00+05:30",
       "messages_sent": [
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "T1_HIT",
+        "T2_HIT"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "probability_history": [
         {
           "time": "14:10",
@@ -927,7 +930,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 1064,
+    "scanned_symbols": 1083,
     "valid_signals": 41,
     "rejected_signals": 23,
     "api_failures": 234,
