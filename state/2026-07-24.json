@@ -7,13 +7,29 @@
   "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
-  "oi_history": {},
+  "oi_history": {
+    "NSE_FO|63925": 5564650.0,
+    "NSE_FO|63927": 3835260.0,
+    "NSE_FO|63929": 9975355.0,
+    "NSE_FO|61849": 594300.0,
+    "NSE_FO|61851": 227880.0,
+    "NSE_FO|61853": 370770.0,
+    "NSE_FO|63483": 244680.0,
+    "NSE_FO|63485": 133560.0,
+    "NSE_FO|63487": 959400.0,
+    "BSE_FO|1144884": 199840.0,
+    "BSE_FO|1138891": 633720.0,
+    "BSE_FO|1150248": 384440.0,
+    "NSE_FO|78175": 2407125.0,
+    "NSE_FO|76674": 732375.0,
+    "NSE_FO|78183": 1795500.0
+  },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 722,
+    "scanned_symbols": 741,
     "valid_signals": 0,
-    "rejected_signals": 0,
-    "api_failures": 0,
-    "broker_errors": 25
+    "rejected_signals": 2,
+    "api_failures": 14,
+    "broker_errors": 26
   }
 }
