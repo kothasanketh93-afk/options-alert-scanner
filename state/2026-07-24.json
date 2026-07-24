@@ -185,7 +185,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-24T14:55:00+05:30",
+      "last_processed_ts": "2026-07-24T15:00:00+05:30",
       "messages_sent": [
         "ENTRY_ACTIVATED"
       ],
@@ -293,26 +293,27 @@
           "trade_score": 56
         }
       ],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "T2_HIT",
+      "final_status": "T2_HIT",
       "actual_entry_time": "2026-07-24T14:16:00+05:30",
       "tracked_entry_price": 82.2,
-      "highest_since_entry": 82.55,
+      "highest_since_entry": 83.7,
       "lowest_since_entry": 63.3,
-      "max_favorable_pct": 0.43,
+      "max_favorable_pct": 1.82,
       "max_adverse_pct": -22.99,
       "t1_hit": true,
       "t1_hit_time": "2026-07-24T14:18:00+05:30",
-      "t2_hit": false,
-      "t2_hit_time": null,
+      "t2_hit": true,
+      "t2_hit_time": "2026-07-24T14:56:00+05:30",
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-24T14:55:00+05:30",
+      "last_processed_ts": "2026-07-24T15:00:00+05:30",
       "messages_sent": [
         "ENTRY_ACTIVATED",
-        "T1_HIT"
+        "T1_HIT",
+        "T2_HIT"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "probability_history": [
         {
           "time": "14:10",
@@ -584,33 +585,33 @@
     "NSE_FO|63927": 3136445.0,
     "NSE_FO|63929": 10647000.0,
     "NSE_FO|61849": 594300.0,
-    "NSE_FO|61851": 178380.0,
-    "NSE_FO|61853": 474720.0,
+    "NSE_FO|61851": 173130.0,
+    "NSE_FO|61853": 479610.0,
     "NSE_FO|63483": 244680.0,
     "NSE_FO|63485": 116520.0,
-    "NSE_FO|63487": 937800.0,
-    "BSE_FO|1144884": 205820.0,
-    "BSE_FO|1138891": 589980.0,
-    "BSE_FO|1150248": 430520.0,
+    "NSE_FO|63487": 931320.0,
+    "BSE_FO|1144884": 160220.0,
+    "BSE_FO|1138891": 592200.0,
+    "BSE_FO|1150248": 424940.0,
     "NSE_FO|78175": 2401875.0,
     "NSE_FO|76674": 635250.0,
-    "NSE_FO|78183": 1603875.0,
-    "NSE_FO|61858": 558210.0,
-    "NSE_FO|63489": 132240.0,
+    "NSE_FO|78183": 1588125.0,
+    "NSE_FO|61858": 555240.0,
+    "NSE_FO|63489": 129720.0,
     "NSE_FO|63933": 4867135.0,
     "BSE_FO|1139837": 359260.0,
-    "NSE_FO|76676": 585375.0,
+    "NSE_FO|76676": 580125.0,
     "NSE_FO|61863": 273900.0,
-    "NSE_FO|63491": 276360.0,
+    "NSE_FO|63491": 267120.0,
     "BSE_FO|1136363": 356520.0,
-    "NSE_FO|63930": 12324910.0,
-    "NSE_FO|63928": 7531940.0,
-    "NSE_FO|63926": 14245725.0,
+    "NSE_FO|63930": 12401935.0,
+    "NSE_FO|63928": 7575750.0,
+    "NSE_FO|63926": 13443170.0,
     "BSE_FO|1142313": 277900.0,
     "BSE_FO|1138208": 393660.0,
     "BSE_FO|1141440": 867220.0,
     "NSE_FO|63934": 3608475.0,
-    "NSE_FO|78197": 5940375.0
+    "NSE_FO|78197": 5929875.0
   },
   "probability_history": {
     "BANKNIFTY-CE": [
@@ -677,6 +678,10 @@
       {
         "time": "14:55",
         "pct": 67
+      },
+      {
+        "time": "15:00",
+        "pct": 65
       }
     ],
     "MIDCPNIFTY-CE": [
@@ -694,6 +699,14 @@
       },
       {
         "time": "14:25",
+        "pct": 65
+      },
+      {
+        "time": "15:00",
+        "pct": 67
+      },
+      {
+        "time": "15:00",
         "pct": 65
       }
     ],
@@ -745,14 +758,22 @@
       {
         "time": "14:55",
         "pct": 74
+      },
+      {
+        "time": "15:00",
+        "pct": 72
+      },
+      {
+        "time": "15:00",
+        "pct": 70
       }
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 1007,
-    "valid_signals": 32,
-    "rejected_signals": 20,
-    "api_failures": 208,
-    "broker_errors": 40
+    "scanned_symbols": 1026,
+    "valid_signals": 37,
+    "rejected_signals": 21,
+    "api_failures": 221,
+    "broker_errors": 41
   }
 }
