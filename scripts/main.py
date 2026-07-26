@@ -37,7 +37,10 @@ from exceptions import TelegramFailure, BrokerAPIError
 from logging_setup import get_logger
 import config
 import trade_score
-from config import SUMMARY_HHMM, TELEGRAM_MIN_PROBABILITY
+from config import SUMMARY_HHMM
+from app.engines import early_breakout as early_breakout_engine
+from app.engines import decision_engine
+from app.market import snapshot as market_snapshot
 
 IST = timezone(timedelta(hours=5, minutes=30))
 TERMINAL_STATUSES = {"T2_HIT", "SL_HIT", "NOT_ENTERED", "AMBIGUOUS", "EOD_CLOSED"}
@@ -45,7 +48,7 @@ log = get_logger("main")
 
 
 def new_trade_record(setup: dict, trade_id: str, alert_dt: datetime, display_label: str) -> dict:
-    return {
+    trade = {
         "trade_id": trade_id,
         "display_label": display_label,  # short "Trade N" label for Telegram messages -- see state.next_display_number()
         "symbol": setup["symbol"],
@@ -105,6 +108,50 @@ def new_trade_record(setup: dict, trade_id: str, alert_dt: datetime, display_lab
         "messages_sent": [],  # e.g. ["NEW_TRADE_ALERT", "ENTRY_ACTIVATED"]
         "streak_counted": False,
     }
+
+    # Early Breakout Engine (app/engines/early_breakout/, added 2026-07-24,
+    # upgraded to the 5-stage Institutional Accumulation pipeline the same
+    # day, migrated from scripts/strategy/ to this package on 2026-07-25
+    # as the enterprise-structure pilot -- see app/__init__.py): passthrough
+    # fields that only this engine's setups carry. "strategy" defaults to "trade_score" for setups from the
+    # existing engine so every trade record can be told apart. The
+    # rest are only added when present, so this is a no-op for every
+    # existing (non-early-breakout) call site -- inert to tracker.py,
+    # state.py, and telegram_notify.fmt_new_alert(), which never read
+    # these keys.
+    trade["strategy"] = setup.get("strategy", "trade_score")
+    for optional_key in (
+        "early_breakout_reasons", "base_score", "institutional_score",
+        "momentum_score", "smart_money_score", "breakout_price",
+        "entry_zone", "maximum_entry",
+    ):
+        if optional_key in setup:
+            trade[optional_key] = setup[optional_key]
+
+    return trade
+
+
+
+def apply_decision_engine(trade: dict) -> dict:
+    """
+    Part 6 -- Enterprise Decision Engine (app/engines/decision_engine/),
+    added 2026-07-26. Final-authority pass over a trade dict that has
+    already been through Market Snapshot -> (Early Breakout | Trade
+    Score Engine) -> Options Intelligence. Additive: always computes
+    and attaches trade["decision"] for visibility/logging; only
+    actually blocks the alert when config.DECISION_ENGINE_FILTER_ENABLED
+    is explicitly turned on (default False -- see config.py's Part 6
+    section for the full rollout rationale, same pattern as
+    OPTIONS_INTELLIGENCE_FILTER_ENABLED).
+
+    market_snapshot.get_market_snapshot() is a per-process cache (see
+    app/market/snapshot.py), so calling it again here for a symbol
+    Early Breakout already snapshotted this cycle is free.
+    """
+    snapshot = market_snapshot.get_market_snapshot(trade["symbol"])
+    decision = decision_engine.evaluate(trade, snapshot=snapshot)
+    trade["decision"] = decision
+    return decision
 
 
 def notify_once(trade: dict, event_key: str, message_fn, *args):
@@ -226,22 +273,35 @@ def run_scanner_step(state: dict, now: datetime):
 
     state["trades"][trade_id] = trade
 
-    # Phase 4: internal tracking/scoring happens for everything that
-    # clears ENTRY_SCORE (so win-rate stats below 80% probability
-    # aren't lost), but per an explicit "only send Telegram alerts when
-    # probability >= 80%" requirement, the message itself is gated
-    # separately here. Below-floor trades are still tracked normally by
-    # run_tracker_step and still appear in the daily summary -- they
-    # just never get a NEW_TRADE_ALERT message.
-    if trade["probability_pct"] < TELEGRAM_MIN_PROBABILITY:
+    decision = apply_decision_engine(trade)
+    if config.DECISION_ENGINE_FILTER_ENABLED and not decision.get("approved", True):
         log.info(
-            "WATCHLIST %s: probability %d%% (%s) is below the %d%% Telegram floor -- "
-            "tracked internally, no alert sent.",
-            trade_id, trade["probability_pct"], trade.get("probability_label"),
-            TELEGRAM_MIN_PROBABILITY,
+            "DECISION_ENGINE_REJECTED %s: %s -- tracked internally, no alert sent.",
+            trade_id, decision.get("rejection_reasons"),
         )
         return
 
+    # NOTE (2026-07-24, live bug fix): this used to gate the initial
+    # NEW_TRADE_ALERT at probability_pct >= TELEGRAM_MIN_PROBABILITY
+    # (80%) while every DOWNSTREAM tracker event for the same trade
+    # (ENTRY_ACTIVATED / TARGET_1_HIT / TARGET_2_HIT / SL_HIT, sent
+    # unconditionally by run_tracker_step below) was never gated at
+    # all. Confirmed live: 2026-07-24's daily summary shows every
+    # single trade that day scored 65-79% probability -- entirely
+    # below the 80% floor -- so NOT ONE trade got a pre-alert that
+    # day, while all six still produced "TARGET 2 HIT -- Trade 6"
+    # style messages for a trade the channel was never told existed.
+    # That's confusing regardless of probability calibration, so the
+    # pre-alert is now sent for every trade that reaches this point
+    # (i.e. everything that already cleared ENTRY_SCORE and is about
+    # to be tracked) -- consistent with the tracker events it already
+    # can't avoid sending. The probability/grade is still printed
+    # in the message itself (fmt_new_alert()), so a sub-80% setup is
+    # still visibly marked as lower-conviction, just no longer hidden
+    # outright. If Telegram volume becomes a problem, prefer raising
+    # ENTRY_SCORE (fewer trades tracked at all) over re-adding this
+    # gate -- that keeps alerts and outcomes consistent with each
+    # other, which silently dropping just the first message did not.
     try:
         notify_once(trade, "NEW_TRADE_ALERT", tg.fmt_new_alert, trade)
     except TelegramFailure:
@@ -251,6 +311,93 @@ def run_scanner_step(state: dict, now: datetime):
         # than crashing the run and losing tracker-step progress too.
         log.error("New trade %s created but the NEW_TRADE_ALERT could not be "
                    "sent (Telegram failure). Trade will still be tracked.", trade_id)
+
+
+def _next_early_breakout_trade_id(state: dict, symbol: str, direction: str, alert_dt: datetime) -> str:
+    """
+    Mirrors state.next_trade_id()'s format but under an "EB-" prefix,
+    with its own per-symbol+direction sequence counter kept in the
+    SAME state["next_seq"] dict under a different key namespace
+    ("EB-{symbol}-{direction}" vs. the main engine's
+    "{symbol}-{direction}-{moneyness}"), so the two counters can never
+    collide. Not added to state.py itself -- this is scoped to one new
+    engine, not a change to the shared trade-ID scheme other code
+    depends on.
+    """
+    key = f"EB-{symbol}-{direction}"
+    seq = state["next_seq"].get(key, 0) + 1
+    state["next_seq"][key] = seq
+    return f"EB-{symbol}-{direction}-{alert_dt.strftime('%Y%m%d')}-{alert_dt.strftime('%H%M')}-{seq:02d}"
+
+
+def run_early_breakout_step(state: dict, now: datetime):
+    """
+    Early Breakout Engine (app/engines/early_breakout/, added 2026-07-24,
+    migrated from scripts/strategy/ on 2026-07-25 -- see app/__init__.py)
+    -- runs every cycle ALONGSIDE run_scanner_step() above, using its own
+    scoring (breakout_score.py, its own weights) and its own
+    Telegram threshold (EARLY_BREAKOUT_TELEGRAM_MIN_SCORE = 70 out of
+    100, vs. the main engine's 80%-probability floor -- the two scores
+    aren't on the same scale, so don't compare the raw numbers across
+    engines). Shares state.py's has_open_trade()/cooldown_active()/
+    concurrent_limit_reached() with the main engine so a symbol+
+    direction can't get two live trades from both engines firing on it
+    in the same run.
+
+    Unlike run_scanner_step() (which opens only the single best-ranked
+    candidate per cycle), this can open one trade per qualifying
+    candidate in the same cycle -- Stage 1-3 confirmed setups are rare
+    enough events per symbol+direction that treating each as its own
+    opportunity (rather than picking only the best across all symbols)
+    matches the spec's "every setup that clears the bar gets watched or
+    alerted" framing. concurrent_limit_reached() still caps the total.
+    """
+    if state_mod.circuit_breaker_active(state):
+        return  # same circuit breaker as run_scanner_step(); already notified there
+
+    candidates = early_breakout_engine.detect_all_early_breakout_setups(state["oi_history"])
+    if not candidates:
+        return
+
+    for candidate in candidates:
+        if state_mod.has_open_trade(state, candidate["symbol"], candidate["direction"]):
+            continue
+        if state_mod.cooldown_active(
+            state, candidate["symbol"], candidate["direction"], now,
+            config.DUPLICATE_ALERT_COOLDOWN_MINUTES,
+        ):
+            continue
+        if state_mod.concurrent_limit_reached(state):
+            return  # cap hit -- stop opening more this cycle, same as run_scanner_step()
+
+        trade_id = _next_early_breakout_trade_id(state, candidate["symbol"], candidate["direction"], now)
+        display_label = f"Trade {state_mod.next_display_number(state)}"
+        trade = new_trade_record(candidate, trade_id, now, display_label)
+        state["trades"][trade_id] = trade
+
+        # Fix 12: 60-69 Watchlist only (tracked, no Telegram); 70+ alert.
+        if trade["trade_score"] < config.EARLY_BREAKOUT_TELEGRAM_MIN_SCORE:
+            log.info(
+                "EB_WATCHLIST %s: score %d/100 (%s) is below the %d Telegram floor -- "
+                "tracked internally, no alert sent.",
+                trade_id, trade["trade_score"], trade.get("grade"),
+                config.EARLY_BREAKOUT_TELEGRAM_MIN_SCORE,
+            )
+            continue
+
+        decision = apply_decision_engine(trade)
+        if config.DECISION_ENGINE_FILTER_ENABLED and not decision.get("approved", True):
+            log.info(
+                "DECISION_ENGINE_REJECTED %s: %s -- tracked internally, no alert sent.",
+                trade_id, decision.get("rejection_reasons"),
+            )
+            continue
+
+        try:
+            notify_once(trade, "NEW_TRADE_ALERT", tg.fmt_early_breakout_alert, trade)
+        except TelegramFailure:
+            log.error("Early breakout trade %s created but the alert could not be "
+                       "sent (Telegram failure). Trade will still be tracked.", trade_id)
 
 
 def _dispatch_tracker_events(trade: dict, events: list):
@@ -406,6 +553,17 @@ def main():
     run_error = None
     try:
         run_scanner_step(state, now)
+        try:
+            # Isolated in its own try/except: a bug in the newer Early
+            # Breakout Engine should never prevent the existing
+            # engine's tracker step or daily summary from running --
+            # same "one bad symbol shouldn't sink the run" principle
+            # detect_all_setups()'s per-symbol try/except already
+            # applies inside each engine.
+            run_early_breakout_step(state, now)
+        except Exception as exc:
+            log.error("Early Breakout Engine step failed (%s: %s) -- continuing with "
+                       "the rest of this run.", type(exc).__name__, exc, exc_info=True)
         run_tracker_step(state, now)
         maybe_send_daily_summary(state, now)
     except Exception as exc:

@@ -111,6 +111,17 @@ STRIKE_RANGE = 1
 # changes needed.
 SYMBOLS = ["NIFTY", "BANKNIFTY", "MIDCPNIFTY", "SENSEX"]
 
+# FINNIFTY note (2026-07-24): the Institutional-upgrade spec's Stage 1
+# lists FINNIFTY as one of the underlyings to analyse. It's deliberately
+# NOT added here -- NSE discontinued FINNIFTY weekly F&O contracts as
+# part of its 2024 index-derivatives rationalization, and neither
+# broker integration in this codebase has a STRIKE_STEP/instrument
+# mapping for it (see STRIKE_STEP above). Adding "FINNIFTY" to this list
+# without live contracts behind it would just make every symbol-level
+# call fail for it, every run. If NSE relists it, add a STRIKE_STEP
+# entry and append it here -- same pattern MIDCPNIFTY and SENSEX
+# followed above.
+
 # --- Mid/Smallcap stock symbols ---
 # RENAMED from STOCK_SYMBOLS (2026-07-17) to FALLBACK_STOCK_WATCHLIST
 # as of Phase 1 (opportunity_score.py, 2026-07-22): this fixed
@@ -325,6 +336,40 @@ REGIME_SCORE_PENALTY = {
     "VOLATILE": 15,
 }
 
+# --- Market Snapshot (app/market/snapshot.py, added 2026-07-25) ---
+# Bands efficiency_ratio()'s 0-1 reading (already computed by
+# indicators.market_regime()) into Part 2's five trend-strength labels --
+# highest-first, first match wins, same walking convention as every other
+# threshold table in this file.
+TREND_STRENGTH_BANDS = [
+    (0.65, "Very Strong"),
+    (0.45, "Strong"),
+    (0.30, "Neutral"),   # matches EFFICIENCY_TRENDING_THRESHOLD above
+    (0.15, "Weak"),
+]  # below 0.15 -> "Very Weak" (the function's fallback)
+
+VOLATILITY_SCORE_ATR_PCT_CEILING = 0.012  # ATR at 1.2% of spot -> volatility_score caps at 100
+VOLATILITY_LEVEL_BANDS = [
+    (ATR_VOLATILE_PCT_THRESHOLD, "High"),   # reuses the SAME 0.6% threshold market_regime() already uses for "VOLATILE"
+    (0.003, "Normal"),
+]  # below 0.3% -> "Low"
+
+GAP_MIN_PCT = 0.002  # session-open vs. previous close must differ by >=0.2% to count as a genuine gap, not noise
+
+# --- Price Action candlestick patterns (app/engines/early_breakout/
+# price_action.py, added 2026-07-26 -- see that module's docstring for
+# why only candlestick patterns, not full chart patterns, were built).
+# Same "confirmation bonus, never a rejection reason" pattern as FVG/OI
+# above -- an aligned pattern adds confidence, its absence never
+# rejects an otherwise-qualifying setup. ---
+DOJI_MAX_BODY_PCT = 0.10           # body <=10% of the candle's own range -> Doji
+MARUBOZU_MIN_BODY_PCT = 0.90       # body >=90% of range -> Marubozu (almost no wicks)
+PIN_BAR_MIN_WICK_TO_BODY_RATIO = 2.0   # the long wick must be >=2x the body -> Hammer/Shooting Star
+PIN_BAR_MAX_OPPOSITE_WICK_PCT = 0.15   # the OTHER wick must be <=15% of range -- keeps it one-sided
+MOMENTUM_CANDLE_MIN_BODY_PCT = 0.70    # body >=70% of range...
+MOMENTUM_CANDLE_MIN_ATR_MULT = 1.0     # ...AND the full range itself >=1x ATR -> Momentum Candle
+PRICE_ACTION_CONFIRMATION_BONUS = 3
+
 # --- Grading thresholds (scanner.py) ---
 # Internal 0-100 quality score -> external grade. Below the lowest
 # threshold, compute_grade() returns "Reject" and it never reaches Telegram.
@@ -477,6 +522,19 @@ PROBABILITY_BANDS = [
     (60, "Watchlist"),
     (0,  "Ignore"),
 ]
+# NOTE (2026-07-24, live bug fix): this NO LONGER gates whether
+# NEW_TRADE_ALERT is sent -- see the note in main.py's run_scanner_step()
+# for why (it was silently hiding the pre-alert for trades whose
+# unconditional tracker events -- ENTRY_ACTIVATED/TARGET_HIT/SL_HIT --
+# still went out regardless, confirmed live on 2026-07-24 where every
+# trade that day was below this floor). Kept defined here since
+# trade_score.probability_label()'s docstring still references it by
+# name and PROBABILITY_BANDS' "High Probability Trade" tier (80) means
+# the same thing conceptually -- just not wired to an actual gate
+# anymore. Left in place rather than deleted in case a future call site
+# wants a probability-based Telegram gate again; if you re-add one,
+# prefer gating via ENTRY_SCORE (fewer trades tracked at all) so alerts
+# and outcomes stay consistent -- see that same note for why.
 TELEGRAM_MIN_PROBABILITY = 80
 
 # --- Liquidity engine (scanner.py) ---
@@ -515,6 +573,16 @@ ENTRY_ZONE_ATR_FRACTION = 0.15  # total zone width = 15% of ATR-based premium mo
 MIN_ENTRY_ZONE_PCT = 0.01       # floor: at least 1% total width
 MAX_ENTRY_ZONE_PCT = 0.05       # cap: at most 5% total width
 
+# BUGFIX (2026-07-24, live pattern -- see levels.dynamic_trade_levels()):
+# the nearby-level cap on T2 is only meaningful when the level is a real
+# distance AHEAD of price. Right at a fresh breakout, find_nearby_level()'s
+# lookback often picks up the breakout candle itself as the "recent
+# high/low", putting the level essentially AT the current price -- capping
+# T2 down to almost nothing even though nothing is actually blocking the
+# move. Below this many ATR of distance, the cap is skipped and the raw
+# ATR-based T2 is used instead.
+MIN_LEVEL_DISTANCE_ATR_MULT = 1.0
+
 OI_BUILD_THRESHOLD_PCT = 0.02
 
 # --- Delta floors (scanner.py) ---
@@ -526,6 +594,71 @@ MIN_DELTA_OTM = 0.15
 # dominates any directional signal.
 EXPIRY_DAY_MIN_OTM_DELTA = 0.25
 EXPIRY_DAY_THRESHOLD_DAYS = 1
+
+# --- Options Intelligence Engine (Part 5) -------------------------------
+# app/engines/options_intelligence/ -- option chain / PCR / Max Pain /
+# Greeks / IV / liquidity / premium / strike / expiry / momentum,
+# consolidated into one Options Intelligence Score. This is layered
+# ADDITIVELY onto the existing Trade Quality Gate (filters.py) and
+# Trade Score Engine (trade_score.py) -- it does not replace or
+# recompute either. See app/engines/options_intelligence/engine.py's
+# module docstring for exactly how/where it plugs into
+# scanner.score_strike(). Every threshold below is configurable, none
+# hardcoded in the engine modules themselves.
+OPTIONS_INTELLIGENCE_ENABLED = True    # master flag -- False fully restores pre-Part-5 behavior
+OPTIONS_INTELLIGENCE_FILTER_ENABLED = False  # if True, a low Options Intelligence Score can reject a
+                                              # setup that already passed the existing hard gate + Trade
+                                              # Score floor. Defaults OFF: Part 5 ships purely additive
+                                              # (extra logged/displayed fields on the trade dict only)
+                                              # until its scores have been watched against a few days of
+                                              # real outcomes -- flip this on when you're ready to let it
+                                              # actually reject trades, same rollout posture the rest of
+                                              # this file already uses for new engines.
+OPTIONS_INTELLIGENCE_MIN_SCORE = 60    # 0-100 floor, only enforced when the filter flag above is True
+
+# PCR Engine -- overall/strike-wise PCR bias bands
+PCR_BULLISH_MAX = 0.7    # PCR <= this -> call-heavy / bullish bias
+PCR_BEARISH_MIN = 1.3    # PCR >= this -> put-heavy / bearish bias
+
+# Max Pain Engine
+MAX_PAIN_DISTANCE_CEILING_PCT = 0.02  # spot >=2% away from max pain -> full Max Pain Score
+
+# Open Interest Engine (reuses OI_BUILD_THRESHOLD_PCT above for build/unwind classification)
+OI_CONCENTRATION_TOP_N_STRIKES = 3    # how many highest-OI strikes count as "OI concentration" per side
+
+# Greeks Engine
+GAMMA_RISK_CEILING = 0.002       # gamma (per point of underlying) at/above this -> full gamma-risk reading
+THETA_DECAY_CEILING_PCT = 0.03   # |theta| as a fraction of premium, per day, at/above this -> full decay-risk reading
+VEGA_EXPOSURE_CEILING = 5.0      # vega at/above this -> full IV-exposure reading
+
+# Implied Volatility Engine
+IV_ABNORMAL_LOW_PCT = 0.08    # IV below 8% (annualized) treated as a stale/garbage quote, not "cheap"
+IV_ABNORMAL_HIGH_PCT = 1.20   # IV above 120% treated as a stale/illiquid quote, not "rich"
+IV_PERCENTILE_LOOKBACK_READINGS = 20  # in-process IV history window per instrument_key (percentile/rank/trend)
+
+# Premium Analysis Engine
+PREMIUM_TIME_VALUE_MAX_PCT = 0.95  # extrinsic/time value at/above this fraction of premium (deep-OTM
+                                    # "lottery ticket" pricing) -> Premium Score floors near zero
+
+# Strike Selection / Expiry Analysis Engines
+EXPIRY_WEEKLY_MAX_DAYS = 7    # days-to-expiry at/below this -> "Weekly" bucket for the Expiry Score
+
+# Options Momentum Engine
+MOMENTUM_HISTORY_READINGS = 3   # in-process readings kept per instrument_key (premium/OI/volume/IV momentum)
+
+# Options Scoring Engine -- consolidated Options Intelligence Score weights. Must sum to 100.
+OPTIONS_INTELLIGENCE_WEIGHTS = {
+    "oi": 15,
+    "pcr": 10,
+    "max_pain": 10,
+    "greeks": 15,
+    "iv": 10,
+    "liquidity": 15,
+    "premium": 10,
+    "strike": 5,
+    "expiry": 5,
+    "momentum": 5,
+}
 
 # --- Tracker (tracker.py) ---
 MARKET_CLOSE_HHMM = (15, 30)
@@ -615,3 +748,296 @@ RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 # generous documented ceiling elsewhere).
 ANGELONE_HISTORICAL_MIN_INTERVAL_SECONDS = 1.0
 ANGELONE_HISTORICAL_MAX_CALLS_PER_MINUTE = 100
+
+# =============================================================================
+# Early Breakout Engine (strategy/) -- additive, 2026-07-24.
+# =============================================================================
+# A SEPARATE signal path from the Trade Score Engine above (ENTRY_SCORE /
+# TRADE_SCORE_WEIGHTS / PROBABILITY_BANDS etc.) -- none of those are changed
+# by this section. See strategy/__init__.py's module docstring for why this
+# engine exists (catching a move at Stage 1/2, not after it's already run).
+
+# --- Stage 1: Base Formation (strategy/base_detector.py) ---
+BASE_SCORE_MIN = 70              # floor to even consider a symbol+direction "basing"
+BASE_LOOKBACK_CANDLES = 20        # 15-min candles used to judge the consolidation
+
+# BUGFIX (2026-07-25, found while building app/market/snapshot.py): the
+# engine used to fetch only BASE_LOOKBACK_CANDLES + 12 = 32 underlying
+# candles, then compute EMA50 from them for breakout_score.trend_strength()
+# (the "Underlying Trend" factor -- weight 20, the SINGLE LARGEST factor
+# in EARLY_BREAKOUT_WEIGHTS). indicators.compute_ema() returns None
+# whenever there are fewer closes than the period -- so ema50 was
+# ALWAYS None with only 32 candles, meaning trend_strength() ALWAYS
+# returned 0.0 (its own None-guard), silently, for every single
+# candidate this engine has ever scored. Confirmed directly:
+# compute_ema(list(range(1,33)), 50) -> None. Fetching enough candles
+# for a genuine EMA50 fixes this; 60 leaves comfortable headroom above
+# the bare minimum of 50.
+EARLY_BREAKOUT_CANDLE_FETCH_COUNT = 60
+BASE_HIGHER_LOWS_MIN = 3          # bullish base structure requirement
+BASE_LOWER_HIGHS_MIN = 3          # bearish base structure requirement
+
+# --- Stage 2/3: Breakout + Follow-Through (strategy/breakout_detector.py) ---
+BREAKOUT_VOLUME_MULT = 1.5              # breakout candle volume vs. its own base-window average
+FOLLOW_THROUGH_MIN_VOLUME_PCT = 0.8     # confirmation candle volume vs. the breakout candle's
+
+# --- Stage 4: Extended Move rejection filter (strategy/breakout_detector.py) ---
+# EXTENDED_MOVE_MAX_PREMIUM_PCT tightened 35% -> 25% on 2026-07-24 (the
+# Institutional upgrade spec explicitly asked for a tighter 25% ceiling
+# than the original Early Breakout Engine's 35% -- since this is one
+# engine now, not two, the tighter number wins).
+EXTENDED_MOVE_MAX_PREMIUM_PCT = 0.25    # reject if premium already moved >25% since the breakout candle
+EXTENDED_MOVE_MAX_ATR_MULT = 2.0        # reject if price is already >2 ATR from EMA20
+EXTENDED_MOVE_MAX_MOMENTUM_CANDLES = 3  # reject if >3 candles wider than 1x ATR have already printed ("3 Momentum Candles already printed")
+PARABOLIC_BODY_GROWTH_MULT = 1.4        # reject if each of the last 3 candle bodies is >=1.4x the one before (accelerating = parabolic)
+
+# --- Risk/Reward floor (strategy/early_breakout_scanner.py) ---
+EARLY_BREAKOUT_MIN_RR = 2.0             # minimum projected 1:2 reward:risk
+
+# --- Momentum ceilings (strategy/momentum.py) -- same "clamp(x/ceiling, 0, 1)"
+# convention as trade_score.py's TS_*_CEILING constants, kept separate since
+# this engine's momentum inputs (ADX/ROC/RSI-slope/MACD-hist) are entirely
+# different indicators from the main engine's.
+MOMENTUM_ADX_CEILING = 30.0              # ADX >= 30 -> full trend-strength score
+MOMENTUM_ROC_CEILING_PCT = 1.5           # 1.5% signed rate-of-change -> full score
+MOMENTUM_RSI_SLOPE_CEILING = 15.0        # signed RSI move over the lookback -> full score
+MOMENTUM_MACD_CEILING_PCT = 0.003        # signed MACD histogram, as % of price -> full score
+MOMENTUM_BODY_CEILING_PCT = 0.7          # candle body as % of its own range -> full score
+MOMENTUM_VWAP_CEILING_PCT = 0.004        # signed distance from VWAP, as % of VWAP -> full score
+# Added 2026-07-24 (Institutional upgrade) -- EMA Slope and Volume
+# Acceleration, on top of the original 6 momentum sub-factors above.
+MOMENTUM_EMA_SLOPE_CEILING_PCT = 0.002   # signed EMA9 slope over 3 candles, as % of price -> full score
+MOMENTUM_VOLUME_ACCEL_CEILING = 0.5      # signed (recent-vs-prior volume ratio - 1.0) -> full score at +50%
+
+# --- Fix 11: composite score weights (strategy/breakout_score.py) ---
+# REPLACED 2026-07-24 (Institutional upgrade): was a 7-factor model
+# (trend25/base20/breakout20/volume15/rr10/momentum5/liquidity5). This
+# is one engine now, upgraded in place -- not a second parallel model --
+# so the old weights are gone, not kept alongside these. New factors
+# (institutional, follow_through, smart_money) reuse strengths already
+# being computed for other reasons (Stage 2 gate, Stage 5 confirmation
+# quality, Stage 4's smart-money read), so nothing here required new
+# broker calls to add.
+#
+# NOTE: the spec's own weight table (Underlying Trend 20, Institutional
+# 15, Base 15, Breakout 15, Follow-through 10, Volume 10, Momentum 5,
+# Liquidity 5, Risk Reward 5, Smart Money 5) sums to 105, not 100 as its
+# own "Total 100" line claims. Rather than silently picking different
+# numbers, these are the spec's own values proportionally rescaled by
+# 100/105 and rounded to whole points (largest remainder adjusted by 1
+# point on Underlying Trend to land exactly on 100) -- same relative
+# priority order the spec asked for, corrected to actually sum right.
+EARLY_BREAKOUT_WEIGHTS = {
+    "underlying_trend": 18,   # spec: 20
+    "institutional": 14,      # spec: 15
+    "base": 14,               # spec: 15
+    "breakout": 14,           # spec: 15
+    "follow_through": 10,     # spec: 10 (unchanged by rescale)
+    "volume": 10,             # spec: 10 (unchanged by rescale)
+    "momentum": 5,            # spec: 5 (unchanged by rescale)
+    "liquidity": 5,           # spec: 5 (unchanged by rescale)
+    "risk_reward": 5,         # spec: 5 (unchanged by rescale)
+    "smart_money": 5,         # spec: 5 (unchanged by rescale)
+}
+assert sum(EARLY_BREAKOUT_WEIGHTS.values()) == 100, "EARLY_BREAKOUT_WEIGHTS must sum to 100"
+
+# --- Fix 9: OI is a bonus, never a rejection reason, for this engine ---
+EARLY_BREAKOUT_OI_BONUS = {
+    "LONG_BUILDUP": 5,
+    "SHORT_COVERING": 3,
+    "NEUTRAL": 0,
+}
+
+# --- Fair Value Gap (app/engines/early_breakout/fair_value_gap.py, added
+# 2026-07-25 -- the one sub-engine piloted from the "Institutional
+# Intelligence Engine" request; see engine.py's module docstring for why
+# only this one was built). Same "confirmation bonus, never a rejection
+# reason" pattern as EARLY_BREAKOUT_OI_BONUS above -- an unfilled FVG in
+# the trade's direction adds confidence; its absence doesn't reject a
+# setup that's already cleared every other stage. ---
+FVG_MIN_SIZE_ATR_FRACTION = 0.15   # gaps smaller than this fraction of ATR are noise, not counted
+FVG_CONFIRMATION_BONUS = 4         # added to the composite score when an unfilled FVG confirms
+
+# --- Fix 12: alert thresholds ---
+# <60 Reject, 60-69 Watchlist only, 70-79 Telegram Alert, 80-89 High
+# Conviction, 90+ Institutional Grade. Walked the same way
+# TRADE_SCORE_GRADE_THRESHOLDS is walked (highest-first, first match wins).
+EARLY_BREAKOUT_GRADE_THRESHOLDS = [
+    (90, "Institutional Grade"),
+    (80, "High Conviction"),
+    (70, "Telegram Alert"),
+    (60, "Watchlist"),
+]
+EARLY_BREAKOUT_TELEGRAM_MIN_SCORE = 70   # below this -> tracked internally only, per Fix 12's "60-69 Watchlist only"
+
+# =============================================================================
+# Institutional upgrade (strategy/institutional_score.py, smart_money_score.py)
+# -- 2026-07-24, in-place upgrade of the Early Breakout Engine above, not a
+# third engine. See EARLY_BREAKOUT_CHANGES.md / this session's summary for
+# why building a separate third parallel scanner was rejected.
+# =============================================================================
+
+# --- Stage 2: Institutional Accumulation gate (strategy/institutional_score.py) ---
+INSTITUTIONAL_SCORE_MIN = 70   # continue only when institutional_score >= 70 AND base_score >= 70
+
+# --- Early Entry Window (strategy/early_breakout_scanner.py) ---
+# Preferred 202-214 / Max 220 off a 200 breakout in the spec's own example
+# -> +1% to +7% preferred, +10% hard ceiling.
+EARLY_ENTRY_PREFERRED_MIN_PCT = 0.01
+EARLY_ENTRY_PREFERRED_MAX_PCT = 0.07
+EARLY_ENTRY_MAX_PCT = 0.10     # premium above breakout_price * (1 + this) -> Reject Entry, never chase
+
+# --- Fresh Breakout Score (strategy/breakout_detector.py) ---
+# Candle-age decay applied as a MULTIPLIER on the composite score, keyed
+# by how many candles have closed since the breakout candle itself (0 =
+# the breakout candle's own close; Stage 5 mandates waiting for the next
+# candle before alerting, so age 0 is never actually reachable AT alert
+# time -- it's kept in the table for completeness/fidelity to the spec
+# and for any future stage that logs a pre-confirmation "watching" event).
+FRESH_BREAKOUT_SCORE = {0: 100, 1: 90, 2: 75, 3: 40}   # age (candles since breakout) -> score /100
+FRESH_BREAKOUT_MAX_AGE = 3     # age > this (i.e. a 5th+ candle) -> reject outright, per "Fourth Candle: Reject"
+
+# =============================================================================
+# Part 6 -- Enterprise Decision Engine (app/engines/decision_engine/)
+# -- final-authority engine, sits between the existing scoring engines
+# (Market Snapshot, Early Breakout, Trade Score Engine, Options
+# Intelligence) and the alert layer. Additive only: computed and
+# attached to every trade dict for visibility/logging regardless of
+# these settings; DECISION_ENGINE_FILTER_ENABLED (default False) is
+# the only flag that lets it actually block an alert, same rollout
+# pattern as OPTIONS_INTELLIGENCE_FILTER_ENABLED above.
+# =============================================================================
+
+DECISION_ENGINE_ENABLED = True           # master flag -- False fully restores pre-Part-6 behavior
+DECISION_ENGINE_FILTER_ENABLED = False   # if True, a rejected Decision Object blocks the alert
+
+# --- Approval floors (Trade Validation / Rejection Engines) ---
+DECISION_ENGINE_MIN_CONFIDENCE = 50.0      # 0-100
+DECISION_ENGINE_MIN_PROBABILITY = 50.0     # 0-100 (win probability %)
+DECISION_ENGINE_MIN_TRADE_QUALITY = 50.0   # 0-100
+DECISION_ENGINE_MIN_RR = 1.5               # Risk/Reward Engine floor, same spirit as EARLY_BREAKOUT_MIN_RR
+
+# --- Confidence Engine: per-plugin weights, renormalized automatically
+# over whichever plugins are available for a given trade (base.py /
+# confidence.py). Missing keys fall back to each plugin's default_weight. ---
+DECISION_ENGINE_PLUGIN_WEIGHTS = {
+    "market_snapshot": 0.15,
+    "early_breakout": 0.35,
+    "trade_score_engine": 0.35,
+    "options_intelligence": 0.20,
+}
+
+# --- Position Size Engine -- one of: "fixed_quantity", "capital_based",
+# "risk_based", "percentage_based", "dynamic" (dynamic = min of
+# capital_based and risk_based, i.e. the more conservative of the two). ---
+DECISION_ENGINE_POSITION_SIZE_MODE = "dynamic"
+DECISION_ENGINE_FIXED_QTY = 1
+DECISION_ENGINE_CAPITAL = 100000.0             # notional trading capital, purely for sizing math
+DECISION_ENGINE_RISK_PCT_OF_CAPITAL = 0.01     # 1% of capital risked per trade (risk_based/dynamic)
+DECISION_ENGINE_CAPITAL_PCT_PER_TRADE = 0.10   # 10% of capital allocated per trade (capital_based/dynamic)
+DECISION_ENGINE_LOT_SIZE_DEFAULT = 1           # rounded down to a multiple of this many units
+
+# --- Alert Priority Engine thresholds -- walked highest-first, first
+# match wins, same style as EARLY_BREAKOUT_GRADE_THRESHOLDS /
+# TRADE_SCORE_GRADE_THRESHOLDS elsewhere in this file. ---
+DECISION_ENGINE_PRIORITY_THRESHOLDS = [
+    (85, "Very High"),
+    (70, "High"),
+    (55, "Medium"),
+    (0, "Low"),
+]
+
+# =============================================================================
+# Part 7 -- Replay, Learning & Analytics Engine
+# (app/engines/replay_analytics/) -- offline-only engine: replays
+# historical candles against past signals, scores scanner accuracy, and
+# generates recommendations. NEVER places orders, NEVER runs inside the
+# live scanner/tracker loop, and NEVER auto-changes a production
+# threshold above (ENTRY_SCORE, DECISION_ENGINE_MIN_* etc.) -- it only
+# reads state.py's historical daily state files and its own journal,
+# and writes its own reports/recommendations. Master flag below fully
+# disables the whole engine; every sub-report has its own flag too so
+# a user can turn on just, say, daily analytics without CSV/JSON export.
+# =============================================================================
+
+REPLAY_ANALYTICS_ENABLED = True   # master flag -- False short-circuits engine.run_*() to a no-op
+
+# --- Replay Engine: supported timeframes for candle-by-candle replay.
+# Values are minutes; "D" means one daily candle (source data is
+# resampled UP from 1-minute candles for every entry below -- never
+# fetched separately per timeframe). ---
+REPLAY_TIMEFRAMES = ["1min", "3min", "5min", "15min", "30min", "1hour", "1day"]
+REPLAY_TIMEFRAME_MINUTES = {
+    "1min": 1, "3min": 3, "5min": 5, "15min": 15, "30min": 30, "1hour": 60,
+}  # "1day" handled separately (calendar-day resample, not a fixed minute bucket)
+REPLAY_DEFAULT_TIMEFRAME = "1min"   # matches tracker.py's native candle granularity
+
+# --- Trade Outcome Engine ---
+REPLAY_BREAKEVEN_BAND_PCT = 0.002   # exit within +/-0.2% of entry premium -> BREAKEVEN, not WIN/LOSS
+
+# --- Performance Analytics: no thresholds needed (pure arithmetic on
+# whatever trades are passed in), but the recovery-factor floor below
+# distinguishes "no drawdown yet" (None) from a genuine 0. ---
+REPLAY_MIN_DRAWDOWN_FOR_RECOVERY_FACTOR = 0.01   # below this, recovery_factor is reported as None (avoid div-by-~0 noise)
+
+# --- Missed Opportunity / False Signal Engines: a "rejected" candidate
+# (never alerted -- score fell below ENTRY_SCORE) counts as a "good
+# trade rejected" if replaying it forward would have hit T1+ before SL. ---
+REPLAY_MISSED_OPPORTUNITY_MIN_MOVE_PCT = 0.15   # forward move needed (as %, of premium) to call a rejected setup "missed"
+REPLAY_LATE_ENTRY_MAX_CANDLES = 2               # entry filled >2 candles after signal candle -> "late entry"
+REPLAY_EARLY_EXIT_MIN_REMAINING_MOVE_PCT = 0.10 # if price kept moving >=10% further favorably after exit -> "early exit"
+
+REPLAY_FALSE_BREAKOUT_REVERSAL_PCT = 0.05   # price reverses >=5% against the breakout direction within REPLAY_LATE_ENTRY_MAX_CANDLES*3 candles -> false breakout/breakdown
+REPLAY_WEAK_MOMENTUM_MAX_CANDLE_RANGE_PCT = 0.15   # avg candle range post-entry below this -> "weak momentum entry"
+
+# --- Learning Engine (statistical only -- NO machine learning). Groups
+# closed trades by these dimensions and ranks group win-rate/expectancy;
+# a group needs at least this many trades before it's surfaced, to
+# avoid "best timeframe: 1 trade, 100% win rate" noise. ---
+REPLAY_LEARNING_MIN_SAMPLE_SIZE = 5
+
+# --- Scoring Calibration: buckets predicted confidence into these
+# bands and compares each band's actual win rate against its midpoint;
+# a gap beyond this triggers a "recommend adjusting" note. Never
+# auto-applies a new threshold -- see module docstring. ---
+REPLAY_CALIBRATION_BANDS = [
+    (85, 100, "Very High"), (70, 85, "High"), (55, 70, "Medium"), (0, 55, "Low"),
+]
+REPLAY_CALIBRATION_GAP_THRESHOLD_PCT = 15.0   # |predicted midpoint - actual win rate| beyond this -> flag for review
+
+# --- Scanner Health Engine: 0-100 composite of signal accuracy,
+# decision accuracy, false-positive rate, false-negative rate. Weights
+# sum to 100. ---
+REPLAY_HEALTH_SCORE_WEIGHTS = {
+    "signal_accuracy": 35, "decision_accuracy": 30,
+    "false_positive_penalty": 20, "false_negative_penalty": 15,
+}
+REPLAY_HEALTH_SCORE_BANDS = [
+    (80, "Excellent"), (65, "Good"), (50, "Fair"), (0, "Poor"),
+]
+
+# --- Daily/Weekly/Monthly Analytics + Trade Journal persistence.
+# Reuses daily_cache.py's existing state-branch JSON mechanism (same
+# as opportunity_score.py/instrument_master.py) -- no new storage. ---
+REPLAY_JOURNAL_SUBDIR = "replay_analytics/journal"
+REPLAY_DAILY_REPORT_SUBDIR = "replay_analytics/daily"
+REPLAY_WEEKLY_REPORT_SUBDIR = "replay_analytics/weekly"
+REPLAY_MONTHLY_REPORT_SUBDIR = "replay_analytics/monthly"
+
+REPLAY_DAILY_ANALYTICS_ENABLED = True
+REPLAY_WEEKLY_ANALYTICS_ENABLED = True
+REPLAY_MONTHLY_ANALYTICS_ENABLED = True
+
+# --- Reporting: every export format independently toggleable, all
+# default off except the in-memory summary dict (which callers always
+# get back from engine.py regardless of these -- these three flags
+# only control whether a FILE is additionally written to disk). ---
+REPLAY_REPORT_CSV_ENABLED = False
+REPLAY_REPORT_JSON_ENABLED = False
+REPLAY_REPORT_OUTPUT_DIR = "replay_reports"   # relative path, created on first write
+
+# --- Performance: replay result caching (per symbol+direction+date
+# range key) so re-running analytics over an unchanged historical
+# window doesn't re-replay every candle again. In-process only, same
+# posture as cache.py's TTLCache -- see replay_engine.py. ---
+REPLAY_ENABLE_RESULT_CACHE = True

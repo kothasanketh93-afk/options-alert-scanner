@@ -577,7 +577,24 @@ class AngelOneBroker(Broker):
         # Public JSON file, no auth needed, updated daily ~8:30 AM IST
         # per Angel One's own forum. Large file (tens of MB) -- the
         # TTLCache above means this is fetched at most once per run.
-        resp = request_with_retry("GET", SCRIP_MASTER_URL, timeout=60, error_cls=BrokerAPIError)
+        #
+        # BUGFIX (2026-07-24, live failure): confirmed live, this was
+        # failing with "Connection broken: IncompleteRead(36454493 bytes
+        # read, 811735 more expected)" -- i.e. cut off ~800KB short of a
+        # ~37MB file, on ALL of request_with_retry's default 3 attempts
+        # (RETRY_MAX_ATTEMPTS), with only ~1.5-4.5s backoff between them
+        # (RETRY_BACKOFF_SECONDS). That's a plausible read-timeout/
+        # connection-drop pattern for a file this size over a slower or
+        # shared connection (e.g. a GitHub Actions runner), and neither
+        # "give it more time" nor "try a few more times" was happening
+        # for this specific call before. (10, 180): 10s to connect, up
+        # to 180s to read the full body -- generous headroom since this
+        # is a once-per-run fetch, not a latency-sensitive one.
+        # max_attempts=5 (vs. the global default of 3): cheap to retry
+        # more for a file this size and this infrequently fetched.
+        resp = request_with_retry(
+            "GET", SCRIP_MASTER_URL, timeout=(10, 180), max_attempts=5, error_cls=BrokerAPIError,
+        )
         return resp.json()
 
     def download_instrument_master(self) -> list:

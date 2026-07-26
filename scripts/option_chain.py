@@ -408,6 +408,19 @@ def _extract_leg(chain: list, strike: float, direction: str) -> dict:
                 "bid": row.get(prefix + "bid"),
                 "ask": row.get(prefix + "ask"),
                 "delta": row.get(prefix + "delta"),
+                # Added for Part 5 (app/engines/options_intelligence/) --
+                # purely ADDITIVE keys, every existing caller that reads
+                # only the keys above is completely unaffected. gamma/
+                # theta/vega/prev_oi/iv are None on whichever broker
+                # doesn't provide them for this leg (see this function's
+                # docstring above and upstox.py/angelone.py's own
+                # docstrings) -- callers must already treat None as "no
+                # read", same as the existing "delta" key.
+                "gamma": row.get(prefix + "gamma"),
+                "theta": row.get(prefix + "theta"),
+                "vega": row.get(prefix + "vega"),
+                "iv": row.get(prefix + "iv"),
+                "prev_oi": row.get(prefix + "prev_oi"),
             }
     return None
 

@@ -165,6 +165,63 @@ def fmt_new_alert(trade: dict) -> str:
     )
 
 
+def fmt_early_breakout_alert(trade: dict) -> str:
+    """
+    Upgraded 2026-07-24 (Institutional Accumulation spec's Fix 13
+    layout) -- IN PLACE, same function, not a second formatter. Now
+    leads with 🚨 EARLY INSTITUTIONAL BREAKOUT and adds the Breakout
+    Price / Entry Zone / Maximum Entry (the Early Entry Window) plus
+    Institutional / Base / Momentum sub-scores alongside the composite
+    Score, so the message shows WHY each stage passed, not just the
+    final number. Deliberately still a DIFFERENT message shape from
+    fmt_new_alert() above (unchanged, for the existing Trade Score
+    Engine) so the two are never confused in the channel.
+    """
+    reasons = trade.get("early_breakout_reasons", {})
+    low_min, high_min = trade["expected_holding_minutes"]
+
+    return (
+        f"🚨 EARLY INSTITUTIONAL BREAKOUT — {trade['display_label']}\n\n"
+        f"Trade ID: {trade['trade_id']}\n"
+        f"Underlying: {trade['symbol']}\n"
+        f"Direction: {trade['direction']}\n"
+        f"Option: {trade['direction']} {trade['strike']}\n"
+        f"Expiry: {trade['expiry']}\n"
+        f"Premium: ₹{trade['alert_premium']}\n\n"
+        f"Breakout Price: ₹{trade.get('breakout_price', trade['alert_premium'])}\n"
+        f"Entry Zone: {trade.get('entry_zone', '—')}\n"
+        f"Maximum Entry: ₹{trade.get('maximum_entry', '—')}\n\n"
+        f"Stop Loss: ₹{trade['stop_loss']}\n"
+        f"Target 1: ₹{trade['target_1']}\n"
+        f"Target 2: ₹{trade['target_2']}\n"
+        f"Risk Reward: {trade['expected_rr']}\n"
+        f"Probability: {trade['probability_pct']}%\n"
+        f"Score: {trade['trade_score']}/100 ({trade['grade']})\n"
+        f"Institutional Score: {trade.get('institutional_score', '—')}/100\n"
+        f"Base Score: {trade.get('base_score', '—')}/100\n"
+        f"Momentum Score: {trade.get('momentum_score', '—')}/100\n\n"
+        f"━━━━━━━━━━━━━━\n"
+        f"Reasons\n"
+        f"Trend: {reasons.get('trend', '—')}\n"
+        f"Market Context: {reasons.get('market_context', '—')}\n"
+        f"VWAP: {reasons.get('vwap', '—')}\n"
+        f"Institutional: {reasons.get('institutional', '—')}\n"
+        f"Base: {reasons.get('base', '—')}\n"
+        f"Breakout: {reasons.get('breakout', '—')}\n"
+        f"Follow-through: {reasons.get('follow_through', '—')}\n"
+        f"Volume: {reasons.get('volume', '—')}\n"
+        f"Liquidity: {reasons.get('liquidity', '—')}\n"
+        f"Momentum: {reasons.get('momentum', '—')}\n"
+        f"Fair Value Gap: {reasons.get('fair_value_gap', '—')}\n"
+        f"Price Action: {reasons.get('price_action', '—')}\n"
+        f"Smart Money: {reasons.get('smart_money', '—')}\n"
+        f"━━━━━━━━━━━━━━\n\n"
+        f"Expected Holding: {low_min}-{high_min} minutes\n\n"
+        f"Invalidation: {reasons.get('invalidation', '—')}\n\n"
+        f"Status: WAITING_ENTRY"
+    )
+
+
 def fmt_entry_activated(trade: dict) -> str:
     return (
         f"ENTRY ACTIVATED — {trade['display_label']}\n\n"

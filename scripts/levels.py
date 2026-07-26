@@ -8,6 +8,7 @@ plus the expected-holding-time estimate derived from the same ATR math.
 from config import (
     SL_ATR_MULT, T1_ATR_MULT, T2_ATR_MULT,
     ENTRY_ZONE_ATR_FRACTION, MIN_ENTRY_ZONE_PCT, MAX_ENTRY_ZONE_PCT,
+    MIN_LEVEL_DISTANCE_ATR_MULT,
 )
 
 
@@ -36,10 +37,24 @@ def dynamic_trade_levels(premium: float, atr_index_points: float, delta: float,
 
     if nearby_level is not None:
         index_distance_to_level = abs(nearby_level - spot_price)
-        premium_distance_to_level = index_distance_to_level * delta
-        capped_t2 = premium + premium_distance_to_level * 0.9
-        t2 = min(t2, capped_t2)
-        t1 = min(t1, t2 * 0.7 + premium * 0.3)
+        # BUGFIX (2026-07-24, live pattern): confirmed live, targets were
+        # being hit almost immediately (e.g. T2 hit in 8 minutes with
+        # price still running +2% past it) far more often than the raw
+        # ATR-based T2 alone would explain. Root cause: find_nearby_level()
+        # looks for the recent high/low over its own lookback window --
+        # but right at a FRESH breakout, the breakout candle itself is
+        # often what sets that recent high/low, making index_distance_to_level
+        # come out near zero. Capping T2 at 90% of a near-zero distance
+        # clamps the target down to almost nothing, even though there's
+        # no real resistance/support actually sitting there -- it's just
+        # where price already is. Only apply the cap when the level is at
+        # least MIN_LEVEL_DISTANCE_ATR_MULT ATR away, i.e. only when it
+        # represents a genuine level AHEAD of price, not the price itself.
+        if index_distance_to_level >= atr_index_points * MIN_LEVEL_DISTANCE_ATR_MULT:
+            premium_distance_to_level = index_distance_to_level * delta
+            capped_t2 = premium + premium_distance_to_level * 0.9
+            t2 = min(t2, capped_t2)
+            t1 = min(t1, t2 * 0.7 + premium * 0.3)
 
     sl = max(sl, premium * 0.5)  # floor: never risk more than 50% of premium
 

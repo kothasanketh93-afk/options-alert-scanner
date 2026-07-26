@@ -54,7 +54,7 @@ def fetch_upstox_master():
 
 def fetch_angelone_master():
     print("Downloading Angel One scrip master...")
-    resp = requests.get(ANGELONE_MASTER_URL, timeout=60)
+    resp = requests.get(ANGELONE_MASTER_URL, timeout=(10, 180))
     resp.raise_for_status()
     return resp.json()
 

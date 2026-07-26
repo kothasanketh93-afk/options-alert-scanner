@@ -123,6 +123,13 @@ from levels import dynamic_trade_levels, estimated_holding_minutes
 # itself is left in place, unused, as a reference/fallback).
 import trade_score
 from ranking import _grade_rank_key, rank_all
+# Part 5: Options Intelligence Engine -- additive only (see that
+# package's engine.py module docstring for the full integration
+# contract). Computed AFTER the existing hard gate + Trade Score both
+# already passed, using data score_strike() already fetched this cycle
+# -- no new broker call, no duplicated OI/liquidity/Greeks math.
+from app.engines.options_intelligence import engine as options_intel
+from config import OPTIONS_INTELLIGENCE_FILTER_ENABLED
 
 _logger = get_logger("scanner")
 
@@ -432,6 +439,34 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     expected_rr = trade_score.expected_rr_text(premium, levels["stop_loss"], levels["target_1"])
     holding_minutes = estimated_holding_minutes(atr_index_points, target_distance / abs(delta) if delta else 0)
 
+    # Part 5: Options Intelligence Engine -- additive (see import comment
+    # above). offset_index isn't tracked separately in this function today
+    # (moneyness alone is), so 1 is passed as a reasonable single-strike
+    # default; STRIKE_RANGE>1 callers that want the finer Deep ITM/Deep
+    # OTM distinction should thread the real offset through once this is
+    # promoted beyond opt-in.
+    oi_intel = options_intel.analyze(
+        symbol=symbol, direction=direction, moneyness=moneyness, offset_index=1,
+        strike=strike, leg=leg, chain=chain, spot_price=spot_price, expiry=expiry,
+        oi_history=oi_history, oi_delta_pct=oi_delta_pct,
+    )
+    if OPTIONS_INTELLIGENCE_FILTER_ENABLED and oi_intel.get("enabled") and not oi_intel.get("accepted", True):
+        # NOTE (merge fix): `global _rejection_count` was already declared
+        # earlier in this same function (see the hard_gate_pass branch
+        # above); a function needs only one `global` statement per name.
+        # Redeclaring it here produced a hard SyntaxError under Python
+        # 3.12+ ("name '_rejection_count' is assigned to before global
+        # declaration") -- this file could not be imported at all before
+        # this fix. Removing the duplicate declaration changes nothing at
+        # runtime: _rejection_count is still the same module-level global,
+        # still incremented here exactly as before.
+        _rejection_count += 1
+        _logger.info(
+            f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
+            f"Reasons (Options Intelligence): {', '.join(oi_intel.get('rejection_reasons') or [])}"
+        )
+        return None
+
     return {
         "symbol": symbol,
         "direction": direction,
@@ -468,6 +503,7 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         "session": session,
         "alternatives": [],  # filled in by main.py's run_scanner_step, not here
         "_quality_score": score,  # ranking.py's tiebreak key -- now the Trade Score itself
+        "options_intelligence": oi_intel,  # Part 5, additive -- see app/engines/options_intelligence/
     }
 
 
