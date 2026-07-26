@@ -1101,3 +1101,18 @@ If you want to improve the *predictive* side (setup_score itself), that's
 a separate project — happy to help design a lightweight same-day
 score-vs-outcome correlation check using this same state file, without
 turning it into a permanent backtesting database.
+
+## Dashboard API (optional, separate process)
+
+`scripts/app/backend/` and `scripts/run_dashboard_api.py` provide a
+read-only FastAPI dashboard (health, scanner status, replay/analytics
+summaries, config snapshot, and a `/ws/dashboard` live feed) that runs
+as its **own separate process** from the scanner — it never imports
+`broker.py`/`auth.py` and never writes to the state branch. It reads
+the same state branch the scanner already writes to, at most once
+every `DASHBOARD_STATE_REFRESH_SECONDS`. See
+`scripts/app/backend/README.md` for the full endpoint list and
+`scripts/run_dashboard_api.py` for setup/run instructions. Install its
+dependencies from `requirements-dashboard.txt` (kept separate from the
+scanner's own `requirements.txt` since the two processes run on
+different hosts/schedules).
