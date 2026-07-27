@@ -251,9 +251,9 @@
       "final_status": null,
       "actual_entry_time": "2026-07-27T14:16:00+05:30",
       "tracked_entry_price": 5.45,
-      "highest_since_entry": 6.3,
+      "highest_since_entry": 6.75,
       "lowest_since_entry": 5.2,
-      "max_favorable_pct": 15.6,
+      "max_favorable_pct": 23.85,
       "max_adverse_pct": -4.59,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -261,7 +261,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-27T14:35:00+05:30",
+      "last_processed_ts": "2026-07-27T14:40:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -452,7 +452,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-27T14:35:00+05:30",
+      "last_processed_ts": "2026-07-27T14:40:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -545,34 +545,226 @@
         "execution_time_ms": 0.16,
         "timestamp": "2026-07-27T14:32:01.700919+05:30"
       }
+    },
+    "SENSEX-CE-ATM-20260727-1440-01": {
+      "trade_id": "SENSEX-CE-ATM-20260727-1440-01",
+      "display_label": "Trade 4",
+      "symbol": "SENSEX",
+      "direction": "CE",
+      "moneyness": "ATM",
+      "instrument_key": "BSE_FO|1138985",
+      "strike": 76900.0,
+      "expiry": "2026-07-30",
+      "spot_price": 76867.48,
+      "alert_time": "2026-07-27T14:40:42.764574+05:30",
+      "alert_premium": 423.6,
+      "entry_low": 420.77,
+      "entry_high": 426.43,
+      "stop_loss": 385.83,
+      "target_1": 480.25,
+      "target_2": 518.02,
+      "session": "13:45-15:10",
+      "grade": "Watchlist",
+      "trade_score": 59,
+      "probability_pct": 65,
+      "probability_label": "Watchlist",
+      "score_breakdown": [
+        "+15 Volume Spike",
+        "+15 OI Build-up",
+        "-3 Trend Alignment",
+        "+5 Higher-Timeframe Confirmation",
+        "+5 Risk:Reward",
+        "+5 Liquidity",
+        "-3 Momentum",
+        "-3 VWAP Positioning",
+        "-1 Market Strength",
+        "-4 EMA Alignment"
+      ],
+      "confidence_score": 5.9,
+      "risk_score": 2.0,
+      "reward_score": 5.0,
+      "expected_rr": "1:1.5",
+      "factor_checklist": [
+        "Trend \u26a0\ufe0f",
+        "Volume \u2705",
+        "OI \u2705",
+        "Momentum \u26a0\ufe0f",
+        "VWAP \u26a0\ufe0f",
+        "EMA \u26a0\ufe0f",
+        "Risk Reward \u2705",
+        "Liquidity \u2705",
+        "Market Strength \u26a0\ufe0f",
+        "HTF \u2705"
+      ],
+      "confidence_stars": "\u2605\u2606\u2606\u2606\u2606",
+      "confidence_label": "Low",
+      "risk_rating": "\ud83d\udfe2",
+      "risk_label": "Low",
+      "expected_holding_minutes": [
+        15,
+        30
+      ],
+      "why_reasons": [
+        "\u2713 EMA aligned",
+        "\u2713 Above VWAP",
+        "\u2713 Volume Expansion",
+        "\u2713 Strong OI Build-up",
+        "\u2713 Excellent Liquidity",
+        "\u2713 15-minute Confirmed",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable"
+      ],
+      "alternatives": [
+        {
+          "symbol": "NATIONALUM",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "B+",
+          "trade_score": 75
+        },
+        {
+          "symbol": "ASHOKLEY",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "B",
+          "trade_score": 62
+        }
+      ],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-07-27T14:40:42.764574+05:30",
+      "messages_sent": [
+        "NEW_TRADE_ALERT"
+      ],
+      "streak_counted": false,
+      "strategy": "trade_score",
+      "probability_history": [
+        {
+          "time": "14:40",
+          "pct": 65
+        }
+      ],
+      "probability_trend": "Stable",
+      "decision": {
+        "enabled": true,
+        "decision": "Trade Approved",
+        "approved": true,
+        "trade_quality_score": 68.4,
+        "confidence_score": 59.0,
+        "probability": {
+          "win_probability_pct": 63.2,
+          "loss_probability_pct": 36.8,
+          "trade_success_probability_pct": 63.2,
+          "historical_similarity_pct": null,
+          "source": "upstream_probability_pct"
+        },
+        "risk": {
+          "max_risk_per_unit": 37.77,
+          "expected_reward_per_unit": 94.42,
+          "risk_score": 82.2,
+          "capital_risk_pct": 0.04
+        },
+        "risk_reward": {
+          "entry": 423.6,
+          "stop_loss": 385.83,
+          "target_1": 480.25,
+          "target_2": 518.02,
+          "risk_reward_ratio": 2.5,
+          "min_rr_threshold": 1.5,
+          "passes_rr_floor": true
+        },
+        "entry": 423.6,
+        "stop_loss": 385.83,
+        "stop_loss_detail": {
+          "active_stop_loss": 385.83,
+          "style": "atr_dynamic",
+          "distance_pct": 8.92,
+          "percentage_stop_reference": 211.8,
+          "recommendation": null
+        },
+        "target_1": 480.25,
+        "target_2": 518.02,
+        "target_3": 536.9,
+        "position_size": {
+          "mode": "dynamic",
+          "quantity": 23,
+          "lot_size": 1
+        },
+        "entry_validation": {
+          "entry_quality_score": 52.5,
+          "sub_scores": {
+            "entry_distance": 60.0,
+            "volume_confirmation": 50.0,
+            "market_alignment": 50.0,
+            "options_confirmation": 50.0,
+            "institutional_confirmation": null
+          },
+          "passed": true,
+          "reasons": []
+        },
+        "priority": "Medium",
+        "explanation": [
+          "Trade Approved",
+          "Trade Quality 68.4/100",
+          "Probability 63.2%",
+          "Risk:Reward 1:2.5",
+          "Trade Score 59/100 (Watchlist), probability 65%"
+        ],
+        "rejection_reasons": [],
+        "warnings": [],
+        "engines_used": [
+          "market_snapshot",
+          "early_breakout",
+          "trade_score_engine",
+          "options_intelligence"
+        ],
+        "engines_available": [
+          "trade_score_engine"
+        ],
+        "execution_time_ms": 0.18,
+        "timestamp": "2026-07-27T14:41:33.485139+05:30"
+      }
     }
   },
   "next_seq": {
     "BANKNIFTY-PE-ATM": 1,
     "NATIONALUM-PE-ITM": 1,
-    "ASHOKLEY-CE-ITM": 1
+    "ASHOKLEY-CE-ITM": 1,
+    "SENSEX-CE-ATM": 1
   },
-  "next_display_num": 3,
+  "next_display_num": 4,
   "summary_sent": false,
   "consecutive_sl_streak": 1,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
     "NSE_FO|63935": 10437700.0,
-    "NSE_FO|63937": 8463975.0,
-    "NSE_FO|63939": 20754695.0,
+    "NSE_FO|63937": 8325590.0,
+    "NSE_FO|63939": 20879170.0,
     "NSE_FO|63940": 14231165.0,
     "NSE_FO|63938": 16813290.0,
     "NSE_FO|63936": 20173920.0,
-    "NSE_FO|61869": 791460.0,
-    "NSE_FO|61871": 1187970.0,
+    "NSE_FO|61869": 796230.0,
+    "NSE_FO|61871": 1163190.0,
     "NSE_FO|61873": 1135770.0,
     "NSE_FO|61874": 452790.0,
     "NSE_FO|61872": 467490.0,
     "NSE_FO|61870": 593880.0,
-    "NSE_FO|63499": 298800.0,
-    "NSE_FO|63501": 312000.0,
-    "NSE_FO|63503": 804120.0,
+    "NSE_FO|63499": 292440.0,
+    "NSE_FO|63501": 301920.0,
+    "NSE_FO|63503": 832680.0,
     "NSE_FO|63504": 497520.0,
     "NSE_FO|63502": 188280.0,
     "NSE_FO|63500": 429120.0,
@@ -582,13 +774,13 @@
     "BSE_FO|1140849": 692640.0,
     "BSE_FO|1136687": 645640.0,
     "BSE_FO|1140167": 765420.0,
-    "NSE_FO|76676": 477750.0,
+    "NSE_FO|76676": 467250.0,
     "NSE_FO|78197": 4701375.0,
     "NSE_FO|76678": 627375.0,
     "NSE_FO|76679": 231000.0,
     "NSE_FO|78198": 2121000.0,
     "NSE_FO|76677": 637875.0,
-    "BSE_FO|1149433": 527660.0,
+    "BSE_FO|1149433": 529520.0,
     "BSE_FO|1137313": 420280.0,
     "NSE_FO|36744": 1874250.0,
     "NSE_FO|36747": 580125.0,
@@ -596,30 +788,30 @@
     "NSE_FO|63506": 40440.0,
     "NSE_FO|63933": 5074095.0,
     "NSE_FO|63934": 6976515.0,
-    "NSE_FO|61867": 1620030.0,
+    "NSE_FO|61867": 1612890.0,
     "NSE_FO|61868": 1702920.0,
-    "NSE_FO|78183": 1029000.0,
+    "NSE_FO|78183": 1023750.0,
     "NSE_FO|78184": 1034250.0,
     "NSE_FO|63497": 121200.0,
     "NSE_FO|63498": 121320.0,
     "NSE_FO|61863": 281070.0,
     "NSE_FO|61864": 578760.0,
-    "NSE_FO|76674": 443625.0,
+    "NSE_FO|76674": 438375.0,
     "NSE_FO|76675": 496125.0,
-    "NSE_FO|148826": 1174250.0,
-    "NSE_FO|143957": 3396250.0,
-    "NSE_FO|148828": 3627250.0,
+    "NSE_FO|148826": 1177000.0,
+    "NSE_FO|143957": 3297250.0,
+    "NSE_FO|148828": 3533750.0,
     "NSE_FO|98996": 347900.0,
     "NSE_FO|101339": 751100.0,
     "NSE_FO|98998": 1101100.0,
     "NSE_FO|38293": 1144250.0,
     "NSE_FO|155904": 630200.0,
     "NSE_FO|152835": 2061950.0,
-    "NSE_FO|111630": 36875.0,
+    "NSE_FO|111630": 37500.0,
     "NSE_FO|108418": 66875.0,
-    "NSE_FO|111628": 143125.0,
-    "NSE_FO|102405": 111572475.0,
-    "NSE_FO|104965": 119506200.0,
+    "NSE_FO|111628": 143750.0,
+    "NSE_FO|102405": 111072150.0,
+    "NSE_FO|104965": 119363250.0,
     "NSE_FO|102403": 47102025.0,
     "NSE_FO|137866": 940000.0,
     "NSE_FO|142325": 244400.0,
@@ -632,44 +824,44 @@
     "NSE_FO|129056": 580500.0,
     "NSE_FO|91807": 540000.0,
     "NSE_FO|91149": 1117500.0,
-    "NSE_FO|134949": 421200.0,
-    "NSE_FO|131645": 1094600.0,
-    "NSE_FO|134951": 366600.0,
+    "NSE_FO|134949": 416000.0,
+    "NSE_FO|131645": 1089400.0,
+    "NSE_FO|134951": 360100.0,
     "NSE_FO|136997": 801675.0,
-    "NSE_FO|141439": 428400.0,
-    "NSE_FO|136999": 2436525.0,
-    "NSE_FO|71395": 885000.0,
-    "NSE_FO|69431": 2815000.0,
-    "NSE_FO|71397": 2685000.0,
+    "NSE_FO|141439": 434700.0,
+    "NSE_FO|136999": 2387700.0,
+    "NSE_FO|71395": 890000.0,
+    "NSE_FO|69431": 2795000.0,
+    "NSE_FO|71397": 2645000.0,
     "NSE_FO|121707": 633450.0,
     "NSE_FO|128080": 412050.0,
-    "NSE_FO|127144": 196875.0,
-    "NSE_FO|123267": 1858125.0,
-    "NSE_FO|127142": 611250.0,
+    "NSE_FO|127144": 189375.0,
+    "NSE_FO|123267": 1820625.0,
+    "NSE_FO|127142": 613125.0,
     "BSE_FO|1148946": 183680.0,
     "NSE_FO|125187": 578100.0,
-    "NSE_FO|63941": 9214400.0,
-    "BSE_FO|1138985": 351720.0,
+    "NSE_FO|63941": 8975070.0,
+    "BSE_FO|1138985": 375620.0,
     "NSE_FO|48025": 2269800.0,
-    "NSE_FO|121706": 959400.0,
+    "NSE_FO|121706": 965550.0,
     "NSE_FO|125186": 916350.0,
     "NSE_FO|129055": 762750.0,
     "NSE_FO|125787": 1640250.0,
     "NSE_FO|129057": 4671000.0,
     "NSE_FO|141441": 459900.0,
-    "BSE_FO|1147852": 810700.0,
-    "NSE_FO|48024": 1942200.0,
-    "NSE_FO|98999": 945000.0,
-    "NSE_FO|101340": 689500.0,
-    "NSE_FO|98997": 536900.0,
-    "NSE_FO|152836": 737150.0,
-    "NSE_FO|155905": 463450.0,
+    "BSE_FO|1147852": 819660.0,
+    "NSE_FO|48024": 1901250.0,
+    "NSE_FO|98999": 948500.0,
+    "NSE_FO|101340": 690900.0,
+    "NSE_FO|98997": 535500.0,
+    "NSE_FO|152836": 734850.0,
+    "NSE_FO|155905": 428950.0,
     "NSE_FO|38298": 1028100.0,
     "NSE_FO|137863": 695600.0,
     "NSE_FO|142322": 437100.0,
-    "NSE_FO|137865": 1748400.0,
-    "NSE_FO|91150": 1340000.0,
-    "NSE_FO|91808": 482500.0
+    "NSE_FO|137865": 1734300.0,
+    "NSE_FO|91150": 1332500.0,
+    "NSE_FO|91808": 497500.0
   },
   "probability_history": {
     "BANKNIFTY-PE": [
@@ -702,6 +894,10 @@
       {
         "time": "14:35",
         "pct": 75
+      },
+      {
+        "time": "14:40",
+        "pct": 77
       }
     ],
     "ASHOKLEY-CE": [
@@ -712,6 +908,10 @@
       {
         "time": "14:35",
         "pct": 68
+      },
+      {
+        "time": "14:40",
+        "pct": 67
       }
     ],
     "NIFTY-CE": [
@@ -723,13 +923,19 @@
         "time": "14:31",
         "pct": 65
       }
+    ],
+    "SENSEX-CE": [
+      {
+        "time": "14:40",
+        "pct": 65
+      }
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 912,
-    "valid_signals": 11,
-    "rejected_signals": 406,
+    "scanned_symbols": 931,
+    "valid_signals": 14,
+    "rejected_signals": 443,
     "api_failures": 346,
-    "broker_errors": 36
+    "broker_errors": 37
   }
 }
