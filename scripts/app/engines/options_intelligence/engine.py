@@ -233,6 +233,24 @@ def analyze(symbol: str, direction: str, moneyness: str, offset_index: int,
         "expiry_bucket": expiry_bucket_label,
         "expiry_volatility": expiry_volatility,
         "premium_breakdown": premium_info,
+        # Part 11 (Quant Intelligence) integration, added additively:
+        # these are local variables this function ALREADY computed
+        # above for scoring (oi/volume/iv/bid/ask/oi_delta_pct) but
+        # previously discarded once the *_score fields were derived.
+        # Exposing them here lets decision_engine/quant_adapter.py
+        # build a Signal from real per-leg reads without a second
+        # broker/chain fetch or re-deriving them from the *_score
+        # values -- "reuse existing market analysis, do not duplicate
+        # calculations" per the Part 11 merge spec. No existing key
+        # above is changed; this is a pure addition.
+        "raw": {
+            "oi": oi,
+            "volume": volume,
+            "iv": iv,
+            "bid": bid,
+            "ask": ask,
+            "oi_change_pct": round(oi_delta_pct * 100, 3) if oi_delta_pct is not None else None,
+        },
     }
 
     _logger.info(
