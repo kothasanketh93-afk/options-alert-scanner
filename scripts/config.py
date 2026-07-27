@@ -25,6 +25,17 @@ What's deliberately NOT here:
 # doesn't by itself improve accuracy.
 MAX_CONSECUTIVE_SL = 2
 
+# Master switch for the circuit breaker above. True (default) is the
+# original, unchanged live-trading behaviour: MAX_CONSECUTIVE_SL SL
+# hits in a row trips the breaker and stops new alerts for the rest of
+# the day. Set to False ONLY for validation/performance-testing runs
+# where you want the scanner to keep running (and keep generating
+# alerts) for the entire session regardless of how many SL hits occur
+# -- consecutive_sl_streak is still tracked and reported either way,
+# this flag only controls whether crossing MAX_CONSECUTIVE_SL actually
+# halts new alerts. See state.record_trade_outcome_for_streak().
+STOP_AFTER_CONSECUTIVE_SL = True
+
 # Cap on simultaneously open trades (WAITING_ENTRY + ACTIVE + T1_HIT).
 # Mostly a backstop now that only one best-ranked setup opens per run.
 MAX_CONCURRENT_TRADES = 4
@@ -150,6 +161,42 @@ FALLBACK_STOCK_WATCHLIST = [
     "BANKBARODA", "PFC", "RECLTD", "ASHOKLEY", "MOTHERSON",
 ]
 
+# --- Stock-universe validation mode (temporary, universe-reduction only) ---
+# NOT the same thing as STOP_AFTER_CONSECUTIVE_SL above -- that flag
+# changes risk-management behavior (circuit breaker). This flag ONLY
+# changes WHICH stocks get scanned; it never touches entry/exit logic,
+# scoring, risk management, BTST, Telegram, monitoring, or the
+# dashboard. Purpose: cut broker API calls/failure surface way down
+# for a validation run by scanning a small, known-liquid stock set
+# instead of the full dynamic ~100-150 stock universe, while every
+# index (config.SYMBOLS' index members, see INDEX_SYMBOLS below) and
+# the BTST module (fully separate -- see btst_config.BTST_SYMBOLS)
+# keep running exactly as configured.
+#
+# True  -> refresh_symbols_for_today() (and the import-time fallback
+#          below) use VALIDATION_STOCK_UNIVERSE instead of the daily
+#          opportunity shortlist / FALLBACK_STOCK_WATCHLIST, and skip
+#          the shortlist-cache read entirely (one less daily_cache hit).
+# False (default) -> unchanged original behavior: today's opportunity
+#          shortlist if cached, else FALLBACK_STOCK_WATCHLIST.
+#
+# Flip back to False (or delete this block) to instantly restore the
+# full stock universe -- nothing else needs to change.
+STOCK_UNIVERSE_VALIDATION_MODE = True
+
+# The 10 stocks scanned when STOCK_UNIVERSE_VALIDATION_MODE is True.
+# Deliberately NOT added to STOCK_STRIKE_STEP below -- these are all
+# large, liquid F&O names that instrument_master.py's live strike
+# lookup resolves directly (see that dict's Phase 2 fallback-only
+# note); if instrument-master data is ever missing for one of them on
+# a given day, detect_all_setups()'s existing per-symbol try/except
+# skips just that symbol cleanly, same as it does today for any other
+# stock -- no new failure mode.
+VALIDATION_STOCK_UNIVERSE = [
+    "RELIANCE", "HDFCBANK", "ICICIBANK", "SBIN", "TCS",
+    "INFY", "LT", "AXISBANK", "BHARTIARTL", "ITC",
+]
+
 # Per-stock strike interval. ALSO UNVERIFIED -- unlike NIFTY/BANKNIFTY
 # (which rarely change), individual stock strike intervals get
 # revised by NSE more often as the underlying price moves, and are
@@ -262,7 +309,8 @@ OPPORTUNITY_SCORE_WEIGHTS = {
 # mutates them in place (.clear()+.extend()), never reassigns, so
 # every existing reference sees the update with no other code needing
 # to change -- see that function's docstring for the full reasoning.
-STOCK_SYMBOLS = list(FALLBACK_STOCK_WATCHLIST)
+STOCK_SYMBOLS = list(VALIDATION_STOCK_UNIVERSE) if STOCK_UNIVERSE_VALIDATION_MODE \
+    else list(FALLBACK_STOCK_WATCHLIST)
 SYMBOLS = SYMBOLS + STOCK_SYMBOLS
 
 
@@ -302,7 +350,25 @@ def refresh_symbols_for_today() -> list:
     compatibility" requires here.
 
     Returns the (mutated in place) SYMBOLS list for convenience.
+
+    If STOCK_UNIVERSE_VALIDATION_MODE is True, this short-circuits
+    before touching daily_cache at all -- see that flag's comment
+    near VALIDATION_STOCK_UNIVERSE above.
     """
+    if STOCK_UNIVERSE_VALIDATION_MODE:
+        # Validation mode: always the fixed 10-stock validation
+        # universe, every run, regardless of whether a shortlist is
+        # cached today. Skips the daily_cache read below entirely --
+        # one less moving part / API-adjacent call per run, which is
+        # part of the point of validation mode. Indices (INDEX_SYMBOLS)
+        # are untouched, so NIFTY/BANKNIFTY/MIDCPNIFTY/SENSEX keep
+        # scanning exactly as configured.
+        STOCK_SYMBOLS.clear()
+        STOCK_SYMBOLS.extend(VALIDATION_STOCK_UNIVERSE)
+        SYMBOLS.clear()
+        SYMBOLS.extend(INDEX_SYMBOLS + STOCK_SYMBOLS)
+        return SYMBOLS
+
     import daily_cache
     from datetime import datetime, timezone, timedelta
     IST = timezone(timedelta(hours=5, minutes=30))
@@ -1041,3 +1107,65 @@ REPLAY_REPORT_OUTPUT_DIR = "replay_reports"   # relative path, created on first 
 # window doesn't re-replay every candle again. In-process only, same
 # posture as cache.py's TTLCache -- see replay_engine.py. ---
 REPLAY_ENABLE_RESULT_CACHE = True
+
+# =============================================================================
+# Part 11 -- Quant Intelligence Engine (app/engines/quant_intelligence/)
+# -- independent probability/signal-quality/regime/risk/pattern/learning/
+# explainability engine, merged in as a plug-in of the existing Part 6
+# Decision Engine (decision_engine/quant_adapter.py). Additive only,
+# same rollout posture as every other engine in this file: computed
+# and attached to trade["decision"]["quant_intelligence"] for
+# visibility/logging regardless of these settings; QUANT_INTELLIGENCE_
+# INFLUENCE_ENABLED (default False) is the only flag that lets it
+# actually change trade["decision"]["approved"]/priority, same pattern
+# as DECISION_ENGINE_FILTER_ENABLED / OPTIONS_INTELLIGENCE_FILTER_ENABLED
+# above. If the engine is unavailable, disabled, or raises for any
+# reason, decision_engine/quant_adapter.py degrades to
+# {"enabled": False, ...} and the rest of the Decision Engine output is
+# completely unaffected -- see that module's docstring.
+#
+# The engine's own internal tuning (adaptive probability weights,
+# signal-quality grade thresholds, regime/risk/pattern thresholds,
+# cache TTL, etc.) lives in its own
+# app/engines/quant_intelligence/config/settings.yaml, per Part 11's
+# original design -- NOT duplicated here. Only the integration-level
+# toggles below (whether it runs at all, and whether it's allowed to
+# influence the decision) belong in this file.
+# =============================================================================
+
+QUANT_INTELLIGENCE_ENABLED = True             # master flag -- False fully restores pre-Part-11 behavior
+QUANT_INTELLIGENCE_INFLUENCE_ENABLED = False  # if True, a REJECTED Quant Intelligence read can flip an
+                                               # otherwise-approved trade to rejected (see quant_adapter.py)
+QUANT_INTELLIGENCE_MIN_PROBABILITY = 40.0     # 0-100 -- only enforced when the influence flag above is True
+
+# =============================================================================
+# Part 11.5 -- News Intelligence Engine (app/engines/news_intelligence/)
+# -- independent collector/sentiment/impact engine, merged in as a plug-in
+# of the existing Part 6 Decision Engine (decision_engine/news_adapter.py),
+# invoked after Quant Intelligence. Additive only, same rollout posture as
+# every other engine in this file: computed and attached to
+# trade["decision"]["news_intelligence"] for visibility/logging regardless
+# of these settings; NEWS_INTELLIGENCE_INFLUENCE_ENABLED (default False) is
+# the only flag that lets it actually change trade["decision"]["approved"].
+# If the engine is unavailable, disabled, or raises for any reason,
+# decision_engine/news_adapter.py degrades to {"enabled": False, ...} and
+# the rest of the Decision Object (including Quant Intelligence's own
+# output) is completely unaffected -- see that module's docstring.
+#
+# The engine's own internal tuning (providers, dedup, cache TTL, sentiment
+# thresholds, impact weights, etc.) lives in its own
+# app/engines/news_intelligence/config/settings.yaml, per its original
+# design -- NOT duplicated here. Only the integration-level toggles below
+# (whether it runs at all, and whether it's allowed to influence the
+# decision) belong in this file.
+# =============================================================================
+
+NEWS_INTELLIGENCE_ENABLED = True             # master flag -- False fully restores pre-Part-11.5 behavior
+NEWS_INTELLIGENCE_INFLUENCE_ENABLED = False  # if True, a confidently unfavorable News Intelligence read
+                                              # can flip an otherwise-approved trade to rejected (see news_adapter.py)
+NEWS_INTELLIGENCE_MIN_SCORE = -20.0          # -100..100, direction-aligned floor -- only enforced when the
+                                              # influence flag above is True
+NEWS_INTELLIGENCE_COLLECTION_TIMEOUT_SECONDS = 25.0  # hard wall-clock budget for the one collect() cycle
+                                              # main.py runs at startup -- see main.py's own comment for why
+                                              # this is a defense-in-depth cap on top of each provider's own
+                                              # settings.yaml timeout_seconds, not a replacement for it.

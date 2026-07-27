@@ -442,8 +442,14 @@ def run_tracker_step(state: dict, now: datetime):
             _dispatch_tracker_events(trade, events)
 
             if trade["status"] in TERMINAL_STATUSES and not trade["streak_counted"]:
-                state_mod.record_trade_outcome_for_streak(state, trade.get("final_status"))
+                final_status = trade.get("final_status")
+                state_mod.record_trade_outcome_for_streak(state, final_status)
                 trade["streak_counted"] = True
+                if final_status in ("SL_HIT", "T1_THEN_SL") and not config.STOP_AFTER_CONSECUTIVE_SL:
+                    log.info(
+                        "Trade closed with Stop Loss. Scanner continues because "
+                        "stop_after_consecutive_sl is disabled."
+                    )
 
         except (BrokerAPIError, TelegramFailure) as exc:
             # BUGFIX: this used to also catch the bare TradingSystemError
@@ -498,6 +504,85 @@ def maybe_send_daily_summary(state: dict, now: datetime):
 
 def main():
     config_validation.validate_startup_config()
+
+    # Part 11.5 -- News Intelligence Engine: this process is a one-shot
+    # cron invocation (see module docstring), not a long-running daemon,
+    # so there is no persistent process to run NewsEngine's background
+    # scheduler in. Instead, run ONE synchronous collection cycle here,
+    # before any trade is scanned/decided this run, so
+    # decision_engine/news_adapter.py has fresh cache data to score
+    # against via NewsDecisionAdapter this cycle. Registers providers,
+    # initializes the cache, and validates its own settings.yaml as a
+    # side effect of NewsEngine() construction / collect() -- exactly
+    # the "Initialize News Intelligence during application startup...
+    # Fail gracefully" requirement. Never blocks or fails the run: any
+    # exception here (missing package, bad config, network-down
+    # providers) is logged and swallowed -- the scanner, Decision
+    # Engine, Quant Intelligence, Telegram, dashboard, and monitoring
+    # all continue completely unaffected, exactly as
+    # decision_engine/news_adapter.py's own per-trade degrade-to-
+    # {"enabled": False} path already guarantees for the scoring side.
+    #
+    # Fix (production-readiness review): collect_all() already bounds
+    # each individual provider by its own settings.yaml timeout_seconds
+    # (see news_intelligence/collector/collector.py), but there was no
+    # OVERALL cap on the whole cycle. Since this scanner runs on a tight
+    # 5-15 minute cadence (trader.yml), a hard wall-clock budget here is
+    # a defense-in-depth belt-and-suspenders on top of that, not a
+    # replacement for it: if collection is still running past
+    # NEWS_INTELLIGENCE_COLLECTION_TIMEOUT_SECONDS, main() gives up on
+    # it and moves straight on to scanning trades -- the background
+    # thread is simply abandoned (daemon=True) rather than joined
+    # further, so it can never hold up this run.
+    if config.NEWS_INTELLIGENCE_ENABLED:
+        try:
+            from app.engines.news_intelligence import NewsEngine
+            import concurrent.futures
+
+            # NOT using `with ThreadPoolExecutor(...) as pool:` here --
+            # its __exit__ calls shutdown(wait=True), which would block
+            # until the thread finishes regardless of the .result()
+            # timeout below, defeating the whole point of this guard.
+            # shutdown(wait=False) lets main() move on immediately while
+            # an abandoned collection thread (if any) finishes quietly
+            # in the background and writes its results into the shared
+            # NewsCache singleton for the *next* run to benefit from.
+            _pool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+            _future = _pool.submit(lambda: NewsEngine().collect())
+            try:
+                _news_result = _future.result(
+                    timeout=config.NEWS_INTELLIGENCE_COLLECTION_TIMEOUT_SECONDS
+                )
+                log.info(
+                    "NEWS_INTELLIGENCE_STARTUP collected=%s cache_size=%s",
+                    getattr(_news_result, "collected_count", None),
+                    getattr(_news_result, "cache_size", None),
+                )
+            except concurrent.futures.TimeoutError:
+                log.warning(
+                    "News Intelligence startup collection exceeded %ss budget -- "
+                    "abandoning it for this run (will retry next cycle).",
+                    config.NEWS_INTELLIGENCE_COLLECTION_TIMEOUT_SECONDS,
+                )
+            finally:
+                _pool.shutdown(wait=False)
+        except Exception as exc:  # noqa: BLE001 - startup collection must never block a scan run
+            log.warning("News Intelligence startup collection failed (ignored): %s", exc)
+
+    # Part 9 item 5: read-only pass over config.py's actual VALUES
+    # (duplicate symbols, negative intervals, invalid thresholds/timings)
+    # -- distinct from validate_startup_config() above, which only checks
+    # required env vars/secrets are present. Never raises: logs findings
+    # and continues, so this cannot change this run's outcome either way.
+    try:
+        from production.config_validator import validate_config
+        cfg_report = validate_config()
+        if not cfg_report.is_valid:
+            log.error("config validation found error(s):\n%s", cfg_report.summary())
+        elif cfg_report.warnings:
+            log.warning("config validation found warning(s):\n%s", cfg_report.summary())
+    except Exception as exc:  # noqa: BLE001 - a validator bug must never block a scan run
+        log.warning("config validation could not complete: %s", exc)
 
     if not auth.trading_enabled_today():
         # SKIP_TRADING_TODAY=true -- the user's documented daily opt-out

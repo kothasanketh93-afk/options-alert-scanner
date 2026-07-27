@@ -23,7 +23,7 @@ import subprocess
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-from config import MAX_CONSECUTIVE_SL, MAX_CONCURRENT_TRADES
+from config import MAX_CONSECUTIVE_SL, MAX_CONCURRENT_TRADES, STOP_AFTER_CONSECUTIVE_SL
 
 log = logging.getLogger("trading_system.state")
 
@@ -479,10 +479,20 @@ def record_trade_outcome_for_streak(state: dict, final_status: str):
     resets it. AMBIGUOUS / NOT_ENTERED / EOD_CLOSED / T1_HIT_THEN_EOD /
     T1_HIT_THEN_AMBIGUOUS are deliberately excluded — they're not clean
     losses and shouldn't move the streak either direction.
+
+    consecutive_sl_streak itself is ALWAYS tracked and reported
+    (dashboard/analytics keep working identically either way).
+    Whether crossing MAX_CONSECUTIVE_SL actually trips the circuit
+    breaker (and therefore halts new alerts -- see
+    circuit_breaker_active() / main.py's run_scanner_step()/
+    run_early_breakout_step()) is gated by config.STOP_AFTER_CONSECUTIVE_SL:
+    True (default) is the original, unchanged behaviour; False is for
+    validation/performance-testing runs that should keep scanning and
+    alerting all day regardless of SL streaks.
     """
     if final_status in ("SL_HIT", "T1_THEN_SL"):
         state["consecutive_sl_streak"] += 1
-        if state["consecutive_sl_streak"] >= MAX_CONSECUTIVE_SL:
+        if STOP_AFTER_CONSECUTIVE_SL and state["consecutive_sl_streak"] >= MAX_CONSECUTIVE_SL:
             state["circuit_breaker_tripped"] = True
     elif final_status == "T2_HIT":
         state["consecutive_sl_streak"] = 0

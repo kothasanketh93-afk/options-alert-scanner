@@ -624,24 +624,7 @@ class UpstoxBroker(Broker):
                 continue
             trading_symbol = str(row.get("trading_symbol") or "")
             name_matches = row.get("name") == symbol
-            # CONFIRMED 2026-07-27 via debug_futures_masters.py CI run (live
-            # Upstox NSE.json.gz): trading_symbol for FUT rows is
-            # "<SYMBOL> FUT <DD> <MMM> <YY>" (space-separated, "FUT" as the
-            # SECOND token) -- e.g. "NIFTY FUT 29 SEP 26",
-            # "RECLTD FUT 29 SEP 26". It does NOT end with "FUT" (it ends
-            # with the expiry date), so the old startswith(symbol) +
-            # endswith("FUT") check always evaluated to False for every
-            # stock whose `name` field holds the full company name instead
-            # of the short symbol (i.e. everything except NIFTY/BANKNIFTY/
-            # MIDCPNIFTY, whose `name` already equals the plain symbol) --
-            # this was the root cause of InstrumentNotFound firing for
-            # every STOCK_SYMBOLS entry on 2026-07-27's run.
-            trading_symbol_parts = trading_symbol.split()
-            trading_symbol_matches = (
-                len(trading_symbol_parts) >= 2
-                and trading_symbol_parts[0] == symbol
-                and trading_symbol_parts[1] == "FUT"
-            )
+            trading_symbol_matches = trading_symbol.startswith(symbol) and trading_symbol.endswith("FUT")
             if not (name_matches or trading_symbol_matches):
                 continue
             expiry_raw = row.get("expiry")
