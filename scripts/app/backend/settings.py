@@ -69,6 +69,13 @@ WS_BROADCAST_INTERVAL_SECONDS = _int_env(
 # still catching a genuinely stuck call within a few poll cycles.
 WS_CYCLE_TIMEOUT_SECONDS = _int_env("DASHBOARD_WS_CYCLE_TIMEOUT_SECONDS", 30)
 
+# Part 9 item 7 (API Protection): max seconds any single HTTP request
+# (not the WebSocket loop above -- that's WS_CYCLE_TIMEOUT_SECONDS) is
+# allowed to run before production.api_protection.TimeoutMiddleware
+# aborts it with a 504. This is a read-only monitoring API over local
+# files/state; every route should complete in well under a second.
+API_REQUEST_TIMEOUT_SECONDS = _int_env("DASHBOARD_API_REQUEST_TIMEOUT_SECONDS", 10)
+
 # This process only ever needs read access to the state branch -- it
 # must never be able to create/push it (that's main.py's job on its
 # first-ever run). Passed straight through to

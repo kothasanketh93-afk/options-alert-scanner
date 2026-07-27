@@ -54,6 +54,7 @@ from datetime import datetime, timedelta
 
 from app.backend import settings
 from app.backend.services import scanner_service, health_service, replay_service, error_handling, watchdog
+from production.dashboard_monitor import dashboard_monitor
 
 log = logging.getLogger("trading_system.backend.live_service")
 
@@ -323,6 +324,14 @@ async def poll_loop(manager) -> None:
             for event in events:
                 await manager.broadcast(event)
             _watchdog.cycle_completed()
+            # Part 10 Phase 3 (Dashboard Monitoring): this poll cycle
+            # *is* the dashboard's refresh, so its duration is exactly
+            # what dashboard_monitor.py's "refresh time" metric means
+            # -- read back from the watchdog rather than timed again
+            # here, so there is one source of truth for cycle timing.
+            _cycle_seconds = _watchdog.check(_effective_interval[0])["last_cycle_duration_seconds"]
+            if _cycle_seconds is not None:
+                dashboard_monitor.record_refresh(_cycle_seconds)
         except asyncio.CancelledError:
             raise
         except asyncio.TimeoutError:
