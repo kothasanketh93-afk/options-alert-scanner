@@ -51,6 +51,8 @@ from . import stop_loss as stop_loss_mod
 from . import target as target_mod
 from . import trade_quality as trade_quality_mod
 from . import explanation as explanation_mod
+from . import quant_adapter
+from . import news_adapter
 
 _logger = get_logger("decision_engine")
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -171,6 +173,42 @@ def evaluate(trade: dict, snapshot: dict = None) -> dict:
         )
         if not approved:
             _logger.info(f"DECISION_REJECTED {trade.get('symbol')} {trade.get('direction')}: {rejection_reasons}")
+
+        # Part 11 -- Quant Intelligence Engine: invoked LAST, after every
+        # existing decision has already been made. Mutates decision_object
+        # in place, adding decision_object["quant_intelligence"]; never
+        # changes approved/priority/risk/etc. unless
+        # config.QUANT_INTELLIGENCE_INFLUENCE_ENABLED is explicitly turned
+        # on (default off). quant_adapter.attach() already never raises,
+        # but it's wrapped here too so a hypothetical bug in that optional
+        # add-on can never cost us the Decision Object this function just
+        # spent all that work computing -- see quant_adapter.py's
+        # module docstring.
+        try:
+            quant_adapter.attach(trade, decision_object, snapshot)
+        except Exception as qi_exc:  # noqa: BLE001
+            _logger.error(
+                f"QUANT_INTELLIGENCE_ATTACH_FAILED {trade.get('symbol')} {trade.get('direction')}: "
+                f"{type(qi_exc).__name__}: {qi_exc}", exc_info=True,
+            )
+            decision_object["quant_intelligence"] = {"enabled": False, "error": True, "reason": str(qi_exc)}
+
+        # Part 11.5 -- News Intelligence Engine: invoked after Quant
+        # Intelligence, per the merge spec. Mutates decision_object in
+        # place, adding decision_object["news_intelligence"]; never
+        # changes approved/priority unless
+        # config.NEWS_INTELLIGENCE_INFLUENCE_ENABLED is explicitly turned
+        # on (default off). news_adapter.attach() already never raises,
+        # but it's wrapped here too for the same reason quant_adapter's
+        # call is -- see news_adapter.py's module docstring.
+        try:
+            news_adapter.attach(trade, decision_object, snapshot)
+        except Exception as ni_exc:  # noqa: BLE001
+            _logger.error(
+                f"NEWS_INTELLIGENCE_ATTACH_FAILED {trade.get('symbol')} {trade.get('direction')}: "
+                f"{type(ni_exc).__name__}: {ni_exc}", exc_info=True,
+            )
+            decision_object["news_intelligence"] = {"enabled": False, "error": True, "reason": str(ni_exc)}
 
         return decision_object
 
