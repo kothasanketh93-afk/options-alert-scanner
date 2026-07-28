@@ -163,6 +163,56 @@ def strikes_for(symbol: str, expiry: str, trading_date: str = None) -> list:
     return sorted({r["strike_price"] for r in matches})
 
 
+def nearest_expiry_for(symbol: str, trading_date: str = None) -> str:
+    """
+    Nearest unexpired expiry for `symbol`, resolved from the SAME
+    instrument_master snapshot strikes_for() reads (this run's
+    in-process copy -> today's state-branch cache -> live download,
+    per load_instrument_master()'s own order).
+
+    WHY THIS EXISTS (root cause of the 2026-07-28 live failure): every
+    stock symbol was raising ConfigurationError ("no instrument_master
+    strikes AND no STRIKE_STEP fallback entry") even though
+    instrument_master.py itself had no error to log. The reason:
+    option_chain.get_atm_strike() was calling option_chain.current_expiry()
+    -- which goes through Broker.get_current_expiry() (angelone.py/
+    upstox.py), a SEPARATE live/in-process read of the broker's own
+    scrip master, not the persisted instrument_master snapshot -- and
+    then handing that expiry to strikes_for(), which reads the
+    DIFFERENT persisted/cached snapshot. Those two reads of "today's
+    instrument master" can drift (e.g. this run's live broker fetch
+    already reflects a rolled-over monthly stock series that the
+    premarket-persisted cache doesn't have yet, or vice versa) --
+    when they do, Broker.get_current_expiry() returns a real, valid
+    expiry that simply has zero matching rows in the OTHER snapshot,
+    so strikes_for() comes back empty with nothing to except/log, and
+    every stock silently falls through to the STOCK_STEP fallback
+    (which validation-mode symbols deliberately don't have) and raises.
+    Indices weren't affected because their expiries (weekly refresh)
+    are far less likely to have just rolled between the two reads than
+    a stock's month-apart series.
+
+    Sourcing the expiry from the SAME snapshot strikes_for() uses
+    guarantees any expiry this returns has rows behind it in that
+    snapshot -- no more cross-snapshot drift possible. Returns None
+    (not an exception) if this snapshot has no upcoming expiry for
+    `symbol` yet -- callers should fall back to
+    option_chain.current_expiry() in that case (live broker data is
+    better than nothing when this snapshot itself is genuinely stale/
+    missing), same "degrade, don't go dark" posture as the rest of
+    this module.
+    """
+    trading_date = trading_date or today_str()
+    rows = load_instrument_master(trading_date)
+    expiries = sorted({
+        r["expiry"] for r in rows
+        if (r.get("underlying_symbol") == symbol or r.get("symbol") == symbol)
+        and r.get("contract_class") in ("INDEX_OPTION", "STOCK_OPTION")
+        and r.get("expiry") and r["expiry"] >= trading_date
+    })
+    return expiries[0] if expiries else None
+
+
 def nearest_atm_and_offsets(symbol: str, spot_price: float, n_each_side: int,
                              trading_date: str = None, expiry: str = None) -> dict:
     """

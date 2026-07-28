@@ -299,7 +299,16 @@ def get_atm_strike(symbol: str):
 
     try:
         import instrument_master
-        expiry = current_expiry(symbol)
+        # Resolve expiry from the SAME instrument_master snapshot
+        # strikes_for() below reads, not from current_expiry()'s
+        # separate live broker read -- see nearest_expiry_for()'s
+        # docstring for why mixing the two silently emptied every
+        # stock's strike lookup (live 2026-07-28 failure). Falls back
+        # to current_expiry() only if this snapshot itself has nothing
+        # for the symbol yet.
+        expiry = instrument_master.nearest_expiry_for(symbol, instrument_master.today_str())
+        if expiry is None:
+            expiry = current_expiry(symbol)
         strikes = instrument_master.strikes_for(symbol, expiry, instrument_master.today_str())
         if strikes:
             nearest = min(strikes, key=lambda s: abs(s - spot_price))
