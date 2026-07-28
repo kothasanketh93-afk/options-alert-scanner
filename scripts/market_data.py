@@ -9,7 +9,7 @@ what scanner.py, tracker.py, and main.py already call, so introducing
 the broker abstraction (and later, failover) required ZERO changes to
 those three files.
 
-_broker is a FailoverBroker (Angel One primary, Upstox fallback, as of
+_broker is a FailoverBroker (Upstox primary, Angel One fallback, as of
 2026-07-29 -- see history below) -- see broker_failover.py's module
 docstring for the failover design. Everything in this file that calls
 _broker.* automatically gets failover for free, since FailoverBroker
@@ -48,22 +48,28 @@ doesn't re-discover it the hard way:
     Upstox mid-run anyway -- so Upstox was already doing the real work
     that run, just one step later and one BROKER SWITCH log line later
     than necessary.
-  - SWAPPED BACK 2026-07-29 (explicit request) -- Angel One primary
-    again, Upstox fallback. NOTE FOR WHOEVER EDITS THIS NEXT: this is
-    the third swap in the same direction inside 9 days, and the last
-    two times Angel One held primary (2026-07-21 era and 2026-07-23 ->
-    2026-07-28), it was moved back off primary each time for the SAME
-    documented reason -- getCandleData rate-limiting even under
-    conservative, correctly-implemented throttling
-    (config.ANGELONE_HISTORICAL_MAX_CALLS_PER_MINUTE, well under Angel
-    One's own documented 180/min cap), including on a fresh process's
-    very first call. Nothing about that root cause has changed as of
-    this swap -- no new throttle fix, no confirmation from Angel One
-    support that the account-level limit was addressed. If the same
-    "400/403 rate limited" pattern reappears in a live CI log after
-    this swap, that is not a new problem to re-diagnose -- it is the
-    same one, for the same reason, again. Same one-line fix either
-    direction: swap the constructor args below back to Upstox primary.
+  - BRIEFLY SWAPPED TO ANGEL ONE PRIMARY 2026-07-29, REVERTED SAME DAY:
+    tried per explicit request; reverted after confirming (SmartAPI
+    forum, 2026-07-29) that OTHER accounts unrelated to this project
+    independently report the SAME "exceeding access rate" 403 while
+    staying 3-4x UNDER Angel One's own published per-second limit --
+    i.e. this is a server-side enforcement bug on Angel One's end
+    (which their own team has acknowledged but not confirmed fixed),
+    not something any client-side throttle change here can reliably
+    work around. Decision: STAY on Upstox primary going forward --
+    every one of the last two head-to-head incidents (2026-07-21,
+    2026-07-28) resolved the same way, Upstox has served every request
+    reliably both times, and this project places no orders (Telegram
+    alerts only) and uses no Angel One capability Upstox lacks (candles,
+    option chain, and delta/theta greeks are all available from Upstox
+    too -- see upstox.py) -- so there is no functional reason for Angel
+    One to ever be primary here. Angel One stays wired in as a genuine
+    fallback for whatever a real Upstox outage might need. Do NOT swap
+    this back to Angel One primary without a confirmation from Angel
+    One support that the account/endpoint-level rate-limit enforcement
+    bug referenced above has actually been fixed -- "the throttle looks
+    more conservative now" is not that confirmation; both 2026-07-23
+    and 2026-07-29 believed exactly that going in.
 """
 
 from angelone import AngelOneBroker
@@ -76,10 +82,10 @@ from cache import TTLCache
 # angelone.py/upstox.py's instrument-master/option-chain caching
 # actually useful (see cache.py's docstring for why that scope is the
 # right one). FailoverBroker always starts fresh on "primary"
-# (Angel One, as of 2026-07-29 -- see module docstring above) every run.
+# (Upstox, as of 2026-07-29 -- see module docstring above) every run.
 _angelone = AngelOneBroker()
 _upstox = UpstoxBroker()
-_broker = FailoverBroker(_angelone, "AngelOne", _upstox, "Upstox")
+_broker = FailoverBroker(_upstox, "Upstox", _angelone, "AngelOne")
 
 # Underlying-index candles (NOT option candles) are frequently requested
 # more than once per run for the identical (instrument_key, interval)
