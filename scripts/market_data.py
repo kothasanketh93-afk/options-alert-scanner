@@ -9,8 +9,8 @@ what scanner.py, tracker.py, and main.py already call, so introducing
 the broker abstraction (and later, failover) required ZERO changes to
 those three files.
 
-_broker is a FailoverBroker (Upstox primary, Angel One fallback, as of
-2026-07-28 -- see history below) -- see broker_failover.py's module
+_broker is a FailoverBroker (Angel One primary, Upstox fallback, as of
+2026-07-29 -- see history below) -- see broker_failover.py's module
 docstring for the failover design. Everything in this file that calls
 _broker.* automatically gets failover for free, since FailoverBroker
 implements the same Broker interface as any single concrete broker.
@@ -47,13 +47,23 @@ doesn't re-discover it the hard way:
     tripping FAILOVER_CONSECUTIVE_FAILURE_THRESHOLD and switching to
     Upstox mid-run anyway -- so Upstox was already doing the real work
     that run, just one step later and one BROKER SWITCH log line later
-    than necessary. Making it primary removes that guaranteed first-call
-    failure + switch on every run instead of only the runs where Angel
-    One happens to recover. If Upstox itself starts showing sustained
-    failures instead, swap the constructor args below back to Angel One
-    primary -- same one-line change either direction, no other file
-    needs to know or care which broker is active (see FailoverBroker's
-    own docstring in broker_failover.py).
+    than necessary.
+  - SWAPPED BACK 2026-07-29 (explicit request) -- Angel One primary
+    again, Upstox fallback. NOTE FOR WHOEVER EDITS THIS NEXT: this is
+    the third swap in the same direction inside 9 days, and the last
+    two times Angel One held primary (2026-07-21 era and 2026-07-23 ->
+    2026-07-28), it was moved back off primary each time for the SAME
+    documented reason -- getCandleData rate-limiting even under
+    conservative, correctly-implemented throttling
+    (config.ANGELONE_HISTORICAL_MAX_CALLS_PER_MINUTE, well under Angel
+    One's own documented 180/min cap), including on a fresh process's
+    very first call. Nothing about that root cause has changed as of
+    this swap -- no new throttle fix, no confirmation from Angel One
+    support that the account-level limit was addressed. If the same
+    "400/403 rate limited" pattern reappears in a live CI log after
+    this swap, that is not a new problem to re-diagnose -- it is the
+    same one, for the same reason, again. Same one-line fix either
+    direction: swap the constructor args below back to Upstox primary.
 """
 
 from angelone import AngelOneBroker
@@ -66,10 +76,10 @@ from cache import TTLCache
 # angelone.py/upstox.py's instrument-master/option-chain caching
 # actually useful (see cache.py's docstring for why that scope is the
 # right one). FailoverBroker always starts fresh on "primary"
-# (Upstox, as of 2026-07-28 -- see module docstring above) every run.
+# (Angel One, as of 2026-07-29 -- see module docstring above) every run.
 _angelone = AngelOneBroker()
 _upstox = UpstoxBroker()
-_broker = FailoverBroker(_upstox, "Upstox", _angelone, "AngelOne")
+_broker = FailoverBroker(_angelone, "AngelOne", _upstox, "Upstox")
 
 # Underlying-index candles (NOT option candles) are frequently requested
 # more than once per run for the identical (instrument_key, interval)
