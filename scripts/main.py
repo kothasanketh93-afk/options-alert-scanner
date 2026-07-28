@@ -553,10 +553,17 @@ def main():
                 _news_result = _future.result(
                     timeout=config.NEWS_INTELLIGENCE_COLLECTION_TIMEOUT_SECONDS
                 )
+                # Fix: CollectionResult (news_intelligence/collector/collector.py)
+                # exposes new_items/duplicates_skipped/provider_errors, not
+                # collected_count/cache_size -- the previous getattr(...) calls
+                # always silently returned None for both, making this log line
+                # useless for observability without ever raising or being
+                # noticed. Corrected to read the fields that actually exist.
                 log.info(
-                    "NEWS_INTELLIGENCE_STARTUP collected=%s cache_size=%s",
-                    getattr(_news_result, "collected_count", None),
-                    getattr(_news_result, "cache_size", None),
+                    "NEWS_INTELLIGENCE_STARTUP new_items=%s duplicates_skipped=%s provider_errors=%s",
+                    len(getattr(_news_result, "new_items", [])),
+                    getattr(_news_result, "duplicates_skipped", None),
+                    getattr(_news_result, "provider_errors", None) or "none",
                 )
             except concurrent.futures.TimeoutError:
                 log.warning(
