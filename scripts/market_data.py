@@ -81,6 +81,21 @@ _broker = FailoverBroker(_upstox, "Upstox", _angelone, "AngelOne")
 # broker again.
 _underlying_candle_cache = TTLCache(ttl_seconds=180)
 
+# NEGATIVE cache, companion to _underlying_candle_cache above (2026-07-28,
+# live CI: same run's scanner.py AND early_breakout engine both call
+# get_recent_underlying_candles() for the same (instrument_key, interval)
+# -- when the broker call fails (e.g. Angel One rate-limited), nothing
+# gets stored in _underlying_candle_cache (only successes are), so the
+# SECOND caller re-attempts the exact same already-failing broker call,
+# burning another RETRY_MAX_ATTEMPTS worth of retries against an
+# endpoint that's already known-bad for this run. This remembers a
+# recent failure for a short TTL (shorter than _underlying_candle_cache's,
+# since a broker/rate-limit issue can clear faster than the successful-
+# data TTL implies) and re-raises the SAME exception immediately instead
+# of re-hitting the broker -- saves both wall-clock time and API-call
+# budget on an endpoint already under strain.
+_underlying_candle_failure_cache = TTLCache(ttl_seconds=60)
+
 # BUGFIX (2026-07-23, live perf issue): scanner.score_strike() was
 # calling market_data.get_broker().get_option_chain() directly, once
 # PER STRIKE scored -- up to 3 moneyness buckets x up to 2 directions
@@ -153,11 +168,24 @@ def get_recent_underlying_candles(instrument_key: str, interval: str, count: int
     calls with different `count` values for the same
     (instrument_key, interval) can safely share one cached fetch and
     just slice it differently.
+
+    A recent failure for this (instrument_key, interval) is also
+    remembered briefly (see _underlying_candle_failure_cache above) --
+    a second caller within that window gets the same exception
+    re-raised immediately instead of re-hitting an already-failing
+    broker call.
     """
     cache_key = (instrument_key, interval)
     candles = _underlying_candle_cache.get(cache_key)
     if candles is None:
-        candles = _broker.get_candles(instrument_key, interval)
+        cached_failure = _underlying_candle_failure_cache.get(cache_key)
+        if cached_failure is not None:
+            raise cached_failure
+        try:
+            candles = _broker.get_candles(instrument_key, interval)
+        except Exception as exc:
+            _underlying_candle_failure_cache.set(cache_key, exc)
+            raise
         _underlying_candle_cache.set(cache_key, candles)
     return candles[-count:] if len(candles) > count else candles
 
