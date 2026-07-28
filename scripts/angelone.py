@@ -669,11 +669,29 @@ class AngelOneBroker(Broker):
                 suffix = trading_symbol[-2:]
                 option_type = suffix if suffix in ("CE", "PE") else None
 
+            # BUGFIX (live failure, 2026-07-28, see
+            # resolve_equity_instrument_key()'s docstring for the full
+            # story): Angel One's real scrip master leaves
+            # instrumenttype EMPTY ("") for cash-equity rows rather
+            # than "EQ" -- the old `raw_type or "UNKNOWN"` fallback
+            # therefore mapped every real equity row to "UNKNOWN"
+            # instead of "EQUITY", which silently broke
+            # opportunity_score._resolve_instrument_key()'s
+            # contract_class=="EQUITY" lookup for every stock. An
+            # empty/missing instrumenttype on an NSE-segment row whose
+            # trading symbol ends "-EQ" is Angel One's actual cash-
+            # equity signature; every other blank/unrecognized
+            # raw_type still falls through to "UNKNOWN" as before.
+            is_cash_equity = (
+                raw_type in ("EQ", "", None)
+                and exch_seg == "NSE"
+                and (trading_symbol or "").endswith("-EQ")
+            )
             contract_class = {
                 "OPTIDX": "INDEX_OPTION", "OPTSTK": "STOCK_OPTION",
                 "FUTIDX": "INDEX_FUTURE", "FUTSTK": "STOCK_FUTURE",
                 "EQ": "EQUITY",
-            }.get(raw_type, raw_type or "UNKNOWN")
+            }.get(raw_type, "EQUITY" if is_cash_equity else (raw_type or "UNKNOWN"))
 
             expiry_native = row.get("expiry")
             expiry_iso = None
@@ -856,37 +874,45 @@ class AngelOneBroker(Broker):
         method of the same name for the "why resolve dynamically
         instead of hardcoding" reasoning; same logic applies here.
 
-        Matches on "name" == symbol first (Angel One's convention
-        generally puts the plain symbol there for equities, unlike
-        Upstox -- see the BUGFIX note in upstox.py's version of this
-        method for why that field can't be trusted blindly across
-        brokers). Falls back to "symbol" == "<SYMBOL>-EQ", Angel One's
-        other common convention for the equity trading symbol field,
-        in case a given scrip master snapshot doesn't populate "name"
-        the expected way. STILL UNVERIFIED against a live download --
-        confirm before depending on this live, the same way the
-        Upstox equity match just needed a live-failure fix to get right.
+        Matches on "symbol" == "<SYMBOL>-EQ" first -- Angel One's cash-
+        equity trading-symbol convention -- then falls back to "name"
+        == symbol for any snapshot that doesn't populate "symbol" the
+        expected way.
+
+        BUGFIX (live failure, 2026-07-28): this used to pre-filter rows
+        on `instrumenttype == "EQ"` before either name/symbol check.
+        Confirmed live: Angel One's real scrip master leaves
+        `instrumenttype` EMPTY ("") for cash-equity rows -- "EQ" is
+        not a value that actually appears there -- so that pre-filter
+        matched ZERO rows and every stock symbol (RELIANCE, HDFCBANK,
+        ICICIBANK, SBIN, ...) raised InstrumentNotFound regardless of
+        spelling. Now accepts instrumenttype in ("EQ", "", None) so
+        this works whether a given snapshot populates "EQ" explicitly
+        or leaves it blank, and matches primarily on the "-EQ" symbol
+        suffix (Angel One's actual documented convention for cash
+        equity trading symbols) rather than relying on instrumenttype
+        to identify the row at all.
         """
         master = self._scrip_master()
         eq_rows = [
             row for row in master
-            if row.get("instrumenttype") == "EQ" and row.get("exch_seg") == "NSE"
+            if row.get("instrumenttype") in ("EQ", "", None) and row.get("exch_seg") == "NSE"
         ]
-        for row in eq_rows:
-            if row.get("name") == symbol:
-                token = row.get("token")
-                if token:
-                    return f"NSE|{token}"
         for row in eq_rows:
             if row.get("symbol") == f"{symbol}-EQ":
                 token = row.get("token")
                 if token:
                     return f"NSE|{token}"
+        for row in eq_rows:
+            if row.get("name") == symbol:
+                token = row.get("token")
+                if token:
+                    return f"NSE|{token}"
         raise InstrumentNotFound(
             f"no NSE equity token found for '{symbol}' in the Angel One scrip "
-            f"master (checked 'name' == '{symbol}' and 'symbol' == "
-            f"'{symbol}-EQ' on instrumenttype=='EQ' rows) -- confirm the "
-            f"symbol spelling and that an EQ row exists for it at all"
+            f"master (checked 'symbol' == '{symbol}-EQ' and 'name' == "
+            f"'{symbol}' on instrumenttype in ('EQ', '', None) rows) -- confirm "
+            f"the symbol spelling and that an EQ row exists for it at all"
         )
 
     def resolve_current_month_future(self, symbol: str) -> str:
