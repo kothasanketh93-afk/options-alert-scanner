@@ -757,12 +757,17 @@ MARKET_CLOSE_HHMM_HEARTBEAT = (15, 30)
 STARTUP_GRACE_MIN = 15    # skip staleness check for this long after market open
 
 # --- Broker failover (broker_failover.py) ---
-# Switch from Angel One (primary) to Upstox (fallback) after this many
-# CONSECUTIVE failed calls to Angel One within a single run. Kept low
-# (not e.g. 10) because every failed call already burns
-# RETRY_MAX_ATTEMPTS retries on its own before counting as one
-# failure here -- by the time this threshold is reached, Angel One
-# has already failed (3 retries x this many) times, not just this many.
+# Switch from the primary broker to the fallback broker (Upstox
+# primary, Angel One fallback as of 2026-07-28 -- see market_data.py's
+# module docstring for the full swap history and reasoning; this
+# comment previously said "Angel One (primary) to Upstox (fallback)",
+# which was accurate at the time but went stale after the 2026-07-28
+# swap back) after this many CONSECUTIVE failed calls to the primary
+# within a single run. Kept low (not e.g. 10) because every failed
+# call already burns RETRY_MAX_ATTEMPTS retries on its own before
+# counting as one failure here -- by the time this threshold is
+# reached, the primary has already failed (3 retries x this many)
+# times, not just this many.
 FAILOVER_CONSECUTIVE_FAILURE_THRESHOLD = 2
 
 # A candle/quote is considered "stale" (and treated as a failure for
@@ -770,7 +775,18 @@ FAILOVER_CONSECUTIVE_FAILURE_THRESHOLD = 2
 # during market hours -- catches a broker returning HTTP 200 with
 # genuinely stale data (no error to retry on) rather than an outright
 # failure.
-STALE_DATA_THRESHOLD_MIN = 10
+#
+# WIDENED 10 -> 15 (live CI, 2026-07-28): a 15-min candle only 26
+# minutes old (effective threshold was 10+15=25) tripped this and
+# triggered an unnecessary Upstox -> Angel One failover mid-run --
+# 1 minute past a threshold that tight is far more consistent with
+# ordinary candle-publish/network lag than a genuine Upstox outage,
+# and every spurious failover just shifts load onto Angel One, which
+# is already the fragile side of this pair (see market_data.py's
+# docstring). New effective threshold: 15+15=30 min for a 15-min
+# candle -- still catches a real outage well within a run, with
+# actual headroom over normal publish lag.
+STALE_DATA_THRESHOLD_MIN = 15
 
 # --- Network retry (market_data.py, telegram_notify.py) ---
 # Retry only transient failures (connection errors, timeouts, rate
