@@ -9,14 +9,13 @@ what scanner.py, tracker.py, and main.py already call, so introducing
 the broker abstraction (and later, failover) required ZERO changes to
 those three files.
 
-_broker is a FailoverBroker (Angel One primary, Upstox fallback) --
-see broker_failover.py's module docstring for the failover design.
-Everything in this file that calls _broker.* automatically gets
-failover for free, since FailoverBroker implements the same Broker
-interface as any single concrete broker.
+_broker is a FailoverBroker (Upstox primary, Angel One fallback, as of
+2026-07-28 -- see history below) -- see broker_failover.py's module
+docstring for the failover design. Everything in this file that calls
+_broker.* automatically gets failover for free, since FailoverBroker
+implements the same Broker interface as any single concrete broker.
 
-SWAPPED BACK 2026-07-23 (explicit request) -- Angel One is primary
-again, Upstox fallback. History, so the next person editing this
+History of which broker is primary, so the next person editing this
 doesn't re-discover it the hard way:
   - Originally Angel One primary.
   - SWAPPED 2026-07-21: Angel One's getCandleData (historical candle)
@@ -36,14 +35,25 @@ doesn't re-discover it the hard way:
     real 60-second-window cap (config.ANGELONE_HISTORICAL_MAX_CALLS_PER_MINUTE,
     see angelone.py's _throttle_historical_call()) -- modeled on
     OpenAlgo's (github.com/marketcalls/openalgo) own fix for the same
-    class of problem. This is NOT a confirmed fix -- Angel One's own
-    SmartAPI forum separately admits their rate-limit enforcement is
-    inconsistent even for well-under-limit clients, so the original
-    root cause may or may not actually be addressed. Watch the first
-    several live runs' logs for "Access denied because of exceeding
-    access rate" / empty-body 400s on Angel One calls specifically --
-    if it recurs, swap the constructor args below back to Upstox
-    primary again (same one-line change either direction).
+    class of problem. This was NOT a confirmed fix -- Angel One's own
+    SmartAPI forum separately admitted their rate-limit enforcement was
+    inconsistent even for well-under-limit clients.
+  - SWAPPED BACK 2026-07-28 (explicit request) -- Upstox primary again,
+    Angel One fallback. The 2026-07-23 throttle strengthening above did
+    NOT hold: live CI logs from 2026-07-28 show getCandleData hit
+    "400 rate limited by
+    https://apiconnect.angelone.in/rest/secure/angelbroking/historical/v1/getCandleData"
+    on the run's very first two consecutive Angel One calls again,
+    tripping FAILOVER_CONSECUTIVE_FAILURE_THRESHOLD and switching to
+    Upstox mid-run anyway -- so Upstox was already doing the real work
+    that run, just one step later and one BROKER SWITCH log line later
+    than necessary. Making it primary removes that guaranteed first-call
+    failure + switch on every run instead of only the runs where Angel
+    One happens to recover. If Upstox itself starts showing sustained
+    failures instead, swap the constructor args below back to Angel One
+    primary -- same one-line change either direction, no other file
+    needs to know or care which broker is active (see FailoverBroker's
+    own docstring in broker_failover.py).
 """
 
 from angelone import AngelOneBroker
@@ -56,10 +66,10 @@ from cache import TTLCache
 # angelone.py/upstox.py's instrument-master/option-chain caching
 # actually useful (see cache.py's docstring for why that scope is the
 # right one). FailoverBroker always starts fresh on "primary"
-# (Angel One, as of 2026-07-23 -- see module docstring above) every run.
+# (Upstox, as of 2026-07-28 -- see module docstring above) every run.
 _angelone = AngelOneBroker()
 _upstox = UpstoxBroker()
-_broker = FailoverBroker(_angelone, "AngelOne", _upstox, "Upstox")
+_broker = FailoverBroker(_upstox, "Upstox", _angelone, "AngelOne")
 
 # Underlying-index candles (NOT option candles) are frequently requested
 # more than once per run for the identical (instrument_key, interval)
