@@ -75,3 +75,44 @@ jobs:
           # on a day nothing should run" section.
           SKIP_TRADING_TODAY: ${{ vars.SKIP_TRADING_TODAY }}
         run: python scripts/premarket_check.py
+
+      # ADDED: this step was documented in build_instrument_master_cache.py's
+      # own module docstring ("runs from a new step in premarket.yml, right
+      # alongside premarket_check.py") but was never actually wired into this
+      # workflow -- so instrument_master's daily cache never got built, and
+      # every trader.yml run fell back to STOCK_STRIKE_STEP, which has no
+      # entry for the current VALIDATION_STOCK_UNIVERSE stocks by design.
+      # Best-effort/non-fatal (see the script's own FAILURE POSTURE note),
+      # so this can't fail the job even on a bad broker day.
+      - name: Build instrument master cache
+        env:
+          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+          ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
+          UPSTOX_ACCESS_TOKEN: ${{ secrets.UPSTOX_ACCESS_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_URL: https://github.com/${{ github.repository }}.git
+          SKIP_TRADING_TODAY: ${{ vars.SKIP_TRADING_TODAY }}
+        run: python scripts/build_instrument_master_cache.py
+
+      # ADDED: build_opportunity_shortlist.py's own docstring says it must
+      # run "AFTER build_instrument_master_cache.py's step" -- same reason,
+      # never wired in, so Phase 1 shortlisting silently fell back to
+      # FALLBACK_STOCK_WATCHLIST every day instead of running for real.
+      # Also best-effort/non-fatal.
+      - name: Build opportunity shortlist
+        env:
+          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+          ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
+          UPSTOX_ACCESS_TOKEN: ${{ secrets.UPSTOX_ACCESS_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_URL: https://github.com/${{ github.repository }}.git
+          SKIP_TRADING_TODAY: ${{ vars.SKIP_TRADING_TODAY }}
+        run: python scripts/build_opportunity_shortlist.py
