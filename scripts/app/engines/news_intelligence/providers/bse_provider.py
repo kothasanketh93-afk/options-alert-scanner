@@ -36,7 +36,25 @@ class BSEProvider(BaseProvider):
         )
         if not payload:
             return []
-        items = payload.get("Table", payload if isinstance(payload, list) else [])
+        # Fix (live CI failure, 2026-07-28): BSE's API does not always
+        # return a JSON object -- observed live response included a bare
+        # JSON string (e.g. an error/notice body) instead of the usual
+        # {"Table": [...]} shape. Calling .get() on that raised
+        # AttributeError: 'str' object has no attribute 'get', which
+        # collector.py's own try/except caught (so the run itself was
+        # never at risk -- see collector.py's _run_one_provider() "never
+        # raise" contract), but it silently zeroed out this provider for
+        # the whole cycle. Now explicitly handles all three shapes BSE
+        # can return: a dict with "Table", a bare list, or anything else
+        # (str, int, None, ...) -- which degrades to an empty list
+        # instead of raising.
+        if isinstance(payload, dict):
+            items = payload.get("Table", [])
+        elif isinstance(payload, list):
+            items = payload
+        else:
+            _logger.warning(f"NEWS_PROVIDER BSE unexpected payload type: {type(payload).__name__}")
+            return []
         if not isinstance(items, list):
             _logger.warning("NEWS_PROVIDER BSE unexpected payload shape")
             return []
