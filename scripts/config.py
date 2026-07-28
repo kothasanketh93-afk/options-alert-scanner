@@ -757,16 +757,15 @@ MARKET_CLOSE_HHMM_HEARTBEAT = (15, 30)
 STARTUP_GRACE_MIN = 15    # skip staleness check for this long after market open
 
 # --- Broker failover (broker_failover.py) ---
-# Switch from the primary broker to the fallback broker (Angel One
-# primary, Upstox fallback as of 2026-07-29 -- see market_data.py's
+# Switch from the primary broker to the fallback broker (Upstox
+# primary, Angel One fallback as of 2026-07-29 -- see market_data.py's
 # module docstring for the full swap history and reasoning, including
-# the two prior attempts at Angel One primary that were both reverted
-# for the same rate-limiting reason) after this many CONSECUTIVE
-# failed calls to the primary within a single run. Kept low (not e.g.
-# 10) because every failed call already burns RETRY_MAX_ATTEMPTS
-# retries on its own before counting as one failure here -- by the
-# time this threshold is reached, the primary has already failed
-# (3 retries x this many) times, not just this many.
+# why Angel One is staying off primary going forward) after this many
+# CONSECUTIVE failed calls to the primary within a single run. Kept
+# low (not e.g. 10) because every failed call already burns
+# RETRY_MAX_ATTEMPTS retries on its own before counting as one
+# failure here -- by the time this threshold is reached, the primary
+# has already failed (3 retries x this many) times, not just this many.
 FAILOVER_CONSECUTIVE_FAILURE_THRESHOLD = 2
 
 # A candle/quote is considered "stale" (and treated as a failure for
