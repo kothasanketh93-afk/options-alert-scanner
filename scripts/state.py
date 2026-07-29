@@ -203,6 +203,10 @@ def load_state(date_str: str = None) -> dict:
     loaded.setdefault("probability_history", {})
     loaded.setdefault("daily_stats", _EMPTY_DAILY_STATS.copy())
     loaded.setdefault("next_display_num", len(loaded.get("trades", {})))
+    # Phase 6 (intraday_rerank.py): which of today's config.RERANK_TIMES
+    # slots have already been applied -- same backfill-old-files pattern
+    # as every other field above.
+    loaded.setdefault("rerank_slots_done", [])
     for trade in loaded.get("trades", {}).values():
         trade.setdefault("streak_counted", False)
         trade.setdefault("display_label", trade.get("trade_id", "Trade ?"))
@@ -231,6 +235,10 @@ def _fresh_state(date_str: str) -> dict:
         # overwritten). Reset for free every day since this whole file
         # is date-keyed and starts fresh each morning.
         "daily_stats": _EMPTY_DAILY_STATS.copy(),
+        # Phase 6 (intraday_rerank.py): HH:MM strings from today's
+        # config.RERANK_TIMES that have already been applied -- stops a
+        # slot being re-applied by a second run landing in the same window.
+        "rerank_slots_done": [],
     }
 
 

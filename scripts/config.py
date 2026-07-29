@@ -275,6 +275,57 @@ TOP_N_STOCKS = 20  # narrowed from 35 to 20 (2026-07-24) -- fewer, higher-liquid
 USE_DYNAMIC_FNO_UNIVERSE = True
 DYNAMIC_UNIVERSE_TOP_N = 150
 
+# TOP_STOCK_COUNT is the requested config name for "how many stocks make
+# today's SCAN_UNIVERSE" -- deliberately NOT a second independent
+# variable. It's the same knob as TOP_N_STOCKS above (opportunity_score.
+# build_shortlist() already slices scored[:TOP_N_STOCKS]); duplicating it
+# under a second name would just create two numbers that can silently
+# drift apart. Change TOP_N_STOCKS above; TOP_STOCK_COUNT always mirrors it.
+TOP_STOCK_COUNT = TOP_N_STOCKS
+
+# --- Phase 6 (2026-07-29): intraday dynamic re-ranking ---
+# Extends Phase 1 (premarket opportunity_score.build_shortlist(), which
+# still runs once before market open and seeds the day's SCAN_UNIVERSE)
+# with periodic INTRADAY re-scoring of the SAME MASTER_UNIVERSE/dynamic
+# F&O pool, so a stock that goes cold (or hot) after the open can be
+# swapped out of (into) SCAN_UNIVERSE without any manual watchlist edit.
+# See intraday_rerank.py for the run logic; this block is config only.
+#
+# ENABLE_INTRADAY_RERANK: master on/off switch. False -> today behaves
+# exactly like before this change (one shortlist, computed premarket,
+# used all day) -- flip to False to instantly revert to the old behavior
+# with no other code changes needed.
+ENABLE_INTRADAY_RERANK = True
+
+# INITIAL_RANK_TIME: informational/documentation constant for WHEN the
+# day's first SCAN_UNIVERSE becomes live. The actual first ranking is
+# still opportunity_score.build_shortlist()'s premarket run (see
+# build_opportunity_shortlist.py) -- trader.yml's first scan tick of the
+# day (nominally 09:30, right after the first 15-minute candle closes)
+# is simply the first run that PICKS UP that shortlist via
+# config.refresh_symbols_for_today(). Kept as an explicit config value
+# (rather than a bare comment) so a schedule change only needs this one
+# edit, and so intraday_rerank.py can log/verify today's first scan tick
+# landed at or after this time.
+INITIAL_RANK_TIME = "09:30"
+
+# RERANK_TIMES: the HH:MM (IST, 24h) marks at which SCAN_UNIVERSE is
+# recomputed from a fresh, live re-score of the full universe/dynamic
+# F&O pool. Every entry must land inside a trader.yml scan window (see
+# that workflow's schedule comment) or it will simply be picked up by
+# the next run after it, same as any other tick. Add/remove/reorder
+# freely -- nothing else needs to change.
+RERANK_TIMES = ["11:30", "13:30", "14:30"]
+
+# A trader.yml run fires every 5 minutes in the active windows but only
+# every 15 minutes during the 11:35-13:45 lunch gap -- RERANK_WINDOW_
+# MINUTES is how close (in minutes, either side) a run's clock time must
+# be to a RERANK_TIMES entry to count as THAT slot's rerank. 10 covers
+# the widest (15-minute) run cadence with room to spare; a run further
+# than this from every RERANK_TIMES entry does no reranking at all, just
+# the normal scan with the currently-live SCAN_UNIVERSE.
+RERANK_WINDOW_MINUTES = 10
+
 # Each ceiling is "the input value that earns the FULL weight for that
 # factor" -- e.g. OPP_SCORE_RVOL_CEILING=3.0 means 3x average volume
 # already earns full marks on the Relative Volume factor; going higher

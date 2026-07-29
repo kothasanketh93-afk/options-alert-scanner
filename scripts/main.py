@@ -619,6 +619,20 @@ def main():
 
     state = state_mod.load_state(date_str)
 
+    # Phase 6 (intraday_rerank.py): if this run's clock time lands in one
+    # of config.RERANK_TIMES's windows, re-score the universe and swap
+    # config.STOCK_SYMBOLS/SYMBOLS in place BEFORE run_scanner_step()
+    # below -- so this same run's option-chain scan already uses the
+    # freshly re-ranked SCAN_UNIVERSE. Best-effort: any failure here
+    # leaves SCAN_UNIVERSE exactly as config.refresh_symbols_for_today()
+    # just set it, never blocks the rest of the run.
+    try:
+        import intraday_rerank
+        intraday_rerank.maybe_rerank(state, now)
+    except Exception as exc:
+        log.error("Intraday rerank step failed (%s: %s) -- continuing with "
+                   "the current SCAN_UNIVERSE.", type(exc).__name__, exc, exc_info=True)
+
     if state.pop("_recovered_from_corruption", False):
         log.error("State file was corrupted and recovered fresh for %s -- "
                    "any trades tracked earlier today were lost from state.", date_str)
