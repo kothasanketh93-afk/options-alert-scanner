@@ -5,8 +5,27 @@ name: Debug Instrument Masters
 # downloads, so this can be triggered anytime, market open or not. Output is
 # written to the run's Job Summary and uploaded as an artifact so it's easy
 # to copy/paste back for review without digging through raw logs.
+#
+# MERGED 2026-07-29: this workflow used to be two ("debug-instrument-master"
+# ran debug_futures_masters.py, this one ran debug_instrument_masters.py) --
+# both were manual-only diagnostics downloading the same public Upstox
+# master independently. debug_futures_masters.py's futures-row diagnostic
+# is now Section 2 of debug_instrument_masters.py (run_futures_diagnostic())
+# -- same output, same symbol lists, nothing dropped -- so one workflow now
+# covers both. `section` lets you run just one half if you only need one,
+# same as the two separate workflows used to let you do implicitly.
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      section:
+        description: "Which diagnostic section(s) to run"
+        required: false
+        default: "both"
+        type: choice
+        options:
+          - both
+          - equity-options-only
+          - futures-only
 
 jobs:
   debug-instrument-masters:
@@ -22,8 +41,13 @@ jobs:
         run: pip install requests
 
       - name: Run debug_instrument_masters.py
+        env:
+          SECTION: ${{ inputs.section }}
         run: |
-          python debug_instrument_masters.py | tee debug_output.txt
+          FLAG=""
+          if [ "$SECTION" = "equity-options-only" ]; then FLAG="--equity-options-only"; fi
+          if [ "$SECTION" = "futures-only" ]; then FLAG="--futures-only"; fi
+          python debug_instrument_masters.py $FLAG | tee debug_output.txt
           {
             echo '```'
             cat debug_output.txt
@@ -35,3 +59,4 @@ jobs:
         with:
           name: instrument-master-debug-output
           path: debug_output.txt
+
