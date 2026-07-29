@@ -82,7 +82,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-29T14:27:00+05:30",
+      "last_processed_ts": "2026-07-29T14:32:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -241,12 +241,262 @@
           "execution_time_ms": 0.03
         }
       }
+    },
+    "AXISBANK-CE-ATM-20260729-1431-01": {
+      "trade_id": "AXISBANK-CE-ATM-20260729-1431-01",
+      "display_label": "Trade 2",
+      "symbol": "AXISBANK",
+      "direction": "CE",
+      "moneyness": "ATM",
+      "instrument_key": "NSE_FO|73359",
+      "strike": 1240,
+      "expiry": "2026-08-25",
+      "spot_price": 1236.4,
+      "alert_time": "2026-07-29T14:31:15.717417+05:30",
+      "alert_premium": 27.15,
+      "entry_low": 27.01,
+      "entry_high": 27.29,
+      "stop_loss": 25.52,
+      "target_1": 29.6,
+      "target_2": 31.23,
+      "session": "13:45-15:10",
+      "grade": "Watchlist",
+      "trade_score": 59,
+      "probability_pct": 65,
+      "probability_label": "Watchlist",
+      "score_breakdown": [
+        "+15 Volume Spike",
+        "+8 Momentum",
+        "+8 EMA Alignment",
+        "-3 Trend Alignment",
+        "+5 Risk:Reward",
+        "+5 Higher-Timeframe Confirmation",
+        "-3 OI Build-up",
+        "+5 Liquidity",
+        "-1 Market Strength",
+        "-5 VWAP Positioning"
+      ],
+      "confidence_score": 5.9,
+      "risk_score": 2.0,
+      "reward_score": 5.0,
+      "expected_rr": "1:1.5",
+      "factor_checklist": [
+        "Trend \u26a0\ufe0f",
+        "Volume \u2705",
+        "OI \u26a0\ufe0f",
+        "Momentum \u2705",
+        "VWAP \u26a0\ufe0f",
+        "EMA \u2705",
+        "Risk Reward \u2705",
+        "Liquidity \u2705",
+        "Market Strength \u26a0\ufe0f",
+        "HTF \u2705"
+      ],
+      "confidence_stars": "\u2605\u2606\u2606\u2606\u2606",
+      "confidence_label": "Low",
+      "risk_rating": "\ud83d\udfe2",
+      "risk_label": "Low",
+      "expected_holding_minutes": [
+        15,
+        30
+      ],
+      "why_reasons": [
+        "\u2713 EMA aligned",
+        "\u2713 Volume Expansion",
+        "\u2713 Excellent Liquidity",
+        "\u2713 15-minute Confirmed",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable"
+      ],
+      "alternatives": [
+        {
+          "symbol": "SENSEX",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "B",
+          "trade_score": 63
+        }
+      ],
+      "status": "ACTIVE",
+      "final_status": null,
+      "actual_entry_time": "2026-07-29T14:32:00+05:30",
+      "tracked_entry_price": 27.2,
+      "highest_since_entry": 27.2,
+      "lowest_since_entry": 27.2,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-07-29T14:32:00+05:30",
+      "messages_sent": [
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
+      ],
+      "streak_counted": false,
+      "strategy": "trade_score",
+      "probability_history": [
+        {
+          "time": "14:31",
+          "pct": 65
+        }
+      ],
+      "probability_trend": "Stable",
+      "decision": {
+        "enabled": true,
+        "decision": "Trade Approved",
+        "approved": true,
+        "trade_quality_score": 69.2,
+        "confidence_score": 59.0,
+        "probability": {
+          "win_probability_pct": 63.2,
+          "loss_probability_pct": 36.8,
+          "trade_success_probability_pct": 63.2,
+          "historical_similarity_pct": null,
+          "source": "upstream_probability_pct"
+        },
+        "risk": {
+          "max_risk_per_unit": 1.63,
+          "expected_reward_per_unit": 4.08,
+          "risk_score": 88.0,
+          "capital_risk_pct": 0.0
+        },
+        "risk_reward": {
+          "entry": 27.15,
+          "stop_loss": 25.52,
+          "target_1": 29.6,
+          "target_2": 31.23,
+          "risk_reward_ratio": 2.5,
+          "min_rr_threshold": 1.5,
+          "passes_rr_floor": true
+        },
+        "entry": 27.15,
+        "stop_loss": 25.52,
+        "stop_loss_detail": {
+          "active_stop_loss": 25.52,
+          "style": "atr_dynamic",
+          "distance_pct": 6.0,
+          "percentage_stop_reference": 13.57,
+          "recommendation": null
+        },
+        "target_1": 29.6,
+        "target_2": 31.23,
+        "target_3": 32.05,
+        "position_size": {
+          "mode": "dynamic",
+          "quantity": 368,
+          "lot_size": 1
+        },
+        "entry_validation": {
+          "entry_quality_score": 52.5,
+          "sub_scores": {
+            "entry_distance": 60.0,
+            "volume_confirmation": 50.0,
+            "market_alignment": 50.0,
+            "options_confirmation": 50.0,
+            "institutional_confirmation": null
+          },
+          "passed": true,
+          "reasons": []
+        },
+        "priority": "Medium",
+        "explanation": [
+          "Trade Approved",
+          "Trade Quality 69.2/100",
+          "Probability 63.2%",
+          "Risk:Reward 1:2.5",
+          "Trade Score 59/100 (Watchlist), probability 65%"
+        ],
+        "rejection_reasons": [],
+        "warnings": [],
+        "engines_used": [
+          "market_snapshot",
+          "early_breakout",
+          "trade_score_engine",
+          "options_intelligence"
+        ],
+        "engines_available": [
+          "trade_score_engine"
+        ],
+        "execution_time_ms": 0.15,
+        "timestamp": "2026-07-29T14:33:45.355398+05:30",
+        "quant_intelligence": {
+          "enabled": true,
+          "decision": "REJECTED",
+          "probability": 0.0,
+          "confidence": "VERY LOW",
+          "signal_quality_grade": "Reject",
+          "regime": "Sideways",
+          "regime_confidence": "LOW",
+          "risk": {
+            "entry": 27.15,
+            "stop_loss": null,
+            "trailing_stop_loss": null,
+            "target_1": null,
+            "target_2": null,
+            "target_3": null,
+            "risk_reward_ratio": null,
+            "position_score": 0.0
+          },
+          "pattern": {
+            "pattern_key": "CE|Sideways|NA|na|na|na",
+            "historical_win_pct": null,
+            "historical_loss_pct": null,
+            "sample_size": 0,
+            "pattern_confidence": "NONE"
+          },
+          "explanation": "AXISBANK CE: REJECTED (grade Reject, probability 0.0% [VERY LOW]). Regime: Sideways (LOW). No historical pattern sample yet. Primary rejection reason: Weak momentum: momentum data unavailable.",
+          "reasons": {
+            "probability": [
+              "TREND provides little/no confirmation (strength 0.00).",
+              "EMA provides little/no confirmation (strength 0.00).",
+              "OI provides little/no confirmation (strength 0.00)."
+            ],
+            "signal_quality": [
+              "Weak momentum: momentum data unavailable.",
+              "Weak volume: volume/threshold data unavailable.",
+              "Poor liquidity: OI/threshold data unavailable.",
+              "Poor risk reward: risk/reward could not be computed.",
+              "Low confidence: probability 0.0 below minimum 40."
+            ],
+            "regime": [
+              "Insufficient directional signal to classify a trend; defaulting to sideways read."
+            ],
+            "risk": [
+              "Insufficient price/ATR data to compute risk levels."
+            ],
+            "pattern": [
+              "No historical setups recorded yet for this pattern."
+            ]
+          },
+          "errors": [],
+          "execution_time_ms": 10.95
+        },
+        "news_intelligence": {
+          "enabled": true,
+          "news_score": -35.2,
+          "sentiment": "very_negative",
+          "impact": "medium",
+          "confidence": 0.704,
+          "reasons": [
+            "[RSS:economictimes_markets] Axis Bank Share Price Live Updates: Axis Bank Faces a Small Setback -> sentiment=very_negative impact=medium conf=0.704"
+          ],
+          "article_count": 1,
+          "most_recent_headline": "Axis Bank Share Price Live Updates: Axis Bank Faces a Small Setback",
+          "most_recent_url": "https://economictimes.indiatimes.com/markets/stocks/stock-liveblog/axis-bank-share-price-live-updates-29-jul-2026/liveblog/132699538.cms",
+          "execution_time_ms": 2.17
+        }
+      }
     }
   },
   "next_seq": {
-    "SENSEX-CE-OTM": 1
+    "SENSEX-CE-OTM": 1,
+    "AXISBANK-CE-ATM": 1
   },
-  "next_display_num": 1,
+  "next_display_num": 2,
   "summary_sent": false,
   "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
@@ -254,7 +504,7 @@
   "oi_history": {
     "NSE_FO|65699": 3256890.0,
     "NSE_FO|65774": 9829625.0,
-    "NSE_FO|65806": 4725175.0,
+    "NSE_FO|65806": 4727905.0,
     "NSE_FO|65807": 4031690.0,
     "NSE_FO|65776": 14305915.0,
     "NSE_FO|65700": 5390645.0,
@@ -278,17 +528,17 @@
     "BSE_FO|1148358": 944580.0,
     "BSE_FO|1141595": 1469860.0,
     "BSE_FO|1145203": 2492660.0,
-    "NSE_FO|60607": 16200.0,
+    "NSE_FO|60607": 16320.0,
     "NSE_FO|60608": 7080.0,
-    "BSE_FO|1146670": 1639100.0,
+    "BSE_FO|1146670": 1666580.0,
     "BSE_FO|1141257": 891740.0,
-    "NSE_FO|59083": 187050.0,
+    "NSE_FO|59083": 188790.0,
     "NSE_FO|59084": 241710.0,
-    "NSE_FO|60609": 286320.0,
+    "NSE_FO|60609": 284160.0,
     "NSE_FO|60610": 100200.0,
-    "NSE_FO|59086": 190740.0,
+    "NSE_FO|59086": 191790.0,
     "NSE_FO|59087": 95850.0,
-    "NSE_FO|65808": 6981195.0,
+    "NSE_FO|65808": 6996535.0,
     "NSE_FO|65809": 3817905.0,
     "NSE_FO|141826": 873500.0,
     "NSE_FO|144175": 1993000.0,
@@ -298,23 +548,23 @@
     "NSE_FO|141827": 1931000.0,
     "NSE_FO|99841": 6194500.0,
     "NSE_FO|99843": 12208950.0,
-    "NSE_FO|99844": 7307950.0,
+    "NSE_FO|99844": 7332650.0,
     "NSE_FO|99842": 6154200.0,
-    "NSE_FO|111437": 1565200.0,
-    "NSE_FO|103615": 1950200.0,
-    "NSE_FO|111439": 2552200.0,
+    "NSE_FO|111437": 1561700.0,
+    "NSE_FO|103615": 1896300.0,
+    "NSE_FO|111439": 2506000.0,
     "NSE_FO|111440": 1076600.0,
     "NSE_FO|103616": 770700.0,
     "NSE_FO|111438": 772100.0,
-    "NSE_FO|146782": 693000.0,
-    "NSE_FO|143904": 2787750.0,
+    "NSE_FO|146782": 695250.0,
+    "NSE_FO|143904": 2790000.0,
     "NSE_FO|146784": 1373250.0,
     "NSE_FO|146785": 1065000.0,
     "NSE_FO|143905": 2258250.0,
     "NSE_FO|146783": 640500.0,
     "NSE_FO|153896": 152325.0,
-    "NSE_FO|149470": 300825.0,
-    "NSE_FO|153898": 378450.0,
+    "NSE_FO|149470": 299475.0,
+    "NSE_FO|153898": 374850.0,
     "NSE_FO|153899": 169650.0,
     "NSE_FO|149471": 189225.0,
     "NSE_FO|153897": 172125.0,
@@ -323,27 +573,29 @@
     "NSE_FO|73357": 794375.0,
     "NSE_FO|73358": 1073750.0,
     "NSE_FO|76595": 437950.0,
-    "NSE_FO|91352": 545775.0,
-    "NSE_FO|76597": 655025.0,
+    "NSE_FO|91352": 553850.0,
+    "NSE_FO|76597": 657875.0,
     "NSE_FO|76598": 194750.0,
     "NSE_FO|91353": 386175.0,
     "NSE_FO|76596": 562400.0,
     "NSE_FO|117950": 1143675.0,
     "NSE_FO|117951": 1452450.0,
-    "NSE_FO|108932": 609200.0,
+    "NSE_FO|108932": 614800.0,
     "NSE_FO|108933": 356400.0,
-    "NSE_FO|143902": 1885500.0,
+    "NSE_FO|143902": 1887750.0,
     "NSE_FO|143903": 3181500.0,
-    "NSE_FO|149472": 299250.0,
+    "NSE_FO|149472": 297225.0,
     "NSE_FO|149473": 81900.0,
-    "NSE_FO|52795": 1463600.0,
+    "NSE_FO|52795": 1464000.0,
     "NSE_FO|52796": 689200.0,
     "NSE_FO|144177": 2090500.0,
-    "NSE_FO|73359": 2465625.0,
-    "NSE_FO|91354": 252700.0,
-    "BSE_FO|1142497": 1937900.0,
-    "NSE_FO|59088": 132630.0,
-    "NSE_FO|60611": 9480.0
+    "NSE_FO|73359": 2433750.0,
+    "NSE_FO|91354": 254600.0,
+    "BSE_FO|1142497": 2009860.0,
+    "NSE_FO|59088": 131520.0,
+    "NSE_FO|60611": 9480.0,
+    "NSE_FO|65852": 2479230.0,
+    "BSE_FO|1139565": 1107520.0
   },
   "probability_history": {
     "SENSEX-CE": [
@@ -358,14 +610,28 @@
       {
         "time": "14:25",
         "pct": 65
+      },
+      {
+        "time": "14:31",
+        "pct": 67
+      },
+      {
+        "time": "14:31",
+        "pct": 65
+      }
+    ],
+    "AXISBANK-CE": [
+      {
+        "time": "14:31",
+        "pct": 65
       }
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 644,
-    "valid_signals": 3,
-    "rejected_signals": 3,
-    "api_failures": 156,
+    "scanned_symbols": 658,
+    "valid_signals": 6,
+    "rejected_signals": 4,
+    "api_failures": 159,
     "broker_errors": 0
   },
   "rerank_slots_done": []
