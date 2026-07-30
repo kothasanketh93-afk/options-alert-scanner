@@ -1,22 +1,270 @@
 {
   "date": "2026-07-30",
-  "trades": {},
-  "next_seq": {},
-  "next_display_num": 0,
+  "trades": {
+    "SBIN-CE-ITM-20260730-1345-01": {
+      "trade_id": "SBIN-CE-ITM-20260730-1345-01",
+      "display_label": "Trade 1",
+      "symbol": "SBIN",
+      "direction": "CE",
+      "moneyness": "ITM",
+      "instrument_key": "NSE_FO|146782",
+      "strike": 1010,
+      "expiry": "2026-08-25",
+      "spot_price": 1024.8,
+      "alert_time": "2026-07-30T13:45:54.992390+05:30",
+      "alert_premium": 39.15,
+      "entry_low": 38.95,
+      "entry_high": 39.35,
+      "stop_loss": 37.41,
+      "target_1": 40.52,
+      "target_2": 41.11,
+      "session": "13:45-15:10",
+      "grade": "Watchlist",
+      "trade_score": 58,
+      "probability_pct": 65,
+      "probability_label": "Watchlist",
+      "score_breakdown": [
+        "+15 Volume Spike",
+        "+15 OI Build-up",
+        "+12 Trend Alignment",
+        "+9 Momentum",
+        "+5 Liquidity",
+        "+3 Risk:Reward",
+        "-2 Market Strength",
+        "-5 VWAP Positioning",
+        "-5 EMA Alignment",
+        "-2 Higher-Timeframe Confirmation"
+      ],
+      "confidence_score": 5.8,
+      "risk_score": 1.0,
+      "reward_score": 2.6,
+      "expected_rr": "1:0.8",
+      "factor_checklist": [
+        "Trend \u2705",
+        "Volume \u2705",
+        "OI \u2705",
+        "Momentum \u2705",
+        "VWAP \u26a0\ufe0f",
+        "EMA \u26a0\ufe0f",
+        "Risk Reward \u2705",
+        "Liquidity \u2705",
+        "Market Strength \u26a0\ufe0f",
+        "HTF \u26a0\ufe0f"
+      ],
+      "confidence_stars": "\u2605\u2606\u2606\u2606\u2606",
+      "confidence_label": "Low",
+      "risk_rating": "\ud83d\udfe2",
+      "risk_label": "Low",
+      "expected_holding_minutes": [
+        10,
+        20
+      ],
+      "why_reasons": [
+        "\u2713 Volume Expansion",
+        "\u2713 Excellent Liquidity",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable"
+      ],
+      "alternatives": [],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-07-30T13:45:54.992390+05:30",
+      "messages_sent": [
+        "NEW_TRADE_ALERT"
+      ],
+      "streak_counted": false,
+      "strategy": "trade_score",
+      "probability_history": [
+        {
+          "time": "13:45",
+          "pct": 65
+        },
+        {
+          "time": "13:45",
+          "pct": 65
+        },
+        {
+          "time": "13:45",
+          "pct": 65
+        }
+      ],
+      "probability_trend": "Stable",
+      "decision": {
+        "enabled": true,
+        "decision": "Trade Rejected",
+        "approved": false,
+        "trade_quality_score": 61.2,
+        "confidence_score": 58.0,
+        "probability": {
+          "win_probability_pct": 62.9,
+          "loss_probability_pct": 37.1,
+          "trade_success_probability_pct": 62.9,
+          "historical_similarity_pct": null,
+          "source": "upstream_probability_pct"
+        },
+        "risk": {
+          "max_risk_per_unit": 1.74,
+          "expected_reward_per_unit": 1.96,
+          "risk_score": 91.1,
+          "capital_risk_pct": 0.0
+        },
+        "risk_reward": {
+          "entry": 39.15,
+          "stop_loss": 37.41,
+          "target_1": 40.52,
+          "target_2": 41.11,
+          "risk_reward_ratio": 1.13,
+          "min_rr_threshold": 1.5,
+          "passes_rr_floor": false
+        },
+        "entry": 39.15,
+        "stop_loss": 37.41,
+        "stop_loss_detail": {
+          "active_stop_loss": 37.41,
+          "style": "atr_dynamic",
+          "distance_pct": 4.44,
+          "percentage_stop_reference": 19.57,
+          "recommendation": null
+        },
+        "target_1": 40.52,
+        "target_2": 41.11,
+        "target_3": 41.41,
+        "position_size": {
+          "mode": "dynamic",
+          "quantity": 255,
+          "lot_size": 1
+        },
+        "entry_validation": {
+          "entry_quality_score": 52.5,
+          "sub_scores": {
+            "entry_distance": 60.0,
+            "volume_confirmation": 50.0,
+            "market_alignment": 50.0,
+            "options_confirmation": 50.0,
+            "institutional_confirmation": null
+          },
+          "passed": true,
+          "reasons": []
+        },
+        "priority": "Rejected",
+        "explanation": [
+          "Trade Rejected",
+          "Poor Risk Reward (1.13 below floor 1.5)"
+        ],
+        "rejection_reasons": [
+          "Poor Risk Reward (1.13 below floor 1.5)"
+        ],
+        "warnings": [],
+        "engines_used": [
+          "market_snapshot",
+          "early_breakout",
+          "trade_score_engine",
+          "options_intelligence"
+        ],
+        "engines_available": [
+          "trade_score_engine"
+        ],
+        "execution_time_ms": 0.14,
+        "timestamp": "2026-07-30T13:46:48.069895+05:30",
+        "quant_intelligence": {
+          "enabled": true,
+          "decision": "REJECTED",
+          "probability": 0.0,
+          "confidence": "VERY LOW",
+          "signal_quality_grade": "Reject",
+          "regime": "Sideways",
+          "regime_confidence": "LOW",
+          "risk": {
+            "entry": 39.15,
+            "stop_loss": null,
+            "trailing_stop_loss": null,
+            "target_1": null,
+            "target_2": null,
+            "target_3": null,
+            "risk_reward_ratio": null,
+            "position_score": 0.0
+          },
+          "pattern": {
+            "pattern_key": "CE|Sideways|NA|na|na|na",
+            "historical_win_pct": null,
+            "historical_loss_pct": null,
+            "sample_size": 0,
+            "pattern_confidence": "NONE"
+          },
+          "explanation": "SBIN CE: REJECTED (grade Reject, probability 0.0% [VERY LOW]). Regime: Sideways (LOW). No historical pattern sample yet. Primary rejection reason: Weak momentum: momentum data unavailable.",
+          "reasons": {
+            "probability": [
+              "TREND provides little/no confirmation (strength 0.00).",
+              "EMA provides little/no confirmation (strength 0.00).",
+              "OI provides little/no confirmation (strength 0.00)."
+            ],
+            "signal_quality": [
+              "Weak momentum: momentum data unavailable.",
+              "Weak volume: volume/threshold data unavailable.",
+              "Poor liquidity: OI/threshold data unavailable.",
+              "Poor risk reward: risk/reward could not be computed.",
+              "Low confidence: probability 0.0 below minimum 40."
+            ],
+            "regime": [
+              "Insufficient directional signal to classify a trend; defaulting to sideways read."
+            ],
+            "risk": [
+              "Insufficient price/ATR data to compute risk levels."
+            ],
+            "pattern": [
+              "No historical setups recorded yet for this pattern."
+            ]
+          },
+          "errors": [],
+          "execution_time_ms": 9.67
+        },
+        "news_intelligence": {
+          "enabled": true,
+          "news_score": 0.0,
+          "sentiment": "neutral",
+          "impact": "low",
+          "confidence": 0.573,
+          "reasons": [
+            "[RSS:livemint_markets] SBI raises \u20b94,691 crore via AT1 bonds at 7.75% rate -> sentiment=neutral impact=low conf=0.573"
+          ],
+          "article_count": 1,
+          "most_recent_headline": "SBI raises \u20b94,691 crore via AT1 bonds at 7.75% rate",
+          "most_recent_url": "https://www.livemint.com/market/bonds/sbi-state-bank-of-india-at-1-bonds-additional-tier-1-bonds-basel-iii-bond-issue-debt-fundraising-regulatory-capital-11785327079958.html",
+          "execution_time_ms": 3.02
+        }
+      }
+    }
+  },
+  "next_seq": {
+    "SBIN-CE-ITM": 1
+  },
+  "next_display_num": 1,
   "summary_sent": false,
   "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
-    "NSE_FO|65806": 6336135.0,
-    "NSE_FO|65808": 9151415.0,
-    "NSE_FO|65852": 2515175.0,
+    "NSE_FO|65806": 4832295.0,
+    "NSE_FO|65808": 8569015.0,
+    "NSE_FO|65852": 2897180.0,
     "NSE_FO|65853": 1296880.0,
     "NSE_FO|65809": 6467110.0,
     "NSE_FO|65807": 7253610.0,
     "NSE_FO|59061": 121380.0,
-    "NSE_FO|59077": 161910.0,
-    "NSE_FO|59079": 910230.0,
+    "NSE_FO|59077": 136020.0,
+    "NSE_FO|59079": 856200.0,
     "NSE_FO|59080": 819210.0,
     "NSE_FO|59078": 174420.0,
     "NSE_FO|59074": 140940.0,
@@ -24,25 +272,25 @@
     "NSE_FO|60607": 22680.0,
     "NSE_FO|60609": 327000.0,
     "NSE_FO|60610": 178800.0,
-    "NSE_FO|60608": 33600.0,
-    "NSE_FO|60606": 64080.0,
+    "NSE_FO|60608": 36960.0,
+    "NSE_FO|60606": 72000.0,
     "BSE_FO|1141595": 3330880.0,
-    "BSE_FO|1146670": 6737040.0,
-    "BSE_FO|1142497": 6490200.0,
+    "BSE_FO|1146670": 4338360.0,
+    "BSE_FO|1142497": 7060440.0,
     "BSE_FO|1146078": 1876600.0,
     "BSE_FO|1141257": 5204540.0,
     "BSE_FO|1145203": 9779060.0,
     "NSE_FO|144175": 1983000.0,
-    "NSE_FO|141828": 4504000.0,
-    "NSE_FO|144177": 2324500.0,
+    "NSE_FO|141828": 4101500.0,
+    "NSE_FO|144177": 2012000.0,
     "NSE_FO|144218": 2168500.0,
     "NSE_FO|141829": 4008000.0,
     "NSE_FO|144176": 2024000.0,
-    "NSE_FO|99843": 12841400.0,
+    "NSE_FO|99843": 12899900.0,
     "NSE_FO|99844": 7667400.0,
     "NSE_FO|143902": 1936500.0,
-    "NSE_FO|146782": 730500.0,
-    "NSE_FO|143904": 3109500.0,
+    "NSE_FO|146782": 699750.0,
+    "NSE_FO|143904": 3522750.0,
     "NSE_FO|143905": 2341500.0,
     "NSE_FO|146783": 700500.0,
     "NSE_FO|143903": 3293250.0,
@@ -50,21 +298,21 @@
     "NSE_FO|149472": 318375.0,
     "NSE_FO|153900": 1093500.0,
     "NSE_FO|153901": 277650.0,
-    "NSE_FO|149473": 257175.0,
-    "NSE_FO|153899": 320625.0,
+    "NSE_FO|149473": 211950.0,
+    "NSE_FO|153899": 334575.0,
     "NSE_FO|52797": 1138800.0,
-    "NSE_FO|52798": 816000.0,
+    "NSE_FO|52798": 851200.0,
     "NSE_FO|117950": 1714650.0,
     "NSE_FO|117951": 1562850.0,
     "NSE_FO|65774": 8825635.0,
     "NSE_FO|65776": 14078610.0,
     "NSE_FO|149470": 292500.0,
-    "NSE_FO|149471": 307125.0,
+    "NSE_FO|149471": 432225.0,
     "NSE_FO|108934": 562000.0,
-    "NSE_FO|108935": 434800.0,
-    "NSE_FO|91352": 513475.0,
-    "NSE_FO|76597": 906300.0,
-    "NSE_FO|91354": 294975.0,
+    "NSE_FO|108935": 460000.0,
+    "NSE_FO|91352": 510150.0,
+    "NSE_FO|76597": 921500.0,
+    "NSE_FO|91354": 308750.0,
     "NSE_FO|91355": 163875.0,
     "NSE_FO|76598": 273600.0,
     "NSE_FO|91353": 570475.0,
@@ -74,38 +322,56 @@
     "BSE_FO|1149185": 12809080.0,
     "NSE_FO|99841": 5742750.0,
     "NSE_FO|99842": 5984550.0,
-    "NSE_FO|103613": 788200.0,
-    "NSE_FO|111437": 1206800.0,
-    "NSE_FO|103615": 1998500.0,
+    "NSE_FO|103613": 777700.0,
+    "NSE_FO|111437": 1180900.0,
+    "NSE_FO|103615": 1942500.0,
     "NSE_FO|103616": 814800.0,
     "NSE_FO|111438": 708400.0,
     "NSE_FO|103614": 799400.0,
     "NSE_FO|122633": 568925.0,
     "NSE_FO|122634": 395675.0,
     "NSE_FO|73357": 867500.0,
-    "NSE_FO|73358": 1038125.0,
+    "NSE_FO|73358": 1041250.0,
     "NSE_FO|60611": 14160.0,
     "NSE_FO|60612": 14880.0,
-    "NSE_FO|146784": 1634250.0,
+    "NSE_FO|146784": 1866000.0,
     "NSE_FO|146785": 1082250.0,
     "NSE_FO|73359": 2832500.0,
     "NSE_FO|73360": 1813125.0,
     "NSE_FO|76595": 442700.0,
     "NSE_FO|76596": 549100.0,
     "NSE_FO|60597": 13080.0,
-    "NSE_FO|60602": 25560.0,
+    "NSE_FO|60602": 27480.0,
     "NSE_FO|111435": 226100.0,
     "NSE_FO|111436": 263900.0,
-    "NSE_FO|141830": 10379000.0,
+    "NSE_FO|141830": 10523000.0,
     "NSE_FO|141831": 5132500.0,
     "NSE_FO|122635": 395325.0,
-    "NSE_FO|37281": 4669575.0
+    "NSE_FO|37281": 4692000.0,
+    "NSE_FO|59081": 165570.0,
+    "BSE_FO|1139565": 7527780.0,
+    "NSE_FO|122636": 193025.0
   },
-  "probability_history": {},
+  "probability_history": {
+    "SBIN-CE": [
+      {
+        "time": "13:45",
+        "pct": 65
+      },
+      {
+        "time": "13:45",
+        "pct": 65
+      },
+      {
+        "time": "13:45",
+        "pct": 65
+      }
+    ]
+  },
   "daily_stats": {
-    "scanned_symbols": 518,
-    "valid_signals": 0,
-    "rejected_signals": 0,
+    "scanned_symbols": 532,
+    "valid_signals": 3,
+    "rejected_signals": 2,
     "api_failures": 41,
     "broker_errors": 0
   },
