@@ -317,9 +317,9 @@
       "final_status": null,
       "actual_entry_time": "2026-07-30T14:16:00+05:30",
       "tracked_entry_price": 37.55,
-      "highest_since_entry": 37.95,
+      "highest_since_entry": 39.0,
       "lowest_since_entry": 36.45,
-      "max_favorable_pct": 1.07,
+      "max_favorable_pct": 3.86,
       "max_adverse_pct": -2.93,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -327,7 +327,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-30T14:35:00+05:30",
+      "last_processed_ts": "2026-07-30T14:40:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -585,7 +585,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-30T14:35:00+05:30",
+      "last_processed_ts": "2026-07-30T14:40:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -833,23 +833,24 @@
           "trade_score": 56
         }
       ],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
-      "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "actual_entry_time": "2026-07-30T14:36:00+05:30",
+      "tracked_entry_price": 59.25,
+      "highest_since_entry": 59.8,
+      "lowest_since_entry": 58.2,
+      "max_favorable_pct": 0.93,
+      "max_adverse_pct": -1.77,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-30T14:35:44.141824+05:30",
+      "last_processed_ts": "2026-07-30T14:40:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
       ],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -1043,39 +1044,39 @@
     "NSE_FO|65808": 9309755.0,
     "NSE_FO|65852": 3041610.0,
     "NSE_FO|65853": 1296880.0,
-    "NSE_FO|65809": 5939895.0,
-    "NSE_FO|65807": 7124780.0,
+    "NSE_FO|65809": 6115915.0,
+    "NSE_FO|65807": 7179315.0,
     "NSE_FO|59061": 98460.0,
     "NSE_FO|59077": 127500.0,
     "NSE_FO|59079": 871620.0,
-    "NSE_FO|59080": 855150.0,
-    "NSE_FO|59078": 162240.0,
+    "NSE_FO|59080": 855720.0,
+    "NSE_FO|59078": 162450.0,
     "NSE_FO|59074": 140940.0,
     "NSE_FO|60603": 28800.0,
     "NSE_FO|60607": 22680.0,
     "NSE_FO|60609": 327000.0,
     "NSE_FO|60610": 200640.0,
-    "NSE_FO|60608": 35760.0,
-    "NSE_FO|60606": 98880.0,
+    "NSE_FO|60608": 28680.0,
+    "NSE_FO|60606": 99360.0,
     "BSE_FO|1141595": 2339020.0,
     "BSE_FO|1146670": 6618660.0,
     "BSE_FO|1142497": 9773520.0,
-    "BSE_FO|1146078": 1876600.0,
-    "BSE_FO|1141257": 5785840.0,
-    "BSE_FO|1145203": 12091860.0,
+    "BSE_FO|1146078": 2255580.0,
+    "BSE_FO|1141257": 7018400.0,
+    "BSE_FO|1145203": 13792900.0,
     "NSE_FO|144175": 1983000.0,
     "NSE_FO|141828": 4090500.0,
     "NSE_FO|144177": 2003000.0,
-    "NSE_FO|144218": 2173500.0,
-    "NSE_FO|141829": 3921000.0,
+    "NSE_FO|144218": 2210500.0,
+    "NSE_FO|141829": 3937500.0,
     "NSE_FO|144176": 2024000.0,
-    "NSE_FO|99843": 12688650.0,
+    "NSE_FO|99843": 12684750.0,
     "NSE_FO|99844": 7667400.0,
     "NSE_FO|143902": 1936500.0,
     "NSE_FO|146782": 682500.0,
     "NSE_FO|143904": 3548250.0,
-    "NSE_FO|143905": 2415750.0,
-    "NSE_FO|146783": 970500.0,
+    "NSE_FO|143905": 2418000.0,
+    "NSE_FO|146783": 968250.0,
     "NSE_FO|143903": 3293250.0,
     "NSE_FO|153898": 355275.0,
     "NSE_FO|149472": 318375.0,
@@ -1088,14 +1089,14 @@
     "NSE_FO|117950": 1714650.0,
     "NSE_FO|117951": 1562850.0,
     "NSE_FO|65774": 7150715.0,
-    "NSE_FO|65776": 13339625.0,
+    "NSE_FO|65776": 13202410.0,
     "NSE_FO|149470": 292500.0,
-    "NSE_FO|149471": 494100.0,
+    "NSE_FO|149471": 501075.0,
     "NSE_FO|108934": 562000.0,
     "NSE_FO|108935": 455200.0,
-    "NSE_FO|91352": 499225.0,
-    "NSE_FO|76597": 920550.0,
-    "NSE_FO|91354": 317775.0,
+    "NSE_FO|91352": 499700.0,
+    "NSE_FO|76597": 919125.0,
+    "NSE_FO|91354": 318725.0,
     "NSE_FO|91355": 163875.0,
     "NSE_FO|76598": 273600.0,
     "NSE_FO|91353": 570475.0,
@@ -1105,40 +1106,41 @@
     "BSE_FO|1149185": 17122700.0,
     "NSE_FO|99841": 5742750.0,
     "NSE_FO|99842": 5984550.0,
-    "NSE_FO|103613": 730100.0,
-    "NSE_FO|111437": 1169000.0,
-    "NSE_FO|103615": 1952300.0,
+    "NSE_FO|103613": 732900.0,
+    "NSE_FO|111437": 1169700.0,
+    "NSE_FO|103615": 1949500.0,
     "NSE_FO|103616": 814800.0,
     "NSE_FO|111438": 708400.0,
     "NSE_FO|103614": 799400.0,
     "NSE_FO|122633": 568925.0,
     "NSE_FO|122634": 395675.0,
     "NSE_FO|73357": 867500.0,
-    "NSE_FO|73358": 1042500.0,
+    "NSE_FO|73358": 1038750.0,
     "NSE_FO|60611": 14160.0,
     "NSE_FO|60612": 14880.0,
     "NSE_FO|146784": 1917000.0,
-    "NSE_FO|146785": 1170750.0,
+    "NSE_FO|146785": 1195500.0,
     "NSE_FO|73359": 2832500.0,
     "NSE_FO|73360": 1813125.0,
     "NSE_FO|76595": 442700.0,
     "NSE_FO|76596": 549100.0,
     "NSE_FO|60597": 13080.0,
-    "NSE_FO|60602": 28560.0,
+    "NSE_FO|60602": 27840.0,
     "NSE_FO|111435": 226100.0,
     "NSE_FO|111436": 263900.0,
     "NSE_FO|141830": 10588500.0,
-    "NSE_FO|141831": 5061000.0,
+    "NSE_FO|141831": 5077500.0,
     "NSE_FO|122635": 395325.0,
     "NSE_FO|37281": 4631625.0,
     "NSE_FO|59081": 160260.0,
     "BSE_FO|1139565": 8369600.0,
     "NSE_FO|122636": 191975.0,
-    "NSE_FO|153897": 189450.0,
-    "NSE_FO|52796": 1245600.0,
+    "NSE_FO|153897": 193500.0,
+    "NSE_FO|52796": 1241200.0,
     "NSE_FO|60596": 194040.0,
-    "NSE_FO|108933": 514400.0,
-    "NSE_FO|59082": 111420.0
+    "NSE_FO|108933": 512000.0,
+    "NSE_FO|59082": 111210.0,
+    "NSE_FO|149469": 658575.0
   },
   "probability_history": {
     "SBIN-CE": [
@@ -1179,6 +1181,14 @@
       {
         "time": "14:35",
         "pct": 65
+      },
+      {
+        "time": "14:40",
+        "pct": 65
+      },
+      {
+        "time": "14:40",
+        "pct": 65
       }
     ],
     "MIDCPNIFTY-PE": [
@@ -1197,6 +1207,10 @@
       {
         "time": "14:35",
         "pct": 69
+      },
+      {
+        "time": "14:40",
+        "pct": 68
       }
     ],
     "TCS-PE": [
@@ -1223,6 +1237,18 @@
       {
         "time": "14:35",
         "pct": 65
+      },
+      {
+        "time": "14:40",
+        "pct": 69
+      },
+      {
+        "time": "14:40",
+        "pct": 67
+      },
+      {
+        "time": "14:40",
+        "pct": 65
       }
     ],
     "SBIN-PE": [
@@ -1237,9 +1263,9 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 672,
-    "valid_signals": 21,
-    "rejected_signals": 16,
+    "scanned_symbols": 686,
+    "valid_signals": 27,
+    "rejected_signals": 17,
     "api_failures": 51,
     "broker_errors": 0
   },
