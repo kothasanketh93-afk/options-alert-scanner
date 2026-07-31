@@ -25,7 +25,7 @@ Candle dict shape expected:
 
 from datetime import datetime, timezone, timedelta
 
-from config import MARKET_CLOSE_HHMM
+from config import MARKET_CLOSE_HHMM, TRAILING_STOP_ENABLED, TRAILING_STOP_TRIGGER_PCT, TRAILING_STOP_LOCK_PCT
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -45,6 +45,40 @@ def _pct_move(entry_price: float, price: float) -> float:
 
 def _is_after_market_close(dt: datetime) -> bool:
     return (dt.hour, dt.minute) >= MARKET_CLOSE_HHMM
+
+
+def _maybe_apply_trailing_stop(trade: dict, ts: datetime) -> dict:
+    """
+    2026-07-31: raises trade["stop_loss"] ONCE, to lock in
+    TRAILING_STOP_LOCK_PCT, the first time trade["max_favorable_pct"]
+    (as confirmed by a PRIOR candle -- see call sites, this runs BEFORE
+    the current candle's high is folded into max_favorable_pct) reaches
+    TRAILING_STOP_TRIGGER_PCT. Returns a TRAILING_SL_ADJUSTED event dict
+    or None. No-op (returns None) if disabled, already applied for this
+    trade, or the trigger hasn't been reached yet.
+
+    Safety invariants:
+      - Only ever RAISES stop_loss (new_sl > current sl), never lowers it.
+      - Applies at most once per trade (trade["_trailing_stop_applied"]).
+      - Never touches status/final_status/events beyond the one it returns
+        -- SL/T1/T2 evaluation using the (possibly just-raised) sl still
+        happens exactly where it already did, right after this call.
+    """
+    if not TRAILING_STOP_ENABLED or trade.get("_trailing_stop_applied"):
+        return None
+    if trade.get("max_favorable_pct", 0.0) < TRAILING_STOP_TRIGGER_PCT:
+        return None
+
+    entry_price = trade["tracked_entry_price"]
+    new_sl = round(entry_price * (1 + TRAILING_STOP_LOCK_PCT / 100), 2)
+    if new_sl <= trade["stop_loss"]:
+        return None  # entry-relative lock is already below/at the existing SL -- nothing to raise
+
+    trade["stop_loss"] = new_sl
+    trade["_trailing_stop_applied"] = True
+    trade["trailing_stop_moved_to"] = new_sl
+    trade["trailing_stop_moved_at"] = ts.isoformat()
+    return {"type": "TRAILING_SL_ADJUSTED", "trade": trade, "new_sl": new_sl}
 
 
 def process_trade_candles(trade: dict, candles: list) -> list:
@@ -100,6 +134,10 @@ def process_trade_candles(trade: dict, candles: list) -> list:
             continue
 
         if trade["status"] == "ACTIVE":
+            trailing_event = _maybe_apply_trailing_stop(trade, ts)
+            if trailing_event:
+                events.append(trailing_event)
+
             entry_price = trade["tracked_entry_price"]
             trade["highest_since_entry"] = max(trade["highest_since_entry"], h)
             trade["lowest_since_entry"] = min(trade["lowest_since_entry"], l)
@@ -152,7 +190,14 @@ def process_trade_candles(trade: dict, candles: list) -> list:
             if hit_sl:
                 trade["sl_hit_time"] = ts.isoformat()
                 trade["status"] = "SL_HIT"
-                trade["final_status"] = "T1_THEN_SL" if trade["t1_hit"] else "SL_HIT"
+                # 2026-07-31: a trailing-stop exit locked in profit (SL was
+                # raised above entry), not a genuine loss like an untouched
+                # original SL -- keep it distinct so Replay Analytics /
+                # Daily Scanner Summary don't count it as a plain loss.
+                if trade.get("_trailing_stop_applied"):
+                    trade["final_status"] = "TRAILING_SL_HIT"
+                else:
+                    trade["final_status"] = "T1_THEN_SL" if trade["t1_hit"] else "SL_HIT"
                 events.append({"type": "SL_HIT", "trade": trade})
                 trade["last_processed_ts"] = candle["timestamp"]
                 continue
@@ -168,6 +213,10 @@ def process_trade_candles(trade: dict, candles: list) -> list:
 
         # T1_HIT status: still actively tracking toward T2, same logic as ACTIVE
         if trade["status"] == "T1_HIT":
+            trailing_event = _maybe_apply_trailing_stop(trade, ts)
+            if trailing_event:
+                events.append(trailing_event)
+
             trade["highest_since_entry"] = max(trade["highest_since_entry"], h)
             trade["lowest_since_entry"] = min(trade["lowest_since_entry"], l)
             entry_price = trade["tracked_entry_price"]
@@ -202,7 +251,14 @@ def process_trade_candles(trade: dict, candles: list) -> list:
             if hit_sl:
                 trade["sl_hit_time"] = ts.isoformat()
                 trade["status"] = "SL_HIT"
-                trade["final_status"] = "T1_THEN_SL"
+                # 2026-07-31: same distinction as the ACTIVE block above --
+                # T1 was already hit either way, but if trailing ALSO raised
+                # the SL further before this reversal, the exit was at a
+                # better level than the original SL, worth its own label.
+                if trade.get("_trailing_stop_applied"):
+                    trade["final_status"] = "T1_THEN_TRAILING_SL"
+                else:
+                    trade["final_status"] = "T1_THEN_SL"
                 events.append({"type": "SL_HIT", "trade": trade})
                 trade["last_processed_ts"] = candle["timestamp"]
                 continue

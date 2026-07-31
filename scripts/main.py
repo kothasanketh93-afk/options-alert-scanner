@@ -420,6 +420,12 @@ def _dispatch_tracker_events(trade: dict, events: list):
         elif etype == "SL_HIT":
             mins = tracker.compute_time_taken(trade["actual_entry_time"], trade["sl_hit_time"])
             notify_once(trade, "SL_HIT", tg.fmt_sl_hit, trade, mins)
+        elif etype == "TRAILING_SL_ADJUSTED":
+            # 2026-07-31: notify_once keys on trade["messages_sent"], which
+            # already guarantees this fires at most once per trade -- matches
+            # _maybe_apply_trailing_stop()'s own "applies once" invariant, so
+            # no extra dedup logic needed here.
+            notify_once(trade, "TRAILING_SL_ADJUSTED", tg.fmt_trailing_sl_adjusted, trade)
         elif etype == "NOT_ENTERED":
             notify_once(trade, "NOT_ENTERED", tg.fmt_not_entered, trade)
         elif etype in ("EOD_CLOSED",):

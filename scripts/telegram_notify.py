@@ -266,6 +266,21 @@ def fmt_t2_hit(trade: dict, time_taken_min: int) -> str:
     )
 
 
+def fmt_trailing_sl_adjusted(trade: dict) -> str:
+    """2026-07-31: notifies when tracker.py's trailing-stop feature
+    (config.TRAILING_STOP_ENABLED) raises a trade's SL to lock in
+    profit after a favorable move -- see tracker.py's
+    _maybe_apply_trailing_stop() for the trigger logic."""
+    return (
+        f"🔒 SL RAISED (Trailing) — {trade['display_label']}\n\n"
+        f"{_trade_header(trade)}\n"
+        f"Tracked Entry: ₹{trade['tracked_entry_price']}\n"
+        f"Best Move So Far: {trade['max_favorable_pct']:+.2f}%\n\n"
+        f"SL moved: ₹{trade.get('trailing_stop_moved_to')} "
+        f"(locking in a small profit instead of the original stop)"
+    )
+
+
 def fmt_sl_hit(trade: dict, time_taken_min: int) -> str:
     result = "T1 achieved, SL after T2 attempt" if trade["t1_hit"] else "FAILED"
     return (

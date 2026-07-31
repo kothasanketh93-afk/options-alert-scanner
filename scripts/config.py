@@ -39,6 +39,30 @@ STOP_AFTER_CONSECUTIVE_SL = False  # set False 2026-07-31: testing/validation mo
                                     # REVERT TO True BEFORE REAL-MONEY TRADING -- this is the
                                     # capital-protection circuit breaker, not a cosmetic setting.
 
+# =============================================================================
+# Trailing Stop / Breakeven Move (tracker.py) -- 2026-07-31, added after a
+# live trade (NIFTY PE, 2026-07-31) moved +5.21% favorable, never reached
+# Target 1, then fully reversed to hit the ORIGINAL stop loss for a
+# -12.30% final result. This is a single, one-time SL raise once a trade
+# has moved TRAILING_STOP_TRIGGER_PCT in its favor -- NOT continuous
+# trailing (that's a larger, more parameter-heavy feature; this is the
+# simple, safe first version). Pure arithmetic on prices tracker.py
+# already has in memory each cycle -- no new broker calls, no new data.
+#
+# Applied conservatively: the trigger check uses max_favorable_pct as of
+# the START of the current candle (i.e. confirmed by a PRIOR candle),
+# never this candle's own high -- same "don't judge same-bar ambiguity"
+# posture tracker.py's entry-vs-T1/SL logic already follows. The SL is
+# only ever RAISED, never lowered, and only adjusts once per trade.
+# =============================================================================
+TRAILING_STOP_ENABLED = False       # master flag -- off until validated against a few real
+                                     # sessions via Replay Analytics; see main.py's tracker.py
+                                     # call site for how this wires in
+TRAILING_STOP_TRIGGER_PCT = 3.0     # once max favorable move reaches this, raise SL once
+TRAILING_STOP_LOCK_PCT = 0.5        # where the raised SL is placed -- 0.5 means "lock in a small
+                                     # +0.5% profit" rather than an exact-breakeven 0.0, to leave
+                                     # room for normal premium wobble without an instant re-stop
+
 # Cap on simultaneously open trades (WAITING_ENTRY + ACTIVE + T1_HIT).
 # Mostly a backstop now that only one best-ranked setup opens per run.
 MAX_CONCURRENT_TRADES = 4
@@ -187,20 +211,46 @@ FALLBACK_STOCK_WATCHLIST = [
 # Updated 2026-07-22 from verify_stock_symbols.py's live CI run against
 # both brokers' instrument masters -- 12 of 15 values below were stale
 # (see the run's MISMATCH lines); HINDALCO/SAIL/FEDERALBNK already matched.
+#
+# FIX (2026-07-31): that 2026-07-22 pass (and the 2026-07-29 large-cap
+# block below it) both compared against ANGEL ONE's strike step -- but
+# market_data.py's own broker-primary history shows UPSTOX has been the
+# actual primary broker since 2026-07-28 (briefly flipped to Angel One
+# on 2026-07-29, reverted the SAME day -- see that file's docstring).
+# So every value below was silently calibrated against the SECONDARY/
+# fallback broker, not the one actually serving live requests. This
+# only bites when option_chain.py/scanner.py's STRIKE_STEP fallback
+# arithmetic is actually needed (instrument_master.py's dynamic lookup
+# failing) AND Upstox is active -- the common case -- so it's a real,
+# if narrow, "wrong strike by one step" risk, not cosmetic.
+#
+# Corrected 2026-07-31 against a live verify_stock_symbols.py run's
+# Upstox numbers for the 7 that mismatched that run: HINDALCO 10->20,
+# JINDALSTEL 10->20, NATIONALUM 5->10, BHEL 2.5->5, FEDERALBNK 2.5->5,
+# BANKBARODA 1.0->5, MOTHERSON 0.5->2.5. The other 8 already matched
+# BOTH brokers that run -- left unchanged.
 STOCK_STRIKE_STEP = {
-    "TATASTEEL": 2.5, "HINDALCO": 10, "VEDL": 5, "JINDALSTEL": 10, "IDEA": 1.0,
-    "SAIL": 2.5, "NATIONALUM": 5, "NMDC": 1.0, "BHEL": 2.5, "FEDERALBNK": 2.5,
-    "BANKBARODA": 1.0, "PFC": 5, "RECLTD": 5, "ASHOKLEY": 2.5, "MOTHERSON": 0.5,
+    "TATASTEEL": 2.5, "HINDALCO": 20, "VEDL": 5, "JINDALSTEL": 20, "IDEA": 1.0,
+    "SAIL": 2.5, "NATIONALUM": 10, "NMDC": 1.0, "BHEL": 5, "FEDERALBNK": 5,
+    "BANKBARODA": 5, "PFC": 5, "RECLTD": 5, "ASHOKLEY": 2.5, "MOTHERSON": 2.5,
     # Folded in from the old VALIDATION_STOCK_STRIKE_STEP safety net
     # (2026-07-29 live-incident fallback for the now-removed fixed
     # 10-stock validation list) now that these large-cap names can
     # surface in ANY day's dynamic shortlist, not just a fixed list.
-    # Values are Angel One (primary broker) F&O strike steps as of
-    # verify_stock_symbols.py's 2026-07-29 04:54 UTC live CI run. NOTE:
-    # HDFCBANK, LT, AXISBANK, and ITC had a DIFFERENT step on Upstox
-    # (secondary broker) in that same run -- if broker_failover.py has
-    # switched to Upstox, one of these four could misplace the ATM
-    # strike by one step until re-verified.
+    #
+    # STILL NEEDS THE SAME 2026-07-31 CORRECTION AS THE BLOCK ABOVE:
+    # these were also calibrated against Angel One under the same
+    # mistaken "Angel One is primary" assumption (written during the
+    # brief same-day 2026-07-29 Angel-One-primary window, never
+    # corrected after that reverted). Upstox is primary now (see fix
+    # note above) -- HDFCBANK, LT, AXISBANK, and ITC are CONFIRMED
+    # different on Upstox (per the original 2026-07-29 note) but their
+    # real Upstox values aren't in hand yet; RELIANCE, ICICIBANK, SBIN,
+    # TCS, INFY, BHARTIARTL are simply unverified against Upstox at all.
+    # verify_stock_symbols.py's CONFIGURED_STRIKE_STEP also doesn't
+    # cover this block yet (confirmed live 2026-07-31 -- AXISBANK
+    # printed "no configured step to compare"), so it won't even flag
+    # these until that script is extended to check them too.
     "RELIANCE": 10, "HDFCBANK": 5, "ICICIBANK": 10, "SBIN": 10, "TCS": 20,
     "INFY": 5, "LT": 10, "AXISBANK": 10, "BHARTIARTL": 20, "ITC": 0.5,
 }
