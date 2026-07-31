@@ -44,6 +44,23 @@ class CollectionResult:
         return (f"<CollectionResult new={len(self.new_items)} "
                 f"duplicates={self.duplicates_skipped} errors={self.provider_errors}>")
 
+    def degraded_providers(self) -> list[str]:
+        """FIX (2026-07-31): providers that returned 0 items WITHOUT
+        raising (e.g. an API's payload shape changed, a page moved,
+        a feed's region ID is stale) never show up in
+        `provider_errors` -- that dict only tracks providers whose
+        fetch_raw()/parse_batch() actually threw (see
+        _run_one_provider()'s try/except below). That is by design
+        (a caught, logged, gracefully-degraded 0 is not the same kind
+        of failure as an unhandled exception), but it meant the
+        "cycle complete ... errors=none" summary line could read as
+        "everything's fine" on a run where 2-3 of 5 providers were
+        silently contributing nothing. This does not change collection,
+        dedup, or caching behavior at all -- it only changes what the
+        summary log line reports."""
+        return [name for name, count in self.raw_counts.items()
+                if count == 0 and name not in self.provider_errors]
+
 
 def _apply_mapping(item: NewsItem, settings) -> NewsItem:
     """Populates item.companies/symbols/sectors in-place (NewsItem is a
@@ -117,8 +134,10 @@ def collect_all(*, cache: Optional[NewsCache] = None, settings=None,
                 else:
                     result.duplicates_skipped += 1
 
+    degraded = result.degraded_providers()
     _logger.info(
         f"NEWS_COLLECTOR cycle complete new={len(result.new_items)} "
-        f"duplicates={result.duplicates_skipped} errors={result.provider_errors or 'none'}"
+        f"duplicates={result.duplicates_skipped} errors={result.provider_errors or 'none'} "
+        f"degraded={degraded or 'none'}"
     )
     return result
