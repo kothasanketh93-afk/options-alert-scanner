@@ -609,10 +609,18 @@ def main():
                 # useless for observability without ever raising or being
                 # noticed. Corrected to read the fields that actually exist.
                 log.info(
-                    "NEWS_INTELLIGENCE_STARTUP new_items=%s duplicates_skipped=%s provider_errors=%s",
+                    "NEWS_INTELLIGENCE_STARTUP new_items=%s duplicates_skipped=%s "
+                    "provider_errors=%s degraded_providers=%s",
                     len(getattr(_news_result, "new_items", [])),
                     getattr(_news_result, "duplicates_skipped", None),
                     getattr(_news_result, "provider_errors", None) or "none",
+                    # FIX (2026-07-31): see CollectionResult.degraded_providers()'s
+                    # docstring -- a provider returning 0 items without raising
+                    # doesn't land in provider_errors, so this line used to be
+                    # able to read "provider_errors=none" on a run where several
+                    # providers were silently contributing nothing.
+                    (_news_result.degraded_providers() if hasattr(_news_result, "degraded_providers") else None)
+                    or "none",
                 )
             except concurrent.futures.TimeoutError:
                 log.warning(
