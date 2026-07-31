@@ -43,7 +43,14 @@ providers:
       - name: "business_standard_markets"
         url: "https://www.business-standard.com/rss/markets-106.rss"
       - name: "pib_press_releases"
-        url: "https://pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=3"
+        # FIX (2026-07-31): Regid=3 was returning "not well-formed
+        # (invalid token)" -- verified live that Regid=1 is the
+        # correct current region ID, matching the URL PIB's own
+        # https://www.pib.gov.in/ViewRss.aspx?reg=1&lang=1 directory
+        # page lists as "Press Releases RSS". Verified live 2026-07-31:
+        # well-formed RSS 2.0 (empty of items at verification time,
+        # which is a normal/valid feed state, not a parse failure).
+        url: "https://pib.gov.in/RssMain.aspx?ModId=6&Lang=1&Regid=1"
 
 collector:
   max_items_per_cycle_per_provider: 200
