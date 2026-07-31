@@ -386,7 +386,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-31T14:45:00+05:30",
+      "last_processed_ts": "2026-07-31T14:50:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -553,11 +553,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 357.05,
-      "current_pnl_pct": 4.13,
+      "current_price": 346.95,
+      "current_pnl_pct": 1.18,
       "maximum_profit_pct": 4.13,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 9
+      "holding_time_minutes": 14
     },
     "NIFTY-PE-ITM-20260731-1441-01": {
       "trade_id": "NIFTY-PE-ITM-20260731-1441-01",
@@ -646,16 +646,16 @@
       "actual_entry_time": "2026-07-31T14:42:00+05:30",
       "tracked_entry_price": 98.8,
       "highest_since_entry": 103.95,
-      "lowest_since_entry": 96.6,
+      "lowest_since_entry": 90.4,
       "max_favorable_pct": 5.21,
-      "max_adverse_pct": -2.23,
+      "max_adverse_pct": -8.5,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-31T14:45:00+05:30",
+      "last_processed_ts": "2026-07-31T14:50:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -826,11 +826,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 97.2,
-      "current_pnl_pct": -1.62,
+      "current_price": 93.0,
+      "current_pnl_pct": -5.87,
       "maximum_profit_pct": 0.0,
-      "maximum_drawdown_pct": -1.62,
-      "holding_time_minutes": 3
+      "maximum_drawdown_pct": -5.87,
+      "holding_time_minutes": 8
     },
     "TUBE INVEST OF INDIA LTD-PE-ITM-20260731-1445-01": {
       "trade_id": "TUBE INVEST OF INDIA LTD-PE-ITM-20260731-1445-01",
@@ -907,12 +907,12 @@
           "trade_score": 58
         }
       ],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
+      "actual_entry_time": "2026-07-31T14:46:00+05:30",
+      "tracked_entry_price": 121.1,
+      "highest_since_entry": 121.1,
+      "lowest_since_entry": 121.1,
       "max_favorable_pct": 0.0,
       "max_adverse_pct": 0.0,
       "t1_hit": false,
@@ -921,9 +921,10 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-31T14:45:50.507132+05:30",
+      "last_processed_ts": "2026-07-31T14:50:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
       ],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -1090,6 +1091,281 @@
           "enabled": false,
           "reason": "no candlestick read attached to this trade"
         }
+      },
+      "current_price": 121.1,
+      "current_pnl_pct": 0.0,
+      "maximum_profit_pct": 0.0,
+      "maximum_drawdown_pct": 0.0,
+      "holding_time_minutes": 4
+    },
+    "KPIT TECHNOLOGIES LIMITED-CE-ATM-20260731-1450-01": {
+      "trade_id": "KPIT TECHNOLOGIES LIMITED-CE-ATM-20260731-1450-01",
+      "display_label": "Trade 5",
+      "symbol": "KPIT TECHNOLOGIES LIMITED",
+      "direction": "CE",
+      "moneyness": "ATM",
+      "instrument_key": "NSE_FO|116105",
+      "strike": 600.0,
+      "expiry": "2026-08-25",
+      "spot_price": 600.65,
+      "alert_time": "2026-07-31T14:50:51.087728+05:30",
+      "alert_premium": 21.0,
+      "entry_low": 20.85,
+      "entry_high": 21.15,
+      "stop_loss": 19.02,
+      "target_1": 23.12,
+      "target_2": 24.03,
+      "session": "13:45-15:10",
+      "grade": "B+",
+      "trade_score": 73,
+      "probability_pct": 75,
+      "probability_label": "Potential Trade",
+      "score_breakdown": [
+        "+15 Volume Spike",
+        "+15 OI Build-up",
+        "+10 VWAP Positioning",
+        "+10 EMA Alignment",
+        "-1 Trend Alignment",
+        "+5 Higher-Timeframe Confirmation",
+        "+5 Liquidity",
+        "+4 Risk:Reward",
+        "-2 Market Strength",
+        "-5 Momentum"
+      ],
+      "confidence_score": 7.3,
+      "risk_score": 5.0,
+      "reward_score": 3.6,
+      "expected_rr": "1:1.1",
+      "factor_checklist": [
+        "Trend \u26a0\ufe0f",
+        "Volume \u2705",
+        "OI \u2705",
+        "Momentum \u26a0\ufe0f",
+        "VWAP \u2705",
+        "EMA \u2705",
+        "Risk Reward \u2705",
+        "Liquidity \u2705",
+        "Market Strength \u26a0\ufe0f",
+        "HTF \u2705"
+      ],
+      "confidence_stars": "\u2605\u2605\u2605\u2606\u2606",
+      "confidence_label": "Moderate",
+      "risk_rating": "\ud83d\udfe1",
+      "risk_label": "Medium",
+      "expected_holding_minutes": [
+        11,
+        21
+      ],
+      "why_reasons": [
+        "\u2713 EMA aligned",
+        "\u2713 Above VWAP",
+        "\u2713 Volume Expansion",
+        "\u2713 Strong OI Build-up",
+        "\u2713 Excellent Liquidity",
+        "\u2713 15-minute Confirmed",
+        "\u2713 No Nearby Resistance",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable"
+      ],
+      "alternatives": [
+        {
+          "symbol": "ADANI PORT & SEZ LTD",
+          "direction": "CE",
+          "moneyness": "OTM",
+          "grade": "Watchlist",
+          "trade_score": 57
+        }
+      ],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-07-31T14:50:51.087728+05:30",
+      "messages_sent": [
+        "NEW_TRADE_ALERT"
+      ],
+      "streak_counted": false,
+      "strategy": "trade_score",
+      "probability_history": [
+        {
+          "time": "14:50",
+          "pct": 75
+        },
+        {
+          "time": "14:50",
+          "pct": 65
+        },
+        {
+          "time": "14:50",
+          "pct": 65
+        }
+      ],
+      "probability_trend": "Stable",
+      "decision": {
+        "enabled": true,
+        "decision": "Trade Approved",
+        "approved": true,
+        "trade_quality_score": 70.1,
+        "confidence_score": 72.1,
+        "probability": {
+          "win_probability_pct": 74.1,
+          "loss_probability_pct": 25.9,
+          "trade_success_probability_pct": 74.1,
+          "historical_similarity_pct": null,
+          "source": "upstream_probability_pct"
+        },
+        "risk": {
+          "max_risk_per_unit": 1.98,
+          "expected_reward_per_unit": 3.03,
+          "risk_score": 81.1,
+          "capital_risk_pct": 0.0
+        },
+        "risk_reward": {
+          "entry": 21.0,
+          "stop_loss": 19.02,
+          "target_1": 23.12,
+          "target_2": 24.03,
+          "risk_reward_ratio": 1.53,
+          "min_rr_threshold": 1.5,
+          "passes_rr_floor": true
+        },
+        "entry": 21.0,
+        "stop_loss": 19.02,
+        "stop_loss_detail": {
+          "active_stop_loss": 19.02,
+          "style": "atr_dynamic",
+          "distance_pct": 9.43,
+          "percentage_stop_reference": 10.5,
+          "recommendation": null
+        },
+        "target_1": 23.12,
+        "target_2": 24.03,
+        "target_3": 24.48,
+        "position_size": {
+          "mode": "dynamic",
+          "quantity": 476,
+          "lot_size": 1
+        },
+        "entry_validation": {
+          "entry_quality_score": 61.2,
+          "sub_scores": {
+            "entry_distance": 60.0,
+            "volume_confirmation": 50.0,
+            "market_alignment": 85,
+            "options_confirmation": 50.0,
+            "institutional_confirmation": null
+          },
+          "passed": true,
+          "reasons": []
+        },
+        "priority": "High",
+        "explanation": [
+          "Trade Approved",
+          "Trade Quality 70.1/100",
+          "Probability 74.1%",
+          "Risk:Reward 1:1.53",
+          "Market regime TRENDING_BULLISH, Strong trend, High volatility",
+          "Trade Score 73/100 (Potential Trade), probability 75%"
+        ],
+        "rejection_reasons": [],
+        "warnings": [],
+        "engines_used": [
+          "market_snapshot",
+          "early_breakout",
+          "trade_score_engine",
+          "options_intelligence"
+        ],
+        "engines_available": [
+          "market_snapshot",
+          "trade_score_engine"
+        ],
+        "execution_time_ms": 0.17,
+        "timestamp": "2026-07-31T14:51:08.499546+05:30",
+        "quant_intelligence": {
+          "enabled": true,
+          "decision": "REJECTED",
+          "probability": 32.13,
+          "confidence": "VERY LOW",
+          "signal_quality_grade": "Reject",
+          "regime": "Gap Down",
+          "regime_confidence": "MEDIUM",
+          "risk": {
+            "entry": 21.0,
+            "stop_loss": 15.68,
+            "trailing_stop_loss": 15.68,
+            "target_1": 27.05,
+            "target_2": 31.08,
+            "target_3": 37.13,
+            "risk_reward_ratio": 1.14,
+            "position_score": 60.05
+          },
+          "pattern": {
+            "pattern_key": "CE|Gap_Down|UP|na|0.75|na",
+            "historical_win_pct": null,
+            "historical_loss_pct": null,
+            "sample_size": 0,
+            "pattern_confidence": "NONE"
+          },
+          "explanation": "KPIT TECHNOLOGIES LIMITED CE: REJECTED (grade Reject, probability 32.1% [VERY LOW]). Regime: Gap Down (MEDIUM). Risk/Reward 1.14 with entry 21.0 / SL 15.68. No historical pattern sample yet. Primary rejection reason: Weak momentum: momentum data unavailable.",
+          "reasons": {
+            "probability": [
+              "TREND strongly supports CE setup (strength 1.00, weight 0.14).",
+              "VWAP strongly supports CE setup (strength 1.00, weight 0.08).",
+              "EMA strongly supports CE setup (strength 0.79, weight 0.10).",
+              "OI provides little/no confirmation (strength 0.00).",
+              "ADX provides little/no confirmation (strength 0.00).",
+              "VOLUME provides little/no confirmation (strength 0.00)."
+            ],
+            "signal_quality": [
+              "Weak momentum: momentum data unavailable.",
+              "Weak volume: volume/threshold data unavailable.",
+              "Poor liquidity: OI/threshold data unavailable.",
+              "Poor risk reward: 1.14 below minimum 1.30.",
+              "Low confidence: probability 32.1 below minimum 40."
+            ],
+            "regime": [
+              "Opening gap of -0.75% exceeds 0.5% threshold."
+            ],
+            "risk": [
+              "Stop-loss ATR multiplier 1.1 adjusted x1.2 for 'Gap Down' regime.",
+              "Risk/Reward to Target 1 is 1.14.",
+              "Position score 60.0/100 reflects RR, regime fit, and volatility."
+            ],
+            "pattern": [
+              "No historical setups recorded yet for this pattern."
+            ]
+          },
+          "errors": [],
+          "execution_time_ms": 9.66
+        },
+        "news_intelligence": {
+          "enabled": true,
+          "news_score": 0.0,
+          "sentiment": "neutral",
+          "impact": "ignore",
+          "confidence": 0.0,
+          "reasons": [
+            "No recent news found for this symbol"
+          ],
+          "article_count": 0,
+          "most_recent_headline": "",
+          "most_recent_url": "",
+          "execution_time_ms": 0.03
+        },
+        "candlestick_patterns": {
+          "enabled": false,
+          "reason": "no candlestick read attached to this trade"
+        }
       }
     }
   },
@@ -1097,9 +1373,10 @@
     "ADANI PORT & SEZ LTD-CE-ATM": 1,
     "SENSEX-PE-OTM": 1,
     "NIFTY-PE-ITM": 1,
-    "TUBE INVEST OF INDIA LTD-PE-ITM": 1
+    "TUBE INVEST OF INDIA LTD-PE-ITM": 1,
+    "KPIT TECHNOLOGIES LIMITED-CE-ATM": 1
   },
-  "next_display_num": 4,
+  "next_display_num": 5,
   "summary_sent": false,
   "consecutive_sl_streak": 1,
   "circuit_breaker_tripped": false,
@@ -1108,12 +1385,12 @@
     "NSE_FO|65808": 11481015.0,
     "NSE_FO|65852": 6694090.0,
     "NSE_FO|65854": 15750605.0,
-    "NSE_FO|65855": 15249975.0,
-    "NSE_FO|65853": 13757120.0,
-    "NSE_FO|65809": 16639545.0,
-    "NSE_FO|59083": 202710.0,
-    "NSE_FO|59086": 306780.0,
-    "NSE_FO|59088": 189420.0,
+    "NSE_FO|65855": 14956565.0,
+    "NSE_FO|65853": 13456430.0,
+    "NSE_FO|65809": 16369340.0,
+    "NSE_FO|59083": 202320.0,
+    "NSE_FO|59086": 303270.0,
+    "NSE_FO|59088": 190050.0,
     "NSE_FO|59089": 88620.0,
     "NSE_FO|59087": 166920.0,
     "NSE_FO|59084": 205440.0,
@@ -1126,12 +1403,12 @@
     "BSE_FO|840654": 345880.0,
     "BSE_FO|840488": 449820.0,
     "BSE_FO|840239": 765780.0,
-    "BSE_FO|840353": 1300500.0,
+    "BSE_FO|840353": 1312360.0,
     "BSE_FO|840637": 685140.0,
     "BSE_FO|840431": 534700.0,
     "NSE_FO|120890": 184450.0,
     "NSE_FO|49940": 1117550.0,
-    "NSE_FO|120896": 623875.0,
+    "NSE_FO|120896": 622325.0,
     "NSE_FO|120897": 406100.0,
     "NSE_FO|49941": 1051675.0,
     "NSE_FO|120892": 426250.0,
@@ -1151,13 +1428,13 @@
     "NSE_FO|147724": 3190100.0,
     "NSE_FO|151396": 1706375.0,
     "NSE_FO|151397": 1040250.0,
-    "NSE_FO|147725": 1339550.0,
-    "NSE_FO|151341": 899725.0,
+    "NSE_FO|147725": 1341375.0,
+    "NSE_FO|151341": 903375.0,
     "NSE_FO|154198": 0.0,
     "NSE_FO|154200": 18600.0,
     "NSE_FO|154202": 8600.0,
     "NSE_FO|154203": 7600.0,
-    "NSE_FO|154201": 63600.0,
+    "NSE_FO|154201": 64200.0,
     "NSE_FO|154199": 6600.0,
     "NSE_FO|65806": 4757740.0,
     "NSE_FO|65807": 6345625.0,
@@ -1166,18 +1443,18 @@
     "NSE_FO|59081": 123210.0,
     "NSE_FO|59082": 138600.0,
     "BSE_FO|840713": 485520.0,
-    "BSE_FO|840223": 489460.0,
+    "BSE_FO|840223": 495720.0,
     "NSE_FO|146076": 460600.0,
     "NSE_FO|146091": 369950.0,
     "NSE_FO|60613": 59040.0,
     "NSE_FO|60614": 27960.0,
-    "NSE_FO|116105": 2327325.0,
+    "NSE_FO|116105": 3295300.0,
     "NSE_FO|116107": 1799550.0,
     "NSE_FO|150134": 68600.0,
     "NSE_FO|150135": 30600.0,
     "NSE_FO|147726": 6159375.0,
     "NSE_FO|147727": 1257425.0,
-    "NSE_FO|81197": 1038350.0,
+    "NSE_FO|81197": 1039775.0,
     "NSE_FO|81198": 1056400.0,
     "NSE_FO|120057": 42150.0,
     "NSE_FO|114363": 204450.0,
@@ -1186,20 +1463,21 @@
     "NSE_FO|155160": 388500.0,
     "NSE_FO|155162": 42175.0,
     "BSE_FO|840281": 393980.0,
-    "NSE_FO|147723": 2131600.0,
+    "NSE_FO|147723": 2104225.0,
     "NSE_FO|60615": 11280.0,
     "NSE_FO|120060": 32400.0,
-    "NSE_FO|60617": 247320.0,
-    "NSE_FO|155163": 16450.0,
+    "NSE_FO|60617": 247560.0,
+    "NSE_FO|155163": 16625.0,
     "NSE_FO|120899": 295275.0,
     "NSE_FO|65859": 4831710.0,
-    "NSE_FO|60619": 9120.0,
+    "NSE_FO|60619": 9240.0,
     "NSE_FO|60621": 16800.0,
     "BSE_FO|840267": 308200.0,
-    "BSE_FO|840399": 540260.0,
-    "NSE_FO|68297": 537700.0,
-    "NSE_FO|155161": 156275.0,
-    "NSE_FO|155159": 134225.0
+    "BSE_FO|840399": 486960.0,
+    "NSE_FO|68297": 539600.0,
+    "NSE_FO|155161": 158200.0,
+    "NSE_FO|155159": 133875.0,
+    "NSE_FO|120898": 816850.0
   },
   "probability_history": {
     "ADANI PORT & SEZ LTD-CE": [
@@ -1249,6 +1527,18 @@
       },
       {
         "time": "14:45",
+        "pct": 65
+      },
+      {
+        "time": "14:50",
+        "pct": 65
+      },
+      {
+        "time": "14:50",
+        "pct": 65
+      },
+      {
+        "time": "14:50",
         "pct": 65
       }
     ],
@@ -1315,12 +1605,26 @@
         "time": "14:45",
         "pct": 65
       }
+    ],
+    "KPIT TECHNOLOGIES LIMITED-CE": [
+      {
+        "time": "14:50",
+        "pct": 75
+      },
+      {
+        "time": "14:50",
+        "pct": 65
+      },
+      {
+        "time": "14:50",
+        "pct": 65
+      }
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 450,
-    "valid_signals": 25,
-    "rejected_signals": 15,
+    "scanned_symbols": 459,
+    "valid_signals": 31,
+    "rejected_signals": 18,
     "api_failures": 81,
     "broker_errors": 0
   },
