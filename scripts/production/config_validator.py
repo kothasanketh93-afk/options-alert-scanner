@@ -117,6 +117,8 @@ _FRACTION_FIELD_ALLOWLIST = (
     "MOMENTUM_ROC_CEILING_PCT",
     "REPLAY_CALIBRATION_GAP_THRESHOLD_PCT",
     "IV_ABNORMAL_HIGH_PCT",
+    "TRAILING_STOP_TRIGGER_PCT",  # 2026-07-31: same raw-percentage-point convention (3.0 means "3%"),
+                                  # see its own comment in config.py
 )
 
 # Symbol-list fields checked for internal duplicates.
