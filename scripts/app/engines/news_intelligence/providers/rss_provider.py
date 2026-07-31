@@ -52,7 +52,19 @@ class RSSProvider(BaseProvider):
         try:
             return self._parse_feed(feed_name, feed_url, xml_text)
         except ET.ParseError as exc:
-            _logger.warning(f"NEWS_PROVIDER RSS malformed feed={feed_name} error={exc}")
+            # FIX (2026-07-31): same diagnostic technique that revealed
+            # BSE's real issue (turned out to be a plain "No Record
+            # Found!" string, not a broken endpoint) -- a truncated
+            # content preview here so the next occurrence of this
+            # warning says what's actually being returned instead of
+            # just that parsing failed. Needed because pib_press_releases'
+            # URL fix (stale Regid corrected) did NOT resolve this live in
+            # production despite testing well-formed independently --
+            # this preview is how we find out why.
+            preview = xml_text[:200]
+            _logger.warning(
+                f"NEWS_PROVIDER RSS malformed feed={feed_name} error={exc} preview={preview!r}"
+            )
             return []
         except Exception as exc:  # noqa: BLE001
             _logger.warning(f"NEWS_PROVIDER RSS unexpected error feed={feed_name} error={exc}")
