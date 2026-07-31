@@ -1268,7 +1268,14 @@ CANDLESTICK_SOLDIERS_MIN_BODY_RATIO = 0.50  # each candle's body >= 50% of its o
 # (today-only candles, ATR None until enough candles accumulate
 # intraday).
 # =============================================================================
-WARMUP_CANDLE_CONTINUITY_ENABLED = False
+WARMUP_CANDLE_CONTINUITY_ENABLED = True   # flipped 2026-07-31: both runs pasted in chat (09:35 and
+                                           # 10:31 IST) showed 100% of strikes skipped with
+                                           # "ATR unavailable" -- exactly matches this flag's own
+                                           # docstring above ("ATR can't possibly have 15 candles ...
+                                           # until roughly 12:45 IST" while False). Adds ~1 broker call
+                                           # per scanned symbol per cycle, ONLY before ATR_WARMUP_CUTOFF_
+                                           # HOUR:MINUTE IST -- zero calls after that, and fails open to
+                                           # pre-fix (today-only-candles) behavior on any fetch error.
 ATR_WARMUP_CUTOFF_HOUR = 11     # IST -- warmup candles are only fetched/prepended before this time
 ATR_WARMUP_CUTOFF_MINUTE = 0
 ATR_WARMUP_TAIL_CANDLE_COUNT = 20  # previous-session candles to fetch (comfortably >= ATR's 15-candle
