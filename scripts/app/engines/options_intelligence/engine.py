@@ -119,6 +119,20 @@ def analyze(symbol: str, direction: str, moneyness: str, offset_index: int,
         leg.get("delta"), leg.get("gamma"), leg.get("theta"), leg.get("vega"), leg.get("iv"),
     )
 
+    # IV_SAMPLE_TRADED_LEG (diagnostic only, no scoring/threshold change here):
+    # angelone.py's/upstox.py's own "IV_SAMPLE" logs (see IV_SCALE_VERIFICATION.md)
+    # fire on the FIRST non-None iv found while building the whole raw chain --
+    # in practice that's usually an edge/illiquid strike near the start of the
+    # broker's response, NOT the strike actually selected for this trade signal.
+    # This log fires on `leg`, the specific strike+side score_strike() already
+    # picked for this setup -- the value iv_score()/iv_rank() below actually
+    # score against -- so it reflects what the live scanner really sees per
+    # trade, not an arbitrary chain entry.
+    _logger.info(
+        "IV_SAMPLE_TRADED_LEG symbol=%s strike=%s direction=%s instrument_key=%s raw_iv=%r",
+        symbol, strike, direction, instrument_key, iv,
+    )
+
     if oi_delta_pct is None:
         # In the live scanner.score_strike() path this is ALWAYS supplied
         # (it already calls filters.oi_change_pct() before oi_is_building()
