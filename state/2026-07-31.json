@@ -386,7 +386,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-31T15:19:00+05:30",
+      "last_processed_ts": "2026-07-31T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -553,11 +553,12 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 363.95,
-      "current_pnl_pct": 6.14,
+      "current_price": 356.7,
+      "current_pnl_pct": 4.02,
       "maximum_profit_pct": 6.14,
       "maximum_drawdown_pct": -2.42,
-      "holding_time_minutes": 44
+      "holding_time_minutes": 49,
+      "_marked_open_at_eod": true
     },
     "NIFTY-PE-ITM-20260731-1441-01": {
       "trade_id": "NIFTY-PE-ITM-20260731-1441-01",
@@ -912,9 +913,9 @@
       "final_status": null,
       "actual_entry_time": "2026-07-31T14:46:00+05:30",
       "tracked_entry_price": 121.1,
-      "highest_since_entry": 122.55,
+      "highest_since_entry": 122.95,
       "lowest_since_entry": 121.1,
-      "max_favorable_pct": 1.2,
+      "max_favorable_pct": 1.53,
       "max_adverse_pct": 0.0,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -922,7 +923,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-31T15:19:00+05:30",
+      "last_processed_ts": "2026-07-31T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1093,11 +1094,12 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 122.55,
-      "current_pnl_pct": 1.2,
-      "maximum_profit_pct": 1.2,
+      "current_price": 122.95,
+      "current_pnl_pct": 1.53,
+      "maximum_profit_pct": 1.53,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 34
+      "holding_time_minutes": 39,
+      "_marked_open_at_eod": true
     },
     "KPIT TECHNOLOGIES LIMITED-CE-ATM-20260731-1450-01": {
       "trade_id": "KPIT TECHNOLOGIES LIMITED-CE-ATM-20260731-1450-01",
@@ -1191,7 +1193,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-31T15:19:00+05:30",
+      "last_processed_ts": "2026-07-31T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1369,11 +1371,12 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 19.95,
-      "current_pnl_pct": -4.55,
+      "current_price": 19.6,
+      "current_pnl_pct": -6.22,
       "maximum_profit_pct": 0.0,
-      "maximum_drawdown_pct": -5.02,
-      "holding_time_minutes": 29
+      "maximum_drawdown_pct": -6.22,
+      "holding_time_minutes": 34,
+      "_marked_open_at_eod": true
     }
   },
   "next_seq": {
