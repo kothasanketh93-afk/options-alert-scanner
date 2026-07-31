@@ -53,7 +53,19 @@ class BSEProvider(BaseProvider):
         elif isinstance(payload, list):
             items = payload
         else:
-            _logger.warning(f"NEWS_PROVIDER BSE unexpected payload type: {type(payload).__name__}")
+            # FIX (2026-07-31): logging only type(payload).__name__ meant
+            # every occurrence looked identical in the logs with no way
+            # to tell "BSE is serving a maintenance notice" apart from
+            # "BSE is rate-limiting us" apart from anything else -- add a
+            # short, truncated preview of the actual content so a future
+            # read of this log line has something to diagnose from.
+            # Still degrades to [] either way; this only changes what's
+            # logged, not the fail-soft behavior above.
+            preview = str(payload)[:200]
+            _logger.warning(
+                f"NEWS_PROVIDER BSE unexpected payload type: {type(payload).__name__} "
+                f"preview={preview!r}"
+            )
             return []
         if not isinstance(items, list):
             _logger.warning("NEWS_PROVIDER BSE unexpected payload shape")
