@@ -34,7 +34,10 @@ MAX_CONSECUTIVE_SL = 2
 # -- consecutive_sl_streak is still tracked and reported either way,
 # this flag only controls whether crossing MAX_CONSECUTIVE_SL actually
 # halts new alerts. See state.record_trade_outcome_for_streak().
-STOP_AFTER_CONSECUTIVE_SL = True
+STOP_AFTER_CONSECUTIVE_SL = False  # set False 2026-07-31: testing/validation mode -- want every
+                                    # alert visible for the whole session regardless of SL hits.
+                                    # REVERT TO True BEFORE REAL-MONEY TRADING -- this is the
+                                    # capital-protection circuit breaker, not a cosmetic setting.
 
 # Cap on simultaneously open trades (WAITING_ENTRY + ACTIVE + T1_HIT).
 # Mostly a backstop now that only one best-ranked setup opens per run.

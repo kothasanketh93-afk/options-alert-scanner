@@ -465,7 +465,19 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     _logger.info(
         f"SCORE {symbol} {direction} {moneyness} strike={strike} "
         f"trade_score={score}/100 grade={grade} (entry_floor={ENTRY_SCORE}) | "
-        + " ".join(f"{k}={v:.2f}" for k, v in strengths.items())
+        # FIX (2026-07-31): strengths.items() can legitimately contain
+        # None -- compute_trade_score() above already documents and
+        # handles this ("None for a factor that's genuinely unavailable
+        # this cycle e.g. EMA9/21 not yet ready"), but this log line
+        # didn't, and blindly applying :.2f to None crashed with
+        # "unsupported format string passed to NoneType.__format__" --
+        # confirmed live, taking out every single symbol for the whole
+        # cycle during the ATR-ready-but-EMA-not-ready window (roughly
+        # candles 15-20, ~90 minutes around midday IST). This was
+        # pre-existing (unrelated to today's other changes) and just
+        # hadn't been hit by a real run until now.
+        + " ".join(f"{k}={v:.2f}" if v is not None else f"{k}=None"
+                    for k, v in strengths.items())
     )
     if candlestick_read.get("enabled") and candlestick_read.get("patterns_detected"):
         _logger.info(
