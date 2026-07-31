@@ -341,7 +341,17 @@ def _score_symbol_direction(symbol: str, direction: str, session: str, oi_histor
         "stop_loss": levels["stop_loss"], "target_1": levels["target_1"], "target_2": levels["target_2"],
         "grade": grade, "trade_score": score,
         "probability_pct": probability_pct, "probability_label": grade,
-        "score_breakdown": [f"{k.replace('_', ' ').title()}: {v:.2f}" for k, v in strengths.items()],
+        # FIX (2026-07-31): same None-unsafe :.2f formatting bug found
+        # and confirmed crashing live in scanner.py's SCORE log line --
+        # applied the same defensive fix here since strengths.items()
+        # can carry the same "genuinely unavailable this cycle" None
+        # values. Hadn't been observed crashing here yet, but the
+        # pattern was identical.
+        "score_breakdown": [
+            f"{k.replace('_', ' ').title()}: {v:.2f}" if v is not None
+            else f"{k.replace('_', ' ').title()}: None"
+            for k, v in strengths.items()
+        ],
         "confidence_score": round(score / 10, 1),
         "risk_score": round(min(10.0, rr_ratio * 3), 1),
         "reward_score": round(min(10.0, rr_ratio * 4), 1),
