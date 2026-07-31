@@ -25,7 +25,6 @@ Two different kinds of "read" here, both genuinely read-only:
 import daily_cache
 from config import (
     REPLAY_ANALYTICS_ENABLED,
-    REPLAY_JOURNAL_SUBDIR,
     REPLAY_DAILY_REPORT_SUBDIR,
     REPLAY_WEEKLY_REPORT_SUBDIR,
     REPLAY_MONTHLY_REPORT_SUBDIR,

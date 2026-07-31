@@ -18,7 +18,7 @@ from fastapi.responses import JSONResponse
 from app.backend import settings
 from app.backend.api.routes import (
     health, scanner, config as config_routes, dashboard, analytics, replay, live,
-    health_extended, monitoring, diagnostics,
+    health_extended, monitoring, diagnostics, trade_lifecycle as trade_lifecycle_routes,
 )
 from app.backend.api.ws_manager import manager as ws_manager
 from app.backend.services import live_service
@@ -103,6 +103,7 @@ def create_app() -> FastAPI:
     app.include_router(live.router)
     app.include_router(monitoring.router)
     app.include_router(diagnostics.router)
+    app.include_router(trade_lifecycle_routes.router)
 
     @app.get("/api/version", tags=["meta"])
     def version():

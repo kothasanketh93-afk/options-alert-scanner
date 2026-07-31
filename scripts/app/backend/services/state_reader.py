@@ -15,7 +15,6 @@ import logging
 import threading
 import time
 from datetime import datetime, timezone, timedelta
-from pathlib import Path
 
 import state as state_mod
 from app.backend import settings
