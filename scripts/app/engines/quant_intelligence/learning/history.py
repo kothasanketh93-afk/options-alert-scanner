@@ -14,7 +14,7 @@ import json
 import os
 import threading
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from ..utils.exceptions import StorageError
 

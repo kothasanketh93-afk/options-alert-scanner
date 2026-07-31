@@ -4,7 +4,7 @@ pattern/statistics.py -- Aggregate historical outcomes into pattern stats.
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 
 def confidence_from_sample(sample_size: int, min_sample_for_confidence: int) -> str:

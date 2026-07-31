@@ -7,7 +7,7 @@ are easy to read independent of the scoring MATH (analyzer).
 
 from __future__ import annotations
 
-from typing import List, Tuple
+from typing import List
 
 
 def confidence_label(score: float) -> str:

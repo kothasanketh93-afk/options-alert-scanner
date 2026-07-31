@@ -11,7 +11,7 @@ Targets are ATR-multiple based, then adjusted by:
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 
 def compute_targets(
