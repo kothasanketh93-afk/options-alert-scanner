@@ -28,6 +28,19 @@ _DEFAULT_HEADERS = {
         "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"
     ),
     "Accept": "*/*",
+    # Added 2026-07-31 alongside the business-standard 403 investigation:
+    # some CDN/anti-bot filters (Akamai, Cloudflare, etc.) also check for
+    # Accept-Language and reject requests that omit it, even with an
+    # otherwise-realistic User-Agent. BEST EFFORT ONLY -- verified live
+    # via a non-CI fetcher that business-standard's feed itself is up
+    # and returns valid RSS, so the 403 is specifically about how the
+    # request is being made, not a dead URL. If this alone doesn't clear
+    # it, the block is more likely IP-range-based (e.g. GitHub Actions'
+    # published IP ranges are a common target for exactly this kind of
+    # blocklisting) -- no header change fixes that; the fallback then is
+    # dropping that one feed or fronting the request through a different
+    # egress path, not further header tweaking.
+    "Accept-Language": "en-US,en;q=0.9",
 }
 
 
