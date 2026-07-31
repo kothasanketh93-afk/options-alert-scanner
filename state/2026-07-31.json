@@ -386,7 +386,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-31T14:50:00+05:30",
+      "last_processed_ts": "2026-07-31T14:55:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -553,11 +553,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 346.95,
-      "current_pnl_pct": 1.18,
-      "maximum_profit_pct": 4.13,
+      "current_price": 358.75,
+      "current_pnl_pct": 4.62,
+      "maximum_profit_pct": 4.62,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 14
+      "holding_time_minutes": 19
     },
     "NIFTY-PE-ITM-20260731-1441-01": {
       "trade_id": "NIFTY-PE-ITM-20260731-1441-01",
@@ -655,7 +655,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-31T14:50:00+05:30",
+      "last_processed_ts": "2026-07-31T14:55:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -826,11 +826,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 93.0,
-      "current_pnl_pct": -5.87,
+      "current_price": 96.8,
+      "current_pnl_pct": -2.02,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -5.87,
-      "holding_time_minutes": 8
+      "holding_time_minutes": 13
     },
     "TUBE INVEST OF INDIA LTD-PE-ITM-20260731-1445-01": {
       "trade_id": "TUBE INVEST OF INDIA LTD-PE-ITM-20260731-1445-01",
@@ -921,7 +921,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-31T14:50:00+05:30",
+      "last_processed_ts": "2026-07-31T14:55:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1096,7 +1096,7 @@
       "current_pnl_pct": 0.0,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 4
+      "holding_time_minutes": 9
     },
     "KPIT TECHNOLOGIES LIMITED-CE-ATM-20260731-1450-01": {
       "trade_id": "KPIT TECHNOLOGIES LIMITED-CE-ATM-20260731-1450-01",
@@ -1176,23 +1176,24 @@
           "trade_score": 57
         }
       ],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
+      "actual_entry_time": "2026-07-31T14:51:00+05:30",
+      "tracked_entry_price": 20.9,
+      "highest_since_entry": 20.9,
+      "lowest_since_entry": 20.55,
       "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "max_adverse_pct": -1.67,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-31T14:50:51.087728+05:30",
+      "last_processed_ts": "2026-07-31T14:55:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
       ],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -1366,7 +1367,12 @@
           "enabled": false,
           "reason": "no candlestick read attached to this trade"
         }
-      }
+      },
+      "current_price": 20.8,
+      "current_pnl_pct": -0.48,
+      "maximum_profit_pct": 0.0,
+      "maximum_drawdown_pct": -0.48,
+      "holding_time_minutes": 4
     }
   },
   "next_seq": {
@@ -1385,15 +1391,15 @@
     "NSE_FO|65808": 11481015.0,
     "NSE_FO|65852": 6694090.0,
     "NSE_FO|65854": 15750605.0,
-    "NSE_FO|65855": 14956565.0,
-    "NSE_FO|65853": 13456430.0,
-    "NSE_FO|65809": 16369340.0,
+    "NSE_FO|65855": 14459900.0,
+    "NSE_FO|65853": 12978160.0,
+    "NSE_FO|65809": 16212235.0,
     "NSE_FO|59083": 202320.0,
     "NSE_FO|59086": 303270.0,
     "NSE_FO|59088": 190050.0,
-    "NSE_FO|59089": 88620.0,
-    "NSE_FO|59087": 166920.0,
-    "NSE_FO|59084": 205440.0,
+    "NSE_FO|59089": 112110.0,
+    "NSE_FO|59087": 183240.0,
+    "NSE_FO|59084": 202230.0,
     "NSE_FO|60607": 23880.0,
     "NSE_FO|60609": 292800.0,
     "NSE_FO|60611": 27480.0,
@@ -1403,12 +1409,12 @@
     "BSE_FO|840654": 345880.0,
     "BSE_FO|840488": 449820.0,
     "BSE_FO|840239": 765780.0,
-    "BSE_FO|840353": 1312360.0,
-    "BSE_FO|840637": 685140.0,
+    "BSE_FO|840353": 1269000.0,
+    "BSE_FO|840637": 669720.0,
     "BSE_FO|840431": 534700.0,
     "NSE_FO|120890": 184450.0,
     "NSE_FO|49940": 1117550.0,
-    "NSE_FO|120896": 622325.0,
+    "NSE_FO|120896": 621550.0,
     "NSE_FO|120897": 406100.0,
     "NSE_FO|49941": 1051675.0,
     "NSE_FO|120892": 426250.0,
@@ -1420,7 +1426,7 @@
     "NSE_FO|146093": 351575.0,
     "NSE_FO|68293": 166725.0,
     "NSE_FO|81195": 594700.0,
-    "NSE_FO|68295": 434150.0,
+    "NSE_FO|68295": 434625.0,
     "NSE_FO|68296": 342000.0,
     "NSE_FO|81196": 499700.0,
     "NSE_FO|68294": 359575.0,
@@ -1428,11 +1434,11 @@
     "NSE_FO|147724": 3190100.0,
     "NSE_FO|151396": 1706375.0,
     "NSE_FO|151397": 1040250.0,
-    "NSE_FO|147725": 1341375.0,
-    "NSE_FO|151341": 903375.0,
+    "NSE_FO|147725": 1337725.0,
+    "NSE_FO|151341": 890600.0,
     "NSE_FO|154198": 0.0,
     "NSE_FO|154200": 18600.0,
-    "NSE_FO|154202": 8600.0,
+    "NSE_FO|154202": 8800.0,
     "NSE_FO|154203": 7600.0,
     "NSE_FO|154201": 64200.0,
     "NSE_FO|154199": 6600.0,
@@ -1443,18 +1449,18 @@
     "NSE_FO|59081": 123210.0,
     "NSE_FO|59082": 138600.0,
     "BSE_FO|840713": 485520.0,
-    "BSE_FO|840223": 495720.0,
+    "BSE_FO|840223": 479960.0,
     "NSE_FO|146076": 460600.0,
     "NSE_FO|146091": 369950.0,
     "NSE_FO|60613": 59040.0,
     "NSE_FO|60614": 27960.0,
-    "NSE_FO|116105": 3295300.0,
+    "NSE_FO|116105": 3288325.0,
     "NSE_FO|116107": 1799550.0,
-    "NSE_FO|150134": 68600.0,
+    "NSE_FO|150134": 68400.0,
     "NSE_FO|150135": 30600.0,
     "NSE_FO|147726": 6159375.0,
     "NSE_FO|147727": 1257425.0,
-    "NSE_FO|81197": 1039775.0,
+    "NSE_FO|81197": 1034075.0,
     "NSE_FO|81198": 1056400.0,
     "NSE_FO|120057": 42150.0,
     "NSE_FO|114363": 204450.0,
@@ -1463,21 +1469,24 @@
     "NSE_FO|155160": 388500.0,
     "NSE_FO|155162": 42175.0,
     "BSE_FO|840281": 393980.0,
-    "NSE_FO|147723": 2104225.0,
+    "NSE_FO|147723": 2106050.0,
     "NSE_FO|60615": 11280.0,
     "NSE_FO|120060": 32400.0,
     "NSE_FO|60617": 247560.0,
-    "NSE_FO|155163": 16625.0,
+    "NSE_FO|155163": 16275.0,
     "NSE_FO|120899": 295275.0,
     "NSE_FO|65859": 4831710.0,
     "NSE_FO|60619": 9240.0,
     "NSE_FO|60621": 16800.0,
     "BSE_FO|840267": 308200.0,
     "BSE_FO|840399": 486960.0,
-    "NSE_FO|68297": 539600.0,
-    "NSE_FO|155161": 158200.0,
-    "NSE_FO|155159": 133875.0,
-    "NSE_FO|120898": 816850.0
+    "NSE_FO|68297": 537225.0,
+    "NSE_FO|155161": 159950.0,
+    "NSE_FO|155159": 134400.0,
+    "NSE_FO|120898": 814525.0,
+    "NSE_FO|60620": 14880.0,
+    "NSE_FO|60618": 246120.0,
+    "NSE_FO|60616": 20160.0
   },
   "probability_history": {
     "ADANI PORT & SEZ LTD-CE": [
@@ -1539,6 +1548,18 @@
       },
       {
         "time": "14:50",
+        "pct": 65
+      },
+      {
+        "time": "14:55",
+        "pct": 65
+      },
+      {
+        "time": "14:55",
+        "pct": 65
+      },
+      {
+        "time": "14:55",
         "pct": 65
       }
     ],
@@ -1618,13 +1639,31 @@
       {
         "time": "14:50",
         "pct": 65
+      },
+      {
+        "time": "14:55",
+        "pct": 65
+      },
+      {
+        "time": "14:55",
+        "pct": 65
+      },
+      {
+        "time": "14:55",
+        "pct": 65
+      }
+    ],
+    "SWIGGY LIMITED-PE": [
+      {
+        "time": "14:55",
+        "pct": 68
       }
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 459,
-    "valid_signals": 31,
-    "rejected_signals": 18,
+    "scanned_symbols": 468,
+    "valid_signals": 38,
+    "rejected_signals": 19,
     "api_failures": 81,
     "broker_errors": 0
   },
