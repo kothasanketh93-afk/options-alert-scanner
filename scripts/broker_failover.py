@@ -233,6 +233,18 @@ class FailoverBroker(Broker):
         return self._call("get_daily_candles", instrument_key, count,
                            count_failures=False, result_ok=validate)
 
+    def get_previous_session_candles(self, instrument_key: str, interval: str, count: int) -> list:
+        # FIX 2 (ATR warmup, 2026-07-30). Same reasoning as
+        # get_daily_candles() above -- a warmup-only nicety, so its own
+        # success/failure never counts toward the failover streak, but
+        # it still falls through to the secondary broker before
+        # market_data.get_atr_warmup_candles() gives up and falls back
+        # to today-only candles.
+        def validate(candles):
+            return (True, None) if candles else (False, "empty previous-session candle list")
+        return self._call("get_previous_session_candles", instrument_key, interval, count,
+                           count_failures=False, result_ok=validate)
+
     def get_batch_quotes(self, instrument_keys: list) -> dict:
         # Phase 1, premarket-only. Same reasoning as get_daily_candles()
         # above.

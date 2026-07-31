@@ -37,7 +37,9 @@ from exceptions import TelegramFailure, BrokerAPIError
 from logging_setup import get_logger
 import config
 import trade_score
-from config import SUMMARY_HHMM
+import trade_lifecycle
+import btst_recommendation
+from config import SUMMARY_HHMM, EOD_STATUS_CHECK_HHMM
 from app.engines import early_breakout as early_breakout_engine
 from app.engines import decision_engine
 from app.market import snapshot as market_snapshot
@@ -441,6 +443,13 @@ def run_tracker_step(state: dict, now: datetime):
             events = tracker.process_trade_candles(trade, candles)
             _dispatch_tracker_events(trade, events)
 
+            # Trade Lifecycle (trade_lifecycle.py): current price / PnL /
+            # running max-profit / max-drawdown / holding time -- reuses
+            # this cycle's already-fetched candles (no extra broker call).
+            # Alerts-only bookkeeping: never touches trade["status"],
+            # never exits/closes anything.
+            trade_lifecycle.update_lifecycle_metrics(trade, candles[-1]["close"], now)
+
             if trade["status"] in TERMINAL_STATUSES and not trade["streak_counted"]:
                 final_status = trade.get("final_status")
                 state_mod.record_trade_outcome_for_streak(state, final_status)
@@ -479,6 +488,46 @@ def run_tracker_step(state: dict, now: datetime):
             log.error("Trade %s: tracker step failed (%s: %s) -- continuing with "
                        "remaining trades; this trade will be retried next run.",
                        trade_id, type(exc).__name__, exc)
+
+
+def run_btst_recommendations(state: dict, now: datetime):
+    """
+    BTST/STBT Recommendation Engine dispatch (Part 12 merge). For every
+    trade already marked OPEN AT EOD by trade_lifecycle.mark_open_at_eod()
+    (existing, unmodified production call above) that hasn't been
+    evaluated yet this session, computes the Recommendation Object
+    (btst_recommendation.evaluate_carry(), advisory only -- see that
+    module's docstring) and sends ONE enhanced Telegram alert covering
+    Trade ID / BTST Candidate / Confidence / Reasons / Status / PnL /
+    Carry Recommendation.
+
+    Self-gated: returns immediately, doing nothing at all, unless
+    config.BTST_RECOMMENDATION_ENABLED is True -- so this call is safe
+    to leave unconditional at its call site below; it is a true no-op
+    with the flag off, identical to today's production behavior.
+
+    Idempotent: trade["btst_recommendation"] is only computed once per
+    trade, and the Telegram send is idempotent via the existing
+    messages_sent/notify_once mechanism. Never touches trade["status"],
+    never exits/closes/carries anything, never calls a broker.
+    """
+    if not config.BTST_RECOMMENDATION_ENABLED:
+        return
+
+    for trade_id, trade in state["trades"].items():
+        if not trade.get("_marked_open_at_eod"):
+            continue
+        if "btst_recommendation" in trade:
+            continue
+
+        recommendation = btst_recommendation.evaluate_carry(trade, now=now)
+        trade["btst_recommendation"] = recommendation
+
+        try:
+            notify_once(trade, "OPEN_AT_EOD_BTST_ALERT", tg.fmt_open_at_eod_alert, trade, recommendation)
+        except TelegramFailure:
+            log.error("Trade %s: OPEN AT EOD / BTST recommendation alert could not be "
+                      "sent (Telegram failure). Recommendation is still stored on the trade.", trade_id)
 
 
 def maybe_send_daily_summary(state: dict, now: datetime):
@@ -671,6 +720,24 @@ def main():
             log.error("Early Breakout Engine step failed (%s: %s) -- continuing with "
                        "the rest of this run.", type(exc).__name__, exc, exc_info=True)
         run_tracker_step(state, now)
+
+        # Trade Lifecycle EOD check (~15:25 IST, config.EOD_STATUS_CHECK_HHMM):
+        # label -- not close -- any still-open trade as "OPEN AT EOD" if
+        # neither target nor SL has been hit yet. Runs before the daily
+        # summary so the summary already reflects it. Idempotent (safe on
+        # every remaining cycle today); never touches trade["status"] and
+        # never exits a position -- tracker.py's own 15:30 market-close
+        # EOD_CLOSED transition is unchanged and still runs separately.
+        if (now.hour, now.minute) >= EOD_STATUS_CHECK_HHMM:
+            newly_marked = trade_lifecycle.mark_open_at_eod(state, now)
+            if newly_marked:
+                log.info("Trade Lifecycle: marked %d trade(s) OPEN AT EOD.", newly_marked)
+            # BTST/STBT Recommendation Engine (Part 12 merge, additive):
+            # self-gated on config.BTST_RECOMMENDATION_ENABLED (default
+            # False) -- true no-op with the flag off, identical to
+            # today's production behavior above this line.
+            run_btst_recommendations(state, now)
+
         maybe_send_daily_summary(state, now)
     except Exception as exc:
         run_error = exc

@@ -130,6 +130,14 @@ from ranking import _grade_rank_key, rank_all
 # -- no new broker call, no duplicated OI/liquidity/Greeks math.
 from app.engines.options_intelligence import engine as options_intel
 from config import OPTIONS_INTELLIGENCE_FILTER_ENABLED
+# Candlestick Pattern Recognition -- additive only, same convention as
+# Options Intelligence above. Pure arithmetic on candles_15m, which
+# score_strike() already fetches a few lines below for
+# ema_trend_direction()/find_nearby_level()/efficiency_ratio() -- no
+# new broker call, no new candle history. See candlestick_patterns.py's
+# module docstring and config.py's CANDLESTICK_* block.
+import candlestick_patterns
+from config import CANDLESTICK_PATTERNS_ENABLED
 
 _logger = get_logger("scanner")
 
@@ -304,7 +312,39 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         _logger.info(f"SKIP {symbol} {direction} {moneyness} strike={strike}: no 15-min candles returned")
         return None
 
+    # Candlestick Pattern Recognition -- reuses candles_15m fetched just
+    # above, no new broker call. Computed unconditionally when enabled
+    # (advisory only: never gates this strike -- see candlestick_patterns.py
+    # module docstring). Wrapped defensively even though analyze() itself
+    # never raises, same "an optional add-on must never cost us an
+    # otherwise-valid candidate" posture as options_intel below.
+    if CANDLESTICK_PATTERNS_ENABLED:
+        try:
+            candlestick_read = candlestick_patterns.analyze(candles_15m, direction)
+        except Exception as cs_exc:  # noqa: BLE001
+            _logger.error(
+                f"CANDLESTICK_PATTERNS_FAILED {symbol} {direction} {moneyness} strike={strike}: "
+                f"{type(cs_exc).__name__}: {cs_exc}", exc_info=True,
+            )
+            candlestick_read = {"enabled": False, "error": True, "reason": str(cs_exc)}
+    else:
+        candlestick_read = {"enabled": False, "reason": "CANDLESTICK_PATTERNS_ENABLED is False"}
+
+    # FIX 2 (ATR warmup, 2026-07-30, config.WARMUP_CANDLE_CONTINUITY_ENABLED):
+    # a SEPARATE candle set, used ONLY as input to compute_atr() below.
+    # candles_15m itself (used for ema_trend_direction, find_nearby_level,
+    # momentum_pct, efficiency_ratio just below) is intentionally left
+    # completely untouched -- Opening Range, today's High/Low, Session
+    # VWAP, and breakout-level logic can never see a previous-session
+    # candle through this path. When the flag is off (default) or it's
+    # past the warmup cutoff, atr_candles IS candles_15m (same object).
+    atr_candles, combined_candle_count = market_data.get_atr_warmup_candles(
+        underlying_key, "15minute", candles_15m
+    )
+
     ema_aligned = ema_trend_direction(candles_15m) == direction
+    ema9 = compute_ema([c["close"] for c in candles_15m], 9)
+    ema21 = compute_ema([c["close"] for c in candles_15m], 21)
     vwap_confirmed = vwap_check(symbol, spot_price, direction)
     volume_confirmed = liquidity_ok(oi, volume, bid, ask, premium, symbol)  # see NOTE below
     oi_delta_pct = oi_change_pct(oi_history, instrument_key, oi)  # read BEFORE oi_is_building mutates oi_history
@@ -315,7 +355,18 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     expiry_ok = expiry_theta_ok(moneyness, delta, expiry)
 
     nearby_level = find_nearby_level(candles_15m, direction)
-    atr_index_points = compute_atr(candles_15m)
+    atr_index_points = compute_atr(atr_candles)
+
+    # --- Diagnostics (TEMPORARY -- remove once EMA/ATR-unavailable
+    # rejections are confirmed resolved in production; see FIX 1/FIX 2
+    # deliverables notes) ---
+    _logger.info(
+        f"DIAG {symbol} {direction} {moneyness} strike={strike} | "
+        f"candles_fetched={len(candles_15m)} combined_candle_count={combined_candle_count} "
+        f"ema_ready={ema9 is not None and ema21 is not None} "
+        f"atr_ready={atr_index_points is not None} htf_ready={bool(mtf_confirmed)}"
+    )
+
     if atr_index_points is None or delta == 0:
         _logger.info(f"SKIP {symbol} {direction} {moneyness} strike={strike}: ATR unavailable or delta==0")
         return None  # dynamic_trade_levels() would raise on this -- bail before it does
@@ -382,8 +433,6 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     # and only intended for the risk_reward_ok gate input).
     levels = dynamic_trade_levels(premium, atr_index_points, delta, direction, spot_price, nearby_level)
 
-    ema9 = compute_ema([c["close"] for c in candles_15m], 9)
-    ema21 = compute_ema([c["close"] for c in candles_15m], 21)
     raw_momentum = momentum_pct(candles_15m)
     signed_momentum = None
     if raw_momentum is not None:
@@ -398,7 +447,13 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         "oi": trade_score.oi_build_strength(oi_delta_pct),
         "momentum": trade_score.momentum_strength(signed_momentum),
         "vwap": trade_score.vwap_strength(signed_vwap_dist),
-        "ema": trade_score.ema_strength(ema9, ema21, spot_price) if ema9 is not None and ema21 is not None else 0.0,
+        # BUGFIX (2026-07-30): was `else 0.0` -- that made "EMA not yet
+        # computable" (e.g. before enough candles exist) score
+        # identically to "EMA confirmed and pointing the wrong way",
+        # dragging the composite score down for a reason that had
+        # nothing to do with the setup. None -> compute_trade_score()
+        # excludes this factor and renormalizes the remaining weights.
+        "ema": trade_score.ema_strength(ema9, ema21, spot_price) if ema9 is not None and ema21 is not None else None,
         "risk_reward": trade_score.risk_reward_strength(target_distance, sl_distance),
         "liquidity": trade_score.liquidity_strength(oi, volume, bid, ask, premium, symbol),
         "market_strength": trade_score.market_strength(_broad_market_efficiency_ratio()),
@@ -412,6 +467,13 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         f"trade_score={score}/100 grade={grade} (entry_floor={ENTRY_SCORE}) | "
         + " ".join(f"{k}={v:.2f}" for k, v in strengths.items())
     )
+    if candlestick_read.get("enabled") and candlestick_read.get("patterns_detected"):
+        _logger.info(
+            f"CANDLESTICK {symbol} {direction} {moneyness} strike={strike} "
+            f"patterns={candlestick_read['patterns_detected']} "
+            f"dominant={candlestick_read.get('dominant_pattern')} "
+            f"alignment={candlestick_read.get('alignment_score_pct')}"
+        )
 
     if grade == "Reject":
         _logger.info(
@@ -504,6 +566,7 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         "alternatives": [],  # filled in by main.py's run_scanner_step, not here
         "_quality_score": score,  # ranking.py's tiebreak key -- now the Trade Score itself
         "options_intelligence": oi_intel,  # Part 5, additive -- see app/engines/options_intelligence/
+        "candlestick_patterns": candlestick_read,  # additive -- see candlestick_patterns.py
     }
 
 
@@ -536,6 +599,8 @@ def detect_setups(symbol: str, oi_history: dict) -> list:
         min_quality_score += penalty
 
     biases = directional_bias(symbol)
+    # Diagnostics (TEMPORARY -- see FIX 1/FIX 2 deliverables notes).
+    _logger.info(f"DIAG {symbol}: bias_ready={bool(biases)}")
     if not biases:
         # As of the 2026-07-24 fix, directional_bias() no longer
         # returns [] on 5-min/15-min EMA disagreement (that's a score

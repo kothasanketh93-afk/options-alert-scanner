@@ -45,6 +45,7 @@ import btst_state
 import btst_tracker
 import btst_telegram
 import btst_calendar
+import trade_lifecycle
 
 IST = timezone(timedelta(hours=5, minutes=30))
 BTST_TERMINAL_STATUSES = {"T2_HIT", "SL_HIT", "GAP_SL_HIT", "FORCE_EXIT", "AMBIGUOUS"}
@@ -217,6 +218,13 @@ def run_exit_step():
                     continue
                 events = btst_tracker.process_position_candles(position, candles)
                 _dispatch_exit_events(position, events)
+
+                # Trade Lifecycle (trade_lifecycle.py): same bookkeeping
+                # as main.py's intraday tracker step -- reuses candles
+                # already fetched above, no extra broker call, never
+                # touches position["status"] or exits anything.
+                trade_lifecycle.update_lifecycle_metrics(position, candles[-1]["close"], now)
+
                 touched = True
             except (BrokerAPIError, TelegramFailure) as exc:
                 log.error("BTST position %s (entry %s): exit-step failed (%s: %s) -- will retry next run.",

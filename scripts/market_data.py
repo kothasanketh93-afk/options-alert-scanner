@@ -72,10 +72,20 @@ doesn't re-discover it the hard way:
     and 2026-07-29 believed exactly that going in.
 """
 
+from datetime import datetime, timezone, timedelta
+
 from angelone import AngelOneBroker
 from upstox import UpstoxBroker
 from broker_failover import FailoverBroker
 from cache import TTLCache
+from logging_setup import get_logger
+from config import (
+    WARMUP_CANDLE_CONTINUITY_ENABLED, ATR_WARMUP_CUTOFF_HOUR, ATR_WARMUP_CUTOFF_MINUTE,
+    ATR_WARMUP_TAIL_CANDLE_COUNT,
+)
+
+IST = timezone(timedelta(hours=5, minutes=30))
+_logger = get_logger("market_data")
 
 # One broker instance per process (= one per GitHub Actions run),
 # shared across every call this run makes -- this is what makes
@@ -125,6 +135,18 @@ _underlying_candle_failure_cache = TTLCache(ttl_seconds=60)
 # site was just missed. Keyed by (underlying_key, expiry_date); same
 # 180s TTL rationale as _underlying_candle_cache above.
 _option_chain_cache = TTLCache(ttl_seconds=180)
+
+# FIX 2 (ATR warmup, 2026-07-30, config.WARMUP_CANDLE_CONTINUITY_ENABLED).
+# Keyed by (instrument_key, interval) same as _underlying_candle_cache
+# above -- the previous session's tail candles don't change during a
+# run, so every call after the first for a given (instrument_key,
+# interval) this run is served from memory. A longer TTL than
+# _underlying_candle_cache's is fine (and harmless) since this data is
+# from yesterday's session, not today's live candles -- but kept the
+# same 180s for simplicity, since it's re-created fresh every process
+# anyway (see FailoverBroker's per-run scope, this file's module
+# docstring above).
+_atr_warmup_cache = TTLCache(ttl_seconds=180)
 
 
 def get_broker():
@@ -204,6 +226,71 @@ def get_recent_underlying_candles(instrument_key: str, interval: str, count: int
             raise
         _underlying_candle_cache.set(cache_key, candles)
     return candles[-count:] if len(candles) > count else candles
+
+
+def get_atr_warmup_candles(instrument_key: str, interval: str, today_candles: list) -> tuple:
+    """
+    FIX 2 (ATR warmup, 2026-07-30) -- see config.WARMUP_CANDLE_CONTINUITY_ENABLED's
+    docstring for the full problem statement: compute_atr() needs 15
+    candles, but both brokers' get_candles() only ever return TODAY's
+    candles, so on a 15-min interval ATR can't be ready until ~12:45
+    IST.
+
+    Returns (candles_for_indicators, combined_candle_count):
+      - candles_for_indicators: `today_candles` UNCHANGED (byte-for-
+        byte, same list) whenever:
+          * config.WARMUP_CANDLE_CONTINUITY_ENABLED is False (default
+            -- production behavior is identical to before this fix), OR
+          * it's at/after config.ATR_WARMUP_CUTOFF_HOUR:MINUTE IST
+            (today's own candles are already enough by then), OR
+          * the previous-session fetch raises, or comes back empty --
+            fails OPEN to today-only candles rather than ever raising
+            out of this function or blocking a scan over a warmup-only
+            concern.
+        Otherwise: previous-session tail candles PREPENDED in front of
+        `today_candles`.
+      - combined_candle_count: len(candles_for_indicators) -- purely
+        for the diagnostic log line the caller prints; not itself used
+        for any decision.
+
+    CALLER CONTRACT: this return value is meant ONLY to feed
+    compute_atr() (and, at the same call site, compute_ema()) --
+    NEVER Opening Range, today's High/Low, Session VWAP, or breakout-
+    level logic (find_nearby_level(), the early_breakout engine,
+    app/market/snapshot.py). Those all call
+    get_recent_underlying_candles() directly and never pass through
+    this function, so they cannot see previous-session candles
+    regardless of this flag.
+    """
+    if not WARMUP_CANDLE_CONTINUITY_ENABLED:
+        return today_candles, len(today_candles)
+
+    now = datetime.now(IST)
+    cutoff = now.replace(hour=ATR_WARMUP_CUTOFF_HOUR, minute=ATR_WARMUP_CUTOFF_MINUTE,
+                          second=0, microsecond=0)
+    if now >= cutoff:
+        return today_candles, len(today_candles)
+
+    cache_key = (instrument_key, interval)
+    warmup_candles = _atr_warmup_cache.get(cache_key)
+    if warmup_candles is None:
+        try:
+            warmup_candles = _broker.get_previous_session_candles(
+                instrument_key, interval, ATR_WARMUP_TAIL_CANDLE_COUNT
+            )
+        except Exception as exc:
+            _logger.warning(
+                f"ATR_WARMUP: previous-session fetch failed for {instrument_key}/{interval} "
+                f"({type(exc).__name__}: {exc}) -- falling back to today-only candles"
+            )
+            warmup_candles = []
+        _atr_warmup_cache.set(cache_key, warmup_candles)
+
+    if not warmup_candles:
+        return today_candles, len(today_candles)
+
+    combined = warmup_candles + today_candles
+    return combined, len(combined)
 
 
 def get_option_chain(underlying_key: str, expiry_date: str) -> list:

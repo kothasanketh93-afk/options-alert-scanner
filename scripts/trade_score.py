@@ -138,14 +138,38 @@ def compute_trade_score(strengths: dict) -> int:
     """
     strengths keys must match config.TRADE_SCORE_WEIGHTS: trend,
     volume, oi, momentum, vwap, ema, risk_reward, liquidity,
-    market_strength, htf -- each a 0-1 float. Missing keys score 0 for
-    that factor rather than raising, matching example_quality_score()'s
-    defensive .get(key, 0.0) convention in grading.py.
+    market_strength, htf -- each a 0-1 float, OR None for a factor
+    that's genuinely unavailable this cycle (e.g. EMA9/21 not yet
+    computable -- see scanner.py's ema strengths line). A MISSING key
+    still scores 0 for that factor rather than raising, matching
+    example_quality_score()'s defensive .get(key, 0.0) convention in
+    grading.py -- that convention is unchanged.
+
+    BUGFIX (2026-07-30): an explicit None used to be coerced straight
+    to 0.0 by this same .get(key, 0.0) default (0.0 only ever applied
+    when the key is MISSING, not when it's present-but-None -- so
+    scanner.py's old `else 0.0` for unavailable EMA meant `strengths.get(key,0.0)`
+    call actually received a real 0.0 value up front and dragged the
+    weighted score down as if EMA were confirmed-absent/bearish rather
+    than simply not-yet-known. None now means "exclude this factor and
+    its weight from the average", and the remaining weights are
+    renormalized so the score is still out of 100 -- e.g. if EMA
+    (weight 10) is None, the other 90 points' worth of weight is
+    rescaled up to fill the full 100. Scoring math for every AVAILABE
+    (non-None) factor is unchanged.
     """
-    score = 0.0
+    weighted_sum = 0.0
+    available_weight = 0
     for key, weight in TRADE_SCORE_WEIGHTS.items():
-        value = max(0.0, min(1.0, strengths.get(key, 0.0)))
-        score += value * weight
+        value = strengths.get(key, 0.0)
+        if value is None:
+            continue  # unavailable -- exclude from both numerator and denominator
+        value = max(0.0, min(1.0, value))
+        weighted_sum += value * weight
+        available_weight += weight
+    if available_weight == 0:
+        return 0  # every factor unavailable -- nothing to score
+    score = (weighted_sum / available_weight) * 100
     return round(score)
 
 
@@ -220,7 +244,10 @@ def scoring_reasons(strengths: dict) -> list:
     """
     reasons = []
     for key, weight in TRADE_SCORE_WEIGHTS.items():
-        value = max(0.0, min(1.0, strengths.get(key, 0.0)))
+        raw_value = strengths.get(key, 0.0)
+        if raw_value is None:
+            continue  # unavailable this cycle (e.g. EMA) -- no reason line, same exclusion as compute_trade_score()
+        value = max(0.0, min(1.0, raw_value))
         label = _REASON_LABELS.get(key, key)
         midpoint = weight / 2
         points = value * weight
@@ -347,6 +374,8 @@ def factor_checklist(strengths: dict, pass_threshold: float = 0.5) -> list:
     lines = []
     for key, label in _CHECKLIST_LABELS:
         value = strengths.get(key, 0.0)
+        if value is None:
+            value = 0.0  # unavailable this cycle -- display-only, same as a weak/failing read (⚠️)
         mark = "✅" if value >= pass_threshold else "⚠️"
         lines.append(f"{label} {mark}")
     return lines

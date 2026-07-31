@@ -366,6 +366,68 @@ class AngelOneBroker(Broker):
         out.sort(key=lambda c: c["timestamp"])
         return drop_incomplete_trailing_candle(out, interval)
 
+    def get_previous_session_candles(self, instrument_key: str, interval: str, count: int) -> list:
+        """
+        FIX 2 (ATR warmup, 2026-07-30, config.WARMUP_CANDLE_CONTINUITY_ENABLED).
+        Not part of the abstract Broker interface -- same "duck-typed,
+        only used by callers that explicitly opt in" convention as
+        get_daily_candles()/get_batch_quotes() (see broker.py's
+        comments on those).
+
+        get_candles() above defaults `fromdate` to TODAY 09:15 IST,
+        so it can never return a previous session's candles on its
+        own. This fetches a short explicit date window ending
+        yesterday (over-fetches a few calendar days back and trims
+        client-side, same "simpler than importing an NSE holiday
+        calendar" approach get_daily_candles() already uses on the
+        Upstox side) and returns just the tail `count` candles --
+        i.e. the previous trading session's LAST few candles, not the
+        whole session.
+
+        Returns [] (never raises) if nothing comes back -- this is a
+        warmup nicety, not a hard dependency, so an empty/failed
+        result must let the caller fall back to today-only candles
+        rather than take down the scan.
+        """
+        if interval not in _INTERVAL_MAP:
+            raise BrokerAPIError(f"unsupported interval: {interval}")
+        _throttle_historical_call()
+        exchange, token = _split_instrument_key(instrument_key)
+
+        to_dt = datetime.now(IST).replace(hour=15, minute=30, second=0, microsecond=0) - timedelta(days=1)
+        from_dt = to_dt - timedelta(days=6)  # over-fetch a week of calendar days to clear weekends/holidays
+
+        url = f"{BASE_URL}/rest/secure/angelbroking/historical/v1/getCandleData"
+        body = {
+            "exchange": exchange,
+            "symboltoken": token,
+            "interval": _INTERVAL_MAP[interval],
+            "fromdate": from_dt.strftime("%Y-%m-%d %H:%M"),
+            "todate": to_dt.strftime("%Y-%m-%d %H:%M"),
+        }
+        try:
+            resp = request_with_retry("POST", url, json=body, headers=self._headers(),
+                                       timeout=15, error_cls=BrokerAPIError)
+            payload = resp.json()
+            if not payload.get("status"):
+                return []
+        except Exception:
+            return []
+
+        out = []
+        for c in payload.get("data") or []:
+            ts = datetime.fromisoformat(c[0])
+            out.append({
+                "timestamp": ts.isoformat(),
+                "open": float(c[1]),
+                "high": float(c[2]),
+                "low": float(c[3]),
+                "close": float(c[4]),
+                "volume": float(c[5]) if len(c) > 5 and c[5] is not None else 0.0,
+            })
+        out.sort(key=lambda c: c["timestamp"])
+        return out[-count:] if len(out) > count else out
+
     def get_ltp(self, instrument_key: str) -> float:
         exchange, token = _split_instrument_key(instrument_key)
         trading_symbol = self._token_to_symbol(exchange, token)
@@ -529,6 +591,7 @@ class AngelOneBroker(Broker):
             return {}
 
         greeks = {}
+        _iv_sample_logged = False
         for row in payload.get("data") or []:
             try:
                 strike = round(float(row["strikePrice"]), 2)
@@ -537,12 +600,24 @@ class AngelOneBroker(Broker):
             option_type = row.get("optionType")
             if option_type not in ("CE", "PE"):
                 continue
+            raw_iv = row.get("impliedVolatility")
+            if not _iv_sample_logged:
+                # IV SCALE VERIFICATION (diagnostic only, no normalization/threshold
+                # change here) -- logs the untouched raw impliedVolatility value
+                # exactly as Angel One returned it, so its scale (e.g. "16.33"
+                # meaning 16.33%, vs. a 0-1 fraction) can be confirmed from real
+                # traffic. See IV_SCALE_VERIFICATION.md for the finding.
+                log.info(
+                    "IV_SAMPLE angelone name=%s expiry=%s strike=%s type=%s raw_impliedVolatility=%r",
+                    name, expiry_date, strike, option_type, raw_iv,
+                )
+                _iv_sample_logged = True
             greeks[(strike, option_type)] = {
                 "delta": _safe_float(row.get("delta")),
                 "gamma": _safe_float(row.get("gamma")),
                 "theta": _safe_float(row.get("theta")),
                 "vega": _safe_float(row.get("vega")),
-                "iv": _safe_float(row.get("impliedVolatility")),
+                "iv": _safe_float(raw_iv),
             }
         self._greeks_cache.set(cache_key, greeks)
         return greeks

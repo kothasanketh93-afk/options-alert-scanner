@@ -97,12 +97,6 @@ def maybe_rerank(state: dict, now: datetime = None) -> dict | None:
     """
     if not config.ENABLE_INTRADAY_RERANK:
         return None
-    if config.STOCK_UNIVERSE_VALIDATION_MODE:
-        # Validation mode pins STOCK_SYMBOLS to the fixed 10-name
-        # VALIDATION_STOCK_UNIVERSE (see config.py) -- reranking would
-        # just fight that every run. Same scope carve-out
-        # refresh_symbols_for_today() already applies.
-        return None
 
     now = now or datetime.now(IST)
     slot = _matching_slot(now)

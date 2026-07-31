@@ -161,42 +161,6 @@ FALLBACK_STOCK_WATCHLIST = [
     "BANKBARODA", "PFC", "RECLTD", "ASHOKLEY", "MOTHERSON",
 ]
 
-# --- Stock-universe validation mode (temporary, universe-reduction only) ---
-# NOT the same thing as STOP_AFTER_CONSECUTIVE_SL above -- that flag
-# changes risk-management behavior (circuit breaker). This flag ONLY
-# changes WHICH stocks get scanned; it never touches entry/exit logic,
-# scoring, risk management, BTST, Telegram, monitoring, or the
-# dashboard. Purpose: cut broker API calls/failure surface way down
-# for a validation run by scanning a small, known-liquid stock set
-# instead of the full dynamic ~100-150 stock universe, while every
-# index (config.SYMBOLS' index members, see INDEX_SYMBOLS below) and
-# the BTST module (fully separate -- see btst_config.BTST_SYMBOLS)
-# keep running exactly as configured.
-#
-# True  -> refresh_symbols_for_today() (and the import-time fallback
-#          below) use VALIDATION_STOCK_UNIVERSE instead of the daily
-#          opportunity shortlist / FALLBACK_STOCK_WATCHLIST, and skip
-#          the shortlist-cache read entirely (one less daily_cache hit).
-# False (default) -> unchanged original behavior: today's opportunity
-#          shortlist if cached, else FALLBACK_STOCK_WATCHLIST.
-#
-# Flip back to False (or delete this block) to instantly restore the
-# full stock universe -- nothing else needs to change.
-STOCK_UNIVERSE_VALIDATION_MODE = True
-
-# The 10 stocks scanned when STOCK_UNIVERSE_VALIDATION_MODE is True.
-# Deliberately NOT added to STOCK_STRIKE_STEP below -- these are all
-# large, liquid F&O names that instrument_master.py's live strike
-# lookup resolves directly (see that dict's Phase 2 fallback-only
-# note); if instrument-master data is ever missing for one of them on
-# a given day, detect_all_setups()'s existing per-symbol try/except
-# skips just that symbol cleanly, same as it does today for any other
-# stock -- no new failure mode.
-VALIDATION_STOCK_UNIVERSE = [
-    "RELIANCE", "HDFCBANK", "ICICIBANK", "SBIN", "TCS",
-    "INFY", "LT", "AXISBANK", "BHARTIARTL", "ITC",
-]
-
 # Per-stock strike interval. ALSO UNVERIFIED -- unlike NIFTY/BANKNIFTY
 # (which rarely change), individual stock strike intervals get
 # revised by NSE more often as the underlying price moves, and are
@@ -224,33 +188,20 @@ STOCK_STRIKE_STEP = {
     "TATASTEEL": 2.5, "HINDALCO": 10, "VEDL": 5, "JINDALSTEL": 10, "IDEA": 1.0,
     "SAIL": 2.5, "NATIONALUM": 5, "NMDC": 1.0, "BHEL": 2.5, "FEDERALBNK": 2.5,
     "BANKBARODA": 1.0, "PFC": 5, "RECLTD": 5, "ASHOKLEY": 2.5, "MOTHERSON": 0.5,
-}
-STRIKE_STEP.update(STOCK_STRIKE_STEP)
-
-# TEMPORARY safety net for VALIDATION_STOCK_UNIVERSE (added 2026-07-29,
-# live trading incident): these 10 symbols were deliberately left out of
-# STOCK_STRIKE_STEP above on the assumption instrument_master.py's live
-# lookup always resolves them -- on 2026-07-29 that assumption failed
-# (stale/empty cached instrument_master snapshot -- see the
-# instrument_master/<date>.json.gz commit history on the `state` branch
-# to confirm), and every one of the 10 hard-failed with no fallback,
-# unlike FALLBACK_STOCK_WATCHLIST's 15 symbols which always had one.
-# Values below are Angel One (primary broker) F&O strike steps as of
-# verify_stock_symbols.py's 2026-07-29 04:54 UTC live CI run. NOTE:
-# HDFCBANK, LT, AXISBANK, and ITC had a DIFFERENT step on Upstox
-# (secondary broker) in that same run -- if broker_failover.py has
-# switched to Upstox, one of these four could misplace the ATM strike
-# by one step until re-verified. This block exists ONLY to stop the
-# hard ConfigurationError while the real cache issue is root-caused;
-# remove it once instrument_master resolves these 10 reliably again
-# (or fold it into STOCK_STRIKE_STEP above and re-run
-# verify_stock_symbols.py to confirm all values, the same way the other
-# 15 are maintained).
-VALIDATION_STOCK_STRIKE_STEP = {
+    # Folded in from the old VALIDATION_STOCK_STRIKE_STEP safety net
+    # (2026-07-29 live-incident fallback for the now-removed fixed
+    # 10-stock validation list) now that these large-cap names can
+    # surface in ANY day's dynamic shortlist, not just a fixed list.
+    # Values are Angel One (primary broker) F&O strike steps as of
+    # verify_stock_symbols.py's 2026-07-29 04:54 UTC live CI run. NOTE:
+    # HDFCBANK, LT, AXISBANK, and ITC had a DIFFERENT step on Upstox
+    # (secondary broker) in that same run -- if broker_failover.py has
+    # switched to Upstox, one of these four could misplace the ATM
+    # strike by one step until re-verified.
     "RELIANCE": 10, "HDFCBANK": 5, "ICICIBANK": 10, "SBIN": 10, "TCS": 20,
     "INFY": 5, "LT": 10, "AXISBANK": 10, "BHARTIARTL": 20, "ITC": 0.5,
 }
-STRIKE_STEP.update(VALIDATION_STOCK_STRIKE_STEP)
+STRIKE_STEP.update(STOCK_STRIKE_STEP)
 
 # Stock options trade at far lower OI/volume/premium than NIFTY/
 # BANKNIFTY -- applying MIN_OI/MIN_OPTION_VOLUME/MIN_PREMIUM above
@@ -279,10 +230,16 @@ STOCK_MIN_PREMIUM = 2
 # --- Phase 1 (opportunity_score.py) ---
 INDEX_SYMBOLS = list(SYMBOLS)  # ["NIFTY", "BANKNIFTY", "MIDCPNIFTY"] at this point -- captured before STOCK_SYMBOLS is appended below
 
-TOP_N_STOCKS = 20  # narrowed from 35 to 20 (2026-07-24) -- fewer, higher-liquidity
-                    # names scanned per run means fewer broker calls and less
-                    # exposure to the thinner end of the stock-options book;
-                    # tune further from opportunity-shortlist Telegram logs
+TOP_N_STOCKS = 5    # narrowed from 20 to 5 (2026-07-31), replacing the fixed
+                    # 10-stock STOCK_UNIVERSE_VALIDATION_MODE list -- now the
+                    # daily shortlist itself (build_opportunity_shortlist.py,
+                    # scored from universe.MASTER_UNIVERSE / the dynamic F&O
+                    # pool) IS the only stock source, refreshed every day
+                    # premarket and re-ranked intraday (see ENABLE_INTRADAY_
+                    # RERANK / RERANK_TIMES below); previously narrowed from
+                    # 35 to 20 (2026-07-24) for the same fewer-broker-calls
+                    # reason -- tune further from opportunity-shortlist
+                    # Telegram logs
 
 # --- Phase 5 (2026-07-24): dynamic F&O universe + momentum/liquidity prefilter ---
 # Per an explicit request to widen the candidate pool beyond the ~112-name
@@ -385,8 +342,7 @@ OPPORTUNITY_SCORE_WEIGHTS = {
 # mutates them in place (.clear()+.extend()), never reassigns, so
 # every existing reference sees the update with no other code needing
 # to change -- see that function's docstring for the full reasoning.
-STOCK_SYMBOLS = list(VALIDATION_STOCK_UNIVERSE) if STOCK_UNIVERSE_VALIDATION_MODE \
-    else list(FALLBACK_STOCK_WATCHLIST)
+STOCK_SYMBOLS = list(FALLBACK_STOCK_WATCHLIST)
 SYMBOLS = SYMBOLS + STOCK_SYMBOLS
 
 
@@ -426,25 +382,7 @@ def refresh_symbols_for_today() -> list:
     compatibility" requires here.
 
     Returns the (mutated in place) SYMBOLS list for convenience.
-
-    If STOCK_UNIVERSE_VALIDATION_MODE is True, this short-circuits
-    before touching daily_cache at all -- see that flag's comment
-    near VALIDATION_STOCK_UNIVERSE above.
     """
-    if STOCK_UNIVERSE_VALIDATION_MODE:
-        # Validation mode: always the fixed 10-stock validation
-        # universe, every run, regardless of whether a shortlist is
-        # cached today. Skips the daily_cache read below entirely --
-        # one less moving part / API-adjacent call per run, which is
-        # part of the point of validation mode. Indices (INDEX_SYMBOLS)
-        # are untouched, so NIFTY/BANKNIFTY/MIDCPNIFTY/SENSEX keep
-        # scanning exactly as configured.
-        STOCK_SYMBOLS.clear()
-        STOCK_SYMBOLS.extend(VALIDATION_STOCK_UNIVERSE)
-        SYMBOLS.clear()
-        SYMBOLS.extend(INDEX_SYMBOLS + STOCK_SYMBOLS)
-        return SYMBOLS
-
     import daily_cache
     from datetime import datetime, timezone, timedelta
     IST = timezone(timedelta(hours=5, minutes=30))
@@ -815,6 +753,13 @@ MARKET_CLOSE_HHMM = (15, 30)
 # every run, independent of session scanning), so this needed no
 # workflow/schedule change -- only this time moved.
 SUMMARY_HHMM = (15, 31)
+
+# --- Trade Lifecycle EOD status check (trade_lifecycle.py) ---
+# Runs BEFORE tracker.py's own 15:30 market-close EOD_CLOSED transition
+# and BEFORE SUMMARY_HHMM (15:31) -- purely a label ("OPEN AT EOD" instead
+# of "OPEN") applied to still-open trades so the daily summary already
+# reflects it. Does NOT close, exit, or touch any position -- alerts only.
+EOD_STATUS_CHECK_HHMM = (15, 25)
 
 # --- Heartbeat check (heartbeat_check.py) ---
 # BUGFIX (comment, not value): this used to say "7-min trader cadence"
@@ -1259,3 +1204,112 @@ NEWS_INTELLIGENCE_COLLECTION_TIMEOUT_SECONDS = 25.0  # hard wall-clock budget fo
                                               # main.py runs at startup -- see main.py's own comment for why
                                               # this is a defense-in-depth cap on top of each provider's own
                                               # settings.yaml timeout_seconds, not a replacement for it.
+
+# =============================================================================
+# Candlestick Pattern Recognition (candlestick_patterns.py) -- same
+# master-flag / influence-flag rollout pattern as Options/Quant/News
+# Intelligence above. Pure arithmetic on the SAME 15-min candles
+# scanner.py already fetches (candles_15m in score_strike()) -- no new
+# broker calls, no new candle history, no new dependency (stdlib only,
+# same as indicators.py). Computed and attached to the trade dict for
+# visibility either way; only affects the Decision Object's confidence
+# score when the influence flag below is explicitly turned on, and even
+# then only as a small BOUNDED nudge (see candlestick_adapter.py) --
+# never a hard reject on its own, same "advisory, not a gate" lesson
+# already learned from the 15-min MTF disagreement fix (see
+# option_chain.directional_bias()'s docstring).
+# =============================================================================
+CANDLESTICK_PATTERNS_ENABLED = True             # master flag -- False fully restores pre-existing behavior
+CANDLESTICK_PATTERNS_INFLUENCE_ENABLED = False  # if True, a confidently-opposing candlestick read can nudge
+                                                 # decision_object["confidence_score"] down by up to
+                                                 # CANDLESTICK_MAX_CONFIDENCE_DELTA points (see candlestick_adapter.py)
+CANDLESTICK_PATTERN_LOOKBACK = 3                # candles examined for the most-recent formation (engulfing/
+                                                 # star/soldiers patterns need up to 3; single-candle patterns
+                                                 # like doji/hammer/marubozu only look at the last one)
+CANDLESTICK_MAX_CONFIDENCE_DELTA = 6            # points -- hard cap on how much the influence nudge above can
+                                                 # move confidence_score in either direction, deliberately small
+                                                 # relative to Decision Engine's other inputs
+
+# Shape thresholds -- ratios against each candle's own high-low range,
+# not absolute price levels, so these work identically across NIFTY
+# (thousands of points) and a low-priced stock. Same "tune from live
+# SCORE log lines" posture as trade_score.py's TS_*_CEILING constants:
+# reasonable starting points, not backtested yet.
+CANDLESTICK_DOJI_BODY_MAX_RATIO = 0.10      # body <= 10% of range -> Doji
+CANDLESTICK_SMALL_BODY_MAX_RATIO = 0.35     # body <= 35% of range -> "small body" (hammer/star/spinning-top input)
+CANDLESTICK_LONG_WICK_MIN_MULT = 2.0        # wick >= 2x body -> "long wick" (hammer/shooting-star input)
+CANDLESTICK_MARUBOZU_WICK_MAX_RATIO = 0.05  # both wicks <= 5% of range -> Marubozu
+CANDLESTICK_SOLDIERS_MIN_BODY_RATIO = 0.50  # each candle's body >= 50% of its own range -> qualifies for
+                                             # Three White Soldiers / Three Black Crows (filters out noise)
+
+# =============================================================================
+# ATR Warmup (market_data.get_atr_warmup_candles()) -- production fix,
+# 2026-07-30.
+#
+# PROBLEM: compute_atr() (indicators.py) needs 15 candles (period=14).
+# Both AngelOne.get_candles() and UpstoxBroker.get_candles() only ever
+# return TODAY's candles (Angel One defaults `fromdate` to today 09:15;
+# Upstox's v3 endpoint is literally called ".../intraday/..." and has
+# no from/to params at all) -- so on a 15-minute interval, ATR can't
+# possibly have 15 candles to work with until roughly 12:45 IST (15
+# candles * 15 minutes after the 09:15 open). Every scan before that
+# was silently rejecting strikes with "ATR unavailable".
+#
+# FIX: market_data.get_atr_warmup_candles() optionally fetches a small
+# tail of the PREVIOUS trading session's candles and prepends them --
+# ONLY as input to compute_atr(), and ONLY before
+# ATR_WARMUP_CUTOFF_HOUR:ATR_WARMUP_CUTOFF_MINUTE IST (after that,
+# today's own candles are already enough). It is never used for
+# Opening Range, today's High/Low, Session VWAP, or breakout-level
+# logic -- those all keep calling market_data.get_recent_underlying_
+# candles() exactly as before, untouched.
+#
+# Master flag -- False (default) fully restores pre-fix behavior
+# (today-only candles, ATR None until enough candles accumulate
+# intraday).
+# =============================================================================
+WARMUP_CANDLE_CONTINUITY_ENABLED = False
+ATR_WARMUP_CUTOFF_HOUR = 11     # IST -- warmup candles are only fetched/prepended before this time
+ATR_WARMUP_CUTOFF_MINUTE = 0
+ATR_WARMUP_TAIL_CANDLE_COUNT = 20  # previous-session candles to fetch (comfortably >= ATR's 15-candle
+                                    # requirement, with headroom); trimmed to what compute_atr() needs
+
+# =============================================================================
+# Part 12 (merge) -- BTST/STBT Recommendation Engine + Trade Lifecycle
+# dashboard tabs + feature flags (2026-07-30).
+#
+# BTST_RECOMMENDATION_ENABLED -- WIRED and functional. Gates
+#   btst_recommendation.py entirely and main.run_btst_recommendations().
+#   Default False: no recommendation is ever computed or attached to
+#   any trade, and no BTST/STBT recommendation ever appears in a
+#   Telegram alert or the dashboard. This flag controls ONLY whether
+#   the advisory text/score is computed and shown -- on or off, it can
+#   NEVER cause an order to be placed or a position to be carried
+#   automatically (see btst_recommendation.py's module docstring: a
+#   pure read/score/explain function, no broker call, no state
+#   mutation of its own).
+#
+# TRADE_LIFECYCLE_ENABLED -- RESOLVED (Conflict #1, see PART12_MERGE_REPORT.md
+#   §7): kept as Option B -- gates ONLY the new /api/lifecycle/* dashboard
+#   routes' visibility of already-collected data. It does NOT gate, and was
+#   never wired to, the pre-existing production calls
+#   trade_lifecycle.update_lifecycle_metrics() / mark_open_at_eod() in
+#   main.py and btst_main.py -- those remain unconditional, exactly as they
+#   were before this Part, so that "flags OFF == today's production
+#   behavior" holds. If tracking itself ever needs a kill switch, that is a
+#   new, separate flag -- not this one, and not a decision to make silently.
+#
+# EOD_TRACKING_ENABLED -- REMOVED. It was declared but never imported or
+#   referenced anywhere (dashboard routes only check TRADE_LIFECYCLE_ENABLED),
+#   so it did nothing and only added ambiguity about what it controlled.
+#   Deleting an unreferenced flag changes no behavior. If EOD tracking needs
+#   its own toggle later, add it back wired to a real call site.
+# =============================================================================
+BTST_RECOMMENDATION_ENABLED = False
+TRADE_LIFECYCLE_ENABLED = False
+
+# --- BTST/STBT Recommendation Engine thresholds (btst_recommendation.py) ---
+BTST_RECOMMENDATION_MIN_SCORE = 65         # confidence score (0-100) needed for a YES
+BTST_RECOMMENDATION_MAX_SPREAD_PCT = 3.0   # bid-ask spread as % of mid price; wider is a hard-fail (gap-exit risk)
+BTST_RECOMMENDATION_MIN_RR = 1.5           # minimum risk:reward ratio for a YES
+BTST_RECOMMENDATION_MIN_DTE = 2            # days-to-expiry; fewer than this is a hard-fail (overnight theta/pin risk)

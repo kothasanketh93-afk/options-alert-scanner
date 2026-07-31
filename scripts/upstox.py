@@ -265,6 +265,7 @@ class UpstoxBroker(Broker):
         raw_chain = resp.json().get("data", [])
 
         chain = []
+        _iv_sample_logged = False
         for row in raw_chain:
             entry = {
                 "strike_price": row.get("strike_price"),
@@ -283,8 +284,24 @@ class UpstoxBroker(Broker):
                 entry[prefix + "bid"] = market.get("bid_price", 0.0)
                 entry[prefix + "ask"] = market.get("ask_price", 0.0)
                 greeks = side.get("option_greeks") or {}
+                raw_iv = greeks.get("iv")
                 entry[prefix + "delta"] = greeks.get("delta")
-                entry[prefix + "iv"] = greeks.get("iv")
+                entry[prefix + "iv"] = raw_iv
+                if not _iv_sample_logged and raw_iv is not None:
+                    # IV SCALE VERIFICATION (diagnostic only, no normalization/threshold
+                    # change here) -- logs the untouched raw option_greeks.iv value
+                    # exactly as Upstox's /v2/option/chain endpoint returned it, so
+                    # its scale can be confirmed from real traffic. NOTE: Upstox's
+                    # OTHER endpoints (v3 option-greek, market-data-feed websocket)
+                    # return iv as a 0-1 fraction -- this is specifically the
+                    # /option/chain endpoint this method calls. See
+                    # IV_SCALE_VERIFICATION.md for the finding.
+                    log.info(
+                        "IV_SAMPLE upstox instrument_key=%s strike=%s side=%s raw_iv=%r",
+                        entry.get(prefix + "instrument_key"), row.get("strike_price"),
+                        prefix.strip("_"), raw_iv,
+                    )
+                    _iv_sample_logged = True
             chain.append(entry)
 
         self._chain_cache.set(cache_key, chain)
@@ -429,6 +446,62 @@ class UpstoxBroker(Broker):
             out.append({
                 "timestamp": ts.isoformat(), "open": float(c[1]), "high": float(c[2]),
                 "low": float(c[3]), "close": float(c[4]),
+                "volume": float(c[5]) if len(c) > 5 and c[5] is not None else 0.0,
+            })
+        out.sort(key=lambda c: c["timestamp"])
+        return out[-count:] if len(out) > count else out
+
+    def get_previous_session_candles(self, instrument_key: str, interval: str, count: int) -> list:
+        """
+        FIX 2 (ATR warmup, 2026-07-30, config.WARMUP_CANDLE_CONTINUITY_ENABLED).
+        Not part of the abstract Broker interface -- same duck-typed,
+        opt-in-only convention as get_daily_candles()/get_batch_quotes()
+        above (see broker.py's comments on those).
+
+        get_candles() above only ever hits the ".../intraday/..."
+        endpoint, which has NO from/to params and always returns just
+        today. This instead uses the same v3 date-range
+        "historical-candle" endpoint get_daily_candles() already uses
+        for daily bars, but with a minutes unit/value -- same
+        UNVERIFIED URL PATTERN caveat get_daily_candles() carries
+        (confirm against a live response before relying on this).
+        Over-fetches a week of calendar days ending yesterday and
+        trims to the last `count` candles client-side, same
+        "simpler than an NSE holiday calendar" approach as
+        get_daily_candles().
+
+        Returns [] (never raises) on any failure -- this is a warmup
+        nicety, not a hard dependency; callers must fall back to
+        today-only candles rather than let this take down the scan.
+        """
+        if interval not in _INTERVAL_UNIT_VALUE:
+            raise BrokerAPIError(f"unsupported interval: {interval}")
+        unit, value = _INTERVAL_UNIT_VALUE[interval]
+
+        to_dt = datetime.now(IST).date() - timedelta(days=1)
+        from_dt = to_dt - timedelta(days=6)  # over-fetch a week of calendar days to clear weekends/holidays
+
+        url = (f"{BASE_URL_V3}/historical-candle/{instrument_key}/{unit}/{value}/"
+               f"{to_dt.isoformat()}/{from_dt.isoformat()}")
+        try:
+            resp = request_with_retry("GET", url, headers=self._headers(), timeout=15,
+                                       error_cls=BrokerAPIError)
+            payload = resp.json()
+            raw_candles = payload.get("data", {}).get("candles", [])
+        except Exception:
+            return []
+
+        out = []
+        for c in raw_candles:
+            ts = datetime.fromisoformat(c[0])
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=IST)
+            out.append({
+                "timestamp": ts.isoformat(),
+                "open": float(c[1]),
+                "high": float(c[2]),
+                "low": float(c[3]),
+                "close": float(c[4]),
                 "volume": float(c[5]) if len(c) > 5 and c[5] is not None else 0.0,
             })
         out.sort(key=lambda c: c["timestamp"])
