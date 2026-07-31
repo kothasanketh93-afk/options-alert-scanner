@@ -376,9 +376,9 @@
       "final_status": null,
       "actual_entry_time": "2026-07-31T14:36:00+05:30",
       "tracked_entry_price": 342.9,
-      "highest_since_entry": 372.75,
+      "highest_since_entry": 376.0,
       "lowest_since_entry": 326.3,
-      "max_favorable_pct": 8.71,
+      "max_favorable_pct": 9.65,
       "max_adverse_pct": -4.84,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -386,7 +386,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-31T15:24:00+05:30",
+      "last_processed_ts": "2026-07-31T15:29:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -553,11 +553,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 356.7,
-      "current_pnl_pct": 4.02,
-      "maximum_profit_pct": 6.14,
+      "current_price": 366.05,
+      "current_pnl_pct": 6.75,
+      "maximum_profit_pct": 6.75,
       "maximum_drawdown_pct": -2.42,
-      "holding_time_minutes": 49,
+      "holding_time_minutes": 55,
       "_marked_open_at_eod": true
     },
     "NIFTY-PE-ITM-20260731-1441-01": {
@@ -914,16 +914,16 @@
       "actual_entry_time": "2026-07-31T14:46:00+05:30",
       "tracked_entry_price": 121.1,
       "highest_since_entry": 122.95,
-      "lowest_since_entry": 121.1,
+      "lowest_since_entry": 120.6,
       "max_favorable_pct": 1.53,
-      "max_adverse_pct": 0.0,
+      "max_adverse_pct": -0.41,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-31T15:24:00+05:30",
+      "last_processed_ts": "2026-07-31T15:29:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1094,11 +1094,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 122.95,
-      "current_pnl_pct": 1.53,
+      "current_price": 120.6,
+      "current_pnl_pct": -0.41,
       "maximum_profit_pct": 1.53,
-      "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 39,
+      "maximum_drawdown_pct": -0.41,
+      "holding_time_minutes": 45,
       "_marked_open_at_eod": true
     },
     "KPIT TECHNOLOGIES LIMITED-CE-ATM-20260731-1450-01": {
@@ -1184,16 +1184,16 @@
       "actual_entry_time": "2026-07-31T14:51:00+05:30",
       "tracked_entry_price": 20.9,
       "highest_since_entry": 21.05,
-      "lowest_since_entry": 19.55,
+      "lowest_since_entry": 19.05,
       "max_favorable_pct": 0.72,
-      "max_adverse_pct": -6.46,
+      "max_adverse_pct": -8.85,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-31T15:24:00+05:30",
+      "last_processed_ts": "2026-07-31T15:29:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1371,11 +1371,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 19.6,
-      "current_pnl_pct": -6.22,
+      "current_price": 19.25,
+      "current_pnl_pct": -7.89,
       "maximum_profit_pct": 0.0,
-      "maximum_drawdown_pct": -6.22,
-      "holding_time_minutes": 34,
+      "maximum_drawdown_pct": -7.89,
+      "holding_time_minutes": 40,
       "_marked_open_at_eod": true
     }
   },
@@ -1387,7 +1387,7 @@
     "KPIT TECHNOLOGIES LIMITED-CE-ATM": 1
   },
   "next_display_num": 5,
-  "summary_sent": false,
+  "summary_sent": true,
   "consecutive_sl_streak": 2,
   "circuit_breaker_tripped": true,
   "circuit_breaker_notified": true,
