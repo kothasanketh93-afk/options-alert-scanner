@@ -97,6 +97,28 @@ _MUST_BE_POSITIVE = (
 # almost always a typo (e.g. "3" meant as "3%" i.e. 0.03).
 _FRACTION_SUFFIXES = ("_PCT", "_FRACTION")
 
+# _PCT fields that are legitimate exceptions to the >1-is-suspicious
+# heuristic above, confirmed 2026-07-31 against each field's own
+# inline comment in config.py -- not typos, just two different uses
+# of the "_PCT" suffix that coexist in this codebase:
+#   1. BTST_RECOMMENDATION_MAX_SPREAD_PCT, MOMENTUM_ROC_CEILING_PCT,
+#      REPLAY_CALIBRATION_GAP_THRESHOLD_PCT -- these use a raw
+#      PERCENTAGE-POINT scale (e.g. 1.5 literally means "1.5%"), not
+#      the 0-1 fraction-of-1 scale this check assumes.
+#   2. IV_ABNORMAL_HIGH_PCT -- DOES use the 0-1 fraction scale (1.20
+#      means "120%"), but 1.20 is the intended value: its entire job
+#      is to catch IV readings ABOVE 100%, so exceeding 1 is correct
+#      behavior, not a mistake.
+# If a genuinely new field needs adding here, confirm its own comment
+# states the >1 value is intentional before adding it -- this list
+# existing is not itself permission to silence a real typo.
+_FRACTION_FIELD_ALLOWLIST = (
+    "BTST_RECOMMENDATION_MAX_SPREAD_PCT",
+    "MOMENTUM_ROC_CEILING_PCT",
+    "REPLAY_CALIBRATION_GAP_THRESHOLD_PCT",
+    "IV_ABNORMAL_HIGH_PCT",
+)
+
 # Symbol-list fields checked for internal duplicates.
 _SYMBOL_LIST_FIELDS = ("SYMBOLS", "STOCK_SYMBOLS", "INDEX_SYMBOLS")
 
@@ -125,6 +147,8 @@ def _check_positive_fields(cfg: Any, report: ConfigValidationReport) -> None:
 def _check_fraction_fields(cfg: Any, report: ConfigValidationReport) -> None:
     for name in dir(cfg):
         if not name.endswith(_FRACTION_SUFFIXES):
+            continue
+        if name in _FRACTION_FIELD_ALLOWLIST:
             continue
         value = _get(cfg, name)
         if not isinstance(value, (int, float)) or isinstance(value, bool):
