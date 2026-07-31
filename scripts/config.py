@@ -23,7 +23,7 @@ What's deliberately NOT here:
 # Circuit breaker: stop new alerts after this many SL hits IN A ROW
 # (a T2 win resets the streak). Protects capital during a bad regime;
 # doesn't by itself improve accuracy.
-MAX_CONSECUTIVE_SL = 2
+MAX_CONSECUTIVE_SL = 10
 
 # Master switch for the circuit breaker above. True (default) is the
 # original, unchanged live-trading behaviour: MAX_CONSECUTIVE_SL SL
@@ -768,6 +768,24 @@ VEGA_EXPOSURE_CEILING = 5.0      # vega at/above this -> full IV-exposure readin
 IV_ABNORMAL_LOW_PCT = 0.08    # IV below 8% (annualized) treated as a stale/garbage quote, not "cheap"
 IV_ABNORMAL_HIGH_PCT = 1.20   # IV above 120% treated as a stale/illiquid quote, not "rich"
 IV_PERCENTILE_LOOKBACK_READINGS = 20  # in-process IV history window per instrument_key (percentile/rank/trend)
+
+# Cross-day IV Rank/Percentile + India VIX correlation (iv_history_store.py).
+# Same "off until validated against a few real trading days" posture as
+# TRAILING_STOP_ENABLED above -- the persisted history needs a few real
+# days on file before iv_rank_persisted()/iv_percentile_persisted() are
+# reading anything but the neutral 0.5 fallback anyway, so there's no
+# downside to leaving this off for the first couple of weeks after
+# turning it on.
+IV_RANK_PERSISTENCE_ENABLED = True
+IV_RANK_LOOKBACK_DAYS = 20            # trading days of persisted history for IV Rank/Percentile + VIX correlation
+# Upstox's own documented NSE index instrument_key for India VIX --
+# resolved via the primary broker only (Upstox). Angel One has no static
+# token for this the way UNDERLYING_INSTRUMENT_KEYS does for NIFTY/
+# BANKNIFTY/etc (would need a scrip-master name lookup) -- unverified,
+# not wired in. If a mid-day failover to Angel One is active when the
+# EOD India VIX fetch runs, that fetch degrades to "skip VIX today"
+# rather than raising -- see main.py's run_iv_history_flush_step().
+INDIA_VIX_UPSTOX_KEY = "NSE_INDEX|India VIX"
 
 # Premium Analysis Engine
 PREMIUM_TIME_VALUE_MAX_PCT = 0.95  # extrinsic/time value at/above this fraction of premium (deep-OTM
