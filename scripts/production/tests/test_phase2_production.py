@@ -21,7 +21,7 @@ sys.path.insert(0, _scripts_dir)
 
 from production.config_validator import validate_config, Severity
 from production.startup_validator import (
-    run_startup_validation, StartupReport, CheckStatus, MIN_PYTHON_VERSION,
+    run_startup_validation, StartupReport, CheckStatus,
 )
 from exceptions import StartupValidationError
 

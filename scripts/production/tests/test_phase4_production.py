@@ -20,7 +20,7 @@ sys.path.insert(0, _scripts_dir)
 
 from production.task_manager import TaskManager, WorkerState
 from production.cache_manager import ManagedCache
-from exceptions import WorkerError, CacheError
+from exceptions import WorkerError
 
 
 # --------------------------------------------------------------------

@@ -27,7 +27,6 @@ from production.telegram_monitor import TelegramMonitor
 from production.scanner_monitor import ScannerMonitor
 from production.api_monitor import APIMonitor
 from production.websocket_monitor import WebSocketMonitor
-from production.dashboard_monitor import DashboardMonitor
 from production.resource_monitor import ResourceMonitor
 from production.alert_engine import AlertEngine, AlertSources
 from production.task_manager import TaskManager

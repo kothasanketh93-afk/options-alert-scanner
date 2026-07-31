@@ -29,7 +29,7 @@ sampling (the exact same sampling code, no duplication) and adds:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 
 from production.resource_monitor import ResourceMonitor
 from production.task_manager import TaskManager, WorkerState

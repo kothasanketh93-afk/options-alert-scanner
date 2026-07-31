@@ -29,15 +29,14 @@ per-route-dependent shape).
 
 from __future__ import annotations
 
-import time
 import uuid
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, Optional, Sequence
 
 try:
     from starlette.middleware.base import BaseHTTPMiddleware
     from starlette.requests import Request
-    from starlette.responses import JSONResponse, Response
+    from starlette.responses import JSONResponse
     _STARLETTE_AVAILABLE = True
 except ImportError:  # pragma: no cover - exercised where starlette isn't installed
     BaseHTTPMiddleware = object  # type: ignore[assignment,misc]

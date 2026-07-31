@@ -24,8 +24,7 @@ watching this and it's broken."
 from __future__ import annotations
 
 import threading
-from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List
 
 from production.health_states import ComponentHealth, HealthState, combine_components
 

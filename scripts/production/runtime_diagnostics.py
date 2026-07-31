@@ -40,7 +40,7 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional
 
 from production.health_states import HealthState
-from production.startup_validator import StartupReport, CheckStatus
+from production.startup_validator import StartupReport
 
 
 # --------------------------------------------------------------------

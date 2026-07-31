@@ -24,7 +24,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from production.config_validator import ConfigValidationReport, Severity as ConfigSeverity
+from production.config_validator import ConfigValidationReport
 from production.startup_validator import StartupReport, CheckStatus
 
 

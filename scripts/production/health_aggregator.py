@@ -26,10 +26,10 @@ this automatically.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Optional
 
 from production.resource_monitor import ResourceMonitor, AlertLevel
-from production.task_manager import TaskManager, WorkerState
+from production.task_manager import TaskManager
 
 
 ComponentStatusProvider = Callable[[], Dict[str, Any]]

@@ -22,7 +22,6 @@ than duplicates) is unchanged for any caller that doesn't opt in.
 from __future__ import annotations
 
 import importlib
-import os
 import sys
 from dataclasses import dataclass, field
 from enum import Enum
@@ -30,7 +29,7 @@ from pathlib import Path
 from typing import Callable, List, Optional
 
 from exceptions import ConfigurationError, StartupValidationError
-from production.config_validator import validate_config, Severity
+from production.config_validator import validate_config
 
 MIN_PYTHON_VERSION = (3, 10)  # exceptions.py's `X | None` annotations require 3.10+
 
