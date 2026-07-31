@@ -22,7 +22,7 @@ value too, but doing it for every internal function on the first pilot
 risks scope creep past what one bounded module was supposed to validate.
 """
 
-from typing import TypedDict, Optional
+from typing import TypedDict
 
 
 class EarlyBreakoutReasons(TypedDict):

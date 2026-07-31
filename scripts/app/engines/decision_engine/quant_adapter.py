@@ -40,14 +40,25 @@ already-rejected trade back to approved.
 
 KNOWN INPUT GAPS (documented, not hidden -- see
 docs/QUANT_INTELLIGENCE_INTEGRATION.md "Known limitations"): this
-codebase deliberately does not compute RSI, market breadth, candle-
-pattern classification, or a raw (non-early-breakout) momentum reading
-anywhere (see scanner.py / trade_score.py's own docstrings on this).
-Those Signal fields are therefore left as None for trades that don't
-carry a proxy for them, exactly like every other optional Signal field
-Quant Intelligence's own probability engine already treats as "no
-contribution" rather than an error (see quant_intelligence/probability
-/scorer.py) -- nothing here invents a fake reading to fill the gap.
+codebase deliberately does not compute RSI, market breadth, or a raw
+(non-early-breakout) momentum reading anywhere (see scanner.py /
+trade_score.py's own docstrings on this). Those Signal fields are
+therefore left as None for trades that don't carry a proxy for them,
+exactly like every other optional Signal field Quant Intelligence's
+own probability engine already treats as "no contribution" rather
+than an error (see quant_intelligence/probability/scorer.py) --
+nothing here invents a fake reading to fill the gap.
+
+candle_structure is the one exception to the list above: as of
+candlestick_patterns.py, this codebase DOES compute a candle-pattern
+classification (13 patterns, pure arithmetic on candles already
+fetched -- see that module). _candle_structure_proxy() below reads
+scanner.score_strike()'s already-attached trade['candlestick_patterns']
+and maps its dominant pattern to the exact key
+score_candle_structure() expects. Still None whenever Candlestick
+Patterns is disabled (config.CANDLESTICK_PATTERNS_ENABLED = False) or
+no directional pattern was found this cycle -- same "None means no
+contribution" convention as everything else here.
 """
 
 from __future__ import annotations
@@ -150,6 +161,43 @@ def _momentum_pct_proxy(trade: dict, direction: str) -> Optional[float]:
     return (normalized if is_ce else -normalized) * 0.8  # scaled into scorer's expected ballpark
 
 
+# candlestick_patterns.py's dominant_pattern names ("Bullish Engulfing",
+# "Hammer", ...) -> the exact snake_case keys
+# quant_intelligence.probability.scorer.score_candle_structure() checks
+# for (see that function). Only patterns it explicitly recognizes are
+# mapped; anything else (Doji, Spinning Top, Inside/Outside Bar, Three
+# White Soldiers/Black Crows) is left unmapped -- score_candle_structure()
+# already treats an unrecognized-but-present string as a mild 0.3 neutral
+# read rather than 0.0, so passing an unmapped name through as-is (lowercased,
+# underscored) is still safe, just less informative than the exact keys below.
+_CANDLE_STRUCTURE_KEY_MAP = {
+    ("Bullish Engulfing", "bullish"): "bullish_engulfing",
+    ("Bearish Engulfing", "bearish"): "bearish_engulfing",
+    ("Hammer", "bullish"): "hammer",
+    ("Shooting Star", "bearish"): "shooting_star",
+    ("Morning Star", "bullish"): "morning_star",
+    ("Evening Star", "bearish"): "evening_star",
+    ("Marubozu", "bullish"): "marubozu_bullish",
+    ("Marubozu", "bearish"): "marubozu_bearish",
+}
+
+
+def _candle_structure_proxy(trade: dict) -> Optional[str]:
+    """Reads candlestick_patterns.py's already-computed dominant pattern
+    off the trade dict (scanner.score_strike() attaches it at
+    trade['candlestick_patterns'] -- see that module) and maps it to
+    the key quant_intelligence's score_candle_structure() expects.
+    None if Candlestick Patterns is disabled, found nothing this cycle,
+    or the dominant pattern has no explicit mapping above."""
+    read = trade.get("candlestick_patterns")
+    if not read or not read.get("enabled"):
+        return None
+    pattern, bias = read.get("dominant_pattern"), read.get("dominant_bias")
+    if not pattern or not bias:
+        return None
+    return _CANDLE_STRUCTURE_KEY_MAP.get((pattern, bias))
+
+
 _SNAPSHOT_REGIME_TO_TREND = {
     "TRENDING_BULLISH": "UP",
     "TRENDING_BEARISH": "DOWN",
@@ -234,7 +282,12 @@ def build_signal(trade: dict, snapshot: Optional[dict] = None):
         momentum_pct=_momentum_pct_proxy(trade, direction),
         market_breadth=None,   # no market-breadth engine in this codebase
         breakout_strength=(trade["base_score"] / 100.0) if "base_score" in trade else None,
-        candle_structure=None,  # no candlestick-pattern classification engine in this codebase
+        # Was unconditionally None ("no candlestick-pattern classification
+        # engine in this codebase") -- now sourced from candlestick_patterns.py
+        # via the trade dict, same "reuse, don't recompute" rule as every
+        # other field in this function. Still None whenever Candlestick
+        # Patterns is disabled or found nothing this cycle, exactly as before.
+        candle_structure=_candle_structure_proxy(trade),
         min_oi_threshold=float(MIN_OI),
         min_volume_threshold=float(MIN_OPTION_VOLUME),
         spread_pct=_spread_pct(raw),

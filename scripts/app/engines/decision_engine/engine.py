@@ -53,6 +53,7 @@ from . import trade_quality as trade_quality_mod
 from . import explanation as explanation_mod
 from . import quant_adapter
 from . import news_adapter
+from . import candlestick_adapter
 
 _logger = get_logger("decision_engine")
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -209,6 +210,24 @@ def evaluate(trade: dict, snapshot: dict = None) -> dict:
                 f"{type(ni_exc).__name__}: {ni_exc}", exc_info=True,
             )
             decision_object["news_intelligence"] = {"enabled": False, "error": True, "reason": str(ni_exc)}
+
+        # Candlestick Pattern Recognition: invoked last. Mutates
+        # decision_object in place, adding
+        # decision_object["candlestick_patterns"]; only nudges
+        # confidence_score (never approved/decision) and only when
+        # config.CANDLESTICK_PATTERNS_INFLUENCE_ENABLED is explicitly
+        # turned on (default off). candlestick_adapter.attach() already
+        # never raises, but it's wrapped here too for the same reason
+        # the two calls above are -- see candlestick_adapter.py's module
+        # docstring.
+        try:
+            candlestick_adapter.attach(trade, decision_object)
+        except Exception as cs_exc:  # noqa: BLE001
+            _logger.error(
+                f"CANDLESTICK_PATTERNS_ATTACH_FAILED {trade.get('symbol')} {trade.get('direction')}: "
+                f"{type(cs_exc).__name__}: {cs_exc}", exc_info=True,
+            )
+            decision_object["candlestick_patterns"] = {"enabled": False, "error": True, "reason": str(cs_exc)}
 
         return decision_object
 

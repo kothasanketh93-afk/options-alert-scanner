@@ -38,7 +38,6 @@ _here = os.path.dirname(os.path.abspath(__file__))
 _scripts_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(_here))))
 sys.path.insert(0, _scripts_dir)
 
-import config
 from app.engines.decision_engine import engine, news_adapter
 
 

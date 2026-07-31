@@ -47,7 +47,6 @@ def test_nse_provider_survives_network_exception(monkeypatch=None):
         def get(self, *a, **k):
             raise ConnectionError("simulated DNS failure")
 
-    import app.engines.news_intelligence.providers.nse_provider as nse_mod
     original_requests = sys.modules.get("requests")
 
     class FakeRequestsModule:

@@ -313,7 +313,6 @@ def test_influence_enabled_never_flips_rejected_back_to_approved():
         # A trade the base Decision Engine itself already rejects
         # (impossible risk/reward) -- Quant Intelligence must not be
         # able to approve it even if its own read were strong.
-        trade = _early_breakout_trade(stop_loss=100.0, target_1=100.5, target_2=101.0)
         decision_object = {"approved": False, "decision": "Trade Rejected", "rejection_reasons": ["Poor Risk Reward"]}
 
         from app.engines.quant_intelligence import QuantResult, ProbabilityResult, SignalQualityResult, RegimeResult, RiskResult, PatternMatch, Explanation

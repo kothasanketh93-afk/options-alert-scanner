@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import difflib
 import re
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 # symbol -> (company display name, tuple of extra aliases the mapper should
 # also match, e.g. old/short names commonly used in headlines)
