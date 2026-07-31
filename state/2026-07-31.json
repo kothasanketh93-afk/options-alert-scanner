@@ -98,26 +98,27 @@
           "trade_score": 55
         }
       ],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-07-31T14:32:00+05:30",
       "tracked_entry_price": 48.8,
       "highest_since_entry": 49.05,
-      "lowest_since_entry": 47.1,
+      "lowest_since_entry": 45.6,
       "max_favorable_pct": 0.51,
-      "max_adverse_pct": -3.48,
+      "max_adverse_pct": -6.56,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-07-31T14:37:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-31T14:35:00+05:30",
+      "last_processed_ts": "2026-07-31T14:40:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "SL_HIT"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [
         {
@@ -282,11 +283,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 47.35,
-      "current_pnl_pct": -2.97,
+      "current_price": 45.7,
+      "current_pnl_pct": -6.35,
       "maximum_profit_pct": 0.0,
-      "maximum_drawdown_pct": -2.97,
-      "holding_time_minutes": 3
+      "maximum_drawdown_pct": -6.35,
+      "holding_time_minutes": 9
     },
     "SENSEX-PE-OTM-20260731-1435-01": {
       "trade_id": "SENSEX-PE-OTM-20260731-1435-01",
@@ -371,23 +372,24 @@
           "trade_score": 57
         }
       ],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
-      "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "actual_entry_time": "2026-07-31T14:36:00+05:30",
+      "tracked_entry_price": 342.9,
+      "highest_since_entry": 356.8,
+      "lowest_since_entry": 335.95,
+      "max_favorable_pct": 4.05,
+      "max_adverse_pct": -2.03,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-07-31T14:35:47.977061+05:30",
+      "last_processed_ts": "2026-07-31T14:40:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
       ],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -550,28 +552,301 @@
           "enabled": false,
           "reason": "no candlestick read attached to this trade"
         }
+      },
+      "current_price": 356.0,
+      "current_pnl_pct": 3.82,
+      "maximum_profit_pct": 3.82,
+      "maximum_drawdown_pct": 0.0,
+      "holding_time_minutes": 5
+    },
+    "NIFTY-PE-ITM-20260731-1441-01": {
+      "trade_id": "NIFTY-PE-ITM-20260731-1441-01",
+      "display_label": "Trade 3",
+      "symbol": "NIFTY",
+      "direction": "PE",
+      "moneyness": "ITM",
+      "instrument_key": "NSE_FO|65855",
+      "strike": 24400.0,
+      "expiry": "2026-08-04",
+      "spot_price": 24365.1,
+      "alert_time": "2026-07-31T14:41:14.074747+05:30",
+      "alert_premium": 98.3,
+      "entry_low": 97.47,
+      "entry_high": 99.13,
+      "stop_loss": 87.25,
+      "target_1": 114.88,
+      "target_2": 125.93,
+      "session": "13:45-15:10",
+      "grade": "Watchlist",
+      "trade_score": 58,
+      "probability_pct": 65,
+      "probability_label": "Watchlist",
+      "score_breakdown": [
+        "+15 Volume Spike",
+        "+15 OI Build-up",
+        "+8 VWAP Positioning",
+        "-4 Trend Alignment",
+        "+5 Risk:Reward",
+        "+5 Liquidity",
+        "-1 Market Strength",
+        "-4 EMA Alignment",
+        "-4 Momentum",
+        "-2 Higher-Timeframe Confirmation"
+      ],
+      "confidence_score": 5.8,
+      "risk_score": 1.0,
+      "reward_score": 5.0,
+      "expected_rr": "1:1.5",
+      "factor_checklist": [
+        "Trend \u26a0\ufe0f",
+        "Volume \u2705",
+        "OI \u2705",
+        "Momentum \u26a0\ufe0f",
+        "VWAP \u2705",
+        "EMA \u26a0\ufe0f",
+        "Risk Reward \u2705",
+        "Liquidity \u2705",
+        "Market Strength \u26a0\ufe0f",
+        "HTF \u26a0\ufe0f"
+      ],
+      "confidence_stars": "\u2605\u2606\u2606\u2606\u2606",
+      "confidence_label": "Low",
+      "risk_rating": "\ud83d\udfe2",
+      "risk_label": "Low",
+      "expected_holding_minutes": [
+        15,
+        30
+      ],
+      "why_reasons": [
+        "\u2713 Below VWAP",
+        "\u2713 Volume Expansion",
+        "\u2713 Excellent Liquidity",
+        "\u2713 No Nearby Support",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable"
+      ],
+      "alternatives": [
+        {
+          "symbol": "ADANI PORT & SEZ LTD",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "B",
+          "trade_score": 65
+        },
+        {
+          "symbol": "SENSEX",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "B",
+          "trade_score": 60
+        }
+      ],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-07-31T14:41:14.074747+05:30",
+      "messages_sent": [
+        "NEW_TRADE_ALERT"
+      ],
+      "streak_counted": false,
+      "strategy": "trade_score",
+      "probability_history": [
+        {
+          "time": "14:35",
+          "pct": 65
+        },
+        {
+          "time": "14:35",
+          "pct": 65
+        },
+        {
+          "time": "14:41",
+          "pct": 65
+        }
+      ],
+      "probability_trend": "Stable",
+      "decision": {
+        "enabled": true,
+        "decision": "Trade Approved",
+        "approved": true,
+        "trade_quality_score": 67.3,
+        "confidence_score": 58.0,
+        "probability": {
+          "win_probability_pct": 62.9,
+          "loss_probability_pct": 37.1,
+          "trade_success_probability_pct": 62.9,
+          "historical_similarity_pct": null,
+          "source": "upstream_probability_pct"
+        },
+        "risk": {
+          "max_risk_per_unit": 11.05,
+          "expected_reward_per_unit": 27.63,
+          "risk_score": 77.5,
+          "capital_risk_pct": 0.01
+        },
+        "risk_reward": {
+          "entry": 98.3,
+          "stop_loss": 87.25,
+          "target_1": 114.88,
+          "target_2": 125.93,
+          "risk_reward_ratio": 2.5,
+          "min_rr_threshold": 1.5,
+          "passes_rr_floor": true
+        },
+        "entry": 98.3,
+        "stop_loss": 87.25,
+        "stop_loss_detail": {
+          "active_stop_loss": 87.25,
+          "style": "atr_dynamic",
+          "distance_pct": 11.24,
+          "percentage_stop_reference": 49.15,
+          "recommendation": null
+        },
+        "target_1": 114.88,
+        "target_2": 125.93,
+        "target_3": 131.46,
+        "position_size": {
+          "mode": "dynamic",
+          "quantity": 90,
+          "lot_size": 1
+        },
+        "entry_validation": {
+          "entry_quality_score": 52.5,
+          "sub_scores": {
+            "entry_distance": 60.0,
+            "volume_confirmation": 50.0,
+            "market_alignment": 50.0,
+            "options_confirmation": 50.0,
+            "institutional_confirmation": null
+          },
+          "passed": true,
+          "reasons": []
+        },
+        "priority": "Medium",
+        "explanation": [
+          "Trade Approved",
+          "Trade Quality 67.3/100",
+          "Probability 62.9%",
+          "Risk:Reward 1:2.5",
+          "Trade Score 58/100 (Watchlist), probability 65%"
+        ],
+        "rejection_reasons": [],
+        "warnings": [],
+        "engines_used": [
+          "market_snapshot",
+          "early_breakout",
+          "trade_score_engine",
+          "options_intelligence"
+        ],
+        "engines_available": [
+          "trade_score_engine"
+        ],
+        "execution_time_ms": 0.15,
+        "timestamp": "2026-07-31T14:41:36.116601+05:30",
+        "quant_intelligence": {
+          "enabled": true,
+          "decision": "REJECTED",
+          "probability": 0.0,
+          "confidence": "VERY LOW",
+          "signal_quality_grade": "Reject",
+          "regime": "Sideways",
+          "regime_confidence": "LOW",
+          "risk": {
+            "entry": 98.3,
+            "stop_loss": null,
+            "trailing_stop_loss": null,
+            "target_1": null,
+            "target_2": null,
+            "target_3": null,
+            "risk_reward_ratio": null,
+            "position_score": 0.0
+          },
+          "pattern": {
+            "pattern_key": "PE|Sideways|NA|na|na|na",
+            "historical_win_pct": null,
+            "historical_loss_pct": null,
+            "sample_size": 0,
+            "pattern_confidence": "NONE"
+          },
+          "explanation": "NIFTY PE: REJECTED (grade Reject, probability 0.0% [VERY LOW]). Regime: Sideways (LOW). No historical pattern sample yet. Primary rejection reason: Weak momentum: momentum data unavailable.",
+          "reasons": {
+            "probability": [
+              "TREND provides little/no confirmation (strength 0.00).",
+              "EMA provides little/no confirmation (strength 0.00).",
+              "OI provides little/no confirmation (strength 0.00)."
+            ],
+            "signal_quality": [
+              "Weak momentum: momentum data unavailable.",
+              "Weak volume: volume/threshold data unavailable.",
+              "Poor liquidity: OI/threshold data unavailable.",
+              "Poor risk reward: risk/reward could not be computed.",
+              "Low confidence: probability 0.0 below minimum 40."
+            ],
+            "regime": [
+              "Insufficient directional signal to classify a trend; defaulting to sideways read."
+            ],
+            "risk": [
+              "Insufficient price/ATR data to compute risk levels."
+            ],
+            "pattern": [
+              "No historical setups recorded yet for this pattern."
+            ]
+          },
+          "errors": [],
+          "execution_time_ms": 15.37
+        },
+        "news_intelligence": {
+          "enabled": true,
+          "news_score": 0.0,
+          "sentiment": "neutral",
+          "impact": "ignore",
+          "confidence": 0.0,
+          "reasons": [
+            "No recent news found for this symbol"
+          ],
+          "article_count": 0,
+          "most_recent_headline": "",
+          "most_recent_url": "",
+          "execution_time_ms": 0.03
+        },
+        "candlestick_patterns": {
+          "enabled": false,
+          "reason": "no candlestick read attached to this trade"
+        }
       }
     }
   },
   "next_seq": {
     "ADANI PORT & SEZ LTD-CE-ATM": 1,
-    "SENSEX-PE-OTM": 1
+    "SENSEX-PE-OTM": 1,
+    "NIFTY-PE-ITM": 1
   },
-  "next_display_num": 2,
+  "next_display_num": 3,
   "summary_sent": false,
-  "consecutive_sl_streak": 0,
+  "consecutive_sl_streak": 1,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
     "NSE_FO|65808": 11481015.0,
     "NSE_FO|65852": 6694090.0,
     "NSE_FO|65854": 15750605.0,
-    "NSE_FO|65855": 18100225.0,
-    "NSE_FO|65853": 14417780.0,
-    "NSE_FO|65809": 17687345.0,
-    "NSE_FO|59083": 208710.0,
-    "NSE_FO|59086": 307830.0,
-    "NSE_FO|59088": 192060.0,
+    "NSE_FO|65855": 16827200.0,
+    "NSE_FO|65853": 14305655.0,
+    "NSE_FO|65809": 17125485.0,
+    "NSE_FO|59083": 208110.0,
+    "NSE_FO|59086": 307530.0,
+    "NSE_FO|59088": 192540.0,
     "NSE_FO|59089": 88620.0,
     "NSE_FO|59087": 166920.0,
     "NSE_FO|59084": 205440.0,
@@ -584,13 +859,13 @@
     "BSE_FO|840654": 345880.0,
     "BSE_FO|840488": 449820.0,
     "BSE_FO|840239": 765780.0,
-    "BSE_FO|840353": 1387980.0,
+    "BSE_FO|840353": 1344100.0,
     "BSE_FO|840637": 586440.0,
     "BSE_FO|840431": 534700.0,
     "NSE_FO|120890": 184450.0,
     "NSE_FO|49940": 1117550.0,
     "NSE_FO|120896": 623875.0,
-    "NSE_FO|120897": 402225.0,
+    "NSE_FO|120897": 403775.0,
     "NSE_FO|49941": 1051675.0,
     "NSE_FO|120892": 426250.0,
     "NSE_FO|146092": 482650.0,
@@ -601,7 +876,7 @@
     "NSE_FO|146093": 351575.0,
     "NSE_FO|68293": 166725.0,
     "NSE_FO|81195": 594700.0,
-    "NSE_FO|68295": 442225.0,
+    "NSE_FO|68295": 437950.0,
     "NSE_FO|68296": 342000.0,
     "NSE_FO|81196": 499700.0,
     "NSE_FO|68294": 359575.0,
@@ -609,8 +884,8 @@
     "NSE_FO|147724": 3190100.0,
     "NSE_FO|151396": 1706375.0,
     "NSE_FO|151397": 1040250.0,
-    "NSE_FO|147725": 1334075.0,
-    "NSE_FO|151341": 912500.0,
+    "NSE_FO|147725": 1335900.0,
+    "NSE_FO|151341": 908850.0,
     "NSE_FO|154198": 0.0,
     "NSE_FO|154200": 18600.0,
     "NSE_FO|154202": 8600.0,
@@ -624,18 +899,18 @@
     "NSE_FO|59081": 123210.0,
     "NSE_FO|59082": 138600.0,
     "BSE_FO|840713": 485520.0,
-    "BSE_FO|840223": 561380.0,
+    "BSE_FO|840223": 515160.0,
     "NSE_FO|146076": 460600.0,
     "NSE_FO|146091": 369950.0,
     "NSE_FO|60613": 59040.0,
     "NSE_FO|60614": 27960.0,
     "NSE_FO|116105": 2327325.0,
-    "NSE_FO|116107": 1791025.0,
-    "NSE_FO|150134": 69000.0,
+    "NSE_FO|116107": 1798775.0,
+    "NSE_FO|150134": 68600.0,
     "NSE_FO|150135": 34600.0,
     "NSE_FO|147726": 6159375.0,
     "NSE_FO|147727": 1257425.0,
-    "NSE_FO|81197": 1036925.0,
+    "NSE_FO|81197": 1031225.0,
     "NSE_FO|81198": 1056400.0,
     "NSE_FO|120057": 42150.0,
     "NSE_FO|114363": 204450.0,
@@ -644,20 +919,20 @@
     "NSE_FO|155160": 388500.0,
     "NSE_FO|155162": 42175.0,
     "BSE_FO|840281": 393980.0,
-    "NSE_FO|147723": 2131600.0,
-    "NSE_FO|60615": 11640.0,
+    "NSE_FO|147723": 2133425.0,
+    "NSE_FO|60615": 11400.0,
     "NSE_FO|120060": 32400.0,
-    "NSE_FO|60617": 251400.0,
-    "NSE_FO|155163": 16450.0,
-    "NSE_FO|120899": 292175.0,
+    "NSE_FO|60617": 248760.0,
+    "NSE_FO|155163": 16625.0,
+    "NSE_FO|120899": 293725.0,
     "NSE_FO|65859": 4831710.0,
-    "NSE_FO|60619": 8400.0,
+    "NSE_FO|60619": 8520.0,
     "NSE_FO|60621": 16800.0,
     "BSE_FO|840267": 308200.0,
-    "BSE_FO|840399": 584020.0,
-    "NSE_FO|68297": 535800.0,
-    "NSE_FO|155161": 157150.0,
-    "NSE_FO|155159": 136150.0
+    "BSE_FO|840399": 540260.0,
+    "NSE_FO|68297": 535325.0,
+    "NSE_FO|155161": 157325.0,
+    "NSE_FO|155159": 135100.0
   },
   "probability_history": {
     "ADANI PORT & SEZ LTD-CE": [
@@ -684,6 +959,18 @@
       {
         "time": "14:35",
         "pct": 70
+      },
+      {
+        "time": "14:41",
+        "pct": 69
+      },
+      {
+        "time": "14:41",
+        "pct": 67
+      },
+      {
+        "time": "14:41",
+        "pct": 67
       }
     ],
     "SENSEX-PE": [
@@ -693,6 +980,18 @@
       },
       {
         "time": "14:35",
+        "pct": 65
+      },
+      {
+        "time": "14:41",
+        "pct": 65
+      },
+      {
+        "time": "14:41",
+        "pct": 65
+      },
+      {
+        "time": "14:41",
         "pct": 65
       }
     ],
@@ -722,13 +1021,17 @@
       {
         "time": "14:35",
         "pct": 65
+      },
+      {
+        "time": "14:41",
+        "pct": 65
       }
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 432,
-    "valid_signals": 13,
-    "rejected_signals": 9,
+    "scanned_symbols": 441,
+    "valid_signals": 20,
+    "rejected_signals": 12,
     "api_failures": 81,
     "broker_errors": 0
   },
