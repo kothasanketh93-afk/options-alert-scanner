@@ -124,7 +124,30 @@ def validate_symbol(symbol: str, trading_date: str = None) -> tuple:
 
     option_rows = [r for r in matches if r.get("contract_class") in ("INDEX_OPTION", "STOCK_OPTION")]
     if not option_rows:
-        return False, f"{symbol}: found in instrument master but no option contracts -- not F&O eligible"
+        # FIX (2026-07-31): verify_stock_symbols.py -- a separate,
+        # independently-written script that hits the same two public
+        # instrument masters -- confirmed live that all 15
+        # config.STOCK_SYMBOLS entries DO have F&O contracts on BOTH
+        # Upstox and Angel One, yet 14 of them hit this exact "not F&O
+        # eligible" branch in a live run the same day. That means this
+        # check has a real false-negative bug somewhere in how
+        # download_instrument_master() classifies option rows (or in
+        # that morning's download completeness) -- NOT a genuine F&O
+        # eligibility change as the message implies. Rather than guess
+        # again, log what contract_class values these `matches` rows
+        # actually carry so the next occurrence shows the real cause
+        # (e.g. all-EQUITY-only would mean the master's option rows for
+        # this symbol never made it into the download; some other
+        # unexpected value would point at a classification bug in
+        # angelone.py/upstox.py's contract_class mapping instead).
+        seen_classes = {}
+        for r in matches:
+            cc = r.get("contract_class")
+            seen_classes[cc] = seen_classes.get(cc, 0) + 1
+        return False, (
+            f"{symbol}: found in instrument master but no option contracts -- not F&O eligible "
+            f"(matches={len(matches)} contract_classes_seen={seen_classes})"
+        )
 
     unexpired = sorted({r["expiry"] for r in option_rows if r.get("expiry") and r["expiry"] >= trading_date})
     if not unexpired:
