@@ -192,16 +192,16 @@
       "actual_entry_time": "2026-08-03T09:46:00+05:30",
       "tracked_entry_price": 352.55,
       "highest_since_entry": 359.0,
-      "lowest_since_entry": 294.0,
+      "lowest_since_entry": 287.1,
       "max_favorable_pct": 1.83,
-      "max_adverse_pct": -16.61,
+      "max_adverse_pct": -18.56,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T12:04:00+05:30",
+      "last_processed_ts": "2026-08-03T12:19:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -372,11 +372,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 312.0,
-      "current_pnl_pct": -11.5,
+      "current_price": 293.85,
+      "current_pnl_pct": -16.65,
       "maximum_profit_pct": 0.0,
-      "maximum_drawdown_pct": -14.72,
-      "holding_time_minutes": 139
+      "maximum_drawdown_pct": -16.65,
+      "holding_time_minutes": 154
     },
     "BAJAJ FINANCE LIMITED-PE-ITM-20260803-0950-01": {
       "trade_id": "BAJAJ FINANCE LIMITED-PE-ITM-20260803-0950-01",
@@ -577,7 +577,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T12:04:00+05:30",
+      "last_processed_ts": "2026-08-03T12:19:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -760,11 +760,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 35.5,
-      "current_pnl_pct": 5.97,
+      "current_price": 34.85,
+      "current_pnl_pct": 4.03,
       "maximum_profit_pct": 8.21,
       "maximum_drawdown_pct": -6.87,
-      "holding_time_minutes": 120
+      "holding_time_minutes": 135
     },
     "HYUNDAI MOTOR INDIA LTD-CE-ATM-20260803-0955-01": {
       "trade_id": "HYUNDAI MOTOR INDIA LTD-CE-ATM-20260803-0955-01",
@@ -1346,16 +1346,16 @@
       "actual_entry_time": "2026-08-03T10:01:00+05:30",
       "tracked_entry_price": 78.2,
       "highest_since_entry": 80.15,
-      "lowest_since_entry": 63.25,
+      "lowest_since_entry": 59.7,
       "max_favorable_pct": 2.49,
-      "max_adverse_pct": -19.12,
+      "max_adverse_pct": -23.66,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T12:04:00+05:30",
+      "last_processed_ts": "2026-08-03T12:19:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1529,11 +1529,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 67.6,
-      "current_pnl_pct": -13.55,
+      "current_price": 61.7,
+      "current_pnl_pct": -21.1,
       "maximum_profit_pct": 0.96,
-      "maximum_drawdown_pct": -16.88,
-      "holding_time_minutes": 124
+      "maximum_drawdown_pct": -21.1,
+      "holding_time_minutes": 139
     },
     "MIDCPNIFTY-CE-ATM-20260803-1040-01": {
       "trade_id": "MIDCPNIFTY-CE-ATM-20260803-1040-01",
@@ -1706,7 +1706,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T12:04:00+05:30",
+      "last_processed_ts": "2026-08-03T12:19:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1929,11 +1929,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 200.95,
-      "current_pnl_pct": -1.95,
+      "current_price": 201.7,
+      "current_pnl_pct": -1.59,
       "maximum_profit_pct": 1.1,
       "maximum_drawdown_pct": -5.17,
-      "holding_time_minutes": 84
+      "holding_time_minutes": 99
     }
   },
   "next_seq": {
@@ -4282,7 +4282,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 279,
+    "scanned_symbols": 288,
     "valid_signals": 553,
     "rejected_signals": 88,
     "api_failures": 9,
