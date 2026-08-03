@@ -201,7 +201,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T10:35:00+05:30",
+      "last_processed_ts": "2026-08-03T10:40:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -372,11 +372,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 331.75,
-      "current_pnl_pct": -5.9,
+      "current_price": 322.2,
+      "current_pnl_pct": -8.61,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -12.07,
-      "holding_time_minutes": 49
+      "holding_time_minutes": 54
     },
     "BAJAJ FINANCE LIMITED-PE-ITM-20260803-0950-01": {
       "trade_id": "BAJAJ FINANCE LIMITED-PE-ITM-20260803-0950-01",
@@ -567,9 +567,9 @@
       "final_status": null,
       "actual_entry_time": "2026-08-03T10:05:00+05:30",
       "tracked_entry_price": 33.5,
-      "highest_since_entry": 35.15,
+      "highest_since_entry": 35.5,
       "lowest_since_entry": 32.5,
-      "max_favorable_pct": 4.93,
+      "max_favorable_pct": 5.97,
       "max_adverse_pct": -2.99,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -577,7 +577,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T10:35:00+05:30",
+      "last_processed_ts": "2026-08-03T10:40:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -760,11 +760,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 35.15,
-      "current_pnl_pct": 4.93,
+      "current_price": 34.85,
+      "current_pnl_pct": 4.03,
       "maximum_profit_pct": 4.93,
       "maximum_drawdown_pct": -6.29,
-      "holding_time_minutes": 30
+      "holding_time_minutes": 35
     },
     "HYUNDAI MOTOR INDIA LTD-CE-ATM-20260803-0955-01": {
       "trade_id": "HYUNDAI MOTOR INDIA LTD-CE-ATM-20260803-0955-01",
@@ -1355,7 +1355,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T10:35:00+05:30",
+      "last_processed_ts": "2026-08-03T10:40:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1529,99 +1529,494 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 77.5,
-      "current_pnl_pct": -0.9,
+      "current_price": 73.15,
+      "current_pnl_pct": -6.46,
       "maximum_profit_pct": 0.96,
       "maximum_drawdown_pct": -8.82,
-      "holding_time_minutes": 34
+      "holding_time_minutes": 39
+    },
+    "MIDCPNIFTY-CE-ATM-20260803-1040-01": {
+      "trade_id": "MIDCPNIFTY-CE-ATM-20260803-1040-01",
+      "display_label": "Trade 5",
+      "symbol": "MIDCPNIFTY",
+      "direction": "CE",
+      "moneyness": "ATM",
+      "instrument_key": "NSE_FO|60625",
+      "strike": 14900.0,
+      "expiry": "2026-08-25",
+      "spot_price": 14898.5,
+      "alert_time": "2026-08-03T10:40:49.285031+05:30",
+      "alert_premium": 205.0,
+      "entry_low": 203.75,
+      "entry_high": 206.25,
+      "stop_loss": 188.28,
+      "target_1": 230.08,
+      "target_2": 246.8,
+      "session": "10:35-11:35",
+      "grade": "B+",
+      "trade_score": 72,
+      "probability_pct": 75,
+      "probability_label": "Potential Trade",
+      "score_breakdown": [
+        "+20 Trend Alignment",
+        "+15 Volume Spike",
+        "+15 OI Build-up",
+        "+5 Risk:Reward",
+        "+5 Market Strength",
+        "+5 Liquidity",
+        "-5 Momentum",
+        "-5 VWAP Positioning",
+        "-2 Higher-Timeframe Confirmation"
+      ],
+      "confidence_score": 7.2,
+      "risk_score": 2.0,
+      "reward_score": 5.0,
+      "expected_rr": "1:1.5",
+      "factor_checklist": [
+        "Trend \u2705",
+        "Volume \u2705",
+        "OI \u2705",
+        "Momentum \u26a0\ufe0f",
+        "VWAP \u26a0\ufe0f",
+        "EMA \u26a0\ufe0f",
+        "Risk Reward \u2705",
+        "Liquidity \u2705",
+        "Market Strength \u2705",
+        "HTF \u26a0\ufe0f"
+      ],
+      "confidence_stars": "\u2605\u2605\u2605\u2606\u2606",
+      "confidence_label": "Moderate",
+      "risk_rating": "\ud83d\udfe2",
+      "risk_label": "Low",
+      "expected_holding_minutes": [
+        15,
+        30
+      ],
+      "why_reasons": [
+        "\u2713 Volume Expansion",
+        "\u2713 Strong OI Build-up",
+        "\u2713 Excellent Liquidity",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable"
+      ],
+      "alternatives": [
+        {
+          "symbol": "NIFTY",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "B+",
+          "trade_score": 72
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "PE",
+          "moneyness": "OTM",
+          "grade": "B+",
+          "trade_score": 72
+        },
+        {
+          "symbol": "BAJAJ FINANCE LIMITED",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "B+",
+          "trade_score": 72
+        },
+        {
+          "symbol": "SENSEX",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "B+",
+          "trade_score": 71
+        },
+        {
+          "symbol": "SENSEX",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "B+",
+          "trade_score": 70
+        },
+        {
+          "symbol": "BAJAJ FINANCE LIMITED",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "B+",
+          "trade_score": 70
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "B",
+          "trade_score": 69
+        },
+        {
+          "symbol": "ASHOK LEYLAND LTD",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "B",
+          "trade_score": 69
+        },
+        {
+          "symbol": "NIFTY",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "B",
+          "trade_score": 62
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "B",
+          "trade_score": 62
+        },
+        {
+          "symbol": "BAJAJ FINSERV LTD.",
+          "direction": "PE",
+          "moneyness": "OTM",
+          "grade": "Watchlist",
+          "trade_score": 59
+        },
+        {
+          "symbol": "KAYNES TECHNOLOGY IND LTD",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "Watchlist",
+          "trade_score": 58
+        },
+        {
+          "symbol": "KAYNES TECHNOLOGY IND LTD",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "Watchlist",
+          "trade_score": 57
+        }
+      ],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-08-03T10:40:49.285031+05:30",
+      "messages_sent": [
+        "NEW_TRADE_ALERT"
+      ],
+      "streak_counted": false,
+      "strategy": "trade_score",
+      "probability_history": [
+        {
+          "time": "09:45",
+          "pct": 65
+        },
+        {
+          "time": "09:45",
+          "pct": 65
+        },
+        {
+          "time": "09:50",
+          "pct": 70
+        },
+        {
+          "time": "09:50",
+          "pct": 65
+        },
+        {
+          "time": "09:55",
+          "pct": 75
+        },
+        {
+          "time": "09:55",
+          "pct": 65
+        },
+        {
+          "time": "10:00",
+          "pct": 71
+        },
+        {
+          "time": "10:05",
+          "pct": 75
+        },
+        {
+          "time": "10:05",
+          "pct": 65
+        },
+        {
+          "time": "10:10",
+          "pct": 75
+        },
+        {
+          "time": "10:15",
+          "pct": 75
+        },
+        {
+          "time": "10:20",
+          "pct": 76
+        },
+        {
+          "time": "10:25",
+          "pct": 65
+        },
+        {
+          "time": "10:31",
+          "pct": 76
+        },
+        {
+          "time": "10:35",
+          "pct": 66
+        },
+        {
+          "time": "10:40",
+          "pct": 75
+        }
+      ],
+      "probability_trend": "Increasing",
+      "decision": {
+        "enabled": true,
+        "decision": "Trade Approved",
+        "approved": true,
+        "trade_quality_score": 74.6,
+        "confidence_score": 72.0,
+        "probability": {
+          "win_probability_pct": 74.1,
+          "loss_probability_pct": 25.9,
+          "trade_success_probability_pct": 74.1,
+          "historical_similarity_pct": null,
+          "source": "upstream_probability_pct"
+        },
+        "risk": {
+          "max_risk_per_unit": 16.72,
+          "expected_reward_per_unit": 41.8,
+          "risk_score": 83.7,
+          "capital_risk_pct": 0.02
+        },
+        "risk_reward": {
+          "entry": 205.0,
+          "stop_loss": 188.28,
+          "target_1": 230.08,
+          "target_2": 246.8,
+          "risk_reward_ratio": 2.5,
+          "min_rr_threshold": 1.5,
+          "passes_rr_floor": true
+        },
+        "entry": 205.0,
+        "stop_loss": 188.28,
+        "stop_loss_detail": {
+          "active_stop_loss": 188.28,
+          "style": "atr_dynamic",
+          "distance_pct": 8.16,
+          "percentage_stop_reference": 102.5,
+          "recommendation": null
+        },
+        "target_1": 230.08,
+        "target_2": 246.8,
+        "target_3": 255.16,
+        "position_size": {
+          "mode": "dynamic",
+          "quantity": 48,
+          "lot_size": 1
+        },
+        "entry_validation": {
+          "entry_quality_score": 52.5,
+          "sub_scores": {
+            "entry_distance": 60.0,
+            "volume_confirmation": 50.0,
+            "market_alignment": 50.0,
+            "options_confirmation": 50.0,
+            "institutional_confirmation": null
+          },
+          "passed": true,
+          "reasons": []
+        },
+        "priority": "High",
+        "explanation": [
+          "Trade Approved",
+          "Trade Quality 74.6/100",
+          "Probability 74.1%",
+          "Risk:Reward 1:2.5",
+          "Trade Score 72/100 (Potential Trade), probability 75%"
+        ],
+        "rejection_reasons": [],
+        "warnings": [],
+        "engines_used": [
+          "market_snapshot",
+          "early_breakout",
+          "trade_score_engine",
+          "options_intelligence"
+        ],
+        "engines_available": [
+          "trade_score_engine"
+        ],
+        "execution_time_ms": 0.15,
+        "timestamp": "2026-08-03T10:41:17.651889+05:30",
+        "quant_intelligence": {
+          "enabled": true,
+          "decision": "REJECTED",
+          "probability": 0.0,
+          "confidence": "VERY LOW",
+          "signal_quality_grade": "Reject",
+          "regime": "Sideways",
+          "regime_confidence": "LOW",
+          "risk": {
+            "entry": 205.0,
+            "stop_loss": null,
+            "trailing_stop_loss": null,
+            "target_1": null,
+            "target_2": null,
+            "target_3": null,
+            "risk_reward_ratio": null,
+            "position_score": 0.0
+          },
+          "pattern": {
+            "pattern_key": "CE|Sideways|NA|na|na|na",
+            "historical_win_pct": null,
+            "historical_loss_pct": null,
+            "sample_size": 0,
+            "pattern_confidence": "NONE"
+          },
+          "explanation": "MIDCPNIFTY CE: REJECTED (grade Reject, probability 0.0% [VERY LOW]). Regime: Sideways (LOW). No historical pattern sample yet. Primary rejection reason: Weak momentum: momentum data unavailable.",
+          "reasons": {
+            "probability": [
+              "TREND provides little/no confirmation (strength 0.00).",
+              "EMA provides little/no confirmation (strength 0.00).",
+              "OI provides little/no confirmation (strength 0.00)."
+            ],
+            "signal_quality": [
+              "Weak momentum: momentum data unavailable.",
+              "Weak volume: volume/threshold data unavailable.",
+              "Poor liquidity: OI/threshold data unavailable.",
+              "Poor risk reward: risk/reward could not be computed.",
+              "Low confidence: probability 0.0 below minimum 40."
+            ],
+            "regime": [
+              "Insufficient directional signal to classify a trend; defaulting to sideways read."
+            ],
+            "risk": [
+              "Insufficient price/ATR data to compute risk levels."
+            ],
+            "pattern": [
+              "No historical setups recorded yet for this pattern."
+            ]
+          },
+          "errors": [],
+          "execution_time_ms": 10.17
+        },
+        "news_intelligence": {
+          "enabled": true,
+          "news_score": 0.0,
+          "sentiment": "neutral",
+          "impact": "ignore",
+          "confidence": 0.0,
+          "reasons": [
+            "No recent news found for this symbol"
+          ],
+          "article_count": 0,
+          "most_recent_headline": "",
+          "most_recent_url": "",
+          "execution_time_ms": 0.03
+        },
+        "candlestick_patterns": {
+          "enabled": false,
+          "reason": "no candlestick read attached to this trade"
+        }
+      }
     }
   },
   "next_seq": {
     "SENSEX-PE-ITM": 1,
     "BAJAJ FINANCE LIMITED-PE-ITM": 1,
     "HYUNDAI MOTOR INDIA LTD-CE-ATM": 1,
-    "NIFTY-PE-ITM": 1
+    "NIFTY-PE-ITM": 1,
+    "MIDCPNIFTY-CE-ATM": 1
   },
-  "next_display_num": 4,
+  "next_display_num": 5,
   "summary_sent": false,
   "consecutive_sl_streak": 1,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
     "NSE_FO|65860": 10439325.0,
-    "NSE_FO|65867": 11563110.0,
-    "NSE_FO|65871": 20022860.0,
-    "NSE_FO|65872": 18575830.0,
-    "NSE_FO|65868": 21651500.0,
+    "NSE_FO|65867": 11750375.0,
+    "NSE_FO|65871": 20039630.0,
+    "NSE_FO|65872": 18015400.0,
+    "NSE_FO|65868": 21469110.0,
     "NSE_FO|65861": 24984960.0,
     "NSE_FO|59090": 688470.0,
-    "NSE_FO|59092": 140820.0,
-    "NSE_FO|59094": 174960.0,
-    "NSE_FO|59095": 124710.0,
-    "NSE_FO|59093": 114660.0,
+    "NSE_FO|59092": 140580.0,
+    "NSE_FO|59094": 180870.0,
+    "NSE_FO|59095": 124290.0,
+    "NSE_FO|59093": 112830.0,
     "NSE_FO|59091": 467790.0,
     "NSE_FO|60619": 23160.0,
     "NSE_FO|60621": 41280.0,
-    "NSE_FO|60623": 10680.0,
-    "NSE_FO|60624": 23280.0,
+    "NSE_FO|60623": 11040.0,
+    "NSE_FO|60624": 25320.0,
     "NSE_FO|60622": 28800.0,
     "NSE_FO|60620": 17880.0,
     "BSE_FO|840175": 639480.0,
-    "BSE_FO|840341": 653320.0,
-    "BSE_FO|840209": 611700.0,
-    "BSE_FO|840325": 649440.0,
-    "BSE_FO|840158": 810100.0,
+    "BSE_FO|840341": 603240.0,
+    "BSE_FO|840209": 618200.0,
+    "BSE_FO|840325": 635560.0,
+    "BSE_FO|840158": 801400.0,
     "BSE_FO|840297": 609880.0,
     "NSE_FO|84642": 1205000.0,
-    "NSE_FO|71527": 7685000.0,
-    "NSE_FO|84654": 1815000.0,
-    "NSE_FO|84657": 605000.0,
-    "NSE_FO|71528": 3475000.0,
+    "NSE_FO|71527": 7655000.0,
+    "NSE_FO|84654": 1840000.0,
+    "NSE_FO|84657": 650000.0,
+    "NSE_FO|71528": 3500000.0,
     "NSE_FO|84653": 870000.0,
-    "NSE_FO|74230": 1064250.0,
-    "NSE_FO|88833": 599250.0,
+    "NSE_FO|74230": 1115250.0,
+    "NSE_FO|88833": 600000.0,
     "NSE_FO|74232": 906750.0,
     "NSE_FO|74233": 265500.0,
     "NSE_FO|88834": 270750.0,
-    "NSE_FO|74231": 673500.0,
-    "NSE_FO|87776": 696600.0,
-    "NSE_FO|73843": 692700.0,
+    "NSE_FO|74231": 666750.0,
+    "NSE_FO|87776": 698400.0,
+    "NSE_FO|73843": 695100.0,
     "NSE_FO|87780": 829500.0,
     "NSE_FO|87781": 60900.0,
-    "NSE_FO|73844": 136500.0,
-    "NSE_FO|87779": 114600.0,
-    "NSE_FO|103221": 297825.0,
-    "NSE_FO|111163": 121000.0,
-    "NSE_FO|103225": 184800.0,
-    "NSE_FO|103226": 25025.0,
-    "NSE_FO|111164": 22000.0,
-    "NSE_FO|103224": 180950.0,
+    "NSE_FO|73844": 135000.0,
+    "NSE_FO|87779": 115800.0,
+    "NSE_FO|103221": 295625.0,
+    "NSE_FO|111163": 122100.0,
+    "NSE_FO|103225": 183150.0,
+    "NSE_FO|103226": 24475.0,
+    "NSE_FO|111164": 23925.0,
+    "NSE_FO|103224": 180675.0,
     "NSE_FO|114361": 133950.0,
-    "NSE_FO|120057": 39750.0,
-    "NSE_FO|114363": 253650.0,
-    "NSE_FO|114364": 84600.0,
+    "NSE_FO|120057": 39900.0,
+    "NSE_FO|114363": 254250.0,
+    "NSE_FO|114364": 85200.0,
     "NSE_FO|120058": 35400.0,
     "NSE_FO|114362": 80250.0,
-    "NSE_FO|59096": 218280.0,
-    "NSE_FO|59097": 148590.0,
+    "NSE_FO|59096": 222780.0,
+    "NSE_FO|59097": 144720.0,
     "NSE_FO|59098": 117480.0,
     "NSE_FO|59099": 86970.0,
-    "NSE_FO|60625": 125760.0,
-    "NSE_FO|60626": 89760.0,
-    "NSE_FO|88790": 1122000.0,
-    "NSE_FO|88791": 680250.0,
-    "NSE_FO|73841": 295200.0,
-    "NSE_FO|73842": 153300.0,
-    "BSE_FO|840680": 537000.0,
-    "BSE_FO|840193": 341680.0,
+    "NSE_FO|60625": 131040.0,
+    "NSE_FO|60626": 91200.0,
+    "NSE_FO|88790": 1124250.0,
+    "NSE_FO|88791": 677250.0,
+    "NSE_FO|73841": 293400.0,
+    "NSE_FO|73842": 156000.0,
+    "BSE_FO|840680": 543080.0,
+    "BSE_FO|840193": 345580.0,
     "NSE_FO|120059": 49050.0,
-    "NSE_FO|120060": 30600.0,
+    "NSE_FO|120060": 30300.0,
     "NSE_FO|60627": 0.0,
-    "NSE_FO|60632": 9360.0,
-    "NSE_FO|65879": 10169510.0,
-    "NSE_FO|65880": 4447365.0,
-    "NSE_FO|71529": 4495000.0,
-    "NSE_FO|71530": 885000.0
+    "NSE_FO|60632": 9480.0,
+    "NSE_FO|65879": 10697505.0,
+    "NSE_FO|65880": 4328935.0,
+    "NSE_FO|71529": 4515000.0,
+    "NSE_FO|71530": 895000.0
   },
   "probability_history": {
     "SENSEX-PE": [
@@ -1756,6 +2151,18 @@
       {
         "time": "10:35",
         "pct": 76
+      },
+      {
+        "time": "10:40",
+        "pct": 74
+      },
+      {
+        "time": "10:40",
+        "pct": 71
+      },
+      {
+        "time": "10:40",
+        "pct": 71
       }
     ],
     "BAJAJ FINANCE LIMITED-PE": [
@@ -1890,6 +2297,18 @@
       {
         "time": "10:35",
         "pct": 70
+      },
+      {
+        "time": "10:40",
+        "pct": 73
+      },
+      {
+        "time": "10:40",
+        "pct": 71
+      },
+      {
+        "time": "10:40",
+        "pct": 70
       }
     ],
     "BAJAJ FINSERV LTD.-PE": [
@@ -2004,6 +2423,18 @@
       {
         "time": "10:31",
         "pct": 66
+      },
+      {
+        "time": "10:40",
+        "pct": 65
+      },
+      {
+        "time": "10:40",
+        "pct": 65
+      },
+      {
+        "time": "10:40",
+        "pct": 65
       }
     ],
     "NIFTY-PE": [
@@ -2066,6 +2497,14 @@
       {
         "time": "10:35",
         "pct": 67
+      },
+      {
+        "time": "10:40",
+        "pct": 75
+      },
+      {
+        "time": "10:40",
+        "pct": 74
       }
     ],
     "ASHOK LEYLAND LTD-PE": [
@@ -2172,6 +2611,18 @@
       {
         "time": "10:35",
         "pct": 72
+      },
+      {
+        "time": "10:40",
+        "pct": 72
+      },
+      {
+        "time": "10:40",
+        "pct": 65
+      },
+      {
+        "time": "10:40",
+        "pct": 65
       }
     ],
     "BANKNIFTY-PE": [
@@ -2306,6 +2757,18 @@
       {
         "time": "10:35",
         "pct": 66
+      },
+      {
+        "time": "10:40",
+        "pct": 72
+      },
+      {
+        "time": "10:40",
+        "pct": 69
+      },
+      {
+        "time": "10:40",
+        "pct": 65
       }
     ],
     "MIDCPNIFTY-PE": [
@@ -2412,6 +2875,14 @@
       {
         "time": "10:35",
         "pct": 65
+      },
+      {
+        "time": "10:40",
+        "pct": 75
+      },
+      {
+        "time": "10:40",
+        "pct": 67
       }
     ],
     "BANKNIFTY-CE": [
@@ -2537,6 +3008,14 @@
       },
       {
         "time": "10:35",
+        "pct": 65
+      },
+      {
+        "time": "10:40",
+        "pct": 67
+      },
+      {
+        "time": "10:40",
         "pct": 65
       }
     ],
@@ -2748,6 +3227,18 @@
       {
         "time": "10:35",
         "pct": 71
+      },
+      {
+        "time": "10:40",
+        "pct": 73
+      },
+      {
+        "time": "10:40",
+        "pct": 65
+      },
+      {
+        "time": "10:40",
+        "pct": 65
       }
     ],
     "KAYNES TECHNOLOGY IND LTD-PE": [
@@ -2866,6 +3357,14 @@
       {
         "time": "10:35",
         "pct": 65
+      },
+      {
+        "time": "10:40",
+        "pct": 65
+      },
+      {
+        "time": "10:40",
+        "pct": 65
       }
     ],
     "NIFTY-CE": [
@@ -2940,6 +3439,10 @@
       {
         "time": "10:35",
         "pct": 74
+      },
+      {
+        "time": "10:40",
+        "pct": 67
       }
     ],
     "BAJAJ FINSERV LTD.-CE": [
@@ -3100,6 +3603,10 @@
       {
         "time": "10:35",
         "pct": 66
+      },
+      {
+        "time": "10:40",
+        "pct": 75
       }
     ],
     "ASHOK LEYLAND LTD-CE": [
@@ -3280,6 +3787,18 @@
       {
         "time": "10:35",
         "pct": 65
+      },
+      {
+        "time": "10:40",
+        "pct": 75
+      },
+      {
+        "time": "10:40",
+        "pct": 65
+      },
+      {
+        "time": "10:40",
+        "pct": 65
       }
     ],
     "KAYNES TECHNOLOGY IND LTD-CE": [
@@ -3394,13 +3913,25 @@
       {
         "time": "10:35",
         "pct": 65
+      },
+      {
+        "time": "10:40",
+        "pct": 65
+      },
+      {
+        "time": "10:40",
+        "pct": 65
+      },
+      {
+        "time": "10:40",
+        "pct": 65
       }
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 153,
-    "valid_signals": 434,
-    "rejected_signals": 65,
+    "scanned_symbols": 162,
+    "valid_signals": 468,
+    "rejected_signals": 71,
     "api_failures": 9,
     "broker_errors": 0
   },
