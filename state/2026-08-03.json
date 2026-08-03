@@ -201,7 +201,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T15:19:00+05:30",
+      "last_processed_ts": "2026-08-03T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -372,11 +372,12 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 333.1,
-      "current_pnl_pct": -5.52,
+      "current_price": 327.55,
+      "current_pnl_pct": -7.09,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -16.65,
-      "holding_time_minutes": 334
+      "holding_time_minutes": 339,
+      "_marked_open_at_eod": true
     },
     "BAJAJ FINANCE LIMITED-PE-ITM-20260803-0950-01": {
       "trade_id": "BAJAJ FINANCE LIMITED-PE-ITM-20260803-0950-01",
@@ -577,7 +578,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T15:19:00+05:30",
+      "last_processed_ts": "2026-08-03T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -761,11 +762,12 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 40.65,
-      "current_pnl_pct": 21.34,
+      "current_price": 39.7,
+      "current_pnl_pct": 18.51,
       "maximum_profit_pct": 22.99,
       "maximum_drawdown_pct": -6.87,
-      "holding_time_minutes": 315
+      "holding_time_minutes": 320,
+      "_marked_open_at_eod": true
     },
     "HYUNDAI MOTOR INDIA LTD-CE-ATM-20260803-0955-01": {
       "trade_id": "HYUNDAI MOTOR INDIA LTD-CE-ATM-20260803-0955-01",
@@ -1356,7 +1358,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T15:19:00+05:30",
+      "last_processed_ts": "2026-08-03T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1530,11 +1532,12 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 71.0,
-      "current_pnl_pct": -9.21,
+      "current_price": 69.8,
+      "current_pnl_pct": -10.74,
       "maximum_profit_pct": 0.96,
       "maximum_drawdown_pct": -21.1,
-      "holding_time_minutes": 319
+      "holding_time_minutes": 324,
+      "_marked_open_at_eod": true
     },
     "MIDCPNIFTY-CE-ATM-20260803-1040-01": {
       "trade_id": "MIDCPNIFTY-CE-ATM-20260803-1040-01",
@@ -2053,7 +2056,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T15:19:00+05:30",
+      "last_processed_ts": "2026-08-03T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -2280,11 +2283,12 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 7.03,
-      "current_pnl_pct": -1.95,
+      "current_price": 6.93,
+      "current_pnl_pct": -3.35,
       "maximum_profit_pct": 2.51,
-      "maximum_drawdown_pct": -2.51,
-      "holding_time_minutes": 94
+      "maximum_drawdown_pct": -3.35,
+      "holding_time_minutes": 99,
+      "_marked_open_at_eod": true
     }
   },
   "next_seq": {
@@ -4887,7 +4891,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 513,
+    "scanned_symbols": 522,
     "valid_signals": 613,
     "rejected_signals": 110,
     "api_failures": 9,
