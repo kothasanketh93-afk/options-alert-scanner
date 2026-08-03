@@ -201,7 +201,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T12:34:00+05:30",
+      "last_processed_ts": "2026-08-03T12:49:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -372,11 +372,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 310.0,
-      "current_pnl_pct": -12.07,
+      "current_price": 339.3,
+      "current_pnl_pct": -3.76,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -16.65,
-      "holding_time_minutes": 169
+      "holding_time_minutes": 184
     },
     "BAJAJ FINANCE LIMITED-PE-ITM-20260803-0950-01": {
       "trade_id": "BAJAJ FINANCE LIMITED-PE-ITM-20260803-0950-01",
@@ -577,7 +577,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T12:34:00+05:30",
+      "last_processed_ts": "2026-08-03T12:49:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -760,11 +760,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 34.65,
-      "current_pnl_pct": 3.43,
+      "current_price": 34.3,
+      "current_pnl_pct": 2.39,
       "maximum_profit_pct": 8.21,
       "maximum_drawdown_pct": -6.87,
-      "holding_time_minutes": 150
+      "holding_time_minutes": 165
     },
     "HYUNDAI MOTOR INDIA LTD-CE-ATM-20260803-0955-01": {
       "trade_id": "HYUNDAI MOTOR INDIA LTD-CE-ATM-20260803-0955-01",
@@ -1345,9 +1345,9 @@
       "final_status": null,
       "actual_entry_time": "2026-08-03T10:01:00+05:30",
       "tracked_entry_price": 78.2,
-      "highest_since_entry": 80.15,
+      "highest_since_entry": 83.45,
       "lowest_since_entry": 59.7,
-      "max_favorable_pct": 2.49,
+      "max_favorable_pct": 6.71,
       "max_adverse_pct": -23.66,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -1355,7 +1355,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T12:34:00+05:30",
+      "last_processed_ts": "2026-08-03T12:49:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1529,11 +1529,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 66.75,
-      "current_pnl_pct": -14.64,
+      "current_price": 76.55,
+      "current_pnl_pct": -2.11,
       "maximum_profit_pct": 0.96,
       "maximum_drawdown_pct": -21.1,
-      "holding_time_minutes": 154
+      "holding_time_minutes": 169
     },
     "MIDCPNIFTY-CE-ATM-20260803-1040-01": {
       "trade_id": "MIDCPNIFTY-CE-ATM-20260803-1040-01",
@@ -1692,26 +1692,27 @@
           "trade_score": 57
         }
       ],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-08-03T10:41:00+05:30",
       "tracked_entry_price": 204.95,
       "highest_since_entry": 209.5,
-      "lowest_since_entry": 193.55,
+      "lowest_since_entry": 182.7,
       "max_favorable_pct": 2.22,
-      "max_adverse_pct": -5.56,
+      "max_adverse_pct": -10.86,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-08-03T12:47:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T12:34:00+05:30",
+      "last_processed_ts": "2026-08-03T12:49:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "SL_HIT"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [
         {
@@ -1929,11 +1930,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 203.0,
-      "current_pnl_pct": -0.95,
+      "current_price": 188.25,
+      "current_pnl_pct": -8.15,
       "maximum_profit_pct": 1.1,
-      "maximum_drawdown_pct": -5.17,
-      "holding_time_minutes": 114
+      "maximum_drawdown_pct": -8.15,
+      "holding_time_minutes": 129
     }
   },
   "next_seq": {
@@ -1945,7 +1946,7 @@
   },
   "next_display_num": 5,
   "summary_sent": false,
-  "consecutive_sl_streak": 1,
+  "consecutive_sl_streak": 2,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
@@ -4282,7 +4283,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 297,
+    "scanned_symbols": 306,
     "valid_signals": 553,
     "rejected_signals": 88,
     "api_failures": 9,
