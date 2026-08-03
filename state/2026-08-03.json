@@ -201,7 +201,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T10:40:00+05:30",
+      "last_processed_ts": "2026-08-03T10:45:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -372,11 +372,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 322.2,
-      "current_pnl_pct": -8.61,
+      "current_price": 316.65,
+      "current_pnl_pct": -10.18,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -12.07,
-      "holding_time_minutes": 54
+      "holding_time_minutes": 59
     },
     "BAJAJ FINANCE LIMITED-PE-ITM-20260803-0950-01": {
       "trade_id": "BAJAJ FINANCE LIMITED-PE-ITM-20260803-0950-01",
@@ -567,9 +567,9 @@
       "final_status": null,
       "actual_entry_time": "2026-08-03T10:05:00+05:30",
       "tracked_entry_price": 33.5,
-      "highest_since_entry": 35.5,
+      "highest_since_entry": 35.75,
       "lowest_since_entry": 32.5,
-      "max_favorable_pct": 5.97,
+      "max_favorable_pct": 6.72,
       "max_adverse_pct": -2.99,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -577,7 +577,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T10:40:00+05:30",
+      "last_processed_ts": "2026-08-03T10:45:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -760,11 +760,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 34.85,
-      "current_pnl_pct": 4.03,
+      "current_price": 35.15,
+      "current_pnl_pct": 4.93,
       "maximum_profit_pct": 4.93,
       "maximum_drawdown_pct": -6.29,
-      "holding_time_minutes": 35
+      "holding_time_minutes": 40
     },
     "HYUNDAI MOTOR INDIA LTD-CE-ATM-20260803-0955-01": {
       "trade_id": "HYUNDAI MOTOR INDIA LTD-CE-ATM-20260803-0955-01",
@@ -1355,7 +1355,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T10:40:00+05:30",
+      "last_processed_ts": "2026-08-03T10:45:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1529,11 +1529,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 73.15,
-      "current_pnl_pct": -6.46,
+      "current_price": 71.45,
+      "current_pnl_pct": -8.63,
       "maximum_profit_pct": 0.96,
       "maximum_drawdown_pct": -8.82,
-      "holding_time_minutes": 39
+      "holding_time_minutes": 44
     },
     "MIDCPNIFTY-CE-ATM-20260803-1040-01": {
       "trade_id": "MIDCPNIFTY-CE-ATM-20260803-1040-01",
@@ -1692,23 +1692,24 @@
           "trade_score": 57
         }
       ],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
-      "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "actual_entry_time": "2026-08-03T10:41:00+05:30",
+      "tracked_entry_price": 204.95,
+      "highest_since_entry": 207.25,
+      "lowest_since_entry": 202.05,
+      "max_favorable_pct": 1.12,
+      "max_adverse_pct": -1.41,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-03T10:40:49.285031+05:30",
+      "last_processed_ts": "2026-08-03T10:45:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
       ],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -1927,7 +1928,12 @@
           "enabled": false,
           "reason": "no candlestick read attached to this trade"
         }
-      }
+      },
+      "current_price": 202.65,
+      "current_pnl_pct": -1.12,
+      "maximum_profit_pct": 0.0,
+      "maximum_drawdown_pct": -1.12,
+      "holding_time_minutes": 4
     }
   },
   "next_seq": {
@@ -1944,79 +1950,81 @@
   "circuit_breaker_notified": false,
   "oi_history": {
     "NSE_FO|65860": 10439325.0,
-    "NSE_FO|65867": 11750375.0,
-    "NSE_FO|65871": 20039630.0,
-    "NSE_FO|65872": 18015400.0,
-    "NSE_FO|65868": 21469110.0,
+    "NSE_FO|65867": 11930360.0,
+    "NSE_FO|65871": 20390630.0,
+    "NSE_FO|65872": 18510960.0,
+    "NSE_FO|65868": 21987160.0,
     "NSE_FO|65861": 24984960.0,
     "NSE_FO|59090": 688470.0,
     "NSE_FO|59092": 140580.0,
-    "NSE_FO|59094": 180870.0,
-    "NSE_FO|59095": 124290.0,
+    "NSE_FO|59094": 182070.0,
+    "NSE_FO|59095": 122970.0,
     "NSE_FO|59093": 112830.0,
     "NSE_FO|59091": 467790.0,
     "NSE_FO|60619": 23160.0,
     "NSE_FO|60621": 41280.0,
-    "NSE_FO|60623": 11040.0,
-    "NSE_FO|60624": 25320.0,
+    "NSE_FO|60623": 10680.0,
+    "NSE_FO|60624": 25440.0,
     "NSE_FO|60622": 28800.0,
     "NSE_FO|60620": 17880.0,
     "BSE_FO|840175": 639480.0,
-    "BSE_FO|840341": 603240.0,
-    "BSE_FO|840209": 618200.0,
-    "BSE_FO|840325": 635560.0,
-    "BSE_FO|840158": 801400.0,
+    "BSE_FO|840341": 601460.0,
+    "BSE_FO|840209": 633040.0,
+    "BSE_FO|840325": 650100.0,
+    "BSE_FO|840158": 814980.0,
     "BSE_FO|840297": 609880.0,
     "NSE_FO|84642": 1205000.0,
-    "NSE_FO|71527": 7655000.0,
-    "NSE_FO|84654": 1840000.0,
-    "NSE_FO|84657": 650000.0,
-    "NSE_FO|71528": 3500000.0,
+    "NSE_FO|71527": 7710000.0,
+    "NSE_FO|84654": 1890000.0,
+    "NSE_FO|84657": 640000.0,
+    "NSE_FO|71528": 3540000.0,
     "NSE_FO|84653": 870000.0,
-    "NSE_FO|74230": 1115250.0,
+    "NSE_FO|74230": 1123500.0,
     "NSE_FO|88833": 600000.0,
     "NSE_FO|74232": 906750.0,
     "NSE_FO|74233": 265500.0,
     "NSE_FO|88834": 270750.0,
-    "NSE_FO|74231": 666750.0,
+    "NSE_FO|74231": 614250.0,
     "NSE_FO|87776": 698400.0,
-    "NSE_FO|73843": 695100.0,
+    "NSE_FO|73843": 694800.0,
     "NSE_FO|87780": 829500.0,
     "NSE_FO|87781": 60900.0,
-    "NSE_FO|73844": 135000.0,
-    "NSE_FO|87779": 115800.0,
-    "NSE_FO|103221": 295625.0,
-    "NSE_FO|111163": 122100.0,
-    "NSE_FO|103225": 183150.0,
-    "NSE_FO|103226": 24475.0,
-    "NSE_FO|111164": 23925.0,
-    "NSE_FO|103224": 180675.0,
+    "NSE_FO|73844": 135900.0,
+    "NSE_FO|87779": 116400.0,
+    "NSE_FO|103221": 298925.0,
+    "NSE_FO|111163": 122650.0,
+    "NSE_FO|103225": 185900.0,
+    "NSE_FO|103226": 24750.0,
+    "NSE_FO|111164": 26400.0,
+    "NSE_FO|103224": 177925.0,
     "NSE_FO|114361": 133950.0,
-    "NSE_FO|120057": 39900.0,
-    "NSE_FO|114363": 254250.0,
-    "NSE_FO|114364": 85200.0,
-    "NSE_FO|120058": 35400.0,
+    "NSE_FO|120057": 40050.0,
+    "NSE_FO|114363": 255750.0,
+    "NSE_FO|114364": 85050.0,
+    "NSE_FO|120058": 35550.0,
     "NSE_FO|114362": 80250.0,
-    "NSE_FO|59096": 222780.0,
-    "NSE_FO|59097": 144720.0,
-    "NSE_FO|59098": 117480.0,
-    "NSE_FO|59099": 86970.0,
-    "NSE_FO|60625": 131040.0,
-    "NSE_FO|60626": 91200.0,
-    "NSE_FO|88790": 1124250.0,
+    "NSE_FO|59096": 227130.0,
+    "NSE_FO|59097": 147060.0,
+    "NSE_FO|59098": 117270.0,
+    "NSE_FO|59099": 89250.0,
+    "NSE_FO|60625": 133560.0,
+    "NSE_FO|60626": 90480.0,
+    "NSE_FO|88790": 1154250.0,
     "NSE_FO|88791": 677250.0,
-    "NSE_FO|73841": 293400.0,
-    "NSE_FO|73842": 156000.0,
-    "BSE_FO|840680": 543080.0,
-    "BSE_FO|840193": 345580.0,
-    "NSE_FO|120059": 49050.0,
-    "NSE_FO|120060": 30300.0,
+    "NSE_FO|73841": 291000.0,
+    "NSE_FO|73842": 155700.0,
+    "BSE_FO|840680": 551580.0,
+    "BSE_FO|840193": 355780.0,
+    "NSE_FO|120059": 48900.0,
+    "NSE_FO|120060": 29850.0,
     "NSE_FO|60627": 0.0,
-    "NSE_FO|60632": 9480.0,
-    "NSE_FO|65879": 10697505.0,
-    "NSE_FO|65880": 4328935.0,
-    "NSE_FO|71529": 4515000.0,
-    "NSE_FO|71530": 895000.0
+    "NSE_FO|60632": 9960.0,
+    "NSE_FO|65879": 10539490.0,
+    "NSE_FO|65880": 4486755.0,
+    "NSE_FO|71529": 4555000.0,
+    "NSE_FO|71530": 890000.0,
+    "NSE_FO|74228": 972750.0,
+    "NSE_FO|74229": 778500.0
   },
   "probability_history": {
     "SENSEX-PE": [
@@ -2163,6 +2171,18 @@
       {
         "time": "10:40",
         "pct": 71
+      },
+      {
+        "time": "10:45",
+        "pct": 72
+      },
+      {
+        "time": "10:45",
+        "pct": 70
+      },
+      {
+        "time": "10:45",
+        "pct": 68
       }
     ],
     "BAJAJ FINANCE LIMITED-PE": [
@@ -2309,6 +2329,18 @@
       {
         "time": "10:40",
         "pct": 70
+      },
+      {
+        "time": "10:45",
+        "pct": 83
+      },
+      {
+        "time": "10:45",
+        "pct": 70
+      },
+      {
+        "time": "10:45",
+        "pct": 70
       }
     ],
     "BAJAJ FINSERV LTD.-PE": [
@@ -2435,6 +2467,10 @@
       {
         "time": "10:40",
         "pct": 65
+      },
+      {
+        "time": "10:45",
+        "pct": 65
       }
     ],
     "NIFTY-PE": [
@@ -2504,6 +2540,14 @@
       },
       {
         "time": "10:40",
+        "pct": 74
+      },
+      {
+        "time": "10:45",
+        "pct": 77
+      },
+      {
+        "time": "10:45",
         "pct": 74
       }
     ],
@@ -2622,6 +2666,10 @@
       },
       {
         "time": "10:40",
+        "pct": 65
+      },
+      {
+        "time": "10:45",
         "pct": 65
       }
     ],
@@ -2769,6 +2817,18 @@
       {
         "time": "10:40",
         "pct": 65
+      },
+      {
+        "time": "10:45",
+        "pct": 69
+      },
+      {
+        "time": "10:45",
+        "pct": 66
+      },
+      {
+        "time": "10:45",
+        "pct": 65
       }
     ],
     "MIDCPNIFTY-PE": [
@@ -2883,6 +2943,14 @@
       {
         "time": "10:40",
         "pct": 67
+      },
+      {
+        "time": "10:45",
+        "pct": 65
+      },
+      {
+        "time": "10:45",
+        "pct": 65
       }
     ],
     "BANKNIFTY-CE": [
@@ -3017,6 +3085,10 @@
       {
         "time": "10:40",
         "pct": 65
+      },
+      {
+        "time": "10:45",
+        "pct": 65
       }
     ],
     "HYUNDAI MOTOR INDIA LTD-CE": [
@@ -3063,6 +3135,14 @@
       {
         "time": "10:05",
         "pct": 68
+      },
+      {
+        "time": "10:45",
+        "pct": 65
+      },
+      {
+        "time": "10:45",
+        "pct": 65
       }
     ],
     "HYUNDAI MOTOR INDIA LTD-PE": [
@@ -3097,6 +3177,10 @@
       {
         "time": "09:55",
         "pct": 71
+      },
+      {
+        "time": "10:45",
+        "pct": 65
       }
     ],
     "SENSEX-CE": [
@@ -3239,6 +3323,10 @@
       {
         "time": "10:40",
         "pct": 65
+      },
+      {
+        "time": "10:45",
+        "pct": 65
       }
     ],
     "KAYNES TECHNOLOGY IND LTD-PE": [
@@ -3365,6 +3453,10 @@
       {
         "time": "10:40",
         "pct": 65
+      },
+      {
+        "time": "10:45",
+        "pct": 65
       }
     ],
     "NIFTY-CE": [
@@ -3442,6 +3534,10 @@
       },
       {
         "time": "10:40",
+        "pct": 67
+      },
+      {
+        "time": "10:45",
         "pct": 67
       }
     ],
@@ -3607,6 +3703,10 @@
       {
         "time": "10:40",
         "pct": 75
+      },
+      {
+        "time": "10:45",
+        "pct": 67
       }
     ],
     "ASHOK LEYLAND LTD-CE": [
@@ -3660,6 +3760,10 @@
       },
       {
         "time": "10:35",
+        "pct": 65
+      },
+      {
+        "time": "10:45",
         "pct": 65
       }
     ],
@@ -3799,6 +3903,18 @@
       {
         "time": "10:40",
         "pct": 65
+      },
+      {
+        "time": "10:45",
+        "pct": 70
+      },
+      {
+        "time": "10:45",
+        "pct": 65
+      },
+      {
+        "time": "10:45",
+        "pct": 65
       }
     ],
     "KAYNES TECHNOLOGY IND LTD-CE": [
@@ -3925,13 +4041,25 @@
       {
         "time": "10:40",
         "pct": 65
+      },
+      {
+        "time": "10:45",
+        "pct": 65
+      },
+      {
+        "time": "10:45",
+        "pct": 65
+      },
+      {
+        "time": "10:45",
+        "pct": 65
       }
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 162,
-    "valid_signals": 468,
-    "rejected_signals": 71,
+    "scanned_symbols": 171,
+    "valid_signals": 498,
+    "rejected_signals": 77,
     "api_failures": 9,
     "broker_errors": 0
   },
