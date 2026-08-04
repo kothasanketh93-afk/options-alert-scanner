@@ -179,26 +179,27 @@
           "trade_score": 57
         }
       ],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-08-04T09:46:00+05:30",
       "tracked_entry_price": 231.85,
       "highest_since_entry": 261.95,
-      "lowest_since_entry": 201.95,
+      "lowest_since_entry": 191.1,
       "max_favorable_pct": 12.98,
-      "max_adverse_pct": -12.9,
+      "max_adverse_pct": -17.58,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-08-04T11:01:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T11:00:00+05:30",
+      "last_processed_ts": "2026-08-04T11:05:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "SL_HIT"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [
         {
@@ -364,11 +365,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 208.15,
-      "current_pnl_pct": -10.22,
+      "current_price": 208.05,
+      "current_pnl_pct": -10.27,
       "maximum_profit_pct": 11.3,
-      "maximum_drawdown_pct": -10.22,
-      "holding_time_minutes": 75
+      "maximum_drawdown_pct": -10.27,
+      "holding_time_minutes": 79
     },
     "JUBILANT FOODWORKS LTD-PE-ATM-20260804-0950-01": {
       "trade_id": "JUBILANT FOODWORKS LTD-PE-ATM-20260804-0950-01",
@@ -562,7 +563,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T11:00:00+05:30",
+      "last_processed_ts": "2026-08-04T11:05:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -745,11 +746,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 16.65,
-      "current_pnl_pct": -2.06,
+      "current_price": 16.85,
+      "current_pnl_pct": -0.88,
       "maximum_profit_pct": 4.41,
       "maximum_drawdown_pct": -2.65,
-      "holding_time_minutes": 68
+      "holding_time_minutes": 72
     },
     "MIDCPNIFTY-CE-ITM-20260804-0955-01": {
       "trade_id": "MIDCPNIFTY-CE-ITM-20260804-0955-01",
@@ -1634,7 +1635,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T11:00:00+05:30",
+      "last_processed_ts": "2026-08-04T11:05:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1889,11 +1890,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 124.15,
-      "current_pnl_pct": -5.37,
+      "current_price": 130.9,
+      "current_pnl_pct": -0.23,
       "maximum_profit_pct": 2.9,
       "maximum_drawdown_pct": -5.37,
-      "holding_time_minutes": 40
+      "holding_time_minutes": 44
     }
   },
   "next_seq": {
@@ -1905,42 +1906,42 @@
   },
   "next_display_num": 5,
   "summary_sent": false,
-  "consecutive_sl_streak": 2,
+  "consecutive_sl_streak": 3,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
     "NSE_FO|65867": 15261155.0,
     "NSE_FO|65871": 50978525.0,
     "NSE_FO|65879": 38488905.0,
-    "NSE_FO|65880": 7391865.0,
-    "NSE_FO|65872": 26314535.0,
-    "NSE_FO|65868": 24121955.0,
+    "NSE_FO|65880": 7719335.0,
+    "NSE_FO|65872": 27818960.0,
+    "NSE_FO|65868": 24660155.0,
     "NSE_FO|59094": 255780.0,
     "NSE_FO|59096": 355440.0,
     "NSE_FO|59098": 180540.0,
     "NSE_FO|59099": 124290.0,
-    "NSE_FO|59097": 168870.0,
-    "NSE_FO|59095": 130200.0,
+    "NSE_FO|59097": 168090.0,
+    "NSE_FO|59095": 132960.0,
     "NSE_FO|60619": 19560.0,
     "NSE_FO|60621": 68040.0,
     "NSE_FO|60623": 21720.0,
-    "NSE_FO|60624": 33240.0,
-    "NSE_FO|60622": 50400.0,
+    "NSE_FO|60624": 35520.0,
+    "NSE_FO|60622": 52440.0,
     "NSE_FO|60620": 20280.0,
     "BSE_FO|840341": 548440.0,
     "BSE_FO|840209": 1114460.0,
     "BSE_FO|840680": 1242180.0,
-    "BSE_FO|840193": 636500.0,
-    "BSE_FO|840325": 810920.0,
-    "BSE_FO|840158": 664960.0,
+    "BSE_FO|840193": 634080.0,
+    "BSE_FO|840325": 851240.0,
+    "BSE_FO|840158": 718560.0,
     "NSE_FO|119516": 62700.0,
     "NSE_FO|123383": 34950.0,
     "NSE_FO|119518": 167400.0,
     "NSE_FO|119519": 40200.0,
-    "NSE_FO|123384": 26700.0,
-    "NSE_FO|119517": 55950.0,
-    "NSE_FO|87849": 107800.0,
-    "NSE_FO|87858": 239300.0,
+    "NSE_FO|123384": 25800.0,
+    "NSE_FO|119517": 55800.0,
+    "NSE_FO|87849": 108700.0,
+    "NSE_FO|87858": 243400.0,
     "NSE_FO|87860": 192500.0,
     "NSE_FO|87861": 56300.0,
     "NSE_FO|87859": 127900.0,
@@ -1949,11 +1950,11 @@
     "NSE_FO|71529": 5250000.0,
     "NSE_FO|84658": 1575000.0,
     "NSE_FO|84659": 375000.0,
-    "NSE_FO|71530": 2090000.0,
-    "NSE_FO|84657": 1710000.0,
-    "NSE_FO|129430": 297550.0,
-    "NSE_FO|126781": 773025.0,
-    "NSE_FO|129433": 188650.0,
+    "NSE_FO|71530": 2080000.0,
+    "NSE_FO|84657": 1715000.0,
+    "NSE_FO|129430": 295350.0,
+    "NSE_FO|126781": 766700.0,
+    "NSE_FO|129433": 187275.0,
     "NSE_FO|129434": 74250.0,
     "NSE_FO|126790": 322300.0,
     "NSE_FO|129432": 187000.0,
@@ -1961,12 +1962,12 @@
     "NSE_FO|113751": 475000.0,
     "NSE_FO|119346": 617500.0,
     "NSE_FO|119347": 76250.0,
-    "NSE_FO|113779": 311250.0,
-    "NSE_FO|119345": 272500.0,
-    "NSE_FO|87766": 97600.0,
+    "NSE_FO|113779": 312500.0,
+    "NSE_FO|119345": 276250.0,
+    "NSE_FO|87766": 97500.0,
     "NSE_FO|87848": 83400.0,
     "NSE_FO|60625": 275160.0,
-    "NSE_FO|60626": 253560.0,
+    "NSE_FO|60626": 253200.0,
     "BSE_FO|840247": 708840.0,
     "BSE_FO|840358": 520200.0,
     "NSE_FO|65883": 29723070.0,
@@ -1978,17 +1979,17 @@
     "BSE_FO|840610": 1417940.0,
     "BSE_FO|840126": 556560.0,
     "NSE_FO|123381": 20250.0,
-    "NSE_FO|123382": 24450.0,
+    "NSE_FO|123382": 24750.0,
     "NSE_FO|126777": 339900.0,
     "NSE_FO|126780": 719675.0,
     "NSE_FO|113748": 395000.0,
-    "NSE_FO|113749": 320000.0,
+    "NSE_FO|113749": 318750.0,
     "NSE_FO|87754": 39100.0,
     "NSE_FO|87765": 80300.0,
     "NSE_FO|59092": 127740.0,
-    "NSE_FO|59093": 80460.0,
+    "NSE_FO|59093": 82620.0,
     "NSE_FO|71527": 6925000.0,
-    "NSE_FO|71528": 4830000.0
+    "NSE_FO|71528": 4840000.0
   },
   "probability_history": {
     "DIVI S LABORATORIES LTD-PE": [
@@ -3325,7 +3326,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 198,
+    "scanned_symbols": 207,
     "valid_signals": 324,
     "rejected_signals": 88,
     "api_failures": 0,
