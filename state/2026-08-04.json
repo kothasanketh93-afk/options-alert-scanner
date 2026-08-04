@@ -193,7 +193,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T10:10:00+05:30",
+      "last_processed_ts": "2026-08-04T10:15:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -364,11 +364,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 246.3,
-      "current_pnl_pct": 6.23,
+      "current_price": 245.6,
+      "current_pnl_pct": 5.93,
       "maximum_profit_pct": 6.66,
       "maximum_drawdown_pct": -5.28,
-      "holding_time_minutes": 24
+      "holding_time_minutes": 29
     },
     "JUBILANT FOODWORKS LTD-PE-ATM-20260804-0950-01": {
       "trade_id": "JUBILANT FOODWORKS LTD-PE-ATM-20260804-0950-01",
@@ -562,7 +562,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T10:10:00+05:30",
+      "last_processed_ts": "2026-08-04T10:15:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -749,7 +749,7 @@
       "current_pnl_pct": 0.0,
       "maximum_profit_pct": 4.41,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 17
+      "holding_time_minutes": 22
     },
     "MIDCPNIFTY-CE-ITM-20260804-0955-01": {
       "trade_id": "MIDCPNIFTY-CE-ITM-20260804-0955-01",
@@ -950,7 +950,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T10:10:00+05:30",
+      "last_processed_ts": "2026-08-04T10:15:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1133,11 +1133,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 205.1,
-      "current_pnl_pct": -3.64,
+      "current_price": 211.8,
+      "current_pnl_pct": -0.49,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -3.64,
-      "holding_time_minutes": 14
+      "holding_time_minutes": 19
     },
     "MUTHOOT FINANCE LIMITED-PE-ITM-20260804-1001-01": {
       "trade_id": "MUTHOOT FINANCE LIMITED-PE-ITM-20260804-1001-01",
@@ -1297,26 +1297,27 @@
           "trade_score": 58
         }
       ],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-08-04T10:02:00+05:30",
       "tracked_entry_price": 95.9,
       "highest_since_entry": 95.9,
-      "lowest_since_entry": 90.75,
+      "lowest_since_entry": 88.45,
       "max_favorable_pct": 0.0,
-      "max_adverse_pct": -5.37,
+      "max_adverse_pct": -7.77,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-08-04T10:11:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T10:10:00+05:30",
+      "last_processed_ts": "2026-08-04T10:15:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "SL_HIT"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [
         {
@@ -1518,11 +1519,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 91.6,
-      "current_pnl_pct": -4.48,
+      "current_price": 88.65,
+      "current_pnl_pct": -7.56,
       "maximum_profit_pct": 0.0,
-      "maximum_drawdown_pct": -4.48,
-      "holding_time_minutes": 8
+      "maximum_drawdown_pct": -7.56,
+      "holding_time_minutes": 13
     }
   },
   "next_seq": {
@@ -1533,80 +1534,80 @@
   },
   "next_display_num": 4,
   "summary_sent": false,
-  "consecutive_sl_streak": 0,
+  "consecutive_sl_streak": 1,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
-    "NSE_FO|65867": 8130200.0,
-    "NSE_FO|65871": 28609425.0,
-    "NSE_FO|65879": 29523000.0,
-    "NSE_FO|65880": 14340105.0,
-    "NSE_FO|65872": 42113565.0,
-    "NSE_FO|65868": 27039610.0,
-    "NSE_FO|59094": 247230.0,
-    "NSE_FO|59096": 316950.0,
-    "NSE_FO|59098": 176760.0,
-    "NSE_FO|59099": 156270.0,
-    "NSE_FO|59097": 195960.0,
-    "NSE_FO|59095": 133740.0,
+    "NSE_FO|65867": 8865220.0,
+    "NSE_FO|65871": 31691855.0,
+    "NSE_FO|65879": 32751745.0,
+    "NSE_FO|65880": 12621635.0,
+    "NSE_FO|65872": 39434135.0,
+    "NSE_FO|65868": 25957555.0,
+    "NSE_FO|59094": 218760.0,
+    "NSE_FO|59096": 316140.0,
+    "NSE_FO|59098": 182400.0,
+    "NSE_FO|59099": 156540.0,
+    "NSE_FO|59097": 197580.0,
+    "NSE_FO|59095": 132090.0,
     "NSE_FO|60619": 19560.0,
     "NSE_FO|60621": 67200.0,
-    "NSE_FO|60623": 19080.0,
-    "NSE_FO|60624": 30360.0,
+    "NSE_FO|60623": 18360.0,
+    "NSE_FO|60624": 31920.0,
     "NSE_FO|60622": 44760.0,
     "NSE_FO|60620": 20280.0,
     "BSE_FO|840341": 394340.0,
-    "BSE_FO|840209": 711740.0,
-    "BSE_FO|840680": 898220.0,
-    "BSE_FO|840193": 1171120.0,
-    "BSE_FO|840325": 1041480.0,
+    "BSE_FO|840209": 728220.0,
+    "BSE_FO|840680": 969020.0,
+    "BSE_FO|840193": 1131020.0,
+    "BSE_FO|840325": 1065340.0,
     "BSE_FO|840158": 500760.0,
-    "NSE_FO|119516": 56850.0,
-    "NSE_FO|123383": 31200.0,
+    "NSE_FO|119516": 56700.0,
+    "NSE_FO|123383": 31050.0,
     "NSE_FO|119518": 167400.0,
     "NSE_FO|119519": 40200.0,
-    "NSE_FO|123384": 25500.0,
-    "NSE_FO|119517": 58950.0,
-    "NSE_FO|87849": 98700.0,
-    "NSE_FO|87858": 235500.0,
+    "NSE_FO|123384": 25650.0,
+    "NSE_FO|119517": 58050.0,
+    "NSE_FO|87849": 98600.0,
+    "NSE_FO|87858": 237300.0,
     "NSE_FO|87860": 192500.0,
     "NSE_FO|87861": 56300.0,
-    "NSE_FO|87859": 117100.0,
-    "NSE_FO|87857": 82400.0,
-    "NSE_FO|84654": 1810000.0,
-    "NSE_FO|71529": 5080000.0,
-    "NSE_FO|84658": 1580000.0,
-    "NSE_FO|84659": 375000.0,
-    "NSE_FO|71530": 2065000.0,
-    "NSE_FO|84657": 1765000.0,
-    "NSE_FO|129430": 306350.0,
-    "NSE_FO|126781": 748275.0,
-    "NSE_FO|129433": 201850.0,
-    "NSE_FO|129434": 66275.0,
-    "NSE_FO|126790": 307450.0,
-    "NSE_FO|129432": 187000.0,
-    "NSE_FO|119344": 188750.0,
-    "NSE_FO|113751": 457500.0,
-    "NSE_FO|119346": 630000.0,
-    "NSE_FO|119347": 71250.0,
+    "NSE_FO|87859": 116700.0,
+    "NSE_FO|87857": 81600.0,
+    "NSE_FO|84654": 1800000.0,
+    "NSE_FO|71529": 5090000.0,
+    "NSE_FO|84658": 1585000.0,
+    "NSE_FO|84659": 380000.0,
+    "NSE_FO|71530": 2055000.0,
+    "NSE_FO|84657": 1760000.0,
+    "NSE_FO|129430": 302775.0,
+    "NSE_FO|126781": 729025.0,
+    "NSE_FO|129433": 196900.0,
+    "NSE_FO|129434": 69025.0,
+    "NSE_FO|126790": 308000.0,
+    "NSE_FO|129432": 187550.0,
+    "NSE_FO|119344": 190000.0,
+    "NSE_FO|113751": 463750.0,
+    "NSE_FO|119346": 628750.0,
+    "NSE_FO|119347": 70000.0,
     "NSE_FO|113779": 297500.0,
     "NSE_FO|119345": 270000.0,
-    "NSE_FO|87766": 86500.0,
-    "NSE_FO|87848": 85500.0,
-    "NSE_FO|60625": 268320.0,
-    "NSE_FO|60626": 249720.0,
-    "BSE_FO|840247": 729540.0,
-    "BSE_FO|840358": 572760.0,
+    "NSE_FO|87766": 84900.0,
+    "NSE_FO|87848": 83800.0,
+    "NSE_FO|60625": 269040.0,
+    "NSE_FO|60626": 249840.0,
+    "BSE_FO|840247": 699480.0,
+    "BSE_FO|840358": 516560.0,
     "NSE_FO|65883": 29723070.0,
     "NSE_FO|65884": 10123750.0,
     "NSE_FO|60627": 5160.0,
-    "NSE_FO|60632": 24480.0,
+    "NSE_FO|60632": 24360.0,
     "NSE_FO|59108": 2249970.0,
     "NSE_FO|59109": 1607670.0,
     "BSE_FO|840610": 1417940.0,
     "BSE_FO|840126": 556560.0,
-    "NSE_FO|123381": 19650.0,
-    "NSE_FO|123382": 23850.0,
+    "NSE_FO|123381": 19500.0,
+    "NSE_FO|123382": 24750.0,
     "NSE_FO|126777": 339900.0,
     "NSE_FO|126780": 719675.0,
     "NSE_FO|113748": 410000.0,
@@ -1685,6 +1686,18 @@
       {
         "time": "10:10",
         "pct": 71
+      },
+      {
+        "time": "10:15",
+        "pct": 74
+      },
+      {
+        "time": "10:15",
+        "pct": 71
+      },
+      {
+        "time": "10:15",
+        "pct": 68
       }
     ],
     "NIFTY-PE": [
@@ -1711,6 +1724,10 @@
       {
         "time": "10:10",
         "pct": 80
+      },
+      {
+        "time": "10:15",
+        "pct": 67
       }
     ],
     "SENSEX-PE": [
@@ -2053,6 +2070,10 @@
       {
         "time": "10:10",
         "pct": 67
+      },
+      {
+        "time": "10:15",
+        "pct": 65
       }
     ],
     "LTM LIMITED-CE": [
@@ -2122,6 +2143,10 @@
       },
       {
         "time": "10:10",
+        "pct": 65
+      },
+      {
+        "time": "10:15",
         "pct": 65
       }
     ],
@@ -2197,6 +2222,18 @@
       {
         "time": "10:10",
         "pct": 70
+      },
+      {
+        "time": "10:15",
+        "pct": 79
+      },
+      {
+        "time": "10:15",
+        "pct": 72
+      },
+      {
+        "time": "10:15",
+        "pct": 69
       }
     ],
     "MUTHOOT FINANCE LIMITED-PE": [
@@ -2333,6 +2370,10 @@
       {
         "time": "10:10",
         "pct": 65
+      },
+      {
+        "time": "10:15",
+        "pct": 71
       }
     ],
     "ASHOK LEYLAND LTD-PE": [
@@ -2445,6 +2486,14 @@
       {
         "time": "10:10",
         "pct": 65
+      },
+      {
+        "time": "10:15",
+        "pct": 65
+      },
+      {
+        "time": "10:15",
+        "pct": 65
       }
     ],
     "JUBILANT FOODWORKS LTD-CE": [
@@ -2528,6 +2577,14 @@
       },
       {
         "time": "10:10",
+        "pct": 65
+      },
+      {
+        "time": "10:15",
+        "pct": 73
+      },
+      {
+        "time": "10:15",
         "pct": 65
       }
     ],
@@ -2623,9 +2680,9 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 108,
-    "valid_signals": 243,
-    "rejected_signals": 47,
+    "scanned_symbols": 117,
+    "valid_signals": 257,
+    "rejected_signals": 52,
     "api_failures": 0,
     "broker_errors": 0
   },
