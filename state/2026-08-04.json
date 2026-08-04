@@ -1637,7 +1637,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T14:05:00+05:30",
+      "last_processed_ts": "2026-08-04T14:10:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1892,11 +1892,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 138.15,
-      "current_pnl_pct": 5.3,
+      "current_price": 138.05,
+      "current_pnl_pct": 5.22,
       "maximum_profit_pct": 9.76,
       "maximum_drawdown_pct": -5.37,
-      "holding_time_minutes": 224
+      "holding_time_minutes": 229
     },
     "BANKNIFTY-PE-ITM-20260804-1345-01": {
       "trade_id": "BANKNIFTY-PE-ITM-20260804-1345-01",
@@ -1985,26 +1985,27 @@
           "trade_score": 57
         }
       ],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-08-04T13:46:00+05:30",
       "tracked_entry_price": 691.05,
       "highest_since_entry": 691.35,
-      "lowest_since_entry": 661.35,
+      "lowest_since_entry": 656.0,
       "max_favorable_pct": 0.04,
-      "max_adverse_pct": -4.3,
+      "max_adverse_pct": -5.07,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-08-04T14:06:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T14:05:00+05:30",
+      "last_processed_ts": "2026-08-04T14:10:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "SL_HIT"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [
         {
@@ -2254,11 +2255,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 670.8,
-      "current_pnl_pct": -2.93,
+      "current_price": 655.05,
+      "current_pnl_pct": -5.21,
       "maximum_profit_pct": 0.0,
-      "maximum_drawdown_pct": -3.33,
-      "holding_time_minutes": 19
+      "maximum_drawdown_pct": -5.21,
+      "holding_time_minutes": 24
     },
     "SENSEX-PE-ITM-20260804-1350-01": {
       "trade_id": "SENSEX-PE-ITM-20260804-1350-01",
@@ -2347,7 +2348,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T14:05:00+05:30",
+      "last_processed_ts": "2026-08-04T14:10:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -2611,11 +2612,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 393.25,
-      "current_pnl_pct": 5.81,
+      "current_price": 386.2,
+      "current_pnl_pct": 3.91,
       "maximum_profit_pct": 8.87,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 14
+      "holding_time_minutes": 19
     },
     "NIFTY-PE-ITM-20260804-1355-01": {
       "trade_id": "NIFTY-PE-ITM-20260804-1355-01",
@@ -2702,16 +2703,16 @@
       "actual_entry_time": "2026-08-04T13:56:00+05:30",
       "tracked_entry_price": 69.05,
       "highest_since_entry": 85.0,
-      "lowest_since_entry": 65.55,
+      "lowest_since_entry": 59.65,
       "max_favorable_pct": 23.1,
-      "max_adverse_pct": -5.07,
+      "max_adverse_pct": -13.61,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T14:05:00+05:30",
+      "last_processed_ts": "2026-08-04T14:10:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -2906,11 +2907,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 67.7,
-      "current_pnl_pct": -1.96,
+      "current_price": 66.3,
+      "current_pnl_pct": -3.98,
       "maximum_profit_pct": 2.24,
-      "maximum_drawdown_pct": -1.96,
-      "holding_time_minutes": 9
+      "maximum_drawdown_pct": -3.98,
+      "holding_time_minutes": 14
     }
   },
   "next_seq": {
@@ -2925,7 +2926,7 @@
   },
   "next_display_num": 8,
   "summary_sent": false,
-  "consecutive_sl_streak": 0,
+  "consecutive_sl_streak": 1,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
@@ -2941,8 +2942,8 @@
     "NSE_FO|59099": 124290.0,
     "NSE_FO|59097": 163140.0,
     "NSE_FO|59095": 138750.0,
-    "NSE_FO|60619": 30480.0,
-    "NSE_FO|60621": 66960.0,
+    "NSE_FO|60619": 28560.0,
+    "NSE_FO|60621": 66120.0,
     "NSE_FO|60623": 21720.0,
     "NSE_FO|60624": 36960.0,
     "NSE_FO|60622": 73080.0,
@@ -2953,8 +2954,8 @@
     "BSE_FO|840193": 642940.0,
     "BSE_FO|840325": 889520.0,
     "BSE_FO|840158": 726980.0,
-    "NSE_FO|119516": 77700.0,
-    "NSE_FO|123383": 36900.0,
+    "NSE_FO|119516": 79050.0,
+    "NSE_FO|123383": 33900.0,
     "NSE_FO|119518": 167400.0,
     "NSE_FO|119519": 40200.0,
     "NSE_FO|123384": 26400.0,
@@ -2962,11 +2963,11 @@
     "NSE_FO|87849": 105200.0,
     "NSE_FO|87858": 222900.0,
     "NSE_FO|87860": 202500.0,
-    "NSE_FO|87861": 56300.0,
-    "NSE_FO|87859": 127900.0,
-    "NSE_FO|87857": 78700.0,
-    "NSE_FO|84654": 1765000.0,
-    "NSE_FO|71529": 5250000.0,
+    "NSE_FO|87861": 42300.0,
+    "NSE_FO|87859": 129400.0,
+    "NSE_FO|87857": 87400.0,
+    "NSE_FO|84654": 1970000.0,
+    "NSE_FO|71529": 5665000.0,
     "NSE_FO|84658": 1575000.0,
     "NSE_FO|84659": 370000.0,
     "NSE_FO|71530": 2190000.0,
@@ -3007,11 +3008,11 @@
     "NSE_FO|87765": 80300.0,
     "NSE_FO|59092": 127740.0,
     "NSE_FO|59093": 84960.0,
-    "NSE_FO|71527": 6925000.0,
+    "NSE_FO|71527": 6835000.0,
     "NSE_FO|71528": 4745000.0,
     "NSE_FO|67054": 20250.0,
-    "NSE_FO|67052": 47875.0,
-    "NSE_FO|67050": 95000.0,
+    "NSE_FO|67052": 47500.0,
+    "NSE_FO|67050": 93750.0,
     "NSE_FO|105751": 29150.0,
     "NSE_FO|105749": 87175.0,
     "NSE_FO|105662": 51975.0,
@@ -3021,23 +3022,23 @@
     "NSE_FO|67049": 109375.0,
     "NSE_FO|67051": 196250.0,
     "NSE_FO|67053": 131375.0,
-    "NSE_FO|65861": 13113880.0,
-    "NSE_FO|59091": 502170.0,
+    "NSE_FO|65861": 13540215.0,
+    "NSE_FO|59091": 500880.0,
     "BSE_FO|840297": 1370340.0,
-    "NSE_FO|65859": 18169515.0,
-    "NSE_FO|65855": 27711775.0,
+    "NSE_FO|65859": 19703645.0,
+    "NSE_FO|65855": 28092285.0,
     "NSE_FO|59089": 108420.0,
-    "NSE_FO|59087": 103410.0,
+    "NSE_FO|59087": 103080.0,
     "NSE_FO|60618": 379320.0,
     "NSE_FO|60616": 23040.0,
-    "BSE_FO|840446": 458320.0,
-    "BSE_FO|840267": 430140.0,
-    "BSE_FO|840399": 528980.0,
-    "NSE_FO|105661": 56925.0,
-    "NSE_FO|105663": 245850.0,
-    "NSE_FO|105750": 155650.0,
+    "BSE_FO|840446": 457500.0,
+    "BSE_FO|840267": 434220.0,
+    "BSE_FO|840399": 544900.0,
+    "NSE_FO|105661": 57200.0,
+    "NSE_FO|105663": 245300.0,
+    "NSE_FO|105750": 155375.0,
     "BSE_FO|840223": 241240.0,
-    "NSE_FO|60617": 327360.0
+    "NSE_FO|60617": 317520.0
   },
   "probability_history": {
     "DIVI S LABORATORIES LTD-PE": [
@@ -3262,6 +3263,10 @@
       {
         "time": "14:05",
         "pct": 67
+      },
+      {
+        "time": "14:10",
+        "pct": 71
       }
     ],
     "SENSEX-PE": [
@@ -3404,6 +3409,18 @@
       {
         "time": "14:05",
         "pct": 76
+      },
+      {
+        "time": "14:10",
+        "pct": 73
+      },
+      {
+        "time": "14:10",
+        "pct": 67
+      },
+      {
+        "time": "14:10",
+        "pct": 65
       }
     ],
     "SENSEX-CE": [
@@ -3690,6 +3707,14 @@
       {
         "time": "14:05",
         "pct": 65
+      },
+      {
+        "time": "14:10",
+        "pct": 65
+      },
+      {
+        "time": "14:10",
+        "pct": 65
       }
     ],
     "BANKNIFTY-CE": [
@@ -3853,6 +3878,10 @@
       },
       {
         "time": "14:05",
+        "pct": 65
+      },
+      {
+        "time": "14:10",
         "pct": 65
       }
     ],
@@ -4474,6 +4503,14 @@
       {
         "time": "09:55",
         "pct": 65
+      },
+      {
+        "time": "14:10",
+        "pct": 65
+      },
+      {
+        "time": "14:10",
+        "pct": 65
       }
     ],
     "MUTHOOT FINANCE LIMITED-CE": [
@@ -4538,9 +4575,9 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 378,
-    "valid_signals": 365,
-    "rejected_signals": 100,
+    "scanned_symbols": 387,
+    "valid_signals": 374,
+    "rejected_signals": 102,
     "api_failures": 0,
     "broker_errors": 0
   },
