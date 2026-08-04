@@ -1637,7 +1637,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T12:35:00+05:30",
+      "last_processed_ts": "2026-08-04T12:49:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1892,11 +1892,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 141.65,
-      "current_pnl_pct": 7.96,
+      "current_price": 142.6,
+      "current_pnl_pct": 8.69,
       "maximum_profit_pct": 9.76,
       "maximum_drawdown_pct": -5.37,
-      "holding_time_minutes": 135
+      "holding_time_minutes": 149
     }
   },
   "next_seq": {
@@ -3343,7 +3343,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 297,
+    "scanned_symbols": 306,
     "valid_signals": 324,
     "rejected_signals": 88,
     "api_failures": 0,
