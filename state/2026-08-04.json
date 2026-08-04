@@ -1637,7 +1637,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T15:20:00+05:30",
+      "last_processed_ts": "2026-08-04T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1892,11 +1892,12 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 151.0,
-      "current_pnl_pct": 15.09,
+      "current_price": 150.2,
+      "current_pnl_pct": 14.48,
       "maximum_profit_pct": 15.09,
       "maximum_drawdown_pct": -5.37,
-      "holding_time_minutes": 299
+      "holding_time_minutes": 304,
+      "_marked_open_at_eod": true
     },
     "BANKNIFTY-PE-ITM-20260804-1345-01": {
       "trade_id": "BANKNIFTY-PE-ITM-20260804-1345-01",
@@ -6202,7 +6203,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 513,
+    "scanned_symbols": 522,
     "valid_signals": 461,
     "rejected_signals": 129,
     "api_failures": 0,
