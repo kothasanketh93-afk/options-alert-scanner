@@ -1637,7 +1637,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T15:14:00+05:30",
+      "last_processed_ts": "2026-08-04T15:20:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1892,11 +1892,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 150.7,
-      "current_pnl_pct": 14.86,
-      "maximum_profit_pct": 14.86,
+      "current_price": 151.0,
+      "current_pnl_pct": 15.09,
+      "maximum_profit_pct": 15.09,
       "maximum_drawdown_pct": -5.37,
-      "holding_time_minutes": 294
+      "holding_time_minutes": 299
     },
     "BANKNIFTY-PE-ITM-20260804-1345-01": {
       "trade_id": "BANKNIFTY-PE-ITM-20260804-1345-01",
@@ -2997,26 +2997,27 @@
           "trade_score": 63
         }
       ],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-08-04T14:16:00+05:30",
       "tracked_entry_price": 683.05,
       "highest_since_entry": 698.95,
-      "lowest_since_entry": 647.8,
+      "lowest_since_entry": 640.65,
       "max_favorable_pct": 2.33,
-      "max_adverse_pct": -5.16,
+      "max_adverse_pct": -6.21,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-08-04T15:15:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T15:14:00+05:30",
+      "last_processed_ts": "2026-08-04T15:20:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "SL_HIT"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [
         {
@@ -3326,11 +3327,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 650.55,
-      "current_pnl_pct": -4.76,
+      "current_price": 658.0,
+      "current_pnl_pct": -3.67,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -4.76,
-      "holding_time_minutes": 59
+      "holding_time_minutes": 64
     },
     "NATIONAL ALUMINIUM CO LTD-CE-OTM-20260804-1425-01": {
       "trade_id": "NATIONAL ALUMINIUM CO LTD-CE-OTM-20260804-1425-01",
@@ -4189,7 +4190,7 @@
   },
   "next_display_num": 11,
   "summary_sent": false,
-  "consecutive_sl_streak": 5,
+  "consecutive_sl_streak": 6,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
@@ -6201,7 +6202,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 504,
+    "scanned_symbols": 513,
     "valid_signals": 461,
     "rejected_signals": 129,
     "api_failures": 0,
