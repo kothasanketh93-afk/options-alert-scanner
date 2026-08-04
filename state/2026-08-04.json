@@ -553,9 +553,9 @@
       "final_status": null,
       "actual_entry_time": "2026-08-04T09:53:00+05:30",
       "tracked_entry_price": 17.0,
-      "highest_since_entry": 17.75,
+      "highest_since_entry": 18.0,
       "lowest_since_entry": 16.55,
-      "max_favorable_pct": 4.41,
+      "max_favorable_pct": 5.88,
       "max_adverse_pct": -2.65,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -563,7 +563,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T11:30:00+05:30",
+      "last_processed_ts": "2026-08-04T11:34:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -746,11 +746,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 17.15,
-      "current_pnl_pct": 0.88,
-      "maximum_profit_pct": 4.41,
+      "current_price": 17.9,
+      "current_pnl_pct": 5.29,
+      "maximum_profit_pct": 5.29,
       "maximum_drawdown_pct": -2.65,
-      "holding_time_minutes": 98
+      "holding_time_minutes": 102
     },
     "MIDCPNIFTY-CE-ITM-20260804-0955-01": {
       "trade_id": "MIDCPNIFTY-CE-ITM-20260804-0955-01",
@@ -1635,7 +1635,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T11:30:00+05:30",
+      "last_processed_ts": "2026-08-04T11:34:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1890,11 +1890,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 132.65,
-      "current_pnl_pct": 1.11,
+      "current_price": 133.05,
+      "current_pnl_pct": 1.41,
       "maximum_profit_pct": 2.9,
       "maximum_drawdown_pct": -5.37,
-      "holding_time_minutes": 70
+      "holding_time_minutes": 74
     }
   },
   "next_seq": {
@@ -3341,7 +3341,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 252,
+    "scanned_symbols": 261,
     "valid_signals": 324,
     "rejected_signals": 88,
     "api_failures": 0,
