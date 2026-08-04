@@ -1627,9 +1627,9 @@
       "final_status": null,
       "actual_entry_time": "2026-08-04T10:21:00+05:30",
       "tracked_entry_price": 131.2,
-      "highest_since_entry": 150.55,
+      "highest_since_entry": 151.0,
       "lowest_since_entry": 121.05,
-      "max_favorable_pct": 14.75,
+      "max_favorable_pct": 15.09,
       "max_adverse_pct": -7.74,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -1637,7 +1637,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T15:05:00+05:30",
+      "last_processed_ts": "2026-08-04T15:09:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1892,11 +1892,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 149.05,
-      "current_pnl_pct": 13.61,
+      "current_price": 147.65,
+      "current_pnl_pct": 12.54,
       "maximum_profit_pct": 13.61,
       "maximum_drawdown_pct": -5.37,
-      "holding_time_minutes": 284
+      "holding_time_minutes": 289
     },
     "BANKNIFTY-PE-ITM-20260804-1345-01": {
       "trade_id": "BANKNIFTY-PE-ITM-20260804-1345-01",
@@ -3011,7 +3011,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T15:05:00+05:30",
+      "last_processed_ts": "2026-08-04T15:09:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -3326,11 +3326,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 676.0,
-      "current_pnl_pct": -1.03,
+      "current_price": 670.05,
+      "current_pnl_pct": -1.9,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -4.22,
-      "holding_time_minutes": 49
+      "holding_time_minutes": 54
     },
     "NATIONAL ALUMINIUM CO LTD-CE-OTM-20260804-1425-01": {
       "trade_id": "NATIONAL ALUMINIUM CO LTD-CE-OTM-20260804-1425-01",
@@ -3717,23 +3717,24 @@
           "trade_score": 59
         }
       ],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
+      "actual_entry_time": "2026-08-04T15:06:00+05:30",
+      "tracked_entry_price": 282.9,
+      "highest_since_entry": 282.9,
+      "lowest_since_entry": 261.95,
       "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "max_adverse_pct": -7.41,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T15:05:39.064140+05:30",
+      "last_processed_ts": "2026-08-04T15:09:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
       ],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -4165,7 +4166,12 @@
           "enabled": false,
           "reason": "no candlestick read attached to this trade"
         }
-      }
+      },
+      "current_price": 264.0,
+      "current_pnl_pct": -6.68,
+      "maximum_profit_pct": 0.0,
+      "maximum_drawdown_pct": -6.68,
+      "holding_time_minutes": 4
     }
   },
   "next_seq": {
@@ -6194,7 +6200,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 486,
+    "scanned_symbols": 495,
     "valid_signals": 461,
     "rejected_signals": 129,
     "api_failures": 0,
