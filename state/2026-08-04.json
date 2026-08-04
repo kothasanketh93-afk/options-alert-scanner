@@ -183,9 +183,9 @@
       "final_status": null,
       "actual_entry_time": "2026-08-04T09:46:00+05:30",
       "tracked_entry_price": 231.85,
-      "highest_since_entry": 236.9,
+      "highest_since_entry": 244.35,
       "lowest_since_entry": 219.6,
-      "max_favorable_pct": 2.18,
+      "max_favorable_pct": 5.39,
       "max_adverse_pct": -5.28,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -193,7 +193,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T09:50:00+05:30",
+      "last_processed_ts": "2026-08-04T09:55:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -364,11 +364,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 219.6,
-      "current_pnl_pct": -5.28,
-      "maximum_profit_pct": 0.0,
+      "current_price": 240.55,
+      "current_pnl_pct": 3.75,
+      "maximum_profit_pct": 3.75,
       "maximum_drawdown_pct": -5.28,
-      "holding_time_minutes": 4
+      "holding_time_minutes": 9
     },
     "JUBILANT FOODWORKS LTD-PE-ATM-20260804-0950-01": {
       "trade_id": "JUBILANT FOODWORKS LTD-PE-ATM-20260804-0950-01",
@@ -548,13 +548,13 @@
           "trade_score": 56
         }
       ],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
-      "max_favorable_pct": 0.0,
+      "actual_entry_time": "2026-08-04T09:53:00+05:30",
+      "tracked_entry_price": 17.0,
+      "highest_since_entry": 17.25,
+      "lowest_since_entry": 17.0,
+      "max_favorable_pct": 1.47,
       "max_adverse_pct": 0.0,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -562,9 +562,10 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-04T09:50:48.721530+05:30",
+      "last_processed_ts": "2026-08-04T09:55:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
       ],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -743,89 +744,477 @@
           "enabled": false,
           "reason": "no candlestick read attached to this trade"
         }
+      },
+      "current_price": 17.0,
+      "current_pnl_pct": 0.0,
+      "maximum_profit_pct": 0.0,
+      "maximum_drawdown_pct": 0.0,
+      "holding_time_minutes": 2
+    },
+    "MIDCPNIFTY-CE-ITM-20260804-0955-01": {
+      "trade_id": "MIDCPNIFTY-CE-ITM-20260804-0955-01",
+      "display_label": "Trade 3",
+      "symbol": "MIDCPNIFTY",
+      "direction": "CE",
+      "moneyness": "ITM",
+      "instrument_key": "NSE_FO|60623",
+      "strike": 14875.0,
+      "expiry": "2026-08-25",
+      "spot_price": 14906.2,
+      "alert_time": "2026-08-04T09:55:38.286583+05:30",
+      "alert_premium": 213.8,
+      "entry_low": 212.58,
+      "entry_high": 215.02,
+      "stop_loss": 197.57,
+      "target_1": 238.15,
+      "target_2": 254.38,
+      "session": "09:30-10:35",
+      "grade": "B+",
+      "trade_score": 78,
+      "probability_pct": 79,
+      "probability_label": "Potential Trade",
+      "score_breakdown": [
+        "+20 Trend Alignment",
+        "+15 Volume Spike",
+        "+15 OI Build-up",
+        "+6 VWAP Positioning",
+        "+5 Risk:Reward",
+        "+5 Market Strength",
+        "+4 Liquidity",
+        "-5 Momentum",
+        "-2 Higher-Timeframe Confirmation"
+      ],
+      "confidence_score": 7.8,
+      "risk_score": 1.0,
+      "reward_score": 5.0,
+      "expected_rr": "1:1.5",
+      "factor_checklist": [
+        "Trend \u2705",
+        "Volume \u2705",
+        "OI \u2705",
+        "Momentum \u26a0\ufe0f",
+        "VWAP \u2705",
+        "EMA \u26a0\ufe0f",
+        "Risk Reward \u2705",
+        "Liquidity \u2705",
+        "Market Strength \u2705",
+        "HTF \u26a0\ufe0f"
+      ],
+      "confidence_stars": "\u2605\u2605\u2605\u2606\u2606",
+      "confidence_label": "Moderate",
+      "risk_rating": "\ud83d\udfe2",
+      "risk_label": "Low",
+      "expected_holding_minutes": [
+        15,
+        30
+      ],
+      "why_reasons": [
+        "\u2713 Above VWAP",
+        "\u2713 Volume Expansion",
+        "\u2713 Excellent Liquidity",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable"
+      ],
+      "alternatives": [
+        {
+          "symbol": "DIVI S LABORATORIES LTD",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "A",
+          "trade_score": 83
+        },
+        {
+          "symbol": "JUBILANT FOODWORKS LTD",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "A",
+          "trade_score": 83
+        },
+        {
+          "symbol": "LTM LIMITED",
+          "direction": "PE",
+          "moneyness": "OTM",
+          "grade": "B+",
+          "trade_score": 77
+        },
+        {
+          "symbol": "SENSEX",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "B+",
+          "trade_score": 76
+        },
+        {
+          "symbol": "NIFTY",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "B+",
+          "trade_score": 73
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "B+",
+          "trade_score": 73
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "B+",
+          "trade_score": 72
+        },
+        {
+          "symbol": "SENSEX",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "B+",
+          "trade_score": 72
+        },
+        {
+          "symbol": "LTM LIMITED",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "B+",
+          "trade_score": 72
+        },
+        {
+          "symbol": "NIFTY",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "B+",
+          "trade_score": 70
+        },
+        {
+          "symbol": "MUTHOOT FINANCE LIMITED",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "B",
+          "trade_score": 69
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "B",
+          "trade_score": 67
+        },
+        {
+          "symbol": "DIVI S LABORATORIES LTD",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "B",
+          "trade_score": 67
+        },
+        {
+          "symbol": "JUBILANT FOODWORKS LTD",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "B",
+          "trade_score": 67
+        },
+        {
+          "symbol": "ASHOK LEYLAND LTD",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "B",
+          "trade_score": 64
+        },
+        {
+          "symbol": "ASHOK LEYLAND LTD",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "Watchlist",
+          "trade_score": 58
+        },
+        {
+          "symbol": "MUTHOOT FINANCE LIMITED",
+          "direction": "CE",
+          "moneyness": "OTM",
+          "grade": "Watchlist",
+          "trade_score": 58
+        }
+      ],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-08-04T09:55:38.286583+05:30",
+      "messages_sent": [
+        "NEW_TRADE_ALERT"
+      ],
+      "streak_counted": false,
+      "strategy": "trade_score",
+      "probability_history": [
+        {
+          "time": "09:45",
+          "pct": 68
+        },
+        {
+          "time": "09:45",
+          "pct": 67
+        },
+        {
+          "time": "09:50",
+          "pct": 79
+        },
+        {
+          "time": "09:50",
+          "pct": 71
+        },
+        {
+          "time": "09:55",
+          "pct": 79
+        },
+        {
+          "time": "09:55",
+          "pct": 71
+        }
+      ],
+      "probability_trend": "Decreasing",
+      "decision": {
+        "enabled": true,
+        "decision": "Trade Approved",
+        "approved": true,
+        "trade_quality_score": 77.4,
+        "confidence_score": 78.0,
+        "probability": {
+          "win_probability_pct": 78.7,
+          "loss_probability_pct": 21.3,
+          "trade_success_probability_pct": 78.7,
+          "historical_similarity_pct": null,
+          "source": "upstream_probability_pct"
+        },
+        "risk": {
+          "max_risk_per_unit": 16.23,
+          "expected_reward_per_unit": 40.58,
+          "risk_score": 84.8,
+          "capital_risk_pct": 0.02
+        },
+        "risk_reward": {
+          "entry": 213.8,
+          "stop_loss": 197.57,
+          "target_1": 238.15,
+          "target_2": 254.38,
+          "risk_reward_ratio": 2.5,
+          "min_rr_threshold": 1.5,
+          "passes_rr_floor": true
+        },
+        "entry": 213.8,
+        "stop_loss": 197.57,
+        "stop_loss_detail": {
+          "active_stop_loss": 197.57,
+          "style": "atr_dynamic",
+          "distance_pct": 7.59,
+          "percentage_stop_reference": 106.9,
+          "recommendation": null
+        },
+        "target_1": 238.15,
+        "target_2": 254.38,
+        "target_3": 262.5,
+        "position_size": {
+          "mode": "dynamic",
+          "quantity": 46,
+          "lot_size": 1
+        },
+        "entry_validation": {
+          "entry_quality_score": 52.5,
+          "sub_scores": {
+            "entry_distance": 60.0,
+            "volume_confirmation": 50.0,
+            "market_alignment": 50.0,
+            "options_confirmation": 50.0,
+            "institutional_confirmation": null
+          },
+          "passed": true,
+          "reasons": []
+        },
+        "priority": "High",
+        "explanation": [
+          "Trade Approved",
+          "Trade Quality 77.4/100",
+          "Probability 78.7%",
+          "Risk:Reward 1:2.5",
+          "Trade Score 78/100 (Potential Trade), probability 79%"
+        ],
+        "rejection_reasons": [],
+        "warnings": [],
+        "engines_used": [
+          "market_snapshot",
+          "early_breakout",
+          "trade_score_engine",
+          "options_intelligence"
+        ],
+        "engines_available": [
+          "trade_score_engine"
+        ],
+        "execution_time_ms": 0.11,
+        "timestamp": "2026-08-04T09:56:02.727665+05:30",
+        "quant_intelligence": {
+          "enabled": true,
+          "decision": "REJECTED",
+          "probability": 0.0,
+          "confidence": "VERY LOW",
+          "signal_quality_grade": "Reject",
+          "regime": "Sideways",
+          "regime_confidence": "LOW",
+          "risk": {
+            "entry": 213.8,
+            "stop_loss": null,
+            "trailing_stop_loss": null,
+            "target_1": null,
+            "target_2": null,
+            "target_3": null,
+            "risk_reward_ratio": null,
+            "position_score": 0.0
+          },
+          "pattern": {
+            "pattern_key": "CE|Sideways|NA|na|na|na",
+            "historical_win_pct": null,
+            "historical_loss_pct": null,
+            "sample_size": 0,
+            "pattern_confidence": "NONE"
+          },
+          "explanation": "MIDCPNIFTY CE: REJECTED (grade Reject, probability 0.0% [VERY LOW]). Regime: Sideways (LOW). No historical pattern sample yet. Primary rejection reason: Weak momentum: momentum data unavailable.",
+          "reasons": {
+            "probability": [
+              "TREND provides little/no confirmation (strength 0.00).",
+              "EMA provides little/no confirmation (strength 0.00).",
+              "OI provides little/no confirmation (strength 0.00)."
+            ],
+            "signal_quality": [
+              "Weak momentum: momentum data unavailable.",
+              "Weak volume: volume/threshold data unavailable.",
+              "Poor liquidity: OI/threshold data unavailable.",
+              "Poor risk reward: risk/reward could not be computed.",
+              "Low confidence: probability 0.0 below minimum 40."
+            ],
+            "regime": [
+              "Insufficient directional signal to classify a trend; defaulting to sideways read."
+            ],
+            "risk": [
+              "Insufficient price/ATR data to compute risk levels."
+            ],
+            "pattern": [
+              "No historical setups recorded yet for this pattern."
+            ]
+          },
+          "errors": [],
+          "execution_time_ms": 11.63
+        },
+        "news_intelligence": {
+          "enabled": true,
+          "news_score": 0.0,
+          "sentiment": "neutral",
+          "impact": "ignore",
+          "confidence": 0.0,
+          "reasons": [
+            "No recent news found for this symbol"
+          ],
+          "article_count": 0,
+          "most_recent_headline": "",
+          "most_recent_url": "",
+          "execution_time_ms": 0.03
+        },
+        "candlestick_patterns": {
+          "enabled": false,
+          "reason": "no candlestick read attached to this trade"
+        }
       }
     }
   },
   "next_seq": {
     "DIVI S LABORATORIES LTD-PE-ITM": 1,
-    "JUBILANT FOODWORKS LTD-PE-ATM": 1
+    "JUBILANT FOODWORKS LTD-PE-ATM": 1,
+    "MIDCPNIFTY-CE-ITM": 1
   },
-  "next_display_num": 2,
+  "next_display_num": 3,
   "summary_sent": false,
   "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
     "NSE_FO|65867": 10129340.0,
-    "NSE_FO|65871": 30026490.0,
-    "NSE_FO|65879": 27132560.0,
-    "NSE_FO|65880": 11719435.0,
-    "NSE_FO|65872": 37642930.0,
+    "NSE_FO|65871": 27870765.0,
+    "NSE_FO|65879": 28727270.0,
+    "NSE_FO|65880": 13868855.0,
+    "NSE_FO|65872": 40629485.0,
     "NSE_FO|65868": 18982535.0,
     "NSE_FO|59094": 247230.0,
-    "NSE_FO|59096": 334410.0,
-    "NSE_FO|59098": 158040.0,
-    "NSE_FO|59099": 134820.0,
-    "NSE_FO|59097": 180360.0,
+    "NSE_FO|59096": 331230.0,
+    "NSE_FO|59098": 163440.0,
+    "NSE_FO|59099": 141000.0,
+    "NSE_FO|59097": 183030.0,
     "NSE_FO|59095": 133740.0,
     "NSE_FO|60619": 19560.0,
     "NSE_FO|60621": 67200.0,
-    "NSE_FO|60623": 22200.0,
-    "NSE_FO|60624": 28800.0,
+    "NSE_FO|60623": 19920.0,
+    "NSE_FO|60624": 29160.0,
     "NSE_FO|60622": 44760.0,
     "NSE_FO|60620": 20280.0,
     "BSE_FO|840341": 394340.0,
     "BSE_FO|840209": 798620.0,
-    "BSE_FO|840680": 901480.0,
-    "BSE_FO|840193": 1043340.0,
+    "BSE_FO|840680": 865880.0,
+    "BSE_FO|840193": 1143960.0,
     "BSE_FO|840325": 972220.0,
     "BSE_FO|840158": 500760.0,
-    "NSE_FO|119516": 59550.0,
-    "NSE_FO|123383": 30900.0,
+    "NSE_FO|119516": 55800.0,
+    "NSE_FO|123383": 30000.0,
     "NSE_FO|119518": 167400.0,
     "NSE_FO|119519": 40200.0,
-    "NSE_FO|123384": 25500.0,
-    "NSE_FO|119517": 60300.0,
-    "NSE_FO|87849": 88100.0,
-    "NSE_FO|87858": 225200.0,
+    "NSE_FO|123384": 25050.0,
+    "NSE_FO|119517": 61650.0,
+    "NSE_FO|87849": 90700.0,
+    "NSE_FO|87858": 229800.0,
     "NSE_FO|87860": 192500.0,
     "NSE_FO|87861": 56300.0,
-    "NSE_FO|87859": 120400.0,
-    "NSE_FO|87857": 87500.0,
-    "NSE_FO|84654": 1820000.0,
-    "NSE_FO|71529": 5055000.0,
-    "NSE_FO|84658": 1580000.0,
+    "NSE_FO|87859": 119300.0,
+    "NSE_FO|87857": 80500.0,
+    "NSE_FO|84654": 1805000.0,
+    "NSE_FO|71529": 5000000.0,
+    "NSE_FO|84658": 1575000.0,
     "NSE_FO|84659": 375000.0,
-    "NSE_FO|71530": 2085000.0,
-    "NSE_FO|84657": 1780000.0,
-    "NSE_FO|129430": 302500.0,
-    "NSE_FO|126781": 684200.0,
-    "NSE_FO|129433": 192775.0,
-    "NSE_FO|129434": 65450.0,
-    "NSE_FO|126790": 257950.0,
-    "NSE_FO|129432": 187550.0,
-    "NSE_FO|119344": 181250.0,
-    "NSE_FO|113751": 475000.0,
+    "NSE_FO|71530": 2090000.0,
+    "NSE_FO|84657": 1775000.0,
+    "NSE_FO|129430": 302775.0,
+    "NSE_FO|126781": 683925.0,
+    "NSE_FO|129433": 194975.0,
+    "NSE_FO|129434": 64900.0,
+    "NSE_FO|126790": 257400.0,
+    "NSE_FO|129432": 187000.0,
+    "NSE_FO|119344": 182500.0,
+    "NSE_FO|113751": 460000.0,
     "NSE_FO|119346": 633750.0,
-    "NSE_FO|119347": 62500.0,
-    "NSE_FO|113779": 296250.0,
+    "NSE_FO|119347": 65000.0,
+    "NSE_FO|113779": 297500.0,
     "NSE_FO|119345": 265000.0,
-    "NSE_FO|87766": 83100.0,
-    "NSE_FO|87848": 87200.0,
-    "NSE_FO|60625": 256080.0,
-    "NSE_FO|60626": 223440.0,
-    "BSE_FO|840247": 611460.0,
-    "BSE_FO|840358": 474860.0,
-    "NSE_FO|65883": 28919930.0,
-    "NSE_FO|65884": 8113040.0,
-    "NSE_FO|60627": 3600.0,
-    "NSE_FO|60632": 21600.0,
-    "NSE_FO|59108": 2241240.0,
-    "NSE_FO|59109": 1590840.0,
-    "BSE_FO|840610": 1413460.0,
-    "BSE_FO|840126": 493320.0,
-    "NSE_FO|123381": 19950.0,
-    "NSE_FO|123382": 22500.0
+    "NSE_FO|87766": 83200.0,
+    "NSE_FO|87848": 82400.0,
+    "NSE_FO|60625": 259320.0,
+    "NSE_FO|60626": 233640.0,
+    "BSE_FO|840247": 657340.0,
+    "BSE_FO|840358": 519860.0,
+    "NSE_FO|65883": 29300050.0,
+    "NSE_FO|65884": 9226490.0,
+    "NSE_FO|60627": 3960.0,
+    "NSE_FO|60632": 22920.0,
+    "NSE_FO|59108": 2244240.0,
+    "NSE_FO|59109": 1593540.0,
+    "BSE_FO|840610": 1417940.0,
+    "BSE_FO|840126": 556560.0,
+    "NSE_FO|123381": 19800.0,
+    "NSE_FO|123382": 23100.0
   },
   "probability_history": {
     "DIVI S LABORATORIES LTD-PE": [
@@ -852,6 +1241,18 @@
       {
         "time": "09:50",
         "pct": 71
+      },
+      {
+        "time": "09:55",
+        "pct": 83
+      },
+      {
+        "time": "09:55",
+        "pct": 83
+      },
+      {
+        "time": "09:55",
+        "pct": 73
       }
     ],
     "NIFTY-PE": [
@@ -866,6 +1267,10 @@
       {
         "time": "09:50",
         "pct": 78
+      },
+      {
+        "time": "09:55",
+        "pct": 75
       }
     ],
     "SENSEX-PE": [
@@ -892,6 +1297,18 @@
       {
         "time": "09:50",
         "pct": 65
+      },
+      {
+        "time": "09:55",
+        "pct": 78
+      },
+      {
+        "time": "09:55",
+        "pct": 78
+      },
+      {
+        "time": "09:55",
+        "pct": 78
       }
     ],
     "SENSEX-CE": [
@@ -917,6 +1334,18 @@
       },
       {
         "time": "09:50",
+        "pct": 65
+      },
+      {
+        "time": "09:55",
+        "pct": 75
+      },
+      {
+        "time": "09:55",
+        "pct": 75
+      },
+      {
+        "time": "09:55",
         "pct": 65
       }
     ],
@@ -944,6 +1373,18 @@
       {
         "time": "09:50",
         "pct": 73
+      },
+      {
+        "time": "09:55",
+        "pct": 83
+      },
+      {
+        "time": "09:55",
+        "pct": 71
+      },
+      {
+        "time": "09:55",
+        "pct": 70
       }
     ],
     "BANKNIFTY-PE": [
@@ -970,6 +1411,18 @@
       {
         "time": "09:50",
         "pct": 65
+      },
+      {
+        "time": "09:55",
+        "pct": 75
+      },
+      {
+        "time": "09:55",
+        "pct": 67
+      },
+      {
+        "time": "09:55",
+        "pct": 65
       }
     ],
     "BANKNIFTY-CE": [
@@ -991,6 +1444,14 @@
       },
       {
         "time": "09:50",
+        "pct": 65
+      },
+      {
+        "time": "09:55",
+        "pct": 71
+      },
+      {
+        "time": "09:55",
         "pct": 65
       }
     ],
@@ -1014,6 +1475,18 @@
       {
         "time": "09:50",
         "pct": 66
+      },
+      {
+        "time": "09:55",
+        "pct": 75
+      },
+      {
+        "time": "09:55",
+        "pct": 71
+      },
+      {
+        "time": "09:55",
+        "pct": 65
       }
     ],
     "LTM LIMITED-PE": [
@@ -1040,6 +1513,18 @@
       {
         "time": "09:50",
         "pct": 69
+      },
+      {
+        "time": "09:55",
+        "pct": 79
+      },
+      {
+        "time": "09:55",
+        "pct": 78
+      },
+      {
+        "time": "09:55",
+        "pct": 76
       }
     ],
     "MUTHOOT FINANCE LIMITED-PE": [
@@ -1066,6 +1551,18 @@
       {
         "time": "09:50",
         "pct": 70
+      },
+      {
+        "time": "09:55",
+        "pct": 72
+      },
+      {
+        "time": "09:55",
+        "pct": 70
+      },
+      {
+        "time": "09:55",
+        "pct": 70
       }
     ],
     "MIDCPNIFTY-PE": [
@@ -1084,6 +1581,18 @@
       {
         "time": "09:50",
         "pct": 75
+      },
+      {
+        "time": "09:55",
+        "pct": 75
+      },
+      {
+        "time": "09:55",
+        "pct": 65
+      },
+      {
+        "time": "09:55",
+        "pct": 65
       }
     ],
     "ASHOK LEYLAND LTD-PE": [
@@ -1110,6 +1619,18 @@
       {
         "time": "09:50",
         "pct": 68
+      },
+      {
+        "time": "09:55",
+        "pct": 68
+      },
+      {
+        "time": "09:55",
+        "pct": 68
+      },
+      {
+        "time": "09:55",
+        "pct": 67
       }
     ],
     "DIVI S LABORATORIES LTD-CE": [
@@ -1136,6 +1657,18 @@
       {
         "time": "09:50",
         "pct": 65
+      },
+      {
+        "time": "09:55",
+        "pct": 71
+      },
+      {
+        "time": "09:55",
+        "pct": 68
+      },
+      {
+        "time": "09:55",
+        "pct": 65
       }
     ],
     "JUBILANT FOODWORKS LTD-CE": [
@@ -1158,6 +1691,14 @@
       {
         "time": "09:50",
         "pct": 65
+      },
+      {
+        "time": "09:55",
+        "pct": 71
+      },
+      {
+        "time": "09:55",
+        "pct": 65
       }
     ],
     "MIDCPNIFTY-CE": [
@@ -1175,6 +1716,14 @@
       },
       {
         "time": "09:50",
+        "pct": 71
+      },
+      {
+        "time": "09:55",
+        "pct": 79
+      },
+      {
+        "time": "09:55",
         "pct": 71
       }
     ],
@@ -1198,6 +1747,14 @@
       {
         "time": "09:50",
         "pct": 65
+      },
+      {
+        "time": "09:55",
+        "pct": 65
+      },
+      {
+        "time": "09:55",
+        "pct": 65
       }
     ],
     "MUTHOOT FINANCE LIMITED-CE": [
@@ -1212,13 +1769,23 @@
       {
         "time": "09:50",
         "pct": 65
+      },
+      {
+        "time": "09:55",
+        "pct": 65
+      }
+    ],
+    "NIFTY-CE": [
+      {
+        "time": "09:55",
+        "pct": 73
       }
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 72,
-    "valid_signals": 88,
-    "rejected_signals": 25,
+    "scanned_symbols": 81,
+    "valid_signals": 132,
+    "rejected_signals": 30,
     "api_failures": 0,
     "broker_errors": 0
   },
