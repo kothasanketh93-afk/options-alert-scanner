@@ -1596,8 +1596,8 @@
           "trade_score": 56
         }
       ],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "T1_HIT_THEN_EOD",
       "actual_entry_time": "2026-08-05T10:11:00+05:30",
       "tracked_entry_price": 186.05,
       "highest_since_entry": 222.95,
@@ -1609,14 +1609,15 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-08-05T15:24:00+05:30",
+      "eod_last_price": 191.0,
+      "last_processed_ts": "2026-08-05T15:30:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
-        "T1_HIT"
+        "T1_HIT",
+        "EOD_CLOSED"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [
         {
@@ -1830,11 +1831,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 200.0,
-      "current_pnl_pct": 7.5,
+      "current_price": 191.0,
+      "current_pnl_pct": 2.66,
       "maximum_profit_pct": 19.83,
       "maximum_drawdown_pct": -2.77,
-      "holding_time_minutes": 314,
+      "holding_time_minutes": 320,
       "_marked_open_at_eod": true
     },
     "SIEMENS LTD-PE-ATM-20260805-1031-01": {
@@ -2678,7 +2679,7 @@
           "trade_score": 63
         }
       ],
-      "status": "WAITING_ENTRY",
+      "status": "NOT_ENTERED",
       "final_status": null,
       "actual_entry_time": null,
       "tracked_entry_price": null,
@@ -2692,11 +2693,12 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-05T15:24:00+05:30",
+      "last_processed_ts": "2026-08-05T15:30:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "NOT_ENTERED"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [
         {
@@ -2986,11 +2988,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 120.05,
-      "current_pnl_pct": -7.51,
+      "current_price": 122.0,
+      "current_pnl_pct": -6.01,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -7.55,
-      "holding_time_minutes": 99,
+      "holding_time_minutes": 105,
       "_marked_open_at_eod": true
     },
     "SENSEX-PE-ITM-20260805-1350-02": {
@@ -4793,7 +4795,7 @@
     "NIFTY-PE-OTM": 1
   },
   "next_display_num": 12,
-  "summary_sent": false,
+  "summary_sent": true,
   "consecutive_sl_streak": 3,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
@@ -6721,7 +6723,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 522,
+    "scanned_symbols": 531,
     "valid_signals": 444,
     "rejected_signals": 99,
     "api_failures": 9,
