@@ -1610,7 +1610,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-05T15:19:00+05:30",
+      "last_processed_ts": "2026-08-05T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -1830,11 +1830,12 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 197.7,
-      "current_pnl_pct": 6.26,
+      "current_price": 200.0,
+      "current_pnl_pct": 7.5,
       "maximum_profit_pct": 19.83,
       "maximum_drawdown_pct": -2.77,
-      "holding_time_minutes": 309
+      "holding_time_minutes": 314,
+      "_marked_open_at_eod": true
     },
     "SIEMENS LTD-PE-ATM-20260805-1031-01": {
       "trade_id": "SIEMENS LTD-PE-ATM-20260805-1031-01",
@@ -2691,7 +2692,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-05T15:19:00+05:30",
+      "last_processed_ts": "2026-08-05T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -2985,11 +2986,12 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 120.0,
-      "current_pnl_pct": -7.55,
+      "current_price": 120.05,
+      "current_pnl_pct": -7.51,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -7.55,
-      "holding_time_minutes": 95
+      "holding_time_minutes": 99,
+      "_marked_open_at_eod": true
     },
     "SENSEX-PE-ITM-20260805-1350-02": {
       "trade_id": "SENSEX-PE-ITM-20260805-1350-02",
@@ -6719,7 +6721,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 513,
+    "scanned_symbols": 522,
     "valid_signals": 444,
     "rejected_signals": 99,
     "api_failures": 9,
