@@ -1610,7 +1610,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-05T15:05:00+05:30",
+      "last_processed_ts": "2026-08-05T15:10:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -1830,11 +1830,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 200.3,
-      "current_pnl_pct": 7.66,
+      "current_price": 198.7,
+      "current_pnl_pct": 6.8,
       "maximum_profit_pct": 19.83,
       "maximum_drawdown_pct": -2.77,
-      "holding_time_minutes": 294
+      "holding_time_minutes": 300
     },
     "SIEMENS LTD-PE-ATM-20260805-1031-01": {
       "trade_id": "SIEMENS LTD-PE-ATM-20260805-1031-01",
@@ -2691,7 +2691,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-05T15:05:00+05:30",
+      "last_processed_ts": "2026-08-05T15:10:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -2985,11 +2985,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 128.0,
-      "current_pnl_pct": -1.39,
+      "current_price": 125.65,
+      "current_pnl_pct": -3.2,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -7.16,
-      "holding_time_minutes": 80
+      "holding_time_minutes": 85
     },
     "SENSEX-PE-ITM-20260805-1350-02": {
       "trade_id": "SENSEX-PE-ITM-20260805-1350-02",
@@ -4293,25 +4293,27 @@
           "trade_score": 74
         }
       ],
-      "status": "WAITING_ENTRY",
-      "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
+      "actual_entry_time": "2026-08-05T15:06:00+05:30",
+      "tracked_entry_price": 333.4,
+      "highest_since_entry": 333.4,
+      "lowest_since_entry": 290.45,
       "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "max_adverse_pct": -12.88,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-08-05T15:08:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-05T15:05:54.343815+05:30",
+      "last_processed_ts": "2026-08-05T15:10:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED",
+        "SL_HIT"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [
         {
@@ -4769,7 +4771,12 @@
           "enabled": false,
           "reason": "no candlestick read attached to this trade"
         }
-      }
+      },
+      "current_price": 313.55,
+      "current_pnl_pct": -5.95,
+      "maximum_profit_pct": 0.0,
+      "maximum_drawdown_pct": -5.95,
+      "holding_time_minutes": 5
     }
   },
   "next_seq": {
@@ -4785,7 +4792,7 @@
   },
   "next_display_num": 12,
   "summary_sent": false,
-  "consecutive_sl_streak": 2,
+  "consecutive_sl_streak": 3,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
@@ -6712,7 +6719,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 486,
+    "scanned_symbols": 495,
     "valid_signals": 444,
     "rejected_signals": 99,
     "api_failures": 9,
