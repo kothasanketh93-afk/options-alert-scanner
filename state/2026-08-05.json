@@ -194,7 +194,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-05T10:45:00+05:30",
+      "last_processed_ts": "2026-08-05T10:50:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -366,11 +366,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 355.8,
-      "current_pnl_pct": 18.76,
+      "current_price": 338.65,
+      "current_pnl_pct": 13.03,
       "maximum_profit_pct": 39.25,
       "maximum_drawdown_pct": -1.18,
-      "holding_time_minutes": 59
+      "holding_time_minutes": 64
     },
     "KEI INDUSTRIES LTD.-CE-ATM-20260805-0950-01": {
       "trade_id": "KEI INDUSTRIES LTD.-CE-ATM-20260805-0950-01",
@@ -1609,7 +1609,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-05T10:45:00+05:30",
+      "last_processed_ts": "2026-08-05T10:50:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1828,11 +1828,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 183.95,
-      "current_pnl_pct": -1.13,
+      "current_price": 191.15,
+      "current_pnl_pct": 2.74,
       "maximum_profit_pct": 7.5,
       "maximum_drawdown_pct": -2.71,
-      "holding_time_minutes": 34
+      "holding_time_minutes": 39
     },
     "SIEMENS LTD-PE-ATM-20260805-1031-01": {
       "trade_id": "SIEMENS LTD-PE-ATM-20260805-1031-01",
@@ -1963,7 +1963,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-05T10:45:00+05:30",
+      "last_processed_ts": "2026-08-05T10:50:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -2186,11 +2186,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 149.65,
-      "current_pnl_pct": 2.92,
+      "current_price": 147.8,
+      "current_pnl_pct": 1.65,
       "maximum_profit_pct": 5.26,
       "maximum_drawdown_pct": -0.96,
-      "holding_time_minutes": 13
+      "holding_time_minutes": 18
     },
     "NIFTY-PE-ATM-20260805-1040-01": {
       "trade_id": "NIFTY-PE-ATM-20260805-1040-01",
@@ -2306,16 +2306,16 @@
       "actual_entry_time": "2026-08-05T10:41:00+05:30",
       "tracked_entry_price": 127.45,
       "highest_since_entry": 128.95,
-      "lowest_since_entry": 118.0,
+      "lowest_since_entry": 111.0,
       "max_favorable_pct": 1.18,
-      "max_adverse_pct": -7.41,
+      "max_adverse_pct": -12.91,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-05T10:45:00+05:30",
+      "last_processed_ts": "2026-08-05T10:50:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -2578,11 +2578,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 120.35,
-      "current_pnl_pct": -5.57,
+      "current_price": 113.9,
+      "current_pnl_pct": -10.63,
       "maximum_profit_pct": 0.0,
-      "maximum_drawdown_pct": -5.57,
-      "holding_time_minutes": 4
+      "maximum_drawdown_pct": -10.63,
+      "holding_time_minutes": 9
     }
   },
   "next_seq": {
@@ -2600,64 +2600,64 @@
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
-    "NSE_FO|41013": 2362620.0,
-    "NSE_FO|41015": 11144055.0,
-    "NSE_FO|41017": 6671730.0,
-    "NSE_FO|41019": 3025945.0,
-    "NSE_FO|41016": 8685040.0,
-    "NSE_FO|41014": 3544190.0,
-    "NSE_FO|59094": 240900.0,
-    "NSE_FO|59096": 311130.0,
-    "NSE_FO|59098": 224370.0,
-    "NSE_FO|59099": 136620.0,
-    "NSE_FO|59097": 135300.0,
-    "NSE_FO|59095": 137250.0,
+    "NSE_FO|41013": 2287415.0,
+    "NSE_FO|41015": 10992605.0,
+    "NSE_FO|41017": 6592170.0,
+    "NSE_FO|41019": 3034005.0,
+    "NSE_FO|41016": 8718515.0,
+    "NSE_FO|41014": 3573050.0,
+    "NSE_FO|59094": 237180.0,
+    "NSE_FO|59096": 307350.0,
+    "NSE_FO|59098": 215070.0,
+    "NSE_FO|59099": 141090.0,
+    "NSE_FO|59097": 134850.0,
+    "NSE_FO|59095": 140550.0,
     "NSE_FO|60623": 15720.0,
-    "NSE_FO|60625": 290880.0,
-    "NSE_FO|60627": 23280.0,
+    "NSE_FO|60625": 291000.0,
+    "NSE_FO|60627": 23520.0,
     "NSE_FO|60632": 31920.0,
-    "NSE_FO|60626": 344400.0,
+    "NSE_FO|60626": 346440.0,
     "NSE_FO|60624": 34800.0,
-    "BSE_FO|840209": 1588800.0,
-    "BSE_FO|840680": 3079200.0,
-    "BSE_FO|840247": 2149600.0,
-    "BSE_FO|840358": 1043360.0,
-    "BSE_FO|840193": 1177980.0,
-    "BSE_FO|840325": 1695760.0,
-    "NSE_FO|114737": 74025.0,
-    "NSE_FO|114739": 154000.0,
-    "NSE_FO|114741": 152075.0,
-    "NSE_FO|114742": 15050.0,
-    "NSE_FO|114740": 106050.0,
-    "NSE_FO|114738": 149625.0,
-    "NSE_FO|117648": 3740800.0,
-    "NSE_FO|117658": 1799000.0,
-    "NSE_FO|117660": 8128400.0,
-    "NSE_FO|117661": 2844800.0,
+    "BSE_FO|840209": 1598100.0,
+    "BSE_FO|840680": 3092040.0,
+    "BSE_FO|840247": 2110340.0,
+    "BSE_FO|840358": 768520.0,
+    "BSE_FO|840193": 1285280.0,
+    "BSE_FO|840325": 1794020.0,
+    "NSE_FO|114737": 74550.0,
+    "NSE_FO|114739": 155750.0,
+    "NSE_FO|114741": 151900.0,
+    "NSE_FO|114742": 15575.0,
+    "NSE_FO|114740": 105875.0,
+    "NSE_FO|114738": 149450.0,
+    "NSE_FO|117648": 3738000.0,
+    "NSE_FO|117658": 1789200.0,
+    "NSE_FO|117660": 8129800.0,
+    "NSE_FO|117661": 2843400.0,
     "NSE_FO|117659": 768600.0,
-    "NSE_FO|117655": 3654000.0,
+    "NSE_FO|117655": 3652600.0,
     "NSE_FO|105661": 55550.0,
     "NSE_FO|105663": 140250.0,
     "NSE_FO|105750": 133650.0,
     "NSE_FO|105751": 25575.0,
-    "NSE_FO|105749": 55000.0,
+    "NSE_FO|105749": 55275.0,
     "NSE_FO|105662": 75075.0,
-    "NSE_FO|145223": 153825.0,
-    "NSE_FO|148216": 112175.0,
+    "NSE_FO|145223": 152775.0,
+    "NSE_FO|148216": 113050.0,
     "NSE_FO|145225": 102725.0,
     "NSE_FO|145226": 10325.0,
-    "NSE_FO|148217": 26075.0,
-    "NSE_FO|145224": 93275.0,
+    "NSE_FO|148217": 26775.0,
+    "NSE_FO|145224": 92575.0,
     "NSE_FO|152542": 130080.0,
-    "NSE_FO|152544": 920045.0,
-    "NSE_FO|152546": 2174775.0,
+    "NSE_FO|152544": 914625.0,
+    "NSE_FO|152546": 2180195.0,
     "NSE_FO|152547": 853650.0,
-    "NSE_FO|152545": 1212725.0,
-    "NSE_FO|152543": 699180.0,
+    "NSE_FO|152545": 1214080.0,
+    "NSE_FO|152543": 697825.0,
     "NSE_FO|59108": 2292780.0,
     "NSE_FO|59109": 1626210.0,
-    "NSE_FO|60633": 26280.0,
-    "NSE_FO|60634": 26880.0,
+    "NSE_FO|60633": 26760.0,
+    "NSE_FO|60634": 26400.0,
     "NSE_FO|94907": 474925.0,
     "NSE_FO|94908": 66550.0,
     "NSE_FO|41020": 8307130.0,
@@ -2679,7 +2679,7 @@
     "BSE_FO|840175": 958280.0,
     "BSE_FO|840297": 1800960.0,
     "NSE_FO|148214": 22925.0,
-    "NSE_FO|148215": 10500.0
+    "NSE_FO|148215": 10150.0
   },
   "probability_history": {
     "SENSEX-PE": [
@@ -2798,6 +2798,18 @@
       {
         "time": "10:45",
         "pct": 69
+      },
+      {
+        "time": "10:50",
+        "pct": 67
+      },
+      {
+        "time": "10:50",
+        "pct": 67
+      },
+      {
+        "time": "10:50",
+        "pct": 67
       }
     ],
     "KEI INDUSTRIES LTD.-CE": [
@@ -3060,6 +3072,18 @@
       {
         "time": "10:45",
         "pct": 65
+      },
+      {
+        "time": "10:50",
+        "pct": 75
+      },
+      {
+        "time": "10:50",
+        "pct": 73
+      },
+      {
+        "time": "10:50",
+        "pct": 67
       }
     ],
     "BANKNIFTY-PE": [
@@ -3133,6 +3157,14 @@
       },
       {
         "time": "10:45",
+        "pct": 65
+      },
+      {
+        "time": "10:50",
+        "pct": 65
+      },
+      {
+        "time": "10:50",
         "pct": 65
       }
     ],
@@ -3386,6 +3418,10 @@
       {
         "time": "10:25",
         "pct": 67
+      },
+      {
+        "time": "10:50",
+        "pct": 65
       }
     ],
     "UPL LIMITED-PE": [
@@ -3722,9 +3758,9 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 171,
-    "valid_signals": 251,
-    "rejected_signals": 88,
+    "scanned_symbols": 180,
+    "valid_signals": 260,
+    "rejected_signals": 93,
     "api_failures": 0,
     "broker_errors": 0
   },
