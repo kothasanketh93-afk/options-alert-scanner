@@ -1610,7 +1610,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-05T12:49:00+05:30",
+      "last_processed_ts": "2026-08-05T13:04:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1829,11 +1829,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 197.9,
-      "current_pnl_pct": 6.37,
+      "current_price": 199.9,
+      "current_pnl_pct": 7.44,
       "maximum_profit_pct": 12.31,
       "maximum_drawdown_pct": -2.77,
-      "holding_time_minutes": 159
+      "holding_time_minutes": 174
     },
     "SIEMENS LTD-PE-ATM-20260805-1031-01": {
       "trade_id": "SIEMENS LTD-PE-ATM-20260805-1031-01",
@@ -3803,7 +3803,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 306,
+    "scanned_symbols": 315,
     "valid_signals": 269,
     "rejected_signals": 99,
     "api_failures": 0,
