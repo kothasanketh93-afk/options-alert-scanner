@@ -1610,7 +1610,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-05T14:35:00+05:30",
+      "last_processed_ts": "2026-08-05T14:40:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -1834,7 +1834,7 @@
       "current_pnl_pct": 14.49,
       "maximum_profit_pct": 19.83,
       "maximum_drawdown_pct": -2.77,
-      "holding_time_minutes": 264
+      "holding_time_minutes": 270
     },
     "SIEMENS LTD-PE-ATM-20260805-1031-01": {
       "trade_id": "SIEMENS LTD-PE-ATM-20260805-1031-01",
@@ -2691,7 +2691,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-05T14:35:00+05:30",
+      "last_processed_ts": "2026-08-05T14:40:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -2985,11 +2985,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 127.35,
-      "current_pnl_pct": -1.89,
+      "current_price": 126.85,
+      "current_pnl_pct": -2.27,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -7.16,
-      "holding_time_minutes": 50
+      "holding_time_minutes": 55
     },
     "SENSEX-PE-ITM-20260805-1350-02": {
       "trade_id": "SENSEX-PE-ITM-20260805-1350-02",
@@ -3099,7 +3099,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-05T14:35:00+05:30",
+      "last_processed_ts": "2026-08-05T14:40:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -3410,11 +3410,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 406.6,
-      "current_pnl_pct": 1.36,
+      "current_price": 400.75,
+      "current_pnl_pct": -0.1,
       "maximum_profit_pct": 3.99,
       "maximum_drawdown_pct": -12.59,
-      "holding_time_minutes": 44
+      "holding_time_minutes": 50
     },
     "HINDUSTAN ZINC LIMITED-CE-ATM-20260805-1356-01": {
       "trade_id": "HINDUSTAN ZINC LIMITED-CE-ATM-20260805-1356-01",
@@ -3525,7 +3525,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-05T14:35:00+05:30",
+      "last_processed_ts": "2026-08-05T14:40:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -3721,11 +3721,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 22.25,
-      "current_pnl_pct": 19.95,
+      "current_price": 21.85,
+      "current_pnl_pct": 17.79,
       "maximum_profit_pct": 19.95,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 38
+      "holding_time_minutes": 44
     }
   },
   "next_seq": {
@@ -5463,10 +5463,10 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 432,
+    "scanned_symbols": 441,
     "valid_signals": 393,
     "rejected_signals": 99,
-    "api_failures": 0,
+    "api_failures": 9,
     "broker_errors": 0
   },
   "rerank_slots_done": [
