@@ -1273,7 +1273,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T11:49:00+05:30",
+      "last_processed_ts": "2026-08-06T12:04:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1479,11 +1479,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 19.75,
-      "current_pnl_pct": 4.77,
+      "current_price": 19.4,
+      "current_pnl_pct": 2.92,
       "maximum_profit_pct": 5.04,
       "maximum_drawdown_pct": -1.86,
-      "holding_time_minutes": 108
+      "holding_time_minutes": 123
     },
     "PNB HOUSING FIN LTD.-PE-ATM-20260806-1005-01": {
       "trade_id": "PNB HOUSING FIN LTD.-PE-ATM-20260806-1005-01",
@@ -2349,7 +2349,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T11:49:00+05:30",
+      "last_processed_ts": "2026-08-06T12:04:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -2569,11 +2569,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 1192.45,
-      "current_pnl_pct": 7.25,
+      "current_price": 1253.95,
+      "current_pnl_pct": 12.78,
       "maximum_profit_pct": 15.84,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 89
+      "holding_time_minutes": 104
     }
   },
   "next_seq": {
@@ -3942,7 +3942,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 270,
+    "scanned_symbols": 279,
     "valid_signals": 308,
     "rejected_signals": 137,
     "api_failures": 0,
