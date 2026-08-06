@@ -1273,7 +1273,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T11:30:00+05:30",
+      "last_processed_ts": "2026-08-06T11:34:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1483,7 +1483,7 @@
       "current_pnl_pct": 1.86,
       "maximum_profit_pct": 5.04,
       "maximum_drawdown_pct": -1.86,
-      "holding_time_minutes": 89
+      "holding_time_minutes": 93
     },
     "PNB HOUSING FIN LTD.-PE-ATM-20260806-1005-01": {
       "trade_id": "PNB HOUSING FIN LTD.-PE-ATM-20260806-1005-01",
@@ -1630,7 +1630,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T11:30:00+05:30",
+      "last_processed_ts": "2026-08-06T11:34:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1845,11 +1845,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 34.55,
-      "current_pnl_pct": -6.87,
+      "current_price": 34.35,
+      "current_pnl_pct": -7.41,
       "maximum_profit_pct": 1.62,
       "maximum_drawdown_pct": -9.03,
-      "holding_time_minutes": 85
+      "holding_time_minutes": 89
     },
     "SENSEX-PE-ITM-20260806-1010-02": {
       "trade_id": "SENSEX-PE-ITM-20260806-1010-02",
@@ -2348,7 +2348,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T11:30:00+05:30",
+      "last_processed_ts": "2026-08-06T11:34:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -2568,11 +2568,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 1181.6,
-      "current_pnl_pct": 6.27,
+      "current_price": 1161.75,
+      "current_pnl_pct": 4.49,
       "maximum_profit_pct": 15.84,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 70
+      "holding_time_minutes": 74
     }
   },
   "next_seq": {
@@ -3941,7 +3941,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 252,
+    "scanned_symbols": 261,
     "valid_signals": 308,
     "rejected_signals": 137,
     "api_failures": 0,
