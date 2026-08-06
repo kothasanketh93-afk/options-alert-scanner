@@ -1273,7 +1273,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T11:21:00+05:30",
+      "last_processed_ts": "2026-08-06T11:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1483,7 +1483,7 @@
       "current_pnl_pct": 4.24,
       "maximum_profit_pct": 5.04,
       "maximum_drawdown_pct": -1.86,
-      "holding_time_minutes": 78
+      "holding_time_minutes": 83
     },
     "PNB HOUSING FIN LTD.-PE-ATM-20260806-1005-01": {
       "trade_id": "PNB HOUSING FIN LTD.-PE-ATM-20260806-1005-01",
@@ -1630,7 +1630,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T11:21:00+05:30",
+      "last_processed_ts": "2026-08-06T11:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1845,11 +1845,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 34.4,
-      "current_pnl_pct": -7.28,
+      "current_price": 35.15,
+      "current_pnl_pct": -5.26,
       "maximum_profit_pct": 1.62,
       "maximum_drawdown_pct": -9.03,
-      "holding_time_minutes": 74
+      "holding_time_minutes": 79
     },
     "SENSEX-PE-ITM-20260806-1010-02": {
       "trade_id": "SENSEX-PE-ITM-20260806-1010-02",
@@ -2348,7 +2348,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T11:21:00+05:30",
+      "last_processed_ts": "2026-08-06T11:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -2568,11 +2568,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 1214.85,
-      "current_pnl_pct": 9.26,
+      "current_price": 1225.55,
+      "current_pnl_pct": 10.23,
       "maximum_profit_pct": 15.84,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 59
+      "holding_time_minutes": 64
     }
   },
   "next_seq": {
@@ -2589,27 +2589,27 @@
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
-    "NSE_FO|41015": 7086040.0,
-    "NSE_FO|41017": 5376020.0,
-    "NSE_FO|41020": 8611265.0,
+    "NSE_FO|41015": 6901115.0,
+    "NSE_FO|41017": 5388760.0,
+    "NSE_FO|41020": 8543210.0,
     "NSE_FO|41024": 4505735.0,
     "NSE_FO|41019": 5548725.0,
     "NSE_FO|41016": 10346700.0,
     "NSE_FO|59094": 295080.0,
-    "NSE_FO|59096": 368280.0,
-    "NSE_FO|59098": 215970.0,
+    "NSE_FO|59096": 368370.0,
+    "NSE_FO|59098": 216000.0,
     "NSE_FO|59099": 169860.0,
     "NSE_FO|59097": 228330.0,
     "NSE_FO|59095": 198660.0,
     "NSE_FO|60621": 45480.0,
     "NSE_FO|60623": 22200.0,
-    "NSE_FO|60625": 315480.0,
+    "NSE_FO|60625": 316680.0,
     "NSE_FO|60626": 376440.0,
     "NSE_FO|60624": 48600.0,
     "NSE_FO|60622": 52680.0,
     "BSE_FO|840209": 1637620.0,
-    "BSE_FO|840680": 2323860.0,
-    "BSE_FO|840247": 1387000.0,
+    "BSE_FO|840680": 2236920.0,
+    "BSE_FO|840247": 1389740.0,
     "BSE_FO|840358": 547760.0,
     "BSE_FO|840193": 1973540.0,
     "BSE_FO|840325": 2733580.0,
@@ -2617,17 +2617,17 @@
     "NSE_FO|102711": 5103350.0,
     "NSE_FO|110943": 1406300.0,
     "NSE_FO|110944": 208250.0,
-    "NSE_FO|102712": 2202550.0,
-    "NSE_FO|110942": 937125.0,
+    "NSE_FO|102712": 2195200.0,
+    "NSE_FO|110942": 933450.0,
     "NSE_FO|113751": 447500.0,
-    "NSE_FO|119346": 301250.0,
-    "NSE_FO|113780": 722500.0,
+    "NSE_FO|119346": 303750.0,
+    "NSE_FO|113780": 723750.0,
     "NSE_FO|113781": 787500.0,
     "NSE_FO|119347": 175000.0,
     "NSE_FO|113779": 483750.0,
     "NSE_FO|137829": 267150.0,
     "NSE_FO|137831": 420550.0,
-    "NSE_FO|137833": 454350.0,
+    "NSE_FO|137833": 455000.0,
     "NSE_FO|137834": 106600.0,
     "NSE_FO|137832": 241150.0,
     "NSE_FO|137830": 200200.0,
@@ -2642,34 +2642,35 @@
     "NSE_FO|78751": 9125.0,
     "NSE_FO|78752": 3575.0,
     "NSE_FO|78750": 2225.0,
-    "NSE_FO|78748": 10250.0,
+    "NSE_FO|78748": 10300.0,
     "NSE_FO|60619": 15480.0,
     "NSE_FO|60620": 17760.0,
     "BSE_FO|840341": 769240.0,
     "BSE_FO|840158": 1622920.0,
     "NSE_FO|119344": 112500.0,
     "NSE_FO|119345": 211250.0,
-    "NSE_FO|137835": 247000.0,
+    "NSE_FO|137835": 248300.0,
     "NSE_FO|137836": 37050.0,
     "NSE_FO|78745": 6550.0,
-    "NSE_FO|78746": 5025.0,
-    "NSE_FO|60627": 37680.0,
+    "NSE_FO|78746": 5050.0,
+    "NSE_FO|60627": 38040.0,
     "NSE_FO|60632": 35040.0,
     "NSE_FO|41013": 1599585.0,
     "NSE_FO|41014": 3234920.0,
     "NSE_FO|102709": 986125.0,
-    "NSE_FO|102710": 1225000.0,
+    "NSE_FO|102710": 1204175.0,
     "NSE_FO|59092": 184320.0,
     "NSE_FO|59093": 117960.0,
-    "NSE_FO|59108": 2363700.0,
+    "NSE_FO|59108": 2365470.0,
     "NSE_FO|59109": 1669980.0,
-    "NSE_FO|119348": 211250.0,
+    "NSE_FO|119348": 208750.0,
     "NSE_FO|119349": 140000.0,
-    "NSE_FO|60633": 24600.0,
+    "NSE_FO|60633": 24720.0,
     "NSE_FO|60634": 24480.0,
-    "NSE_FO|124359": 507375.0,
-    "NSE_FO|127525": 391725.0,
-    "NSE_FO|124361": 921375.0
+    "NSE_FO|124359": 507150.0,
+    "NSE_FO|127525": 391500.0,
+    "NSE_FO|124361": 918000.0,
+    "BSE_FO|840610": 2457660.0
   },
   "probability_history": {
     "PNB HOUSING FIN LTD.-CE": [
@@ -3940,7 +3941,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 234,
+    "scanned_symbols": 243,
     "valid_signals": 308,
     "rejected_signals": 137,
     "api_failures": 0,
