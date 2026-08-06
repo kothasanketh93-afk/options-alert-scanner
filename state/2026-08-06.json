@@ -1259,26 +1259,28 @@
           "trade_score": 60
         }
       ],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "T2_HIT",
+      "final_status": "T2_HIT",
       "actual_entry_time": "2026-08-06T10:02:00+05:30",
       "tracked_entry_price": 18.85,
-      "highest_since_entry": 20.2,
+      "highest_since_entry": 21.0,
       "lowest_since_entry": 18.35,
-      "max_favorable_pct": 7.16,
+      "max_favorable_pct": 11.41,
       "max_adverse_pct": -2.65,
-      "t1_hit": false,
-      "t1_hit_time": null,
-      "t2_hit": false,
-      "t2_hit_time": null,
+      "t1_hit": true,
+      "t1_hit_time": "2026-08-06T12:08:00+05:30",
+      "t2_hit": true,
+      "t2_hit_time": "2026-08-06T12:09:00+05:30",
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T12:04:00+05:30",
+      "last_processed_ts": "2026-08-06T12:19:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "T1_HIT",
+        "T2_HIT"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [
         {
@@ -1479,11 +1481,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 19.4,
-      "current_pnl_pct": 2.92,
-      "maximum_profit_pct": 5.04,
+      "current_price": 21.4,
+      "current_pnl_pct": 13.53,
+      "maximum_profit_pct": 13.53,
       "maximum_drawdown_pct": -1.86,
-      "holding_time_minutes": 123
+      "holding_time_minutes": 138
     },
     "PNB HOUSING FIN LTD.-PE-ATM-20260806-1005-01": {
       "trade_id": "PNB HOUSING FIN LTD.-PE-ATM-20260806-1005-01",
@@ -2349,7 +2351,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T12:04:00+05:30",
+      "last_processed_ts": "2026-08-06T12:19:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -2569,11 +2571,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 1253.95,
-      "current_pnl_pct": 12.78,
+      "current_price": 1287.3,
+      "current_pnl_pct": 15.78,
       "maximum_profit_pct": 15.84,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 104
+      "holding_time_minutes": 119
     }
   },
   "next_seq": {
@@ -2586,7 +2588,7 @@
   },
   "next_display_num": 7,
   "summary_sent": false,
-  "consecutive_sl_streak": 3,
+  "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
@@ -3942,7 +3944,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 279,
+    "scanned_symbols": 288,
     "valid_signals": 308,
     "rejected_signals": 137,
     "api_failures": 0,
