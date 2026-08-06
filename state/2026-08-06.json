@@ -1273,7 +1273,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T11:34:00+05:30",
+      "last_processed_ts": "2026-08-06T11:49:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1479,11 +1479,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 19.2,
-      "current_pnl_pct": 1.86,
+      "current_price": 19.75,
+      "current_pnl_pct": 4.77,
       "maximum_profit_pct": 5.04,
       "maximum_drawdown_pct": -1.86,
-      "holding_time_minutes": 93
+      "holding_time_minutes": 108
     },
     "PNB HOUSING FIN LTD.-PE-ATM-20260806-1005-01": {
       "trade_id": "PNB HOUSING FIN LTD.-PE-ATM-20260806-1005-01",
@@ -1616,26 +1616,27 @@
           "trade_score": 55
         }
       ],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-08-06T10:06:00+05:30",
       "tracked_entry_price": 37.1,
       "highest_since_entry": 38.1,
-      "lowest_since_entry": 33.5,
+      "lowest_since_entry": 32.05,
       "max_favorable_pct": 2.7,
-      "max_adverse_pct": -9.7,
+      "max_adverse_pct": -13.61,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-08-06T11:35:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T11:34:00+05:30",
+      "last_processed_ts": "2026-08-06T11:49:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "SL_HIT"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [
         {
@@ -1845,11 +1846,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 34.35,
-      "current_pnl_pct": -7.41,
-      "maximum_profit_pct": 1.62,
+      "current_price": 37.75,
+      "current_pnl_pct": 1.75,
+      "maximum_profit_pct": 1.75,
       "maximum_drawdown_pct": -9.03,
-      "holding_time_minutes": 89
+      "holding_time_minutes": 104
     },
     "SENSEX-PE-ITM-20260806-1010-02": {
       "trade_id": "SENSEX-PE-ITM-20260806-1010-02",
@@ -2348,7 +2349,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T11:34:00+05:30",
+      "last_processed_ts": "2026-08-06T11:49:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -2568,11 +2569,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 1161.75,
-      "current_pnl_pct": 4.49,
+      "current_price": 1192.45,
+      "current_pnl_pct": 7.25,
       "maximum_profit_pct": 15.84,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 74
+      "holding_time_minutes": 89
     }
   },
   "next_seq": {
@@ -2585,7 +2586,7 @@
   },
   "next_display_num": 7,
   "summary_sent": false,
-  "consecutive_sl_streak": 2,
+  "consecutive_sl_streak": 3,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
@@ -3941,7 +3942,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 261,
+    "scanned_symbols": 270,
     "valid_signals": 308,
     "rejected_signals": 137,
     "api_failures": 0,
