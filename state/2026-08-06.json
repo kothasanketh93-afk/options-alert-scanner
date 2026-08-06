@@ -2351,7 +2351,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T14:00:00+05:30",
+      "last_processed_ts": "2026-08-06T14:04:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -2571,11 +2571,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 1164.2,
-      "current_pnl_pct": 4.71,
+      "current_price": 1111.85,
+      "current_pnl_pct": 0.0,
       "maximum_profit_pct": 15.84,
       "maximum_drawdown_pct": -5.0,
-      "holding_time_minutes": 220
+      "holding_time_minutes": 224
     },
     "JUBILANT FOODWORKS LTD-PE-ATM-20260806-1345-01": {
       "trade_id": "JUBILANT FOODWORKS LTD-PE-ATM-20260806-1345-01",
@@ -2665,7 +2665,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T14:00:00+05:30",
+      "last_processed_ts": "2026-08-06T14:04:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -2900,11 +2900,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 21.35,
-      "current_pnl_pct": 0.23,
+      "current_price": 21.4,
+      "current_pnl_pct": 0.47,
       "maximum_profit_pct": 2.35,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 15
+      "holding_time_minutes": 19
     },
     "BANKNIFTY-CE-ITM-20260806-1401-01": {
       "trade_id": "BANKNIFTY-CE-ITM-20260806-1401-01",
@@ -2970,23 +2970,24 @@
         "\u2713 Theta Risk Acceptable"
       ],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
-      "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "actual_entry_time": "2026-08-06T14:02:00+05:30",
+      "tracked_entry_price": 790.0,
+      "highest_since_entry": 799.95,
+      "lowest_since_entry": 786.15,
+      "max_favorable_pct": 1.26,
+      "max_adverse_pct": -0.49,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T14:01:14.387347+05:30",
+      "last_processed_ts": "2026-08-06T14:04:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
       ],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -3185,7 +3186,12 @@
           "enabled": false,
           "reason": "no candlestick read attached to this trade"
         }
-      }
+      },
+      "current_price": 794.1,
+      "current_pnl_pct": 0.52,
+      "maximum_profit_pct": 0.52,
+      "maximum_drawdown_pct": 0.0,
+      "holding_time_minutes": 3
     }
   },
   "next_seq": {
@@ -3207,24 +3213,24 @@
     "NSE_FO|41015": 6763315.0,
     "NSE_FO|41017": 5170230.0,
     "NSE_FO|41020": 8724495.0,
-    "NSE_FO|41024": 5099835.0,
-    "NSE_FO|41019": 5981560.0,
-    "NSE_FO|41016": 10337145.0,
+    "NSE_FO|41024": 5407480.0,
+    "NSE_FO|41019": 6499220.0,
+    "NSE_FO|41016": 11307855.0,
     "NSE_FO|59094": 295080.0,
     "NSE_FO|59096": 365550.0,
-    "NSE_FO|59098": 193830.0,
+    "NSE_FO|59098": 193050.0,
     "NSE_FO|59099": 169860.0,
     "NSE_FO|59097": 228330.0,
     "NSE_FO|59095": 198660.0,
     "NSE_FO|60621": 45480.0,
     "NSE_FO|60623": 22200.0,
     "NSE_FO|60625": 315360.0,
-    "NSE_FO|60626": 335160.0,
-    "NSE_FO|60624": 40080.0,
+    "NSE_FO|60626": 333960.0,
+    "NSE_FO|60624": 39120.0,
     "NSE_FO|60622": 47160.0,
-    "BSE_FO|840209": 1380900.0,
-    "BSE_FO|840680": 2784000.0,
-    "BSE_FO|840247": 1439420.0,
+    "BSE_FO|840209": 1337440.0,
+    "BSE_FO|840680": 2804420.0,
+    "BSE_FO|840247": 1567040.0,
     "BSE_FO|840358": 781980.0,
     "BSE_FO|840193": 2673540.0,
     "BSE_FO|840325": 2413480.0,
@@ -3232,7 +3238,7 @@
     "NSE_FO|102711": 5103350.0,
     "NSE_FO|110943": 1406300.0,
     "NSE_FO|110944": 208250.0,
-    "NSE_FO|102712": 2185400.0,
+    "NSE_FO|102712": 2186625.0,
     "NSE_FO|110942": 850150.0,
     "NSE_FO|113751": 447500.0,
     "NSE_FO|119346": 303750.0,
@@ -3243,8 +3249,8 @@
     "NSE_FO|137829": 267150.0,
     "NSE_FO|137831": 421850.0,
     "NSE_FO|137833": 456950.0,
-    "NSE_FO|137834": 113750.0,
-    "NSE_FO|137832": 206700.0,
+    "NSE_FO|137834": 117000.0,
+    "NSE_FO|137832": 208650.0,
     "NSE_FO|137830": 211900.0,
     "NSE_FO|117645": 397600.0,
     "NSE_FO|117648": 3446800.0,
@@ -3252,8 +3258,8 @@
     "NSE_FO|117659": 719600.0,
     "NSE_FO|117655": 3420200.0,
     "NSE_FO|117647": 1001000.0,
-    "NSE_FO|78747": 14275.0,
-    "NSE_FO|78749": 8000.0,
+    "NSE_FO|78747": 14425.0,
+    "NSE_FO|78749": 8025.0,
     "NSE_FO|78751": 9125.0,
     "NSE_FO|78752": 3575.0,
     "NSE_FO|78750": 2275.0,
@@ -3266,27 +3272,27 @@
     "NSE_FO|119345": 211250.0,
     "NSE_FO|137835": 249600.0,
     "NSE_FO|137836": 44200.0,
-    "NSE_FO|78745": 6600.0,
+    "NSE_FO|78745": 6625.0,
     "NSE_FO|78746": 5450.0,
     "NSE_FO|60627": 38160.0,
     "NSE_FO|60632": 35040.0,
     "NSE_FO|41013": 1599585.0,
     "NSE_FO|41014": 3094325.0,
     "NSE_FO|102709": 986125.0,
-    "NSE_FO|102710": 1064525.0,
+    "NSE_FO|102710": 1055950.0,
     "NSE_FO|59092": 184320.0,
     "NSE_FO|59093": 117960.0,
-    "NSE_FO|59108": 2369760.0,
+    "NSE_FO|59108": 2373510.0,
     "NSE_FO|59109": 1669980.0,
     "NSE_FO|119348": 205000.0,
-    "NSE_FO|119349": 145000.0,
+    "NSE_FO|119349": 143750.0,
     "NSE_FO|60633": 25320.0,
     "NSE_FO|60634": 24480.0,
-    "NSE_FO|124359": 467100.0,
-    "NSE_FO|127525": 353025.0,
-    "NSE_FO|124361": 938250.0,
+    "NSE_FO|124359": 464175.0,
+    "NSE_FO|127525": 349650.0,
+    "NSE_FO|124361": 940725.0,
     "BSE_FO|840610": 2286660.0,
-    "NSE_FO|59111": 243630.0
+    "NSE_FO|59111": 243810.0
   },
   "probability_history": {
     "PNB HOUSING FIN LTD.-CE": [
@@ -4577,7 +4583,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 369,
+    "scanned_symbols": 378,
     "valid_signals": 313,
     "rejected_signals": 141,
     "api_failures": 0,
