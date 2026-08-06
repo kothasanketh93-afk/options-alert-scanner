@@ -2351,7 +2351,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T15:19:00+05:30",
+      "last_processed_ts": "2026-08-06T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -2571,11 +2571,12 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 1097.8,
-      "current_pnl_pct": -1.26,
+      "current_price": 1085.05,
+      "current_pnl_pct": -2.41,
       "maximum_profit_pct": 15.84,
       "maximum_drawdown_pct": -5.0,
-      "holding_time_minutes": 299
+      "holding_time_minutes": 304,
+      "_marked_open_at_eod": true
     },
     "JUBILANT FOODWORKS LTD-PE-ATM-20260806-1345-01": {
       "trade_id": "JUBILANT FOODWORKS LTD-PE-ATM-20260806-1345-01",
@@ -2665,7 +2666,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T15:19:00+05:30",
+      "last_processed_ts": "2026-08-06T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -2901,11 +2902,12 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 23.25,
-      "current_pnl_pct": 9.15,
+      "current_price": 22.45,
+      "current_pnl_pct": 5.4,
       "maximum_profit_pct": 9.39,
       "maximum_drawdown_pct": -0.23,
-      "holding_time_minutes": 94
+      "holding_time_minutes": 99,
+      "_marked_open_at_eod": true
     },
     "BANKNIFTY-CE-ITM-20260806-1401-01": {
       "trade_id": "BANKNIFTY-CE-ITM-20260806-1401-01",
@@ -2985,7 +2987,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T15:19:00+05:30",
+      "last_processed_ts": "2026-08-06T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -3188,11 +3190,12 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 792.7,
-      "current_pnl_pct": 0.34,
+      "current_price": 790.1,
+      "current_pnl_pct": 0.01,
       "maximum_profit_pct": 2.49,
       "maximum_drawdown_pct": -1.27,
-      "holding_time_minutes": 78
+      "holding_time_minutes": 83,
+      "_marked_open_at_eod": true
     },
     "SONA BLW PRECISION FRGS L-PE-ITM-20260806-1420-01": {
       "trade_id": "SONA BLW PRECISION FRGS L-PE-ITM-20260806-1420-01",
@@ -3273,7 +3276,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T15:19:00+05:30",
+      "last_processed_ts": "2026-08-06T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -3444,11 +3447,12 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 26.05,
-      "current_pnl_pct": 4.83,
+      "current_price": 26.55,
+      "current_pnl_pct": 6.84,
       "maximum_profit_pct": 9.46,
       "maximum_drawdown_pct": -1.99,
-      "holding_time_minutes": 50
+      "holding_time_minutes": 55,
+      "_marked_open_at_eod": true
     }
   },
   "next_seq": {
@@ -4999,7 +5003,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 513,
+    "scanned_symbols": 522,
     "valid_signals": 350,
     "rejected_signals": 144,
     "api_failures": 0,
