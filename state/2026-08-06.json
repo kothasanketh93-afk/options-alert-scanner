@@ -1273,7 +1273,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T10:20:00+05:30",
+      "last_processed_ts": "2026-08-06T10:25:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1479,11 +1479,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 18.65,
-      "current_pnl_pct": -1.06,
+      "current_price": 18.5,
+      "current_pnl_pct": -1.86,
       "maximum_profit_pct": 1.33,
-      "maximum_drawdown_pct": -1.59,
-      "holding_time_minutes": 18
+      "maximum_drawdown_pct": -1.86,
+      "holding_time_minutes": 23
     },
     "PNB HOUSING FIN LTD.-PE-ATM-20260806-1005-01": {
       "trade_id": "PNB HOUSING FIN LTD.-PE-ATM-20260806-1005-01",
@@ -1621,16 +1621,16 @@
       "actual_entry_time": "2026-08-06T10:06:00+05:30",
       "tracked_entry_price": 37.1,
       "highest_since_entry": 38.1,
-      "lowest_since_entry": 36.75,
+      "lowest_since_entry": 35.4,
       "max_favorable_pct": 2.7,
-      "max_adverse_pct": -0.94,
+      "max_adverse_pct": -4.58,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T10:20:00+05:30",
+      "last_processed_ts": "2026-08-06T10:25:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1845,11 +1845,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 36.95,
-      "current_pnl_pct": -0.4,
+      "current_price": 35.75,
+      "current_pnl_pct": -3.64,
       "maximum_profit_pct": 1.62,
-      "maximum_drawdown_pct": -0.4,
-      "holding_time_minutes": 14
+      "maximum_drawdown_pct": -3.64,
+      "holding_time_minutes": 19
     },
     "SENSEX-PE-ITM-20260806-1010-02": {
       "trade_id": "SENSEX-PE-ITM-20260806-1010-02",
@@ -1994,7 +1994,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T10:20:00+05:30",
+      "last_processed_ts": "2026-08-06T10:25:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -2225,11 +2225,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 383.1,
-      "current_pnl_pct": 7.13,
+      "current_price": 368.3,
+      "current_pnl_pct": 2.99,
       "maximum_profit_pct": 7.13,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 8
+      "holding_time_minutes": 13
     },
     "BOSCH LIMITED-PE-ATM-20260806-1020-01": {
       "trade_id": "BOSCH LIMITED-PE-ATM-20260806-1020-01",
@@ -2333,23 +2333,24 @@
           "trade_score": 55
         }
       ],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
-      "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "actual_entry_time": "2026-08-06T10:21:00+05:30",
+      "tracked_entry_price": 1111.85,
+      "highest_since_entry": 1116.7,
+      "lowest_since_entry": 1110.95,
+      "max_favorable_pct": 0.44,
+      "max_adverse_pct": -0.08,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T10:20:44.022186+05:30",
+      "last_processed_ts": "2026-08-06T10:25:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
       ],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -2564,7 +2565,12 @@
           "enabled": false,
           "reason": "no candlestick read attached to this trade"
         }
-      }
+      },
+      "current_price": 1116.7,
+      "current_pnl_pct": 0.44,
+      "maximum_profit_pct": 0.44,
+      "maximum_drawdown_pct": 0.0,
+      "holding_time_minutes": 4
     }
   },
   "next_seq": {
@@ -2581,72 +2587,72 @@
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
-    "NSE_FO|41015": 7685210.0,
-    "NSE_FO|41017": 6052735.0,
-    "NSE_FO|41020": 8551335.0,
-    "NSE_FO|41024": 4053140.0,
-    "NSE_FO|41019": 5149105.0,
-    "NSE_FO|41016": 9534720.0,
-    "NSE_FO|59094": 304890.0,
-    "NSE_FO|59096": 414210.0,
-    "NSE_FO|59098": 227640.0,
-    "NSE_FO|59099": 141690.0,
-    "NSE_FO|59097": 200970.0,
-    "NSE_FO|59095": 190680.0,
+    "NSE_FO|41015": 7685405.0,
+    "NSE_FO|41017": 6053710.0,
+    "NSE_FO|41020": 8640580.0,
+    "NSE_FO|41024": 4349865.0,
+    "NSE_FO|41019": 5075330.0,
+    "NSE_FO|41016": 9546160.0,
+    "NSE_FO|59094": 300150.0,
+    "NSE_FO|59096": 405780.0,
+    "NSE_FO|59098": 222930.0,
+    "NSE_FO|59099": 143700.0,
+    "NSE_FO|59097": 207900.0,
+    "NSE_FO|59095": 193050.0,
     "NSE_FO|60621": 45480.0,
-    "NSE_FO|60623": 25080.0,
-    "NSE_FO|60625": 327360.0,
-    "NSE_FO|60626": 356520.0,
-    "NSE_FO|60624": 44760.0,
+    "NSE_FO|60623": 25320.0,
+    "NSE_FO|60625": 326880.0,
+    "NSE_FO|60626": 357120.0,
+    "NSE_FO|60624": 45840.0,
     "NSE_FO|60622": 52680.0,
-    "BSE_FO|840209": 1858460.0,
-    "BSE_FO|840680": 2269260.0,
+    "BSE_FO|840209": 1947540.0,
+    "BSE_FO|840680": 2331500.0,
     "BSE_FO|840247": 1295260.0,
     "BSE_FO|840358": 754980.0,
-    "BSE_FO|840193": 1524080.0,
-    "BSE_FO|840325": 2046460.0,
-    "NSE_FO|110941": 1668450.0,
-    "NSE_FO|102711": 5287100.0,
-    "NSE_FO|110943": 1402625.0,
-    "NSE_FO|110944": 203350.0,
-    "NSE_FO|102712": 2200100.0,
+    "BSE_FO|840193": 1485560.0,
+    "BSE_FO|840325": 2000960.0,
+    "NSE_FO|110941": 1657425.0,
+    "NSE_FO|102711": 5301800.0,
+    "NSE_FO|110943": 1406300.0,
+    "NSE_FO|110944": 208250.0,
+    "NSE_FO|102712": 2202550.0,
     "NSE_FO|110942": 968975.0,
     "NSE_FO|113751": 446250.0,
     "NSE_FO|119346": 292500.0,
-    "NSE_FO|113780": 701250.0,
-    "NSE_FO|113781": 780000.0,
-    "NSE_FO|119347": 171250.0,
-    "NSE_FO|113779": 468750.0,
+    "NSE_FO|113780": 700000.0,
+    "NSE_FO|113781": 767500.0,
+    "NSE_FO|119347": 173750.0,
+    "NSE_FO|113779": 482500.0,
     "NSE_FO|137829": 267150.0,
-    "NSE_FO|137831": 437450.0,
+    "NSE_FO|137831": 442650.0,
     "NSE_FO|137833": 458900.0,
-    "NSE_FO|137834": 104650.0,
-    "NSE_FO|137832": 241150.0,
+    "NSE_FO|137834": 102700.0,
+    "NSE_FO|137832": 240500.0,
     "NSE_FO|137830": 200200.0,
     "NSE_FO|117645": 397600.0,
     "NSE_FO|117648": 3425800.0,
     "NSE_FO|117658": 1439200.0,
-    "NSE_FO|117659": 723800.0,
+    "NSE_FO|117659": 722400.0,
     "NSE_FO|117655": 3430000.0,
     "NSE_FO|117647": 1002400.0,
-    "NSE_FO|78747": 9675.0,
-    "NSE_FO|78749": 5250.0,
+    "NSE_FO|78747": 9725.0,
+    "NSE_FO|78749": 5300.0,
     "NSE_FO|78751": 9125.0,
     "NSE_FO|78752": 3575.0,
     "NSE_FO|78750": 2125.0,
-    "NSE_FO|78748": 9375.0,
+    "NSE_FO|78748": 9400.0,
     "NSE_FO|60619": 15480.0,
     "NSE_FO|60620": 17760.0,
-    "BSE_FO|840341": 784900.0,
-    "BSE_FO|840158": 1500640.0,
+    "BSE_FO|840341": 793980.0,
+    "BSE_FO|840158": 1527400.0,
     "NSE_FO|119344": 112500.0,
     "NSE_FO|119345": 211250.0,
-    "NSE_FO|137835": 245700.0,
-    "NSE_FO|137836": 39650.0,
+    "NSE_FO|137835": 248300.0,
+    "NSE_FO|137836": 40950.0,
     "NSE_FO|78745": 6575.0,
-    "NSE_FO|78746": 5150.0,
-    "NSE_FO|60627": 26880.0,
-    "NSE_FO|60632": 31800.0,
+    "NSE_FO|78746": 5125.0,
+    "NSE_FO|60627": 27120.0,
+    "NSE_FO|60632": 32160.0,
     "NSE_FO|41013": 1599585.0,
     "NSE_FO|41014": 3234920.0,
     "NSE_FO|102709": 1009400.0,
@@ -2813,6 +2819,18 @@
       {
         "time": "10:20",
         "pct": 70
+      },
+      {
+        "time": "10:25",
+        "pct": 74
+      },
+      {
+        "time": "10:25",
+        "pct": 73
+      },
+      {
+        "time": "10:25",
+        "pct": 71
       }
     ],
     "NIFTY-PE": [
@@ -3016,6 +3034,18 @@
       },
       {
         "time": "10:20",
+        "pct": 65
+      },
+      {
+        "time": "10:25",
+        "pct": 71
+      },
+      {
+        "time": "10:25",
+        "pct": 65
+      },
+      {
+        "time": "10:25",
         "pct": 65
       }
     ],
@@ -3395,6 +3425,10 @@
       {
         "time": "10:20",
         "pct": 65
+      },
+      {
+        "time": "10:25",
+        "pct": 65
       }
     ],
     "BOSCH LIMITED-PE": [
@@ -3543,6 +3577,14 @@
       {
         "time": "10:20",
         "pct": 65
+      },
+      {
+        "time": "10:25",
+        "pct": 68
+      },
+      {
+        "time": "10:25",
+        "pct": 65
       }
     ],
     "LIFE INSURA CORP OF INDIA-PE": [
@@ -3591,9 +3633,9 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 126,
-    "valid_signals": 225,
-    "rejected_signals": 85,
+    "scanned_symbols": 135,
+    "valid_signals": 234,
+    "rejected_signals": 92,
     "api_failures": 0,
     "broker_errors": 0
   },
