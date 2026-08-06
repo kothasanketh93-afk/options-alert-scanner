@@ -179,25 +179,27 @@
           "trade_score": 58
         }
       ],
-      "status": "WAITING_ENTRY",
-      "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
-      "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
+      "actual_entry_time": "2026-08-06T09:46:00+05:30",
+      "tracked_entry_price": 54.45,
+      "highest_since_entry": 55.0,
+      "lowest_since_entry": 47.9,
+      "max_favorable_pct": 1.01,
+      "max_adverse_pct": -12.03,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-08-06T09:50:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-06T09:45:47.070455+05:30",
+      "last_processed_ts": "2026-08-06T09:50:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED",
+        "SL_HIT"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [
         {
@@ -362,82 +364,459 @@
           "enabled": false,
           "reason": "no candlestick read attached to this trade"
         }
+      },
+      "current_price": 47.95,
+      "current_pnl_pct": -11.94,
+      "maximum_profit_pct": 0.0,
+      "maximum_drawdown_pct": -11.94,
+      "holding_time_minutes": 4
+    },
+    "HINDUSTAN ZINC LIMITED-PE-ITM-20260806-0950-01": {
+      "trade_id": "HINDUSTAN ZINC LIMITED-PE-ITM-20260806-0950-01",
+      "display_label": "Trade 2",
+      "symbol": "HINDUSTAN ZINC LIMITED",
+      "direction": "PE",
+      "moneyness": "ITM",
+      "instrument_key": "NSE_FO|110944",
+      "strike": 610.0,
+      "expiry": "2026-08-25",
+      "spot_price": 595.85,
+      "alert_time": "2026-08-06T09:50:55.891779+05:30",
+      "alert_premium": 24.3,
+      "entry_low": 24.13,
+      "entry_high": 24.47,
+      "stop_loss": 22.09,
+      "target_1": 27.62,
+      "target_2": 29.83,
+      "session": "09:30-10:35",
+      "grade": "A",
+      "trade_score": 83,
+      "probability_pct": 83,
+      "probability_label": "High Probability Trade",
+      "score_breakdown": [
+        "+20 Trend Alignment",
+        "+15 Volume Spike",
+        "+15 OI Build-up",
+        "+10 VWAP Positioning",
+        "+5 Risk:Reward",
+        "+5 Market Strength",
+        "+4 Liquidity",
+        "-5 Momentum",
+        "-2 Higher-Timeframe Confirmation"
+      ],
+      "confidence_score": 8.3,
+      "risk_score": 4.0,
+      "reward_score": 5.0,
+      "expected_rr": "1:1.5",
+      "factor_checklist": [
+        "Trend \u2705",
+        "Volume \u2705",
+        "OI \u2705",
+        "Momentum \u26a0\ufe0f",
+        "VWAP \u2705",
+        "EMA \u26a0\ufe0f",
+        "Risk Reward \u2705",
+        "Liquidity \u2705",
+        "Market Strength \u2705",
+        "HTF \u26a0\ufe0f"
+      ],
+      "confidence_stars": "\u2605\u2605\u2605\u2605\u2606",
+      "confidence_label": "High",
+      "risk_rating": "\ud83d\udfe1",
+      "risk_label": "Medium",
+      "expected_holding_minutes": [
+        15,
+        30
+      ],
+      "why_reasons": [
+        "\u2713 Below VWAP",
+        "\u2713 Volume Expansion",
+        "\u2713 Strong OI Build-up",
+        "\u2713 Excellent Liquidity",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable"
+      ],
+      "alternatives": [
+        {
+          "symbol": "SENSEX",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "B+",
+          "trade_score": 78
+        },
+        {
+          "symbol": "JUBILANT FOODWORKS LTD",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "B+",
+          "trade_score": 78
+        },
+        {
+          "symbol": "NIFTY",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "B+",
+          "trade_score": 77
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "PE",
+          "moneyness": "OTM",
+          "grade": "B+",
+          "trade_score": 77
+        },
+        {
+          "symbol": "PNB HOUSING FIN LTD.",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "B+",
+          "trade_score": 77
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "B+",
+          "trade_score": 76
+        },
+        {
+          "symbol": "BOSCH LIMITED",
+          "direction": "PE",
+          "moneyness": "OTM",
+          "grade": "B+",
+          "trade_score": 73
+        },
+        {
+          "symbol": "NIFTY",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "B+",
+          "trade_score": 72
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "B+",
+          "trade_score": 72
+        },
+        {
+          "symbol": "SENSEX",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "B+",
+          "trade_score": 72
+        },
+        {
+          "symbol": "PNB HOUSING FIN LTD.",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "B+",
+          "trade_score": 72
+        },
+        {
+          "symbol": "BOSCH LIMITED",
+          "direction": "CE",
+          "moneyness": "OTM",
+          "grade": "B+",
+          "trade_score": 70
+        },
+        {
+          "symbol": "HINDUSTAN ZINC LIMITED",
+          "direction": "CE",
+          "moneyness": "OTM",
+          "grade": "B",
+          "trade_score": 68
+        },
+        {
+          "symbol": "JUBILANT FOODWORKS LTD",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "B",
+          "trade_score": 67
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "B",
+          "trade_score": 66
+        }
+      ],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-08-06T09:50:55.891779+05:30",
+      "messages_sent": [
+        "NEW_TRADE_ALERT"
+      ],
+      "streak_counted": false,
+      "strategy": "trade_score",
+      "probability_history": [
+        {
+          "time": "09:45",
+          "pct": 77
+        },
+        {
+          "time": "09:45",
+          "pct": 76
+        },
+        {
+          "time": "09:45",
+          "pct": 70
+        },
+        {
+          "time": "09:50",
+          "pct": 83
+        },
+        {
+          "time": "09:50",
+          "pct": 71
+        },
+        {
+          "time": "09:50",
+          "pct": 70
+        }
+      ],
+      "probability_trend": "Stable",
+      "decision": {
+        "enabled": true,
+        "decision": "Trade Approved",
+        "approved": true,
+        "trade_quality_score": 79.3,
+        "confidence_score": 83.0,
+        "probability": {
+          "win_probability_pct": 83.0,
+          "loss_probability_pct": 17.0,
+          "trade_success_probability_pct": 83.0,
+          "historical_similarity_pct": null,
+          "source": "upstream_probability_pct"
+        },
+        "risk": {
+          "max_risk_per_unit": 2.21,
+          "expected_reward_per_unit": 5.53,
+          "risk_score": 81.8,
+          "capital_risk_pct": 0.0
+        },
+        "risk_reward": {
+          "entry": 24.3,
+          "stop_loss": 22.09,
+          "target_1": 27.62,
+          "target_2": 29.83,
+          "risk_reward_ratio": 2.5,
+          "min_rr_threshold": 1.5,
+          "passes_rr_floor": true
+        },
+        "entry": 24.3,
+        "stop_loss": 22.09,
+        "stop_loss_detail": {
+          "active_stop_loss": 22.09,
+          "style": "atr_dynamic",
+          "distance_pct": 9.09,
+          "percentage_stop_reference": 12.15,
+          "recommendation": null
+        },
+        "target_1": 27.62,
+        "target_2": 29.83,
+        "target_3": 30.93,
+        "position_size": {
+          "mode": "dynamic",
+          "quantity": 411,
+          "lot_size": 1
+        },
+        "entry_validation": {
+          "entry_quality_score": 52.5,
+          "sub_scores": {
+            "entry_distance": 60.0,
+            "volume_confirmation": 50.0,
+            "market_alignment": 50.0,
+            "options_confirmation": 50.0,
+            "institutional_confirmation": null
+          },
+          "passed": true,
+          "reasons": []
+        },
+        "priority": "High",
+        "explanation": [
+          "Trade Approved",
+          "Trade Quality 79.3/100",
+          "Probability 83.0%",
+          "Risk:Reward 1:2.5",
+          "Trade Score 83/100 (High Probability Trade), probability 83%"
+        ],
+        "rejection_reasons": [],
+        "warnings": [],
+        "engines_used": [
+          "market_snapshot",
+          "early_breakout",
+          "trade_score_engine",
+          "options_intelligence"
+        ],
+        "engines_available": [
+          "trade_score_engine"
+        ],
+        "execution_time_ms": 0.15,
+        "timestamp": "2026-08-06T09:51:19.461744+05:30",
+        "quant_intelligence": {
+          "enabled": true,
+          "decision": "REJECTED",
+          "probability": 0.0,
+          "confidence": "VERY LOW",
+          "signal_quality_grade": "Reject",
+          "regime": "Sideways",
+          "regime_confidence": "LOW",
+          "risk": {
+            "entry": 24.3,
+            "stop_loss": null,
+            "trailing_stop_loss": null,
+            "target_1": null,
+            "target_2": null,
+            "target_3": null,
+            "risk_reward_ratio": null,
+            "position_score": 0.0
+          },
+          "pattern": {
+            "pattern_key": "PE|Sideways|NA|na|na|na",
+            "historical_win_pct": null,
+            "historical_loss_pct": null,
+            "sample_size": 0,
+            "pattern_confidence": "NONE"
+          },
+          "explanation": "HINDUSTAN ZINC LIMITED PE: REJECTED (grade Reject, probability 0.0% [VERY LOW]). Regime: Sideways (LOW). No historical pattern sample yet. Primary rejection reason: Weak momentum: momentum data unavailable.",
+          "reasons": {
+            "probability": [
+              "TREND provides little/no confirmation (strength 0.00).",
+              "EMA provides little/no confirmation (strength 0.00).",
+              "OI provides little/no confirmation (strength 0.00)."
+            ],
+            "signal_quality": [
+              "Weak momentum: momentum data unavailable.",
+              "Weak volume: volume/threshold data unavailable.",
+              "Poor liquidity: OI/threshold data unavailable.",
+              "Poor risk reward: risk/reward could not be computed.",
+              "Low confidence: probability 0.0 below minimum 40."
+            ],
+            "regime": [
+              "Insufficient directional signal to classify a trend; defaulting to sideways read."
+            ],
+            "risk": [
+              "Insufficient price/ATR data to compute risk levels."
+            ],
+            "pattern": [
+              "No historical setups recorded yet for this pattern."
+            ]
+          },
+          "errors": [],
+          "execution_time_ms": 11.81
+        },
+        "news_intelligence": {
+          "enabled": true,
+          "news_score": 0.0,
+          "sentiment": "neutral",
+          "impact": "ignore",
+          "confidence": 0.0,
+          "reasons": [
+            "No recent news found for this symbol"
+          ],
+          "article_count": 0,
+          "most_recent_headline": "",
+          "most_recent_url": "",
+          "execution_time_ms": 0.03
+        },
+        "candlestick_patterns": {
+          "enabled": false,
+          "reason": "no candlestick read attached to this trade"
+        }
       }
     }
   },
   "next_seq": {
-    "PNB HOUSING FIN LTD.-CE-ITM": 1
+    "PNB HOUSING FIN LTD.-CE-ITM": 1,
+    "HINDUSTAN ZINC LIMITED-PE-ITM": 1
   },
-  "next_display_num": 1,
+  "next_display_num": 2,
   "summary_sent": false,
-  "consecutive_sl_streak": 0,
+  "consecutive_sl_streak": 1,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
-    "NSE_FO|41015": 7268235.0,
-    "NSE_FO|41017": 5305170.0,
-    "NSE_FO|41020": 7653490.0,
-    "NSE_FO|41024": 3985605.0,
-    "NSE_FO|41019": 4929860.0,
-    "NSE_FO|41016": 8779680.0,
-    "NSE_FO|59094": 289620.0,
-    "NSE_FO|59096": 430800.0,
-    "NSE_FO|59098": 233430.0,
-    "NSE_FO|59099": 123210.0,
-    "NSE_FO|59097": 214530.0,
-    "NSE_FO|59095": 188370.0,
+    "NSE_FO|41015": 6806800.0,
+    "NSE_FO|41017": 4971980.0,
+    "NSE_FO|41020": 7599345.0,
+    "NSE_FO|41024": 4399330.0,
+    "NSE_FO|41019": 5382520.0,
+    "NSE_FO|41016": 9462375.0,
+    "NSE_FO|59094": 282780.0,
+    "NSE_FO|59096": 420330.0,
+    "NSE_FO|59098": 233370.0,
+    "NSE_FO|59099": 128940.0,
+    "NSE_FO|59097": 218580.0,
+    "NSE_FO|59095": 190050.0,
     "NSE_FO|60621": 62280.0,
-    "NSE_FO|60623": 24120.0,
-    "NSE_FO|60625": 314040.0,
-    "NSE_FO|60626": 331680.0,
-    "NSE_FO|60624": 37440.0,
+    "NSE_FO|60623": 26520.0,
+    "NSE_FO|60625": 314160.0,
+    "NSE_FO|60626": 334080.0,
+    "NSE_FO|60624": 40320.0,
     "NSE_FO|60622": 50040.0,
-    "BSE_FO|840209": 1442120.0,
-    "BSE_FO|840680": 2188340.0,
-    "BSE_FO|840247": 1275160.0,
-    "BSE_FO|840358": 585120.0,
-    "BSE_FO|840193": 1633340.0,
-    "BSE_FO|840325": 2080260.0,
-    "NSE_FO|110941": 1619450.0,
-    "NSE_FO|102711": 5386325.0,
-    "NSE_FO|110943": 1387925.0,
-    "NSE_FO|110944": 162925.0,
-    "NSE_FO|102712": 2195200.0,
+    "BSE_FO|840209": 1263720.0,
+    "BSE_FO|840680": 1903080.0,
+    "BSE_FO|840247": 1208540.0,
+    "BSE_FO|840358": 578780.0,
+    "BSE_FO|840193": 1837420.0,
+    "BSE_FO|840325": 2156600.0,
+    "NSE_FO|110941": 1604750.0,
+    "NSE_FO|102711": 5399800.0,
+    "NSE_FO|110943": 1430800.0,
+    "NSE_FO|110944": 176400.0,
+    "NSE_FO|102712": 2197650.0,
     "NSE_FO|110942": 970200.0,
-    "NSE_FO|113751": 337500.0,
-    "NSE_FO|119346": 246250.0,
-    "NSE_FO|113780": 663750.0,
-    "NSE_FO|113781": 747500.0,
+    "NSE_FO|113751": 348750.0,
+    "NSE_FO|119346": 247500.0,
+    "NSE_FO|113780": 666250.0,
+    "NSE_FO|113781": 725000.0,
     "NSE_FO|119347": 162500.0,
     "NSE_FO|113779": 415000.0,
     "NSE_FO|137829": 267150.0,
-    "NSE_FO|137831": 484250.0,
-    "NSE_FO|137833": 499200.0,
-    "NSE_FO|137834": 86450.0,
-    "NSE_FO|137832": 225550.0,
+    "NSE_FO|137831": 439400.0,
+    "NSE_FO|137833": 445250.0,
+    "NSE_FO|137834": 97500.0,
+    "NSE_FO|137832": 259350.0,
     "NSE_FO|137830": 200200.0,
     "NSE_FO|117645": 397600.0,
-    "NSE_FO|117648": 3432800.0,
+    "NSE_FO|117648": 3430000.0,
     "NSE_FO|117658": 1443400.0,
     "NSE_FO|117659": 725200.0,
-    "NSE_FO|117655": 3434200.0,
+    "NSE_FO|117655": 3432800.0,
     "NSE_FO|117647": 1002400.0,
-    "NSE_FO|78747": 8325.0,
-    "NSE_FO|78749": 4150.0,
+    "NSE_FO|78747": 8350.0,
+    "NSE_FO|78749": 4525.0,
     "NSE_FO|78751": 9125.0,
     "NSE_FO|78752": 3575.0,
-    "NSE_FO|78750": 2200.0,
-    "NSE_FO|78748": 9500.0,
+    "NSE_FO|78750": 2150.0,
+    "NSE_FO|78748": 9425.0,
     "NSE_FO|60619": 15480.0,
     "NSE_FO|60620": 17760.0,
     "BSE_FO|840341": 738240.0,
     "BSE_FO|840158": 1174540.0,
     "NSE_FO|119344": 112500.0,
     "NSE_FO|119345": 211250.0,
-    "NSE_FO|137835": 213850.0,
-    "NSE_FO|137836": 32500.0,
-    "NSE_FO|78745": 6650.0,
-    "NSE_FO|78746": 5150.0
+    "NSE_FO|137835": 235950.0,
+    "NSE_FO|137836": 31850.0,
+    "NSE_FO|78745": 6625.0,
+    "NSE_FO|78746": 5250.0,
+    "NSE_FO|60627": 26280.0,
+    "NSE_FO|60632": 30840.0
   },
   "probability_history": {
     "PNB HOUSING FIN LTD.-CE": [
@@ -452,6 +831,18 @@
       {
         "time": "09:45",
         "pct": 83
+      },
+      {
+        "time": "09:50",
+        "pct": 79
+      },
+      {
+        "time": "09:50",
+        "pct": 79
+      },
+      {
+        "time": "09:50",
+        "pct": 79
       }
     ],
     "SENSEX-PE": [
@@ -466,6 +857,18 @@
       {
         "time": "09:45",
         "pct": 79
+      },
+      {
+        "time": "09:50",
+        "pct": 79
+      },
+      {
+        "time": "09:50",
+        "pct": 78
+      },
+      {
+        "time": "09:50",
+        "pct": 70
       }
     ],
     "NIFTY-PE": [
@@ -480,6 +883,18 @@
       {
         "time": "09:45",
         "pct": 75
+      },
+      {
+        "time": "09:50",
+        "pct": 79
+      },
+      {
+        "time": "09:50",
+        "pct": 79
+      },
+      {
+        "time": "09:50",
+        "pct": 79
       }
     ],
     "BANKNIFTY-PE": [
@@ -494,6 +909,18 @@
       {
         "time": "09:45",
         "pct": 66
+      },
+      {
+        "time": "09:50",
+        "pct": 78
+      },
+      {
+        "time": "09:50",
+        "pct": 71
+      },
+      {
+        "time": "09:50",
+        "pct": 67
       }
     ],
     "HINDUSTAN ZINC LIMITED-PE": [
@@ -507,6 +934,18 @@
       },
       {
         "time": "09:45",
+        "pct": 70
+      },
+      {
+        "time": "09:50",
+        "pct": 83
+      },
+      {
+        "time": "09:50",
+        "pct": 71
+      },
+      {
+        "time": "09:50",
         "pct": 70
       }
     ],
@@ -522,6 +961,14 @@
       {
         "time": "09:45",
         "pct": 71
+      },
+      {
+        "time": "09:50",
+        "pct": 79
+      },
+      {
+        "time": "09:50",
+        "pct": 68
       }
     ],
     "JUBILANT FOODWORKS LTD-PE": [
@@ -535,6 +982,18 @@
       },
       {
         "time": "09:45",
+        "pct": 65
+      },
+      {
+        "time": "09:50",
+        "pct": 71
+      },
+      {
+        "time": "09:50",
+        "pct": 65
+      },
+      {
+        "time": "09:50",
         "pct": 65
       }
     ],
@@ -550,6 +1009,18 @@
       {
         "time": "09:45",
         "pct": 74
+      },
+      {
+        "time": "09:50",
+        "pct": 75
+      },
+      {
+        "time": "09:50",
+        "pct": 75
+      },
+      {
+        "time": "09:50",
+        "pct": 67
       }
     ],
     "JUBILANT FOODWORKS LTD-CE": [
@@ -564,12 +1035,32 @@
       {
         "time": "09:45",
         "pct": 69
+      },
+      {
+        "time": "09:50",
+        "pct": 79
+      },
+      {
+        "time": "09:50",
+        "pct": 71
+      },
+      {
+        "time": "09:50",
+        "pct": 70
       }
     ],
     "BOSCH LIMITED-CE": [
       {
         "time": "09:45",
         "pct": 74
+      },
+      {
+        "time": "09:50",
+        "pct": 73
+      },
+      {
+        "time": "09:50",
+        "pct": 65
       }
     ],
     "NIFTY-CE": [
@@ -584,6 +1075,18 @@
       {
         "time": "09:45",
         "pct": 68
+      },
+      {
+        "time": "09:50",
+        "pct": 75
+      },
+      {
+        "time": "09:50",
+        "pct": 75
+      },
+      {
+        "time": "09:50",
+        "pct": 65
       }
     ],
     "BANKNIFTY-CE": [
@@ -598,6 +1101,18 @@
       {
         "time": "09:45",
         "pct": 65
+      },
+      {
+        "time": "09:50",
+        "pct": 70
+      },
+      {
+        "time": "09:50",
+        "pct": 69
+      },
+      {
+        "time": "09:50",
+        "pct": 65
       }
     ],
     "MIDCPNIFTY-CE": [
@@ -607,6 +1122,18 @@
       },
       {
         "time": "09:45",
+        "pct": 65
+      },
+      {
+        "time": "09:50",
+        "pct": 75
+      },
+      {
+        "time": "09:50",
+        "pct": 65
+      },
+      {
+        "time": "09:50",
         "pct": 65
       }
     ],
@@ -618,6 +1145,14 @@
       {
         "time": "09:45",
         "pct": 69
+      },
+      {
+        "time": "09:50",
+        "pct": 75
+      },
+      {
+        "time": "09:50",
+        "pct": 72
       }
     ],
     "SENSEX-CE": [
@@ -632,6 +1167,18 @@
       {
         "time": "09:45",
         "pct": 67
+      },
+      {
+        "time": "09:50",
+        "pct": 75
+      },
+      {
+        "time": "09:50",
+        "pct": 75
+      },
+      {
+        "time": "09:50",
+        "pct": 75
       }
     ],
     "LIFE INSURA CORP OF INDIA-PE": [
@@ -652,13 +1199,25 @@
       {
         "time": "09:45",
         "pct": 65
+      },
+      {
+        "time": "09:50",
+        "pct": 71
+      },
+      {
+        "time": "09:50",
+        "pct": 65
+      },
+      {
+        "time": "09:50",
+        "pct": 65
       }
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 63,
-    "valid_signals": 45,
-    "rejected_signals": 30,
+    "scanned_symbols": 72,
+    "valid_signals": 90,
+    "rejected_signals": 38,
     "api_failures": 0,
     "broker_errors": 0
   },
