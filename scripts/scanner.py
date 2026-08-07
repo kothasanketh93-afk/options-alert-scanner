@@ -102,6 +102,7 @@ from exceptions import ConfigurationError
 from config import (
     SESSION_WINDOWS, STRIKE_STEP, STRIKE_RANGE, SYMBOLS,
     ENTRY_SCORE, T1_ATR_MULT,
+    ATR_CHASE_FILTER_ENABLED, ATR_CHASE_MULTIPLIER,
 )
 
 from indicators import (
@@ -110,12 +111,14 @@ from indicators import (
 )
 from option_chain import (
     UNDERLYING_INSTRUMENT_KEYS, current_expiry, _extract_leg,
-    vwap_check, vwap_distance_pct, multi_timeframe_confirms, directional_bias,
+    vwap_check, vwap_distance_pct, multi_timeframe_confirms,
+    multi_timeframe_confirmation_detail, directional_bias,
     get_atm_strike, resolve_underlying_key, days_to_expiry,
 )
 from filters import (
     oi_is_building, oi_change_pct, liquidity_ok, delta_acceptable, expiry_theta_ok,
     quality_gate, reasons_from_factors, rejection_reasons,
+    candles_ready, premium_in_range, directional_confirmation_status,
 )
 from levels import dynamic_trade_levels, estimated_holding_minutes
 # Phase 3: Professional Trade Score Engine (replaces grading.py's binary-
@@ -160,26 +163,32 @@ IST = timezone(timedelta(hours=5, minutes=30))
 _market_strength_cache = {}
 
 
-def _broad_market_efficiency_ratio() -> float:
+def _broad_market_efficiency_ratio():
     """
     Phase 3: NIFTY's own 15-min efficiency_ratio() as the "Market
     Strength" factor -- independent of whatever symbol/direction is
-    currently being scored. Falls back to 0.0 (neutral, not a crash)
-    on any data problem, same "don't take down the whole run over one
-    soft signal" posture as opportunity_score._safe_total_oi().
+    currently being scored.
+
+    BUGFIX (2026-08-07): used to fall back to 0.0 ("neutral") both on
+    a data problem AND, silently, whenever NIFTY itself didn't have
+    enough candles yet (indicators.efficiency_ratio() used to always
+    return a float, never None) -- now that it can genuinely return
+    None, this returns None too, all the way through, so
+    trade_score.market_strength() correctly excludes it instead of
+    scoring "no data" as "confirmed no market conviction".
     """
     if "value" in _market_strength_cache:
         return _market_strength_cache["value"]
     try:
         nifty_key = UNDERLYING_INSTRUMENT_KEYS["NIFTY"]
         candles = market_data.get_recent_underlying_candles(nifty_key, "15minute", 30)
-        value = efficiency_ratio(candles) if candles else 0.0
+        value = efficiency_ratio(candles) if candles else None
     except Exception as exc:
         _logger.info(
-            f"MARKET_STRENGTH: NIFTY efficiency-ratio read failed ({type(exc).__name__}: {exc}) -- scoring as neutral (0.0)",
+            f"MARKET_STRENGTH: NIFTY efficiency-ratio read failed ({type(exc).__name__}: {exc}) -- scoring as unavailable (None)",
             exc_info=True,
         )
-        value = 0.0
+        value = None
     _market_strength_cache["value"] = value
     return value
 
@@ -312,6 +321,27 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         _logger.info(f"SKIP {symbol} {direction} {moneyness} strike={strike}: no 15-min candles returned")
         return None
 
+    # --- Candle Readiness Gate (2026-08-07, filters.candles_ready()) ---
+    # NEW hard gate, checked before anything else is computed: a strike
+    # is only scored once EITHER timeframe has enough COMPLETED candles
+    # for momentum/trend/EMA to mean something. This directly targets
+    # the candles_fetched=1/ema_ready=False/htf_ready=False/trend=0/
+    # momentum=0-yet-score-45-55 pattern from the SCORE/GATE logs --
+    # previously nothing stopped scoring from happening on that data at
+    # all; see filters.candles_ready()'s own docstring for the full
+    # rationale. candles_5m is fetched ONLY for this readiness check
+    # (cached per (instrument_key, "5minute") by market_data.py, and
+    # option_chain.directional_bias() already warms that same cache
+    # earlier in detect_setups() for most runs, so this is rarely a new
+    # broker call in practice).
+    candles_5m = market_data.get_recent_underlying_candles(underlying_key, "5minute", 30)
+    if not candles_ready(len(candles_5m), len(candles_15m)):
+        _logger.info(
+            f"SKIPPED {symbol} {direction} {moneyness} strike={strike} - "
+            f"Insufficient candle history (5m={len(candles_5m)}, 15m={len(candles_15m)})."
+        )
+        return None
+
     # Candlestick Pattern Recognition -- reuses candles_15m fetched just
     # above, no new broker call. Computed unconditionally when enabled
     # (advisory only: never gates this strike -- see candlestick_patterns.py
@@ -342,7 +372,8 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         underlying_key, "15minute", candles_15m
     )
 
-    ema_aligned = ema_trend_direction(candles_15m) == direction
+    ema_direction = ema_trend_direction(candles_15m)
+    ema_aligned = ema_direction == direction
     ema9 = compute_ema([c["close"] for c in candles_15m], 9)
     ema21 = compute_ema([c["close"] for c in candles_15m], 21)
     vwap_confirmed = vwap_check(symbol, spot_price, direction)
@@ -350,9 +381,27 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     oi_delta_pct = oi_change_pct(oi_history, instrument_key, oi)  # read BEFORE oi_is_building mutates oi_history
     oi_building = oi_is_building(oi_history, instrument_key, oi)
     liquidity_pass = liquidity_ok(oi, volume, bid, ask, premium, symbol)
+    # mtf_confirmed (plain bool, unchanged) still feeds factors["mtf_confirmed"]/
+    # reasons_from_factors() exactly as before -- multi_timeframe_confirms()
+    # itself is untouched. mtf_confirmed_tristate (True/False/None) is the
+    # NEW, richer read used for trade_score.htf_strength() and the
+    # Directional Confirmation Gate below, via the additive
+    # multi_timeframe_confirmation_detail() (see option_chain.py).
     mtf_confirmed = multi_timeframe_confirms(symbol, direction)
+    mtf_confirmed_tristate, _mtf_ema_direction = multi_timeframe_confirmation_detail(symbol, direction)
     delta_ok = delta_acceptable(moneyness, delta)
     expiry_ok = expiry_theta_ok(moneyness, delta, expiry)
+    premium_ok = premium_in_range(symbol, premium)
+
+    # Trend/momentum, moved up from the strengths dict below (2026-08-07)
+    # -- both are now needed earlier, by the Directional Confirmation Gate,
+    # and are reused as-is when strengths{} is built further down (no
+    # duplicate computation).
+    trend_value = efficiency_ratio(candles_15m)
+    raw_momentum = momentum_pct(candles_15m)
+    signed_momentum = None
+    if raw_momentum is not None:
+        signed_momentum = raw_momentum if direction == "CE" else -raw_momentum
 
     nearby_level = find_nearby_level(candles_15m, direction)
     atr_index_points = compute_atr(atr_candles)
@@ -364,12 +413,36 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         f"DIAG {symbol} {direction} {moneyness} strike={strike} | "
         f"candles_fetched={len(candles_15m)} combined_candle_count={combined_candle_count} "
         f"ema_ready={ema9 is not None and ema21 is not None} "
-        f"atr_ready={atr_index_points is not None} htf_ready={bool(mtf_confirmed)}"
+        f"atr_ready={atr_index_points is not None} htf_ready={bool(mtf_confirmed_tristate)}"
     )
 
     if atr_index_points is None or delta == 0:
         _logger.info(f"SKIP {symbol} {direction} {moneyness} strike={strike}: ATR unavailable or delta==0")
         return None  # dynamic_trade_levels() would raise on this -- bail before it does
+
+    # --- ATR Chase Filter (2026-08-07, config.ATR_CHASE_FILTER_ENABLED) ---
+    # Rejects a strike when the underlying has already travelled more
+    # than ATR_CHASE_MULTIPLIER x today's ATR away from today's session
+    # open by the time this cycle runs -- buying an option after the
+    # move that would have justified it has already happened is exactly
+    # the "chasing an extended candle" pattern that tends to stop out.
+    # "Today's session open" = candles_15m[0]["open"] -- candles_15m is
+    # today-only (see the FIX 2/ATR-warmup comment above: atr_candles,
+    # not candles_15m, is the one that may carry previous-session tail
+    # candles), so this is genuinely today's first candle, not
+    # yesterday's close.
+    if ATR_CHASE_FILTER_ENABLED:
+        session_open = candles_15m[0]["open"]
+        move_from_open = abs(spot_price - session_open)
+        chase_ceiling = atr_index_points * ATR_CHASE_MULTIPLIER
+        if move_from_open > chase_ceiling:
+            _logger.info(
+                f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
+                f"Reasons: Price extended beyond ATR chase ceiling "
+                f"(move={move_from_open:.2f}, ceiling={chase_ceiling:.2f} = "
+                f"{ATR_CHASE_MULTIPLIER}x ATR)"
+            )
+            return None
 
     # Provisional T1 distance (pre-cap) just to test room against the
     # nearby level -- dynamic_trade_levels() below recomputes/caps this
@@ -392,6 +465,7 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         "risk_reward_ok": risk_reward_ok,
         "delta_ok": delta_ok,
         "expiry_theta_ok": expiry_ok,
+        "premium_in_range_ok": premium_ok,
     }
 
     # Full visibility into EVERY strike that reaches this point --
@@ -417,6 +491,32 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         )
         return None
 
+    # --- Directional Confirmation Gate (2026-08-07,
+    # config.DIRECTIONAL_CONFIRMATION_ENABLED) ---
+    # NEW hard gate, separate from quality_gate()'s 3 risk checks above:
+    # requires at least DIRECTIONAL_CONFIRMATION_MIN_COUNT of {EMA
+    # aligned, HTF confirmed, trend above threshold, momentum above
+    # threshold, VWAP confirmed} before a strike proceeds to scoring.
+    # Deliberately NOT "all must pass" -- see
+    # filters.directional_confirmation_status()'s docstring for why.
+    directional_status = directional_confirmation_status(
+        ema_direction, mtf_confirmed_tristate, trend_value, signed_momentum,
+        vwap_confirmed, direction,
+    )
+    if not directional_status["passed"]:
+        # `global _rejection_count` already declared earlier in this
+        # function (see the hard_gate_pass branch above) -- a function
+        # needs only one `global` statement per name (see the
+        # 2026-07-?? merge-fix note further below in this same
+        # function for the SyntaxError this caused the one time it was
+        # duplicated).
+        _rejection_count += 1
+        _logger.info(
+            f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
+            f"Reasons: {'; '.join(trade_score.rejection_detail_lines(True, directional_status, 0, 0, False))}"
+        )
+        return None
+
     # NOTE: volume_confirmed above reuses liquidity_ok()'s pass/fail as a
     # placeholder for the OLD binary "reasons" factor only --
     # trade_score.volume_strength() below is a genuinely continuous read
@@ -433,16 +533,14 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     # and only intended for the risk_reward_ok gate input).
     levels = dynamic_trade_levels(premium, atr_index_points, delta, direction, spot_price, nearby_level)
 
-    raw_momentum = momentum_pct(candles_15m)
-    signed_momentum = None
-    if raw_momentum is not None:
-        signed_momentum = raw_momentum if direction == "CE" else -raw_momentum
     signed_vwap_dist = vwap_distance_pct(symbol, spot_price, direction)
     target_distance = levels["target_1"] - premium
     sl_distance = premium - levels["stop_loss"]
 
     strengths = {
-        "trend": trade_score.trend_strength(efficiency_ratio(candles_15m)),
+        # trend/signed_momentum: computed earlier (see Directional
+        # Confirmation Gate above) -- reused here, not recomputed.
+        "trend": trade_score.trend_strength(trend_value),
         "volume": trade_score.volume_strength(volume, symbol),
         "oi": trade_score.oi_build_strength(oi_delta_pct),
         "momentum": trade_score.momentum_strength(signed_momentum),
@@ -457,18 +555,48 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         "risk_reward": trade_score.risk_reward_strength(target_distance, sl_distance),
         "liquidity": trade_score.liquidity_strength(oi, volume, bid, ask, premium, symbol),
         "market_strength": trade_score.market_strength(_broad_market_efficiency_ratio()),
-        "htf": trade_score.htf_strength(mtf_confirmed),
+        # BUGFIX (2026-08-07): htf_strength() now takes the tri-state
+        # mtf_confirmed_tristate (True/False/None) instead of the plain
+        # bool -- "15-min EMA not yet computable" is excluded from the
+        # weighted average instead of scored as confirmed-against.
+        "htf": trade_score.htf_strength(mtf_confirmed_tristate),
     }
     score = trade_score.compute_trade_score(strengths)
     grade = trade_score.compute_grade(score)
 
+    # --- Score Logic fix (2026-08-07) ---
+    # BUGFIX: previously, Volume=Excellent + OI=Excellent + Liquidity=
+    # Excellent could clear ENTRY_SCORE on their own (30 of the 90-100
+    # available weighted points) while Trend/Momentum/HTF sat at a hard
+    # 0 -- see indicators.efficiency_ratio()'s and this module's None-
+    # exclusion fixes above, which stop that hard-0 from happening in
+    # the first place for data that's merely unavailable. The
+    # Directional Confirmation Gate above is the other half of this fix:
+    # even once real (non-None, genuinely weak) trend/momentum/htf
+    # readings bring the score up into the 45-55 range on liquidity
+    # alone, the gate has already rejected that strike before this
+    # point unless at least 2 of the 5 directional signals genuinely
+    # confirmed. The two fixes are complementary, not redundant: this
+    # one stops the score from lying about missing data, the gate stops
+    # a genuinely-weak-but-technically-nonzero setup from alerting on
+    # liquidity alone.
+    candlestick_penalty_applied = False
+    original_score = score
+    score, candlestick_penalty_applied = trade_score.apply_candlestick_penalty(score, candlestick_read)
+    if candlestick_penalty_applied:
+        grade = trade_score.compute_grade(score)
+
+    min_score_required = trade_score.effective_entry_score(datetime.now(IST), strengths.get("trend"))
+
     _logger.info(
         f"SCORE {symbol} {direction} {moneyness} strike={strike} "
-        f"trade_score={score}/100 grade={grade} (entry_floor={ENTRY_SCORE}) | "
+        f"trade_score={score}/100 grade={grade} (entry_floor={min_score_required}"
+        + (f", pre_candlestick_penalty={original_score}" if candlestick_penalty_applied else "")
+        + ") | "
         # FIX (2026-07-31): strengths.items() can legitimately contain
         # None -- compute_trade_score() above already documents and
         # handles this ("None for a factor that's genuinely unavailable
-        # this cycle e.g. EMA9/21 not yet ready"), but this log line
+        # this cycle e.g. EMA9/21 not ready"), but this log line
         # didn't, and blindly applying :.2f to None crashed with
         # "unsupported format string passed to NoneType.__format__" --
         # confirmed live, taking out every single symbol for the whole
@@ -487,10 +615,21 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
             f"alignment={candlestick_read.get('alignment_score_pct')}"
         )
 
-    if grade == "Reject":
+    # BUGFIX (2026-08-07): previously gated on `grade == "Reject"`,
+    # which is equivalent to `score < ENTRY_SCORE` (55, the static
+    # floor baked into TRADE_SCORE_GRADE_THRESHOLDS) -- that silently
+    # ignored the adaptive floor computed above (min_score_required can
+    # be 65 during the opening session or 50 on a strong confirmed
+    # trend). Gating on `score < min_score_required` directly makes the
+    # adaptive threshold actually binding; `grade` itself is left
+    # alone and still reported/used for display (A+/A/B+/B/Watchlist)
+    # exactly as before -- see trade_score.effective_entry_score()'s
+    # docstring for why the label intentionally stays on a fixed scale
+    # even though the accept/reject decision no longer is.
+    if score < min_score_required:
         _logger.info(
             f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
-            f"Reasons: Low Score ({score}/100, floor={ENTRY_SCORE})"
+            f"Reasons: {'; '.join(trade_score.rejection_detail_lines(True, directional_status, score, min_score_required, True))}"
         )
         return None
 
