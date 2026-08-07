@@ -187,24 +187,25 @@
           "trade_score": 58
         }
       ],
-      "status": "ACTIVE",
+      "status": "T1_HIT",
       "final_status": null,
       "actual_entry_time": "2026-08-07T09:46:00+05:30",
       "tracked_entry_price": 51.8,
-      "highest_since_entry": 67.7,
+      "highest_since_entry": 70.0,
       "lowest_since_entry": 46.25,
-      "max_favorable_pct": 30.69,
+      "max_favorable_pct": 35.14,
       "max_adverse_pct": -10.71,
-      "t1_hit": false,
-      "t1_hit_time": null,
+      "t1_hit": true,
+      "t1_hit_time": "2026-08-07T11:48:00+05:30",
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-07T11:34:00+05:30",
+      "last_processed_ts": "2026-08-07T11:49:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "T1_HIT"
       ],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -372,11 +373,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 54.0,
-      "current_pnl_pct": 4.25,
-      "maximum_profit_pct": 26.25,
+      "current_price": 69.5,
+      "current_pnl_pct": 34.17,
+      "maximum_profit_pct": 34.17,
       "maximum_drawdown_pct": -10.71,
-      "holding_time_minutes": 109
+      "holding_time_minutes": 124
     },
     "MIDCPNIFTY-PE-OTM-20260807-0950-01": {
       "trade_id": "MIDCPNIFTY-PE-OTM-20260807-0950-01",
@@ -1339,7 +1340,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-07T11:34:00+05:30",
+      "last_processed_ts": "2026-08-07T11:49:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -1547,11 +1548,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 154.8,
-      "current_pnl_pct": 10.1,
+      "current_price": 162.45,
+      "current_pnl_pct": 15.54,
       "maximum_profit_pct": 19.2,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 93
+      "holding_time_minutes": 108
     }
   },
   "next_seq": {
@@ -3500,7 +3501,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 261,
+    "scanned_symbols": 270,
     "valid_signals": 451,
     "rejected_signals": 27,
     "api_failures": 0,
