@@ -192,16 +192,16 @@
       "actual_entry_time": "2026-08-07T09:46:00+05:30",
       "tracked_entry_price": 51.8,
       "highest_since_entry": 58.0,
-      "lowest_since_entry": 51.8,
+      "lowest_since_entry": 46.25,
       "max_favorable_pct": 11.97,
-      "max_adverse_pct": 0.0,
+      "max_adverse_pct": -10.71,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-07T09:55:00+05:30",
+      "last_processed_ts": "2026-08-07T10:00:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -372,11 +372,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 54.1,
-      "current_pnl_pct": 4.44,
+      "current_price": 46.25,
+      "current_pnl_pct": -10.71,
       "maximum_profit_pct": 10.04,
-      "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 9
+      "maximum_drawdown_pct": -10.71,
+      "holding_time_minutes": 15
     },
     "MIDCPNIFTY-PE-OTM-20260807-0950-01": {
       "trade_id": "MIDCPNIFTY-PE-OTM-20260807-0950-01",
@@ -579,7 +579,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-07T09:55:00+05:30",
+      "last_processed_ts": "2026-08-07T10:00:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -761,11 +761,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 143.5,
-      "current_pnl_pct": -4.43,
+      "current_price": 143.85,
+      "current_pnl_pct": -4.2,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -4.43,
-      "holding_time_minutes": 5
+      "holding_time_minutes": 10
     },
     "SENSEX-PE-ITM-20260807-0955-01": {
       "trade_id": "SENSEX-PE-ITM-20260807-0955-01",
@@ -954,23 +954,24 @@
           "trade_score": 57
         }
       ],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
-      "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "actual_entry_time": "2026-08-07T09:56:00+05:30",
+      "tracked_entry_price": 530.65,
+      "highest_since_entry": 535.0,
+      "lowest_since_entry": 524.3,
+      "max_favorable_pct": 0.82,
+      "max_adverse_pct": -1.2,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-07T09:55:47.701109+05:30",
+      "last_processed_ts": "2026-08-07T10:00:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
       ],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -1161,82 +1162,461 @@
           "enabled": false,
           "reason": "no candlestick read attached to this trade"
         }
+      },
+      "current_price": 533.65,
+      "current_pnl_pct": 0.57,
+      "maximum_profit_pct": 0.57,
+      "maximum_drawdown_pct": 0.0,
+      "holding_time_minutes": 5
+    },
+    "NIFTY-PE-ITM-20260807-1001-01": {
+      "trade_id": "NIFTY-PE-ITM-20260807-1001-01",
+      "display_label": "Trade 4",
+      "symbol": "NIFTY",
+      "direction": "PE",
+      "moneyness": "ITM",
+      "instrument_key": "NSE_FO|41019",
+      "strike": 24650.0,
+      "expiry": "2026-08-11",
+      "spot_price": 24617.85,
+      "alert_time": "2026-08-07T10:01:11.677032+05:30",
+      "alert_premium": 138.5,
+      "entry_low": 137.25,
+      "entry_high": 139.75,
+      "stop_loss": 121.85,
+      "target_1": 163.47,
+      "target_2": 179.22,
+      "session": "09:30-10:35",
+      "grade": "B+",
+      "trade_score": 79,
+      "probability_pct": 80,
+      "probability_label": "High Probability Trade",
+      "score_breakdown": [
+        "+20 Trend Alignment",
+        "+15 Volume Spike",
+        "+15 OI Build-up",
+        "+6 VWAP Positioning",
+        "+5 Market Strength",
+        "+5 Risk:Reward",
+        "+5 Liquidity",
+        "-5 Momentum",
+        "-2 Higher-Timeframe Confirmation"
+      ],
+      "confidence_score": 7.9,
+      "risk_score": 1.0,
+      "reward_score": 5.0,
+      "expected_rr": "1:1.5",
+      "factor_checklist": [
+        "Trend \u2705",
+        "Volume \u2705",
+        "OI \u2705",
+        "Momentum \u26a0\ufe0f",
+        "VWAP \u2705",
+        "EMA \u26a0\ufe0f",
+        "Risk Reward \u2705",
+        "Liquidity \u2705",
+        "Market Strength \u2705",
+        "HTF \u26a0\ufe0f"
+      ],
+      "confidence_stars": "\u2605\u2605\u2605\u2606\u2606",
+      "confidence_label": "Moderate",
+      "risk_rating": "\ud83d\udfe2",
+      "risk_label": "Low",
+      "expected_holding_minutes": [
+        15,
+        30
+      ],
+      "why_reasons": [
+        "\u2713 Below VWAP",
+        "\u2713 Volume Expansion",
+        "\u2713 Strong OI Build-up",
+        "\u2713 Excellent Liquidity",
+        "\u2713 No Nearby Support",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable"
+      ],
+      "alternatives": [
+        {
+          "symbol": "BLUE STAR LIMITED",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "A",
+          "trade_score": 82
+        },
+        {
+          "symbol": "SENSEX",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "A",
+          "trade_score": 81
+        },
+        {
+          "symbol": "HINDUSTAN AERONAUTICS LTD",
+          "direction": "PE",
+          "moneyness": "OTM",
+          "grade": "B+",
+          "trade_score": 76
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "B+",
+          "trade_score": 75
+        },
+        {
+          "symbol": "NIFTY",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "B+",
+          "trade_score": 72
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "PE",
+          "moneyness": "OTM",
+          "grade": "B+",
+          "trade_score": 72
+        },
+        {
+          "symbol": "SENSEX",
+          "direction": "CE",
+          "moneyness": "OTM",
+          "grade": "B+",
+          "trade_score": 72
+        },
+        {
+          "symbol": "BLUE STAR LIMITED",
+          "direction": "CE",
+          "moneyness": "OTM",
+          "grade": "B",
+          "trade_score": 68
+        },
+        {
+          "symbol": "BANKNIFTY",
+          "direction": "CE",
+          "moneyness": "ITM",
+          "grade": "B",
+          "trade_score": 62
+        },
+        {
+          "symbol": "HINDUSTAN AERONAUTICS LTD",
+          "direction": "CE",
+          "moneyness": "ATM",
+          "grade": "B",
+          "trade_score": 62
+        },
+        {
+          "symbol": "MAZAGON DOCK SHIPBUIL LTD",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "B",
+          "trade_score": 60
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "CE",
+          "moneyness": "OTM",
+          "grade": "Watchlist",
+          "trade_score": 56
+        }
+      ],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-08-07T10:01:11.677032+05:30",
+      "messages_sent": [
+        "NEW_TRADE_ALERT"
+      ],
+      "streak_counted": false,
+      "strategy": "trade_score",
+      "probability_history": [
+        {
+          "time": "09:45",
+          "pct": 79
+        },
+        {
+          "time": "09:45",
+          "pct": 78
+        },
+        {
+          "time": "09:45",
+          "pct": 77
+        },
+        {
+          "time": "09:50",
+          "pct": 80
+        },
+        {
+          "time": "09:50",
+          "pct": 79
+        },
+        {
+          "time": "09:50",
+          "pct": 78
+        },
+        {
+          "time": "09:55",
+          "pct": 79
+        },
+        {
+          "time": "09:55",
+          "pct": 79
+        },
+        {
+          "time": "09:55",
+          "pct": 66
+        },
+        {
+          "time": "10:01",
+          "pct": 80
+        },
+        {
+          "time": "10:01",
+          "pct": 80
+        },
+        {
+          "time": "10:01",
+          "pct": 74
+        }
+      ],
+      "probability_trend": "Decreasing",
+      "decision": {
+        "enabled": true,
+        "decision": "Trade Approved",
+        "approved": true,
+        "trade_quality_score": 76.3,
+        "confidence_score": 79.0,
+        "probability": {
+          "win_probability_pct": 79.7,
+          "loss_probability_pct": 20.3,
+          "trade_success_probability_pct": 79.7,
+          "historical_similarity_pct": null,
+          "source": "upstream_probability_pct"
+        },
+        "risk": {
+          "max_risk_per_unit": 16.65,
+          "expected_reward_per_unit": 40.72,
+          "risk_score": 76.0,
+          "capital_risk_pct": 0.02
+        },
+        "risk_reward": {
+          "entry": 138.5,
+          "stop_loss": 121.85,
+          "target_1": 163.47,
+          "target_2": 179.22,
+          "risk_reward_ratio": 2.45,
+          "min_rr_threshold": 1.5,
+          "passes_rr_floor": true
+        },
+        "entry": 138.5,
+        "stop_loss": 121.85,
+        "stop_loss_detail": {
+          "active_stop_loss": 121.85,
+          "style": "atr_dynamic",
+          "distance_pct": 12.02,
+          "percentage_stop_reference": 69.25,
+          "recommendation": null
+        },
+        "target_1": 163.47,
+        "target_2": 179.22,
+        "target_3": 187.09,
+        "position_size": {
+          "mode": "dynamic",
+          "quantity": 60,
+          "lot_size": 1
+        },
+        "entry_validation": {
+          "entry_quality_score": 52.5,
+          "sub_scores": {
+            "entry_distance": 60.0,
+            "volume_confirmation": 50.0,
+            "market_alignment": 50.0,
+            "options_confirmation": 50.0,
+            "institutional_confirmation": null
+          },
+          "passed": true,
+          "reasons": []
+        },
+        "priority": "High",
+        "explanation": [
+          "Trade Approved",
+          "Trade Quality 76.3/100",
+          "Probability 79.7%",
+          "Risk:Reward 1:2.45",
+          "Trade Score 79/100 (High Probability Trade), probability 80%"
+        ],
+        "rejection_reasons": [],
+        "warnings": [],
+        "engines_used": [
+          "market_snapshot",
+          "early_breakout",
+          "trade_score_engine",
+          "options_intelligence"
+        ],
+        "engines_available": [
+          "trade_score_engine"
+        ],
+        "execution_time_ms": 0.15,
+        "timestamp": "2026-08-07T10:01:36.085705+05:30",
+        "quant_intelligence": {
+          "enabled": true,
+          "decision": "REJECTED",
+          "probability": 0.0,
+          "confidence": "VERY LOW",
+          "signal_quality_grade": "Reject",
+          "regime": "Sideways",
+          "regime_confidence": "LOW",
+          "risk": {
+            "entry": 138.5,
+            "stop_loss": null,
+            "trailing_stop_loss": null,
+            "target_1": null,
+            "target_2": null,
+            "target_3": null,
+            "risk_reward_ratio": null,
+            "position_score": 0.0
+          },
+          "pattern": {
+            "pattern_key": "PE|Sideways|NA|na|na|na",
+            "historical_win_pct": null,
+            "historical_loss_pct": null,
+            "sample_size": 0,
+            "pattern_confidence": "NONE"
+          },
+          "explanation": "NIFTY PE: REJECTED (grade Reject, probability 0.0% [VERY LOW]). Regime: Sideways (LOW). No historical pattern sample yet. Primary rejection reason: Weak momentum: momentum data unavailable.",
+          "reasons": {
+            "probability": [
+              "TREND provides little/no confirmation (strength 0.00).",
+              "EMA provides little/no confirmation (strength 0.00).",
+              "OI provides little/no confirmation (strength 0.00)."
+            ],
+            "signal_quality": [
+              "Weak momentum: momentum data unavailable.",
+              "Weak volume: volume/threshold data unavailable.",
+              "Poor liquidity: OI/threshold data unavailable.",
+              "Poor risk reward: risk/reward could not be computed.",
+              "Low confidence: probability 0.0 below minimum 40."
+            ],
+            "regime": [
+              "Insufficient directional signal to classify a trend; defaulting to sideways read."
+            ],
+            "risk": [
+              "Insufficient price/ATR data to compute risk levels."
+            ],
+            "pattern": [
+              "No historical setups recorded yet for this pattern."
+            ]
+          },
+          "errors": [],
+          "execution_time_ms": 12.93
+        },
+        "news_intelligence": {
+          "enabled": true,
+          "news_score": 0.0,
+          "sentiment": "neutral",
+          "impact": "ignore",
+          "confidence": 0.0,
+          "reasons": [
+            "No recent news found for this symbol"
+          ],
+          "article_count": 0,
+          "most_recent_headline": "",
+          "most_recent_url": "",
+          "execution_time_ms": 0.03
+        },
+        "candlestick_patterns": {
+          "enabled": false,
+          "reason": "no candlestick read attached to this trade"
+        }
       }
     }
   },
   "next_seq": {
     "BLUE STAR LIMITED-PE-ATM": 1,
     "MIDCPNIFTY-PE-OTM": 1,
-    "SENSEX-PE-ITM": 1
+    "SENSEX-PE-ITM": 1,
+    "NIFTY-PE-ITM": 1
   },
-  "next_display_num": 3,
+  "next_display_num": 4,
   "summary_sent": false,
   "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
-    "NSE_FO|41013": 2931630.0,
-    "NSE_FO|41015": 11674585.0,
-    "NSE_FO|41017": 7558265.0,
-    "NSE_FO|41019": 6507540.0,
-    "NSE_FO|41016": 19422325.0,
-    "NSE_FO|41014": 7621705.0,
-    "NSE_FO|59096": 286560.0,
-    "NSE_FO|59098": 195870.0,
-    "NSE_FO|59108": 2324040.0,
-    "NSE_FO|59109": 1799580.0,
-    "NSE_FO|59099": 220980.0,
-    "NSE_FO|59097": 231990.0,
+    "NSE_FO|41013": 2809625.0,
+    "NSE_FO|41015": 11717810.0,
+    "NSE_FO|41017": 7774455.0,
+    "NSE_FO|41019": 6843070.0,
+    "NSE_FO|41016": 19835985.0,
+    "NSE_FO|41014": 8424780.0,
+    "NSE_FO|59096": 291060.0,
+    "NSE_FO|59098": 196200.0,
+    "NSE_FO|59108": 2319000.0,
+    "NSE_FO|59109": 1805880.0,
+    "NSE_FO|59099": 229560.0,
+    "NSE_FO|59097": 230610.0,
     "NSE_FO|60619": 13680.0,
     "NSE_FO|60621": 62520.0,
     "NSE_FO|60623": 30480.0,
-    "NSE_FO|60624": 44160.0,
+    "NSE_FO|60624": 45600.0,
     "NSE_FO|60622": 70080.0,
     "NSE_FO|60620": 17760.0,
-    "BSE_FO|845849": 240140.0,
-    "BSE_FO|848108": 419060.0,
-    "BSE_FO|846314": 346340.0,
-    "BSE_FO|847862": 439520.0,
-    "BSE_FO|842138": 573880.0,
-    "BSE_FO|847419": 428520.0,
-    "NSE_FO|92647": 50700.0,
-    "NSE_FO|77752": 90675.0,
+    "BSE_FO|845849": 240580.0,
+    "BSE_FO|848108": 434940.0,
+    "BSE_FO|846314": 368880.0,
+    "BSE_FO|847862": 461360.0,
+    "BSE_FO|842138": 625940.0,
+    "BSE_FO|847419": 440540.0,
+    "NSE_FO|92647": 52975.0,
+    "NSE_FO|77752": 93600.0,
     "NSE_FO|92650": 92625.0,
     "NSE_FO|92652": 70850.0,
     "NSE_FO|77753": 65650.0,
-    "NSE_FO|92648": 80600.0,
-    "NSE_FO|127381": 82575.0,
-    "NSE_FO|127383": 391275.0,
-    "NSE_FO|127385": 424350.0,
-    "NSE_FO|127386": 93375.0,
-    "NSE_FO|127384": 291825.0,
-    "NSE_FO|127382": 144000.0,
-    "NSE_FO|107852": 89850.0,
-    "NSE_FO|97482": 228450.0,
+    "NSE_FO|92648": 72150.0,
+    "NSE_FO|127381": 83475.0,
+    "NSE_FO|127383": 391050.0,
+    "NSE_FO|127385": 421875.0,
+    "NSE_FO|127386": 92025.0,
+    "NSE_FO|127384": 287775.0,
+    "NSE_FO|127382": 143325.0,
+    "NSE_FO|107852": 90000.0,
+    "NSE_FO|97482": 224850.0,
     "NSE_FO|107854": 156600.0,
-    "NSE_FO|107855": 64950.0,
-    "NSE_FO|97483": 295800.0,
-    "NSE_FO|107853": 160500.0,
+    "NSE_FO|107855": 65100.0,
+    "NSE_FO|97483": 290550.0,
+    "NSE_FO|107853": 156750.0,
     "NSE_FO|97212": 91200.0,
-    "NSE_FO|83926": 102000.0,
-    "NSE_FO|97214": 483200.0,
-    "NSE_FO|97215": 165200.0,
-    "NSE_FO|83927": 65200.0,
+    "NSE_FO|83926": 100400.0,
+    "NSE_FO|97214": 483600.0,
+    "NSE_FO|97215": 166000.0,
+    "NSE_FO|83927": 65600.0,
     "NSE_FO|97213": 131200.0,
-    "NSE_FO|72720": 534000.0,
-    "NSE_FO|72722": 638000.0,
-    "NSE_FO|72724": 1491000.0,
-    "NSE_FO|72725": 671000.0,
-    "NSE_FO|72723": 759000.0,
-    "NSE_FO|72721": 582000.0,
-    "NSE_FO|60625": 340080.0,
-    "NSE_FO|60626": 331080.0,
-    "NSE_FO|83928": 48000.0,
+    "NSE_FO|72720": 533000.0,
+    "NSE_FO|72722": 642000.0,
+    "NSE_FO|72724": 1492000.0,
+    "NSE_FO|72725": 656000.0,
+    "NSE_FO|72723": 755000.0,
+    "NSE_FO|72721": 584000.0,
+    "NSE_FO|60625": 341640.0,
+    "NSE_FO|60626": 337320.0,
+    "NSE_FO|83928": 49600.0,
     "NSE_FO|83929": 11200.0,
-    "NSE_FO|60627": 28440.0,
+    "NSE_FO|60627": 28680.0,
     "NSE_FO|60632": 28080.0,
-    "NSE_FO|77750": 2275.0,
-    "NSE_FO|77751": 65000.0,
+    "NSE_FO|77750": 3900.0,
+    "NSE_FO|77751": 67600.0,
     "NSE_FO|92633": 29250.0,
     "NSE_FO|92634": 203450.0,
     "NSE_FO|41020": 11417380.0,
@@ -1279,6 +1659,18 @@
       {
         "time": "09:55",
         "pct": 82
+      },
+      {
+        "time": "10:01",
+        "pct": 83
+      },
+      {
+        "time": "10:01",
+        "pct": 83
+      },
+      {
+        "time": "10:01",
+        "pct": 70
       }
     ],
     "HINDUSTAN AERONAUTICS LTD-PE": [
@@ -1317,6 +1709,18 @@
       {
         "time": "09:55",
         "pct": 73
+      },
+      {
+        "time": "10:01",
+        "pct": 78
+      },
+      {
+        "time": "10:01",
+        "pct": 76
+      },
+      {
+        "time": "10:01",
+        "pct": 71
       }
     ],
     "NIFTY-PE": [
@@ -1355,6 +1759,18 @@
       {
         "time": "09:55",
         "pct": 66
+      },
+      {
+        "time": "10:01",
+        "pct": 80
+      },
+      {
+        "time": "10:01",
+        "pct": 80
+      },
+      {
+        "time": "10:01",
+        "pct": 74
       }
     ],
     "COCHIN SHIPYARD LIMITED-CE": [
@@ -1427,6 +1843,18 @@
       {
         "time": "09:55",
         "pct": 68
+      },
+      {
+        "time": "10:01",
+        "pct": 75
+      },
+      {
+        "time": "10:01",
+        "pct": 71
+      },
+      {
+        "time": "10:01",
+        "pct": 65
       }
     ],
     "MIDCPNIFTY-CE": [
@@ -1465,6 +1893,14 @@
       {
         "time": "09:55",
         "pct": 65
+      },
+      {
+        "time": "10:01",
+        "pct": 65
+      },
+      {
+        "time": "10:01",
+        "pct": 65
       }
     ],
     "BLUE STAR LIMITED-CE": [
@@ -1491,6 +1927,10 @@
       {
         "time": "09:55",
         "pct": 74
+      },
+      {
+        "time": "10:01",
+        "pct": 71
       }
     ],
     "MAZAGON DOCK SHIPBUIL LTD-PE": [
@@ -1529,6 +1969,18 @@
       {
         "time": "09:55",
         "pct": 70
+      },
+      {
+        "time": "10:01",
+        "pct": 65
+      },
+      {
+        "time": "10:01",
+        "pct": 65
+      },
+      {
+        "time": "10:01",
+        "pct": 65
       }
     ],
     "SENSEX-CE": [
@@ -1566,6 +2018,18 @@
       },
       {
         "time": "09:55",
+        "pct": 65
+      },
+      {
+        "time": "10:01",
+        "pct": 75
+      },
+      {
+        "time": "10:01",
+        "pct": 74
+      },
+      {
+        "time": "10:01",
         "pct": 65
       }
     ],
@@ -1605,6 +2069,18 @@
       {
         "time": "09:55",
         "pct": 79
+      },
+      {
+        "time": "10:01",
+        "pct": 82
+      },
+      {
+        "time": "10:01",
+        "pct": 82
+      },
+      {
+        "time": "10:01",
+        "pct": 78
       }
     ],
     "COCHIN SHIPYARD LIMITED-PE": [
@@ -1669,6 +2145,18 @@
       {
         "time": "09:55",
         "pct": 65
+      },
+      {
+        "time": "10:01",
+        "pct": 75
+      },
+      {
+        "time": "10:01",
+        "pct": 71
+      },
+      {
+        "time": "10:01",
+        "pct": 65
       }
     ],
     "BANKNIFTY-CE": [
@@ -1706,6 +2194,18 @@
       },
       {
         "time": "09:55",
+        "pct": 65
+      },
+      {
+        "time": "10:01",
+        "pct": 67
+      },
+      {
+        "time": "10:01",
+        "pct": 65
+      },
+      {
+        "time": "10:01",
         "pct": 65
       }
     ],
@@ -1745,6 +2245,18 @@
       {
         "time": "09:55",
         "pct": 65
+      },
+      {
+        "time": "10:01",
+        "pct": 77
+      },
+      {
+        "time": "10:01",
+        "pct": 67
+      },
+      {
+        "time": "10:01",
+        "pct": 66
       }
     ],
     "HINDUSTAN AERONAUTICS LTD-CE": [
@@ -1782,6 +2294,18 @@
       },
       {
         "time": "09:55",
+        "pct": 65
+      },
+      {
+        "time": "10:01",
+        "pct": 67
+      },
+      {
+        "time": "10:01",
+        "pct": 65
+      },
+      {
+        "time": "10:01",
         "pct": 65
       }
     ],
@@ -1897,9 +2421,9 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 81,
-    "valid_signals": 154,
-    "rejected_signals": 9,
+    "scanned_symbols": 90,
+    "valid_signals": 190,
+    "rejected_signals": 12,
     "api_failures": 0,
     "broker_errors": 0
   },
