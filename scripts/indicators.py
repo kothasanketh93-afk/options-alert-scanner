@@ -71,10 +71,28 @@ def vwap_confirms(spot_price: float, vwap, direction: str) -> bool:
     return spot_price < vwap
 
 
-def efficiency_ratio(candles: list) -> float:
+def efficiency_ratio(candles: list):
+    """
+    Kaufman-style efficiency ratio, 0-1: net move / sum of absolute
+    candle-to-candle moves -- 1.0 is a perfectly clean trend, near 0.0
+    is pure chop.
+
+    BUGFIX (2026-08-07): used to return 0.0 for both "genuinely no net
+    trend" (enough candles, but they cancel out) AND "not enough
+    candles to compute a ratio at all" (<2 closes) -- collapsing
+    "unknown" into "confirmed worst case", the exact same class of bug
+    trade_score.compute_trade_score()'s 2026-07-30 EMA fix already
+    addressed for that one factor. Returns None now when there aren't
+    enough candles; callers (trade_score.trend_strength(),
+    scanner._broad_market_efficiency_ratio()) must treat None as
+    "unavailable, exclude from the weighted average", not 0.0. A
+    genuine total_move == 0 with >=2 candles is still a real answer
+    (price literally round-tripped to its start) and still returns
+    0.0, not None -- that distinction is intentional, not a leftover.
+    """
     closes = [c["close"] for c in candles]
     if len(closes) < 2:
-        return 0.0
+        return None
     net_move = abs(closes[-1] - closes[0])
     total_move = sum(abs(closes[i] - closes[i - 1]) for i in range(1, len(closes)))
     if total_move == 0:
@@ -87,7 +105,13 @@ def market_regime(candles_15m: list) -> tuple:
     atr = compute_atr(candles_15m)
     last_close = candles_15m[-1]["close"] if candles_15m else None
 
-    if er >= EFFICIENCY_TRENDING_THRESHOLD:
+    # BUGFIX (2026-08-07): efficiency_ratio() can now return None
+    # (not enough candles -- see its own docstring) -- `er >=
+    # EFFICIENCY_TRENDING_THRESHOLD` would raise TypeError on None
+    # where it used to silently compare 0.0 >= threshold (always
+    # False, falling through to the ATR/SIDEWAYS checks below). Same
+    # fall-through behavior, explicit instead of accidental.
+    if er is not None and er >= EFFICIENCY_TRENDING_THRESHOLD:
         return "TRENDING", REGIME_SCORE_PENALTY["TRENDING"]
 
     if atr is not None and last_close:
