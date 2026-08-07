@@ -201,7 +201,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-07T13:04:00+05:30",
+      "last_processed_ts": "2026-08-07T13:20:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -373,11 +373,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 62.85,
-      "current_pnl_pct": 21.33,
+      "current_price": 59.5,
+      "current_pnl_pct": 14.86,
       "maximum_profit_pct": 35.81,
       "maximum_drawdown_pct": -10.71,
-      "holding_time_minutes": 199
+      "holding_time_minutes": 214
     },
     "MIDCPNIFTY-PE-OTM-20260807-0950-01": {
       "trade_id": "MIDCPNIFTY-PE-OTM-20260807-0950-01",
@@ -1340,7 +1340,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-07T13:04:00+05:30",
+      "last_processed_ts": "2026-08-07T13:20:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -1548,11 +1548,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 162.6,
-      "current_pnl_pct": 15.65,
+      "current_price": 166.2,
+      "current_pnl_pct": 18.21,
       "maximum_profit_pct": 23.47,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 183
+      "holding_time_minutes": 198
     }
   },
   "next_seq": {
@@ -3501,13 +3501,14 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 315,
+    "scanned_symbols": 324,
     "valid_signals": 451,
     "rejected_signals": 27,
     "api_failures": 0,
     "broker_errors": 0
   },
   "rerank_slots_done": [
-    "11:30"
+    "11:30",
+    "13:30"
   ]
 }
