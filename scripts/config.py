@@ -1391,3 +1391,99 @@ BTST_RECOMMENDATION_MIN_SCORE = 65         # confidence score (0-100) needed for
 BTST_RECOMMENDATION_MAX_SPREAD_PCT = 3.0   # bid-ask spread as % of mid price; wider is a hard-fail (gap-exit risk)
 BTST_RECOMMENDATION_MIN_RR = 1.5           # minimum risk:reward ratio for a YES
 BTST_RECOMMENDATION_MIN_DTE = 2            # days-to-expiry; fewer than this is a hard-fail (overnight theta/pin risk)
+
+# =============================================================================
+# Part 13 -- Win-Rate Improvement Pass (2026-08-07): candle-readiness gate,
+# directional confirmation gate, ATR chase filter, per-symbol premium range,
+# adaptive entry score, candlestick confidence penalty.
+#
+# Every flag below defaults to True/enabled EXCEPT PREMIUM_RANGE (see its own
+# comment) -- these are correctness fixes for the 45-55-score-on-zero-signal
+# problem documented in the SCORE/GATE log lines, not experimental toggles,
+# so "off" is not the recommended steady state for any of them besides the
+# premium range (which needs real per-symbol premium data to tune safely).
+# =============================================================================
+
+# --- Candle Readiness Gate (filters.py/scanner.py) ---
+# A strike is only scored once EITHER timeframe has enough completed candles
+# for its own indicators to mean something -- momentum_pct()'s default
+# lookback is 6, so 15-min data needs at least 7 candles to ever produce a
+# non-None momentum read; the 5-min OR-path exists so a symbol isn't blocked
+# from scoring for the full 105 minutes 15-min data takes to reach that same
+# depth. Two candles is deliberately still thin for EMA9/21 (needs 21) --
+# trend_strength()/ema_strength() correctly report None below that, this
+# gate's job is only to stop the DEGENERATE candles_fetched=1 case, not to
+# guarantee every factor is ready.
+CANDLE_READINESS_ENABLED = True
+CANDLE_READINESS_MIN_5M = 3
+CANDLE_READINESS_MIN_15M = 2
+
+# --- Directional Confirmation Gate (filters.py) ---
+# Independent of the 3 existing hard risk gates (liquidity/delta/theta) --
+# this is a NEW hard gate requiring at least this many of the 5 directional
+# signals to agree before a strike is scored at all. Explicitly NOT "all 5
+# must pass" (that's the pre-2026-07-17 approach that never once passed live
+# -- see filters.quality_gate()'s docstring) and NOT folded into the
+# liquidity/delta/theta gate (those are risk checks, this is a signal-quality
+# check -- kept separate so each can be tuned/disabled independently).
+DIRECTIONAL_CONFIRMATION_ENABLED = True
+DIRECTIONAL_CONFIRMATION_MIN_COUNT = 2
+# Trend confirms when efficiency_ratio() >= EFFICIENCY_TRENDING_THRESHOLD
+# (reused from indicators.py's regime read, not duplicated). Momentum
+# confirms at this signed % move -- deliberately looser than
+# TS_MOMENTUM_CEILING_PCT (1%, the score's OWN full-strength ceiling): this
+# is a "did momentum show up at all in the trade's direction" bar, not a
+# "how strong is it" one.
+MOMENTUM_CONFIRM_THRESHOLD_PCT = 0.003   # 0.3% signed 15-min move
+
+# --- ATR Chase Filter (scanner.py) ---
+# Rejects a strike when the underlying has already moved more than
+# ATR_CHASE_MULTIPLIER x today's ATR away from today's session open by the
+# time this cycle runs -- i.e. don't buy an option chasing a candle that's
+# already extended. "Move" = abs(spot_price - candles_15m[0]["open"]), using
+# the same candles_15m/atr_index_points score_strike() already computed --
+# no new broker call.
+ATR_CHASE_FILTER_ENABLED = True
+ATR_CHASE_MULTIPLIER = 2.0
+
+# --- Premium Quality Filter (filters.py) ---
+# Per-symbol (min, max) premium band, in rupees. Only symbols listed here
+# are filtered; any symbol NOT in this dict is left exactly as-is (existing
+# MIN_PREMIUM/STOCK_MIN_PREMIUM lower-bound-only checks keep applying to it,
+# unchanged) -- deliberately not defaulting every symbol into a filter tuned
+# from only two examples. Add SENSEX/MIDCPNIFTY/individual stocks here once
+# their own live premium distributions are known.
+PREMIUM_RANGE_ENABLED = True
+PREMIUM_RANGE = {
+    "NIFTY": (80, 250),
+    "BANKNIFTY": (120, 350),
+}
+
+# --- Adaptive Entry Score (trade_score.py/scanner.py) ---
+# ENTRY_SCORE (55) stays the baseline. During the opening window the floor
+# is raised (less live directional data -- see Candle Readiness Gate above,
+# this is the next layer of caution on TOP of that, not a replacement for
+# it). When THIS symbol's own trend_strength is already reading a strong,
+# clean trend, the floor is relaxed slightly, since a high-efficiency-ratio
+# setup has already cleared the hardest factor to earn.
+ADAPTIVE_ENTRY_SCORE_ENABLED = True
+OPENING_SESSION_MINUTES = 30                     # minutes after MARKET_OPEN_HHMM treated as "opening session"
+OPENING_SESSION_ENTRY_SCORE = ENTRY_SCORE + 10   # 65
+STRONG_TREND_EFFICIENCY_THRESHOLD = 0.60         # efficiency_ratio() reading counted as "strong confirmed trend"
+STRONG_TREND_ENTRY_SCORE = ENTRY_SCORE - 5       # 50
+
+# --- Candlestick Confidence Penalty (scanner.py) ---
+# candlestick_patterns.py already detects these and returns them advisory-
+# only (see that module's docstring) -- this wires a bounded score penalty
+# for the specific indecision/reversal patterns below, applied AFTER
+# compute_trade_score(), never a hard reject (per explicit instruction: do
+# not block these trades outright). "Hanging Man" is NOT in this set --
+# candlestick_patterns.py does not implement it (it is geometrically
+# identical to Hammer; distinguishing the two needs the PRECEDING trend
+# context, which that module's single-formation detectors don't track --
+# see candlestick_patterns.py's docstring). Flagging this as a follow-up
+# rather than shipping a Hammer/Hanging-Man detector that can't actually
+# tell the two apart.
+CANDLESTICK_CONFIDENCE_PENALTY_ENABLED = True
+CANDLESTICK_INDECISION_PATTERNS = {"Doji", "Spinning Top", "Shooting Star"}
+CANDLESTICK_CONFIDENCE_PENALTY_PCT = 0.10   # 10% multiplicative score reduction when detected
