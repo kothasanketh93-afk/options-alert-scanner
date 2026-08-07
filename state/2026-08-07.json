@@ -201,7 +201,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-07T15:05:00+05:30",
+      "last_processed_ts": "2026-08-07T15:09:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -373,11 +373,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 62.7,
-      "current_pnl_pct": 21.04,
+      "current_price": 58.5,
+      "current_pnl_pct": 12.93,
       "maximum_profit_pct": 35.81,
       "maximum_drawdown_pct": -10.71,
-      "holding_time_minutes": 319
+      "holding_time_minutes": 324
     },
     "MIDCPNIFTY-PE-OTM-20260807-0950-01": {
       "trade_id": "MIDCPNIFTY-PE-OTM-20260807-0950-01",
@@ -1331,16 +1331,16 @@
       "actual_entry_time": "2026-08-07T10:02:00+05:30",
       "tracked_entry_price": 140.6,
       "highest_since_entry": 178.8,
-      "lowest_since_entry": 137.75,
+      "lowest_since_entry": 137.5,
       "max_favorable_pct": 27.17,
-      "max_adverse_pct": -2.03,
+      "max_adverse_pct": -2.2,
       "t1_hit": true,
       "t1_hit_time": "2026-08-07T10:31:00+05:30",
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-07T15:05:00+05:30",
+      "last_processed_ts": "2026-08-07T15:09:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -1548,11 +1548,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 142.6,
-      "current_pnl_pct": 1.42,
+      "current_price": 138.95,
+      "current_pnl_pct": -1.17,
       "maximum_profit_pct": 23.47,
-      "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 303
+      "maximum_drawdown_pct": -1.17,
+      "holding_time_minutes": 308
     },
     "SENSEX-PE-ITM-20260807-1345-02": {
       "trade_id": "SENSEX-PE-ITM-20260807-1345-02",
@@ -2481,23 +2481,24 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
-      "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "actual_entry_time": "2026-08-07T15:06:00+05:30",
+      "tracked_entry_price": 345.25,
+      "highest_since_entry": 349.65,
+      "lowest_since_entry": 337.25,
+      "max_favorable_pct": 1.27,
+      "max_adverse_pct": -2.32,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-07T15:05:41.351203+05:30",
+      "last_processed_ts": "2026-08-07T15:09:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
       ],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -2885,7 +2886,12 @@
           "enabled": false,
           "reason": "no candlestick read attached to this trade"
         }
-      }
+      },
+      "current_price": 339.0,
+      "current_pnl_pct": -1.81,
+      "maximum_profit_pct": 0.0,
+      "maximum_drawdown_pct": -1.81,
+      "holding_time_minutes": 4
     }
   },
   "next_seq": {
@@ -4906,7 +4912,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 486,
+    "scanned_symbols": 495,
     "valid_signals": 466,
     "rejected_signals": 130,
     "api_failures": 0,
