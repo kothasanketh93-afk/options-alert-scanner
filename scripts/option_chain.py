@@ -185,6 +185,38 @@ def multi_timeframe_confirms(symbol: str, candidate_direction: str) -> bool:
     return ema_trend_direction(candles_15m) == candidate_direction
 
 
+def multi_timeframe_confirmation_detail(symbol: str, candidate_direction: str):
+    """
+    ADDITIVE (2026-08-07) -- multi_timeframe_confirms() above is left
+    completely unchanged (still used exactly where it already was, for
+    factors["mtf_confirmed"]/trade_score.htf_strength()) since it's
+    part of this module's existing public API. That function collapses
+    "15-min EMA genuinely disagrees" and "15-min EMA not yet
+    computable" into the same False, because `None == candidate_direction`
+    is False either way -- fine for a binary score input, not fine for
+    a REJECTED log line or filters.directional_confirmation_status(),
+    which both need to say WHICH of those two happened.
+
+    Returns (confirmed, ema_direction):
+      confirmed: True/False/None -- None specifically means "15-min
+        EMA9/21 not yet computable" (ema_trend_direction() returned
+        None), not "confirmed against the trade".
+      ema_direction: the raw "CE"/"PE"/None read, for callers that
+        want it directly (filters.directional_confirmation_status()
+        takes this as its ema_direction argument too, reusing the SAME
+        candle fetch -- see scanner.score_strike(), which computes its
+        OWN symbol's ema_direction from candles_15m it already has and
+        does not need this function for that part; this function
+        exists for the HTF/15-min rechristen specifically).
+    """
+    underlying_key = resolve_underlying_key(symbol)
+    candles_15m = market_data.get_recent_underlying_candles(underlying_key, "15minute", 30)
+    ema_direction = ema_trend_direction(candles_15m)
+    if ema_direction is None:
+        return None, None
+    return (ema_direction == candidate_direction), ema_direction
+
+
 def directional_bias(symbol: str) -> list:
     """
     5-min EMA9/21 crossover is still the primary directional signal;
