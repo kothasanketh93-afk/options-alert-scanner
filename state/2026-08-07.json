@@ -201,7 +201,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-07T15:00:00+05:30",
+      "last_processed_ts": "2026-08-07T15:05:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -373,11 +373,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 61.85,
-      "current_pnl_pct": 19.4,
+      "current_price": 62.7,
+      "current_pnl_pct": 21.04,
       "maximum_profit_pct": 35.81,
       "maximum_drawdown_pct": -10.71,
-      "holding_time_minutes": 315
+      "holding_time_minutes": 319
     },
     "MIDCPNIFTY-PE-OTM-20260807-0950-01": {
       "trade_id": "MIDCPNIFTY-PE-OTM-20260807-0950-01",
@@ -1340,7 +1340,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-07T15:00:00+05:30",
+      "last_processed_ts": "2026-08-07T15:05:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -1548,11 +1548,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 148.25,
-      "current_pnl_pct": 5.44,
+      "current_price": 142.6,
+      "current_pnl_pct": 1.42,
       "maximum_profit_pct": 23.47,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 299
+      "holding_time_minutes": 303
     },
     "SENSEX-PE-ITM-20260807-1345-02": {
       "trade_id": "SENSEX-PE-ITM-20260807-1345-02",
@@ -2411,15 +2411,491 @@
       "maximum_profit_pct": 1.3,
       "maximum_drawdown_pct": -6.03,
       "holding_time_minutes": 34
+    },
+    "SENSEX-PE-OTM-20260807-1505-01": {
+      "trade_id": "SENSEX-PE-OTM-20260807-1505-01",
+      "display_label": "Trade 7",
+      "symbol": "SENSEX",
+      "direction": "PE",
+      "moneyness": "OTM",
+      "instrument_key": "BSE_FO|848769",
+      "strike": 78300.0,
+      "expiry": "2026-08-13",
+      "spot_price": 78449.37,
+      "alert_time": "2026-08-07T15:05:41.351203+05:30",
+      "alert_premium": 347.75,
+      "entry_low": 345.03,
+      "entry_high": 350.47,
+      "stop_loss": 311.45,
+      "target_1": 402.21,
+      "target_2": 438.51,
+      "session": "13:45-15:10",
+      "grade": "Watchlist",
+      "trade_score": 58,
+      "probability_pct": 65,
+      "probability_label": "Watchlist",
+      "score_breakdown": [
+        "+15 Volume Spike",
+        "+15 OI Build-up",
+        "+10 VWAP Positioning",
+        "-4 Trend Alignment",
+        "+5 Risk:Reward",
+        "+5 Higher-Timeframe Confirmation",
+        "+5 Liquidity",
+        "-4 Momentum",
+        "-4 EMA Alignment",
+        "-1 Market Strength"
+      ],
+      "confidence_score": 5.8,
+      "risk_score": 4.0,
+      "reward_score": 5.0,
+      "expected_rr": "1:1.5",
+      "factor_checklist": [
+        "Trend \u26a0\ufe0f",
+        "Volume \u2705",
+        "OI \u2705",
+        "Momentum \u26a0\ufe0f",
+        "VWAP \u2705",
+        "EMA \u26a0\ufe0f",
+        "Risk Reward \u2705",
+        "Liquidity \u2705",
+        "Market Strength \u26a0\ufe0f",
+        "HTF \u2705"
+      ],
+      "confidence_stars": "\u2605\u2606\u2606\u2606\u2606",
+      "confidence_label": "Low",
+      "risk_rating": "\ud83d\udfe1",
+      "risk_label": "Medium",
+      "expected_holding_minutes": [
+        15,
+        30
+      ],
+      "why_reasons": [
+        "\u2713 EMA aligned",
+        "\u2713 Below VWAP",
+        "\u2713 Volume Expansion",
+        "\u2713 Excellent Liquidity",
+        "\u2713 15-minute Confirmed",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable",
+        "\u2713 Premium In Configured Range"
+      ],
+      "alternatives": [],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-08-07T15:05:41.351203+05:30",
+      "messages_sent": [
+        "NEW_TRADE_ALERT"
+      ],
+      "streak_counted": false,
+      "strategy": "trade_score",
+      "probability_history": [
+        {
+          "time": "09:45",
+          "pct": 73
+        },
+        {
+          "time": "09:45",
+          "pct": 69
+        },
+        {
+          "time": "09:45",
+          "pct": 69
+        },
+        {
+          "time": "09:50",
+          "pct": 82
+        },
+        {
+          "time": "09:50",
+          "pct": 77
+        },
+        {
+          "time": "09:50",
+          "pct": 71
+        },
+        {
+          "time": "09:55",
+          "pct": 81
+        },
+        {
+          "time": "09:55",
+          "pct": 81
+        },
+        {
+          "time": "09:55",
+          "pct": 79
+        },
+        {
+          "time": "10:01",
+          "pct": 82
+        },
+        {
+          "time": "10:01",
+          "pct": 82
+        },
+        {
+          "time": "10:01",
+          "pct": 78
+        },
+        {
+          "time": "10:05",
+          "pct": 81
+        },
+        {
+          "time": "10:05",
+          "pct": 74
+        },
+        {
+          "time": "10:05",
+          "pct": 73
+        },
+        {
+          "time": "10:10",
+          "pct": 74
+        },
+        {
+          "time": "10:10",
+          "pct": 72
+        },
+        {
+          "time": "10:10",
+          "pct": 71
+        },
+        {
+          "time": "10:15",
+          "pct": 67
+        },
+        {
+          "time": "10:15",
+          "pct": 67
+        },
+        {
+          "time": "10:20",
+          "pct": 69
+        },
+        {
+          "time": "10:20",
+          "pct": 69
+        },
+        {
+          "time": "10:25",
+          "pct": 69
+        },
+        {
+          "time": "10:25",
+          "pct": 65
+        },
+        {
+          "time": "10:31",
+          "pct": 68
+        },
+        {
+          "time": "10:31",
+          "pct": 67
+        },
+        {
+          "time": "10:31",
+          "pct": 65
+        },
+        {
+          "time": "10:35",
+          "pct": 75
+        },
+        {
+          "time": "10:35",
+          "pct": 75
+        },
+        {
+          "time": "10:35",
+          "pct": 65
+        },
+        {
+          "time": "10:40",
+          "pct": 75
+        },
+        {
+          "time": "10:40",
+          "pct": 75
+        },
+        {
+          "time": "10:40",
+          "pct": 65
+        },
+        {
+          "time": "10:45",
+          "pct": 72
+        },
+        {
+          "time": "10:45",
+          "pct": 66
+        },
+        {
+          "time": "10:45",
+          "pct": 65
+        },
+        {
+          "time": "10:50",
+          "pct": 75
+        },
+        {
+          "time": "10:50",
+          "pct": 67
+        },
+        {
+          "time": "10:50",
+          "pct": 65
+        },
+        {
+          "time": "10:55",
+          "pct": 69
+        },
+        {
+          "time": "10:55",
+          "pct": 65
+        },
+        {
+          "time": "10:55",
+          "pct": 65
+        },
+        {
+          "time": "13:45",
+          "pct": 71
+        },
+        {
+          "time": "13:45",
+          "pct": 71
+        },
+        {
+          "time": "13:45",
+          "pct": 71
+        },
+        {
+          "time": "13:50",
+          "pct": 71
+        },
+        {
+          "time": "14:15",
+          "pct": 69
+        },
+        {
+          "time": "14:20",
+          "pct": 73
+        },
+        {
+          "time": "14:20",
+          "pct": 73
+        },
+        {
+          "time": "14:20",
+          "pct": 66
+        },
+        {
+          "time": "14:25",
+          "pct": 73
+        },
+        {
+          "time": "14:25",
+          "pct": 65
+        },
+        {
+          "time": "14:25",
+          "pct": 65
+        },
+        {
+          "time": "14:31",
+          "pct": 65
+        },
+        {
+          "time": "14:35",
+          "pct": 65
+        },
+        {
+          "time": "14:50",
+          "pct": 65
+        },
+        {
+          "time": "15:05",
+          "pct": 65
+        }
+      ],
+      "probability_trend": "Stable",
+      "decision": {
+        "enabled": true,
+        "decision": "Trade Approved",
+        "approved": true,
+        "trade_quality_score": 68.8,
+        "confidence_score": 61.6,
+        "probability": {
+          "win_probability_pct": 64.0,
+          "loss_probability_pct": 36.0,
+          "trade_success_probability_pct": 64.0,
+          "historical_similarity_pct": null,
+          "source": "upstream_probability_pct"
+        },
+        "risk": {
+          "max_risk_per_unit": 36.3,
+          "expected_reward_per_unit": 90.76,
+          "risk_score": 79.1,
+          "capital_risk_pct": 0.04
+        },
+        "risk_reward": {
+          "entry": 347.75,
+          "stop_loss": 311.45,
+          "target_1": 402.21,
+          "target_2": 438.51,
+          "risk_reward_ratio": 2.5,
+          "min_rr_threshold": 1.5,
+          "passes_rr_floor": true
+        },
+        "entry": 347.75,
+        "stop_loss": 311.45,
+        "stop_loss_detail": {
+          "active_stop_loss": 311.45,
+          "style": "atr_dynamic",
+          "distance_pct": 10.44,
+          "percentage_stop_reference": 173.88,
+          "recommendation": null
+        },
+        "target_1": 402.21,
+        "target_2": 438.51,
+        "target_3": 456.66,
+        "position_size": {
+          "mode": "dynamic",
+          "quantity": 27,
+          "lot_size": 1
+        },
+        "entry_validation": {
+          "entry_quality_score": 52.5,
+          "sub_scores": {
+            "entry_distance": 60.0,
+            "volume_confirmation": 50.0,
+            "market_alignment": 50,
+            "options_confirmation": 50.0,
+            "institutional_confirmation": null
+          },
+          "passed": true,
+          "reasons": []
+        },
+        "priority": "Medium",
+        "explanation": [
+          "Trade Approved",
+          "Trade Quality 68.8/100",
+          "Probability 64.0%",
+          "Risk:Reward 1:2.5",
+          "Market regime TRENDING_BEARISH, Neutral trend, Low volatility",
+          "Trade Score 58/100 (Watchlist), probability 65%"
+        ],
+        "rejection_reasons": [],
+        "warnings": [],
+        "engines_used": [
+          "market_snapshot",
+          "early_breakout",
+          "trade_score_engine",
+          "options_intelligence"
+        ],
+        "engines_available": [
+          "market_snapshot",
+          "trade_score_engine"
+        ],
+        "execution_time_ms": 0.1,
+        "timestamp": "2026-08-07T15:06:07.537797+05:30",
+        "quant_intelligence": {
+          "enabled": true,
+          "decision": "REJECTED",
+          "probability": 15.15,
+          "confidence": "VERY LOW",
+          "signal_quality_grade": "Reject",
+          "regime": "Gap Down",
+          "regime_confidence": "MEDIUM",
+          "risk": {
+            "entry": 347.75,
+            "stop_loss": 466.31,
+            "trailing_stop_loss": 466.31,
+            "target_1": 213.02,
+            "target_2": 123.2,
+            "target_3": -11.52,
+            "risk_reward_ratio": 1.14,
+            "position_score": 49.48
+          },
+          "pattern": {
+            "pattern_key": "PE|Gap_Down|DOWN|na|0.0|na",
+            "historical_win_pct": null,
+            "historical_loss_pct": null,
+            "sample_size": 0,
+            "pattern_confidence": "NONE"
+          },
+          "explanation": "SENSEX PE: REJECTED (grade Reject, probability 15.2% [VERY LOW]). Regime: Gap Down (MEDIUM). Risk/Reward 1.14 with entry 347.75 / SL 466.31. No historical pattern sample yet. Primary rejection reason: Weak momentum: momentum data unavailable.",
+          "reasons": {
+            "probability": [
+              "TREND strongly supports PE setup (strength 1.00, weight 0.14).",
+              "EMA provides little/no confirmation (strength 0.08).",
+              "OI provides little/no confirmation (strength 0.00).",
+              "ADX provides little/no confirmation (strength 0.00)."
+            ],
+            "signal_quality": [
+              "Weak momentum: momentum data unavailable.",
+              "Weak volume: volume/threshold data unavailable.",
+              "Poor liquidity: OI/threshold data unavailable.",
+              "Poor risk reward: 1.14 below minimum 1.30.",
+              "Low confidence: probability 15.2 below minimum 40."
+            ],
+            "regime": [
+              "Opening gap of -0.56% exceeds 0.5% threshold."
+            ],
+            "risk": [
+              "Stop-loss ATR multiplier 1.1 adjusted x1.2 for 'Gap Down' regime.",
+              "Risk/Reward to Target 1 is 1.14.",
+              "Position score 49.5/100 reflects RR, regime fit, and volatility."
+            ],
+            "pattern": [
+              "No historical setups recorded yet for this pattern."
+            ]
+          },
+          "errors": [],
+          "execution_time_ms": 10.45
+        },
+        "news_intelligence": {
+          "enabled": true,
+          "news_score": 0.0,
+          "sentiment": "neutral",
+          "impact": "ignore",
+          "confidence": 0.0,
+          "reasons": [
+            "No recent news found for this symbol"
+          ],
+          "article_count": 0,
+          "most_recent_headline": "",
+          "most_recent_url": "",
+          "execution_time_ms": 0.03
+        },
+        "candlestick_patterns": {
+          "enabled": false,
+          "reason": "no candlestick read attached to this trade"
+        }
+      }
     }
   },
   "next_seq": {
     "BLUE STAR LIMITED-PE-ATM": 1,
     "MIDCPNIFTY-PE-OTM": 1,
     "SENSEX-PE-ITM": 3,
-    "NIFTY-PE-ITM": 1
+    "NIFTY-PE-ITM": 1,
+    "SENSEX-PE-OTM": 1
   },
-  "next_display_num": 6,
+  "next_display_num": 7,
   "summary_sent": false,
   "consecutive_sl_streak": 2,
   "circuit_breaker_tripped": false,
@@ -2429,17 +2905,17 @@
     "NSE_FO|41015": 20319975.0,
     "NSE_FO|41017": 9994075.0,
     "NSE_FO|41019": 3692975.0,
-    "NSE_FO|41016": 11355110.0,
-    "NSE_FO|41014": 7359950.0,
+    "NSE_FO|41016": 11114155.0,
+    "NSE_FO|41014": 6968650.0,
     "NSE_FO|59096": 351720.0,
     "NSE_FO|59098": 241950.0,
     "NSE_FO|59108": 2337750.0,
     "NSE_FO|59109": 1792110.0,
-    "NSE_FO|59099": 178110.0,
-    "NSE_FO|59097": 210270.0,
+    "NSE_FO|59099": 173070.0,
+    "NSE_FO|59097": 211980.0,
     "NSE_FO|60619": 13680.0,
-    "NSE_FO|60621": 51600.0,
-    "NSE_FO|60623": 24960.0,
+    "NSE_FO|60621": 61320.0,
+    "NSE_FO|60623": 30000.0,
     "NSE_FO|60624": 33120.0,
     "NSE_FO|60622": 51840.0,
     "NSE_FO|60620": 20880.0,
@@ -2458,9 +2934,9 @@
     "NSE_FO|127381": 78525.0,
     "NSE_FO|127383": 425025.0,
     "NSE_FO|127385": 423225.0,
-    "NSE_FO|127386": 72000.0,
-    "NSE_FO|127384": 235350.0,
-    "NSE_FO|127382": 114975.0,
+    "NSE_FO|127386": 72225.0,
+    "NSE_FO|127384": 233775.0,
+    "NSE_FO|127382": 116550.0,
     "NSE_FO|107852": 93900.0,
     "NSE_FO|97482": 240300.0,
     "NSE_FO|107854": 179400.0,
@@ -2479,36 +2955,36 @@
     "NSE_FO|72725": 632000.0,
     "NSE_FO|72723": 694000.0,
     "NSE_FO|72721": 567000.0,
-    "NSE_FO|60625": 337680.0,
+    "NSE_FO|60625": 353040.0,
     "NSE_FO|60626": 409440.0,
     "NSE_FO|83928": 67200.0,
     "NSE_FO|83929": 11200.0,
     "NSE_FO|60627": 29040.0,
     "NSE_FO|60632": 32880.0,
     "NSE_FO|77750": 98150.0,
-    "NSE_FO|77751": 81250.0,
+    "NSE_FO|77751": 74750.0,
     "NSE_FO|92633": 119275.0,
-    "NSE_FO|92634": 302575.0,
+    "NSE_FO|92634": 221000.0,
     "NSE_FO|41020": 11417380.0,
     "NSE_FO|41024": 6104995.0,
     "NSE_FO|59111": 257670.0,
     "NSE_FO|59112": 282780.0,
     "BSE_FO|847642": 913080.0,
-    "BSE_FO|841676": 809860.0,
+    "BSE_FO|841676": 822620.0,
     "NSE_FO|41011": 6654440.0,
-    "NSE_FO|41012": 11743420.0,
+    "NSE_FO|41012": 11516570.0,
     "NSE_FO|59094": 217560.0,
-    "NSE_FO|59095": 174240.0,
+    "NSE_FO|59095": 169740.0,
     "BSE_FO|841906": 198720.0,
-    "BSE_FO|846956": 367340.0,
+    "BSE_FO|846956": 364760.0,
     "NSE_FO|60633": 64200.0,
     "NSE_FO|60634": 32040.0,
     "NSE_FO|128377": 6838800.0,
-    "NSE_FO|128379": 4557150.0,
-    "NSE_FO|125346": 10996200.0,
+    "NSE_FO|128379": 4569450.0,
+    "NSE_FO|125346": 11057700.0,
     "NSE_FO|154907": 484425.0,
-    "NSE_FO|154905": 210150.0,
-    "NSE_FO|151211": 514125.0,
+    "NSE_FO|154905": 208800.0,
+    "NSE_FO|151211": 515475.0,
     "NSE_FO|82653": 90625.0,
     "NSE_FO|95890": 226875.0,
     "NSE_FO|82651": 106250.0,
@@ -2521,10 +2997,11 @@
     "NSE_FO|144986": 947100.0,
     "NSE_FO|77654": 12025.0,
     "NSE_FO|60618": 374520.0,
-    "BSE_FO|848769": 217380.0,
-    "NSE_FO|128437": 13683750.0,
+    "BSE_FO|848769": 201880.0,
+    "NSE_FO|128437": 11863350.0,
     "NSE_FO|82649": 390000.0,
-    "NSE_FO|59092": 121560.0
+    "NSE_FO|59092": 121560.0,
+    "NSE_FO|77655": 76700.0
   },
   "probability_history": {
     "BLUE STAR LIMITED-PE": [
@@ -3861,6 +4338,10 @@
       {
         "time": "14:50",
         "pct": 65
+      },
+      {
+        "time": "15:05",
+        "pct": 65
       }
     ],
     "COCHIN SHIPYARD LIMITED-PE": [
@@ -4425,9 +4906,9 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 477,
-    "valid_signals": 465,
-    "rejected_signals": 126,
+    "scanned_symbols": 486,
+    "valid_signals": 466,
+    "rejected_signals": 130,
     "api_failures": 0,
     "broker_errors": 0
   },
