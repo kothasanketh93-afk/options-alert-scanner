@@ -103,6 +103,7 @@ from config import (
     SESSION_WINDOWS, STRIKE_STEP, STRIKE_RANGE, SYMBOLS,
     ENTRY_SCORE, T1_ATR_MULT,
     ATR_CHASE_FILTER_ENABLED, ATR_CHASE_MULTIPLIER,
+    MANDATORY_CORE_EVIDENCE_ENABLED,
 )
 
 from indicators import (
@@ -298,6 +299,26 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     delta = leg["delta"]
     bid, ask = leg["bid"], leg["ask"]
 
+    # --- Contract Resolution Assertion (2026-08-10) ---
+    # Confirms the leg _extract_leg() just returned actually matches
+    # what was requested (symbol/expiry/strike/side) -- logged
+    # explicitly so a future instrument-master/expiry-mapping bug is
+    # visible immediately here, instead of needing to be inferred from
+    # downstream IV/premium numbers looking "off" for the strike (the
+    # exact investigation this replaces -- see IV_SAMPLE's own docstring
+    # in upstox.py: that log line is a chain-wide diagnostic sample,
+    # unrelated to any one traded leg; THIS line is the one that
+    # actually describes the strike being scored). _extract_leg() already
+    # matches strictly on `row.get("strike_price") == strike` with the
+    # correct call_/put_ prefix for `direction` (see its own docstring in
+    # option_chain.py), so instrument_key here is not expected to ever
+    # resolve to a different strike than requested -- this line makes
+    # that guarantee visible rather than assumed.
+    _logger.info(
+        f"CONTRACT_RESOLUTION {symbol} requested=(direction={direction} strike={strike} expiry={expiry}) "
+        f"resolved=(instrument_key={instrument_key} ltp={premium} delta={delta})"
+    )
+
     # BUGFIX: delta can legitimately be None here -- both angelone.py
     # (Greeks endpoint had no data for this strike: illiquid, off-hours,
     # or the documented weekly/monthly caveat) and upstox.py (Greeks
@@ -373,6 +394,15 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     )
 
     ema_direction = ema_trend_direction(candles_15m)
+    # 5-min EMA direction read (2026-08-10) -- a genuinely SEPARATE
+    # computation from ema_direction above (15-min), reusing candles_5m
+    # already fetched for the Candle Readiness Gate above. Feeds ONLY
+    # the Mandatory Structural Confirmation check in
+    # filters.directional_confirmation_status() -- see that function's
+    # docstring for why this exists (trend/vwap alone were satisfying
+    # the confirmation-count gate with zero real EMA-structure
+    # evidence on either timeframe).
+    m5_direction = ema_trend_direction(candles_5m)
     ema_aligned = ema_direction == direction
     ema9 = compute_ema([c["close"] for c in candles_15m], 9)
     ema21 = compute_ema([c["close"] for c in candles_15m], 21)
@@ -447,12 +477,37 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     # Provisional T1 distance (pre-cap) just to test room against the
     # nearby level -- dynamic_trade_levels() below recomputes/caps this
     # properly; this is only for the risk_reward_ok gate input.
+    #
+    # CLARIFICATION (2026-08-10): this "risk_reward_ok" and
+    # strengths["risk_reward"] (trade_score.risk_reward_strength(),
+    # computed further below from dynamic_trade_levels()'s FINAL
+    # entry/stop/target numbers) are two DIFFERENT, both-legitimate
+    # checks that got confusingly similar names -- not one canonical
+    # R:R with a bug. This one ("level room check") asks "is there
+    # enough index-point distance to the nearest support/resistance
+    # level, BEFORE dynamic_trade_levels() caps the target against
+    # that same level, to justify entering at all". risk_reward_strength()
+    # asks "given the FINAL, already-capped entry/stop/target1, how good
+    # is the resulting ratio against TS_RR_BASELINE". A trade can
+    # legitimately fail one and pass the other -- e.g. plenty of room to
+    # the level (this check passes) but the final capped target still
+    # sits close to entry relative to the stop (risk_reward_strength()
+    # scores low) is a completely coherent, non-contradictory outcome.
+    # The RR log line right after this block prints both explicitly so
+    # that's visible in the log instead of looking like two disagreeing
+    # copies of "the same" number.
     provisional_t1_distance = atr_index_points * abs(delta) * T1_ATR_MULT
     if nearby_level is not None:
         index_distance_to_level = abs(nearby_level - spot_price)
         risk_reward_ok = (index_distance_to_level * abs(delta)) > provisional_t1_distance
     else:
         risk_reward_ok = True  # no level in the lookback window -- don't gate on absence of data
+    _logger.info(
+        f"RR_LEVEL_CHECK {symbol} {direction} {moneyness} strike={strike} | "
+        f"nearby_level={nearby_level} distance_to_level_pts={index_distance_to_level if nearby_level is not None else None} "
+        f"provisional_t1_distance_pts={provisional_t1_distance:.2f} risk_reward_ok(level_room)={'Y' if risk_reward_ok else 'N'} "
+        f"-- see strengths['risk_reward'] in the SCORE line below for the SEPARATE final-levels ratio"
+    )
 
     factors = {
         "direction": direction,
@@ -501,7 +556,7 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     # filters.directional_confirmation_status()'s docstring for why.
     directional_status = directional_confirmation_status(
         ema_direction, mtf_confirmed_tristate, trend_value, signed_momentum,
-        vwap_confirmed, direction,
+        vwap_confirmed, direction, m5_direction=m5_direction,
     )
     if not directional_status["passed"]:
         # `global _rejection_count` already declared earlier in this
@@ -514,6 +569,38 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         _logger.info(
             f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
             f"Reasons: {'; '.join(trade_score.rejection_detail_lines(True, directional_status, 0, 0, False))}"
+        )
+        return None
+
+    # --- Mandatory Core Evidence Check (2026-08-10,
+    # config.MANDATORY_CORE_EVIDENCE_ENABLED) ---
+    # Defense-in-depth, deliberately SEPARATE from the count-based gate
+    # above: even at exactly DIRECTIONAL_CONFIRMATION_MIN_COUNT (2/5),
+    # compute_trade_score()'s renormalization (see its own docstring)
+    # can still push the score very high on liquidity/volume/OI/VWAP
+    # alone if the genuinely CORE directional reads -- trend, EMA, HTF
+    # -- are ALL three simultaneously None (not "weak", literally no
+    # data, e.g. option_chain.directional_bias()'s own
+    # "no 5-min or 15-min EMA trend available" case). The count-based
+    # gate above answers "how many signals corroborate", this answers
+    # a narrower, stricter question: "is there ANY real directional
+    # data at all" -- and if the answer is no, no score is trusted
+    # enough to alert on, however high liquidity alone pushed it.
+    # INSUFFICIENT_EVIDENCE is a distinct rejection reason (not folded
+    # into "Low Score" or the confirmation-count message) precisely
+    # because raising the count requirement or the score floor would
+    # NOT have fixed this case -- it needs its own check.
+    if (
+        MANDATORY_CORE_EVIDENCE_ENABLED
+        and trend_value is None
+        and ema_direction is None
+        and mtf_confirmed_tristate is None
+    ):
+        _rejection_count += 1
+        _logger.info(
+            f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
+            f"Reasons: INSUFFICIENT_EVIDENCE -- trend/EMA/HTF all unavailable "
+            f"(no real directional data this cycle, regardless of liquidity/volume/OI)"
         )
         return None
 

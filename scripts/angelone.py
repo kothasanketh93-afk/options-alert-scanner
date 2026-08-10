@@ -607,8 +607,16 @@ class AngelOneBroker(Broker):
                 # exactly as Angel One returned it, so its scale (e.g. "16.33"
                 # meaning 16.33%, vs. a 0-1 fraction) can be confirmed from real
                 # traffic. See IV_SCALE_VERIFICATION.md for the finding.
+                #
+                # RENAMED (2026-08-10): first row processed in this Greeks
+                # response, often not the strike actually being traded/scored
+                # this cycle -- see upstox.py's matching rename for the full
+                # explanation. The traded leg's own IV is read independently
+                # from `greeks[(strike, option_type)]` below, unaffected by
+                # this log line.
                 log.info(
-                    "IV_SAMPLE angelone name=%s expiry=%s strike=%s type=%s raw_impliedVolatility=%r",
+                    "IV_SAMPLE_CHAINWIDE_DIAGNOSTIC_ONLY angelone name=%s expiry=%s strike=%s type=%s "
+                    "raw_impliedVolatility=%r (first quote in this response, NOT the traded leg)",
                     name, expiry_date, strike, option_type, raw_iv,
                 )
                 _iv_sample_logged = True

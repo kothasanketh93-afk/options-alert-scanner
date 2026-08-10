@@ -15,6 +15,7 @@ from config import (
     PREMIUM_RANGE_ENABLED, PREMIUM_RANGE,
     DIRECTIONAL_CONFIRMATION_ENABLED, DIRECTIONAL_CONFIRMATION_MIN_COUNT,
     EFFICIENCY_TRENDING_THRESHOLD, MOMENTUM_CONFIRM_THRESHOLD_PCT,
+    MANDATORY_STRUCTURAL_ENABLED, MANDATORY_STRUCTURAL_MIN_CONFIRMED,
 )
 from option_chain import days_to_expiry
 
@@ -156,6 +157,7 @@ def premium_in_range(symbol: str, premium: float) -> bool:
 
 def directional_confirmation_status(
     ema_direction, mtf_confirmed, trend_value, momentum_value, vwap_confirmed_flag, direction: str,
+    m5_direction=None,
 ) -> dict:
     """
     NEW hard gate input (2026-08-07): counts how many of 5 directional
@@ -191,6 +193,36 @@ def directional_confirmation_status(
         `direction` (float or None) -- positive means aligned.
     vwap_confirmed_flag: bool (vwap_check() -- already fails closed to
         False on missing data, no tri-state available at that layer).
+    m5_direction: "CE"/"PE"/None -- the RAW ema_trend_direction() read
+        on 5-MINUTE candles (a genuinely separate computation from
+        ema_direction above, which is the 15-min read). NOT one of the
+        5 counted signals below (this function's public "count/5"
+        shape stays exactly as before) -- feeds ONLY the Mandatory
+        Structural Confirmation check below.
+
+    BUGFIX (2026-08-10): count>=required alone (the ORIGINAL 5-signal
+    gate) let `trend` (a plain efficiency_ratio() number, computed
+    from raw closes -- NOT tied to EMA structure in any way) plus
+    `vwap` alone satisfy DIRECTIONAL_CONFIRMATION_MIN_COUNT=2 while
+    EMA (15-min) AND HTF were BOTH "Not Ready" -- confirmed
+    reproducible: ema_direction=None, mtf_confirmed=None, trend_value=
+    0.45, vwap_confirmed_flag=True -> count=2, passed=True, with zero
+    real structural (EMA-based) directional evidence on either
+    timeframe. That is exactly the trend=0.45/ema=None/htf=None/
+    momentum=None -> probability=71-82% pattern from the logs.
+    MANDATORY_CORE_EVIDENCE_ENABLED in scanner.py only ever checked
+    "trend AND ema AND htf all None", which this case doesn't trigger
+    (trend is a real number here) -- a distinct, narrower gap that
+    fix didn't close.
+
+    FIX: `passed` now ALSO requires Mandatory Structural Confirmation
+    -- at least MANDATORY_STRUCTURAL_MIN_CONFIRMED (default 1) of
+    {ema_direction == direction, m5_direction == direction,
+    mtf_confirmed is True} must be true, in ADDITION to count>=required.
+    `trend`/`momentum`/`vwap` alone, however many of them agree, can
+    no longer carry a candidate through this gate on their own -- at
+    least one of the two REAL EMA-structure reads (5-min or 15-min) or
+    the tri-state HTF confirmation must independently confirm.
     """
     detail = {}
     count = 0
@@ -233,9 +265,29 @@ def directional_confirmation_status(
     else:
         detail["vwap"] = "Not Confirmed"
 
+    # --- Mandatory Structural Confirmation (2026-08-10) ---
+    if m5_direction is None:
+        detail["m5"] = "Not Ready"
+    elif m5_direction == direction:
+        detail["m5"] = "Confirmed"
+    else:
+        detail["m5"] = "Not Confirmed"
+
+    structural_confirmed_count = sum(1 for k in ("ema", "m5", "htf") if detail[k] == "Confirmed")
+    structural_ok = (
+        (not MANDATORY_STRUCTURAL_ENABLED)
+        or structural_confirmed_count >= MANDATORY_STRUCTURAL_MIN_CONFIRMED
+    )
+
     required = DIRECTIONAL_CONFIRMATION_MIN_COUNT
-    passed = (not DIRECTIONAL_CONFIRMATION_ENABLED) or (count >= required)
-    return {"count": count, "required": required, "passed": passed, "detail": detail}
+    count_ok = (not DIRECTIONAL_CONFIRMATION_ENABLED) or (count >= required)
+    passed = count_ok and structural_ok
+    return {
+        "count": count, "required": required, "passed": passed, "detail": detail,
+        "structural_ok": structural_ok,
+        "structural_confirmed_count": structural_confirmed_count,
+        "structural_required": MANDATORY_STRUCTURAL_MIN_CONFIRMED,
+    }
 
 
 def quality_gate(factors: dict) -> bool:
@@ -270,8 +322,21 @@ def quality_gate(factors: dict) -> bool:
     since it needs several already-computed values) so each produces
     its own distinct REJECTED reason rather than one undifferentiated
     "hard_gate=FAIL".
+    UPDATE (2026-08-10): "risk_reward_ok" added as a 5th hard gate
+    -- previously only fed into rejection_reasons()'s text and was
+    NEVER actually enforced (a strike could show risk_reward_ok=N in
+    the GATE log line and still reach the alert layer, since only
+    strengths["risk_reward"] -- a DIFFERENT, final-levels-based ratio,
+    see scanner.py's RR_LEVEL_CHECK log comment -- fed the score).
+    Confirmed from real examples: NIFTY PE ATM/BANKNIFTY both showing
+    risk_reward=1.00 (score) alongside risk_reward_ok=N (gate) that
+    still became alert candidates. This was itself an instance of the
+    "gate computes a value nothing enforces" pattern already fixed
+    once for Options Intelligence's accepted/REJECT verdict.
     """
-    required = ("liquidity_ok", "delta_ok", "expiry_theta_ok", "premium_in_range_ok")
+    required = (
+        "liquidity_ok", "delta_ok", "expiry_theta_ok", "premium_in_range_ok", "risk_reward_ok",
+    )
     return all(factors.get(k) is True for k in required)
 
 
@@ -291,7 +356,7 @@ _REJECTION_LABELS = {
 
 def rejection_reasons(
     factors: dict,
-    hard_gate_keys=("liquidity_ok", "delta_ok", "expiry_theta_ok", "premium_in_range_ok"),
+    hard_gate_keys=("liquidity_ok", "delta_ok", "expiry_theta_ok", "premium_in_range_ok", "risk_reward_ok"),
 ) -> list:
     """
     Phase 4: human-readable "why was this rejected" list for the

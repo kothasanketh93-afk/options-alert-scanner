@@ -553,11 +553,18 @@ def rejection_detail_lines(
     detail = directional_status["detail"]
     lines.append(f"Direction confirmations: {directional_status['count']}/5 "
                  f"(need {directional_status['required']})")
-    lines.append(f"EMA: {detail['ema']}")
+    lines.append(f"EMA (15m): {detail['ema']}")
+    lines.append(f"EMA (5m): {detail.get('m5', 'Not Ready')}")
     lines.append(f"HTF: {detail['htf']}")
     lines.append(f"Trend: {detail['trend']}")
     lines.append(f"Momentum: {detail['momentum']}")
     lines.append(f"VWAP: {detail['vwap']}")
+    lines.append(
+        f"Structural confirmation (EMA-5m/EMA-15m/HTF): "
+        f"{directional_status.get('structural_confirmed_count', 0)}/"
+        f"{directional_status.get('structural_required', 1)} "
+        f"({'OK' if directional_status.get('structural_ok', True) else 'FAIL'})"
+    )
 
     if not directional_status["passed"]:
         return lines  # directional gate itself is why this was rejected

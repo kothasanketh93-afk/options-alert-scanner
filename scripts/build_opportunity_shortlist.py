@@ -74,12 +74,21 @@ def main():
                              "today's scan will fall back to the fixed 15-stock watchlist.")
         return
 
+    # BUGFIX (2026-08-10): the header below used to hardcode "Top 10:"
+    # regardless of how many stocks were ACTUALLY shortlisted -- when
+    # config's shortlist size is set below 10 (e.g. 5, as observed live:
+    # "150 stocks scored, top 5 selected." immediately followed by a
+    # "Top 10:" header with only 5 lines under it), the message
+    # contradicted itself. top_lines is already correctly capped at
+    # min(10, actual shortlist size) via the [:10] slice -- the header
+    # just needs to describe that same count instead of a hardcoded 10.
+    displayed_count = min(10, len(payload["shortlist"]))
     top_lines = "\n".join(f"{i+1}. {r['symbol']} : {r['score']}"
                            for i, r in enumerate(payload["shortlist"][:10]))
     summary = (
         f"🎯 <b>Opportunity shortlist built for {trading_date}</b>\n"
         f"{len(payload['all_scored'])} stocks scored, top {len(payload['shortlist'])} selected.\n\n"
-        f"<b>Top 10:</b>\n{top_lines}"
+        f"<b>Top {displayed_count}:</b>\n{top_lines}"
     )
     _notify_best_effort(summary)
 

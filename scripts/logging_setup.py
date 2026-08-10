@@ -28,8 +28,28 @@ logger.error(...).
 
 import logging
 import sys
+from datetime import datetime, timezone, timedelta
 
 _CONFIGURED = False
+_IST = timezone(timedelta(hours=5, minutes=30))
+
+
+class _UTCAndISTFormatter(logging.Formatter):
+    """
+    BUGFIX (2026-08-10): the default Formatter's %(asctime)s uses
+    time.localtime() -- on a GitHub Actions runner (system tz UTC)
+    that prints e.g. "2026-08-10 04:25:00" with NO timezone label, easy
+    to misread as IST even though every actual trading decision in this
+    codebase (session windows, market-open checks, state.py's
+    trading_date_str()) correctly uses datetime.now(IST) internally.
+    This was a log-READABILITY problem, not a trading-logic bug -- but
+    a confusing one during incident review. Prints both explicitly:
+    "2026-08-10 04:25:00 UTC / 09:55:00 IST".
+    """
+    def formatTime(self, record, datefmt=None):
+        utc_dt = datetime.fromtimestamp(record.created, tz=timezone.utc)
+        ist_dt = utc_dt.astimezone(_IST)
+        return f"{utc_dt.strftime('%Y-%m-%d %H:%M:%S')} UTC / {ist_dt.strftime('%H:%M:%S')} IST"
 
 
 def _configure_once():
@@ -37,9 +57,8 @@ def _configure_once():
     if _CONFIGURED:
         return
     handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(logging.Formatter(
+    handler.setFormatter(_UTCAndISTFormatter(
         "%(asctime)s [%(name)s] %(levelname)s: %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
     ))
     root = logging.getLogger("trading_system")
     root.setLevel(logging.INFO)

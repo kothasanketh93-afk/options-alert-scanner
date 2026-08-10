@@ -663,12 +663,39 @@ PROBABILITY_BANDS = [
 # trade that day was below this floor). Kept defined here since
 # trade_score.probability_label()'s docstring still references it by
 # name and PROBABILITY_BANDS' "High Probability Trade" tier (80) means
-# the same thing conceptually -- just not wired to an actual gate
-# anymore. Left in place rather than deleted in case a future call site
-# wants a probability-based Telegram gate again; if you re-add one,
-# prefer gating via ENTRY_SCORE (fewer trades tracked at all) so alerts
-# and outcomes stay consistent -- see that same note for why.
+# the same thing conceptually.
+#
+# UPDATE (2026-08-10): re-added as an ACTUAL gate -- MIN_ALERT_PROBABILITY
+# below, not this constant (kept separate; see that constant's own
+# comment for why reusing this one directly would be confusing). This
+# constant itself stays exactly as it was, still unused by any gate,
+# purely so nothing that reads it elsewhere breaks.
 TELEGRAM_MIN_PROBABILITY = 80
+
+# --- Final Alert Probability Floor (main.py's run_scanner_step) ---
+# BUGFIX (2026-08-10): 2026-07-24's fix (see TELEGRAM_MIN_PROBABILITY's
+# own comment above) removed probability from gating the alert AT ALL --
+# not just the message, tracking too. Confirmed by tracing
+# main.py.run_scanner_step() line by line: `state["trades"][trade_id] =
+# trade` and the subsequent `notify_once(..., "NEW_TRADE_ALERT", ...)`
+# both happen unconditionally for ANY `chosen` candidate, with no
+# probability check anywhere between candidate selection and the
+# Telegram send. A candidate can reach `chosen` with trade_score just
+# above the (adaptive) entry floor -- compute_probability_pct() maps a
+# score of 55-60 to ~65%, well under 70 -- and it still gets tracked and
+# alerted exactly like a 97% setup, distinguishable only by the number
+# printed IN the message, not by whether a message is sent.
+#
+# Deliberately a NEW constant, not repurposing TELEGRAM_MIN_PROBABILITY
+# (80) directly: that name/value predates this fix and this repo's own
+# comment on it explicitly says future gates should track outcomes
+# consistently -- MIN_ALERT_PROBABILITY is enforced BEFORE
+# `state["trades"][trade_id] = trade` (not just before the message), so
+# a probability-rejected candidate is never tracked either, avoiding
+# 2026-07-24's exact bug (alert suppressed, trade still silently
+# tracked, downstream TARGET_1_HIT/SL_HIT messages for a trade the
+# channel was never told existed) rather than reintroducing it.
+MIN_ALERT_PROBABILITY = 70
 
 # --- Liquidity engine (scanner.py) ---
 # Relaxed 2026-07-24 (Phase 4 "increase alert volume" pass, per an
@@ -739,14 +766,31 @@ EXPIRY_DAY_THRESHOLD_DAYS = 1
 # scanner.score_strike(). Every threshold below is configurable, none
 # hardcoded in the engine modules themselves.
 OPTIONS_INTELLIGENCE_ENABLED = True    # master flag -- False fully restores pre-Part-5 behavior
-OPTIONS_INTELLIGENCE_FILTER_ENABLED = False  # if True, a low Options Intelligence Score can reject a
+OPTIONS_INTELLIGENCE_FILTER_ENABLED = True  # if True, a low Options Intelligence Score can reject a
                                               # setup that already passed the existing hard gate + Trade
-                                              # Score floor. Defaults OFF: Part 5 ships purely additive
-                                              # (extra logged/displayed fields on the trade dict only)
-                                              # until its scores have been watched against a few days of
-                                              # real outcomes -- flip this on when you're ready to let it
-                                              # actually reject trades, same rollout posture the rest of
-                                              # this file already uses for new engines.
+                                              # Score floor.
+                                              #
+                                              # BUGFIX (2026-08-10): was False. That meant EVERY
+                                              # Options Intelligence "Decision=REJECT" verdict --
+                                              # Abnormal IV, Poor Premium Quality, whatever the reason
+                                              # -- was purely advisory: logged and attached to the trade
+                                              # dict for display, but never actually consulted by the
+                                              # `if OPTIONS_INTELLIGENCE_FILTER_ENABLED and ... not
+                                              # oi_intel.get("accepted", True): return None` check in
+                                              # scanner.score_strike() (that check short-circuits to
+                                              # False on the flag alone, so `not accepted` is never even
+                                              # evaluated). Confirmed against real examples: SENSEX PE
+                                              # 78400 with trade_score=100/probability=97% alongside
+                                              # OPTIONS_INTEL Score=42/100 Decision=REJECT still reached
+                                              # the alert layer with the flag at its old default. Part 5
+                                              # originally shipped this OFF deliberately, to watch its
+                                              # scores against a few days of real outcomes before letting
+                                              # it reject anything -- that trial period is over; this is
+                                              # a real, independent evidence source (IV/premium/OI/
+                                              # Greeks quality on the ACTUAL traded contract) that the
+                                              # existing hard gate + Trade Score never checked at all,
+                                              # and leaving it purely advisory silently defeated its own
+                                              # purpose.
 OPTIONS_INTELLIGENCE_MIN_SCORE = 60    # 0-100 floor, only enforced when the filter flag above is True
 
 # PCR Engine -- overall/strike-wise PCR bias bands
@@ -847,6 +891,29 @@ STALE_THRESHOLD_MIN = 45  # 30-min heartbeat interval + 15-min lunch-gap trader 
 MARKET_OPEN_HHMM = (9, 15)
 MARKET_CLOSE_HHMM_HEARTBEAT = (15, 30)
 STARTUP_GRACE_MIN = 15    # skip staleness check for this long after market open
+
+# --- Instrument Master "not F&O eligible" debug dump (instrument_master.py) ---
+# Diagnostic-only, default OFF: when a symbol hits the "found in
+# instrument master but no option contracts" branch in
+# instrument_master.validate_symbol(), the seen_classes summary added
+# 2026-07-31 (contract_class -> count) already ships unconditionally.
+# That summary alone couldn't explain the live case observed 2026-08-10
+# (contract_classes_seen={"EQUITY": 1, "A": 1} for 14 of 19
+# config.STOCK_SYMBOLS entries -- see instrument_master.py's own
+# 2026-07-31 comment, which predicted exactly this kind of occurrence
+# but couldn't diagnose further without seeing the actual raw rows).
+# Turn this on for one run to get the FULL raw `matches` rows (every
+# field the broker returned, not just contract_class) logged for the
+# first few affected symbols -- enough to see whether "A" is a genuine
+# unmapped broker instrumenttype code, a field-mapping bug, or (most
+# likely per the count of 1 -- see instrument_master.py's own comment
+# on why) simply an incomplete download that never included this
+# symbol's real OPTSTK/CE/PE rows at all.
+INSTRUMENT_MASTER_DEBUG_DUMP_ENABLED = True    # ON for the next premarket run to capture
+                                                 # the 2026-08-10 "A"/"EQUITY"-only case live --
+                                                 # turn this back to False once that data is
+                                                 # in hand, so it doesn't stay noisy every day.
+INSTRUMENT_MASTER_DEBUG_DUMP_MAX_SYMBOLS = 5   # stop after this many affected symbols per run -- avoid log spam
 
 # --- Broker failover (broker_failover.py) ---
 # Switch from the primary broker to the fallback broker (Upstox
@@ -1436,6 +1503,24 @@ DIRECTIONAL_CONFIRMATION_MIN_COUNT = 2
 # "how strong is it" one.
 MOMENTUM_CONFIRM_THRESHOLD_PCT = 0.003   # 0.3% signed 15-min move
 
+# --- Mandatory Structural Confirmation (2026-08-10, filters.py) ---
+# BUGFIX for a gap the 2026-08-07 Directional Confirmation Gate left
+# open: `trend` (a plain efficiency_ratio() number -- NOT tied to EMA
+# structure) plus `vwap` alone could satisfy
+# DIRECTIONAL_CONFIRMATION_MIN_COUNT=2 while EMA (15-min) AND HTF were
+# BOTH "Not Ready" -- confirmed reproducible via trend=0.45/ema=None/
+# htf=None/vwap=Confirmed -> count=2, passed=True, zero real EMA-
+# structure evidence. See filters.directional_confirmation_status()'s
+# own docstring for the full reproduction and fix.
+#
+# Requires at least this many of {15-min EMA direction, 5-min EMA
+# direction, HTF confirmation} to independently confirm -- these are
+# the only three signals in this gate actually derived from EMA
+# structure/multi-timeframe agreement, as opposed to trend/momentum
+# (plain price-path math) or VWAP (a single distance check).
+MANDATORY_STRUCTURAL_ENABLED = True
+MANDATORY_STRUCTURAL_MIN_CONFIRMED = 1
+
 # --- ATR Chase Filter (scanner.py) ---
 # Rejects a strike when the underlying has already moved more than
 # ATR_CHASE_MULTIPLIER x today's ATR away from today's session open by the
@@ -1487,3 +1572,20 @@ STRONG_TREND_ENTRY_SCORE = ENTRY_SCORE - 5       # 50
 CANDLESTICK_CONFIDENCE_PENALTY_ENABLED = True
 CANDLESTICK_INDECISION_PATTERNS = {"Doji", "Spinning Top", "Shooting Star"}
 CANDLESTICK_CONFIDENCE_PENALTY_PCT = 0.10   # 10% multiplicative score reduction when detected
+
+# =============================================================================
+# Part 14 -- Evidence-Integrity Pass (2026-08-10): Options Intelligence filter
+# actually enforced, mandatory-core-evidence hard check, canonical R:R
+# logging. See scanner.py's inline comments at each check for the specific
+# log evidence (trade_score=100/probability=97% alongside an independent
+# Options Intelligence REJECT, etc.) that motivated each one.
+# =============================================================================
+
+# --- Mandatory Core Evidence Check (scanner.py) ---
+# Separate from DIRECTIONAL_CONFIRMATION_MIN_COUNT above: rejects a
+# strike outright when trend, EMA, AND HTF are all three simultaneously
+# unavailable (None), regardless of how high liquidity/volume/OI push
+# the renormalized score. See scanner.score_strike()'s own comment at
+# the check itself for why this is a distinct check, not a rewording of
+# the confirmation-count gate.
+MANDATORY_CORE_EVIDENCE_ENABLED = True

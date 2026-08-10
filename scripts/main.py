@@ -232,6 +232,27 @@ def run_scanner_step(state: dict, now: datetime):
         # so nothing is hidden, just capped).
         return
 
+    # --- Final Alert Probability Floor (2026-08-10) ---
+    # BUGFIX: nothing between candidate selection and trade tracking
+    # checked probability at all (see config.MIN_ALERT_PROBABILITY's own
+    # comment for the full trace/history). Checked HERE -- before
+    # state["trades"][trade_id] = trade below -- so a sub-floor
+    # candidate is never tracked either, not just never alerted; this
+    # is the single final probability check for this whole pipeline,
+    # deliberately placed as the LAST check before a trade record is
+    # created, after every hard gate inside score_strike() has already
+    # passed (this does not and must not run before those -- it only
+    # adds a floor on top of a candidate that already cleared all of
+    # them).
+    if chosen["probability_pct"] < config.MIN_ALERT_PROBABILITY:
+        log.info(
+            "PROBABILITY_BELOW_FLOOR %s %s: probability=%s%% < required %s%% -- "
+            "no alert, not tracked.",
+            chosen["symbol"], chosen["direction"], chosen["probability_pct"],
+            config.MIN_ALERT_PROBABILITY,
+        )
+        return
+
     # BUGFIX (live feedback, 2026-07-21): `ranked` can contain the SAME
     # symbol+direction up to 3 times (once per ITM/ATM/OTM bucket --
     # detect_setups() keeps the best strike from each bucket

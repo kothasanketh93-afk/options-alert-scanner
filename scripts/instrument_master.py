@@ -32,11 +32,17 @@ from datetime import datetime, timezone, timedelta
 import market_data
 from daily_cache import DailyCache
 from logging_setup import get_logger
+from config import INSTRUMENT_MASTER_DEBUG_DUMP_ENABLED, INSTRUMENT_MASTER_DEBUG_DUMP_MAX_SYMBOLS
 
 IST = timezone(timedelta(hours=5, minutes=30))
 _logger = get_logger("instrument_master")
 
 _CACHE = DailyCache("instrument_master", compressed=True)
+
+# Module-level counter for INSTRUMENT_MASTER_DEBUG_DUMP_ENABLED's per-run
+# cap -- reset per process, matching _inprocess_master's own per-process
+# (not per-day) lifetime just above.
+_debug_dump_count = 0
 
 # In-process only (this run's copy of today's already-cached master) --
 # avoids re-reading/re-decompressing the cache file from disk on every
@@ -144,6 +150,43 @@ def validate_symbol(symbol: str, trading_date: str = None) -> tuple:
         for r in matches:
             cc = r.get("contract_class")
             seen_classes[cc] = seen_classes.get(cc, 0) + 1
+
+        # --- Debug raw-row dump (2026-08-10, config.
+        # INSTRUMENT_MASTER_DEBUG_DUMP_ENABLED) ---
+        # seen_classes above only ever showed CLASSIFIED contract_class
+        # counts -- when a count is 1 for some unmapped value (e.g. the
+        # live "A": 1 case, alongside "EQUITY": 1, for 14 of 19
+        # config.STOCK_SYMBOLS on 2026-08-10), that alone can't say
+        # whether "A" is a genuine unrecognized broker instrumenttype
+        # code, a field-mapping bug in angelone.py/upstox.py, or --
+        # most likely given the count is only 1, not the dozens a
+        # symbol's real strike/expiry grid would produce -- that this
+        # symbol's real OPTSTK/CE/PE rows simply never made it into
+        # `rows` at all (a download/pagination completeness problem
+        # upstream, not a classification problem here). Dumping the
+        # full raw dict for every matched row (not just contract_class)
+        # is the only way to tell those apart -- e.g. a raw row that
+        # still has recognizable option-looking fields (strike, expiry,
+        # CE/PE) despite an unmapped contract_class points at a
+        # classification bug; a raw row that looks like a stray/
+        # unrelated instrument entirely (or just the one equity row and
+        # nothing else) points at a download completeness bug instead.
+        # Off by default (config.INSTRUMENT_MASTER_DEBUG_DUMP_ENABLED)
+        # -- these are the FULL broker rows, not the normalized subset
+        # this module trims to elsewhere, so this is deliberately noisy
+        # and capped at INSTRUMENT_MASTER_DEBUG_DUMP_MAX_SYMBOLS
+        # symbols per run to avoid flooding the log on a bad day.
+        global _debug_dump_count
+        if INSTRUMENT_MASTER_DEBUG_DUMP_ENABLED and _debug_dump_count < INSTRUMENT_MASTER_DEBUG_DUMP_MAX_SYMBOLS:
+            _debug_dump_count += 1
+            _logger.info(
+                f"INSTRUMENT_MASTER_DEBUG_DUMP {symbol}: {len(matches)} raw matched row(s), "
+                f"full contents follow (this is dump {_debug_dump_count}/"
+                f"{INSTRUMENT_MASTER_DEBUG_DUMP_MAX_SYMBOLS} for this run):"
+            )
+            for i, r in enumerate(matches):
+                _logger.info(f"INSTRUMENT_MASTER_DEBUG_DUMP {symbol} row[{i}]: {r!r}")
+
         return False, (
             f"{symbol}: found in instrument master but no option contracts -- not F&O eligible "
             f"(matches={len(matches)} contract_classes_seen={seen_classes})"

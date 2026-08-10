@@ -296,8 +296,19 @@ class UpstoxBroker(Broker):
                     # return iv as a 0-1 fraction -- this is specifically the
                     # /option/chain endpoint this method calls. See
                     # IV_SCALE_VERIFICATION.md for the finding.
+                    #
+                    # RENAMED (2026-08-10): this is the FIRST row in the raw chain
+                    # with a non-None IV -- often a deep OTM/edge strike nowhere
+                    # near any strike actually being traded/scored this cycle (that
+                    # traded leg's OWN entry[prefix+"iv"] a few lines above is set
+                    # correctly and independently on its own loop iteration; this
+                    # log line never feeds it). "IV_SAMPLE" alone read as if it
+                    # described the strike currently being evaluated -- it does
+                    # not. See scanner.py's CONTRACT_RESOLUTION log line for the
+                    # one that actually describes the traded leg.
                     log.info(
-                        "IV_SAMPLE upstox instrument_key=%s strike=%s side=%s raw_iv=%r",
+                        "IV_SAMPLE_CHAINWIDE_DIAGNOSTIC_ONLY upstox instrument_key=%s strike=%s side=%s raw_iv=%r "
+                        "(first available quote in this chain fetch, NOT the traded leg)",
                         entry.get(prefix + "instrument_key"), row.get("strike_price"),
                         prefix.strip("_"), raw_iv,
                     )
