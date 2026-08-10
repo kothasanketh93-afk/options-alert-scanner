@@ -116,7 +116,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T12:19:00+05:30",
+      "last_processed_ts": "2026-08-10T12:34:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -290,7 +290,7 @@
       "current_pnl_pct": -24.12,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -26.49,
-      "holding_time_minutes": 154
+      "holding_time_minutes": 169
     },
     "SENSEX-PE-OTM-20260810-0950-01": {
       "trade_id": "SENSEX-PE-OTM-20260810-0950-01",
@@ -991,7 +991,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T12:19:00+05:30",
+      "last_processed_ts": "2026-08-10T12:34:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1198,11 +1198,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 6.05,
-      "current_pnl_pct": -5.47,
+      "current_price": 6.42,
+      "current_pnl_pct": 0.31,
       "maximum_profit_pct": 7.66,
       "maximum_drawdown_pct": -8.91,
-      "holding_time_minutes": 132
+      "holding_time_minutes": 147
     },
     "MIDCPNIFTY-CE-ITM-20260810-1025-01": {
       "trade_id": "MIDCPNIFTY-CE-ITM-20260810-1025-01",
@@ -1290,7 +1290,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T12:19:00+05:30",
+      "last_processed_ts": "2026-08-10T12:34:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1453,11 +1453,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 218.75,
-      "current_pnl_pct": 4.34,
+      "current_price": 209.05,
+      "current_pnl_pct": -0.29,
       "maximum_profit_pct": 6.56,
       "maximum_drawdown_pct": -2.75,
-      "holding_time_minutes": 101
+      "holding_time_minutes": 116
     },
     "SENSEX-PE-ITM-20260810-1031-01": {
       "trade_id": "SENSEX-PE-ITM-20260810-1031-01",
@@ -2489,7 +2489,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 288,
+    "scanned_symbols": 297,
     "valid_signals": 138,
     "rejected_signals": 687,
     "api_failures": 0,
