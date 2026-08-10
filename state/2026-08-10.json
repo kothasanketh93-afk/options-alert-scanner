@@ -102,7 +102,7 @@
           "trade_score": 73
         }
       ],
-      "status": "WAITING_ENTRY",
+      "status": "NOT_ENTERED",
       "final_status": null,
       "actual_entry_time": null,
       "tracked_entry_price": null,
@@ -116,11 +116,12 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T15:24:00+05:30",
+      "last_processed_ts": "2026-08-10T15:30:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "NOT_ENTERED"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [
         {
@@ -286,11 +287,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 116.9,
-      "current_pnl_pct": -22.86,
+      "current_price": 117.35,
+      "current_pnl_pct": -22.57,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -31.67,
-      "holding_time_minutes": 339,
+      "holding_time_minutes": 345,
       "_marked_open_at_eod": true
     },
     "SENSEX-PE-OTM-20260810-0950-01": {
@@ -978,8 +979,8 @@
           "trade_score": 81
         }
       ],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-08-10T10:08:00+05:30",
       "tracked_entry_price": 6.4,
       "highest_since_entry": 7.26,
@@ -991,13 +992,14 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T15:24:00+05:30",
+      "eod_last_price": 6.72,
+      "last_processed_ts": "2026-08-10T15:30:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "EOD_CLOSED"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [
         {
@@ -1199,11 +1201,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 6.98,
-      "current_pnl_pct": 9.06,
+      "current_price": 6.72,
+      "current_pnl_pct": 5.0,
       "maximum_profit_pct": 9.84,
       "maximum_drawdown_pct": -8.91,
-      "holding_time_minutes": 317,
+      "holding_time_minutes": 323,
       "_marked_open_at_eod": true
     },
     "MIDCPNIFTY-CE-ITM-20260810-1025-01": {
@@ -2391,7 +2393,7 @@
     "BLUE STAR LIMITED-CE-ITM": 1
   },
   "next_display_num": 8,
-  "summary_sent": false,
+  "summary_sent": true,
   "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
@@ -3090,7 +3092,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 522,
+    "scanned_symbols": 531,
     "valid_signals": 143,
     "rejected_signals": 813,
     "api_failures": 0,
