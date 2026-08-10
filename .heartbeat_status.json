@@ -1,12 +1,12 @@
 {
-  "checked_at": "2026-08-10T13:45:52.742993+05:30",
+  "checked_at": "2026-08-10T14:15:39.651375+05:30",
   "scanner_completed": {
     "ok": true,
-    "gap_minutes": 10.1
+    "gap_minutes": 4.4
   },
   "angelone_reachable": {
-    "ok": true,
-    "detail": "ok"
+    "ok": false,
+    "detail": "authentication failed: 403 authenticating against https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json -- <html>\r\n<head><title>403 Forbidden</title></head>\r\n<body>\r\n<center><h1>403 Forbidden</h1></center>\r\n</body>\r\n</html>\r\n"
   },
   "upstox_reachable": {
     "ok": true,
