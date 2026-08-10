@@ -116,7 +116,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T15:04:00+05:30",
+      "last_processed_ts": "2026-08-10T15:09:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -286,11 +286,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 117.85,
-      "current_pnl_pct": -22.24,
+      "current_price": 120.25,
+      "current_pnl_pct": -20.65,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -31.67,
-      "holding_time_minutes": 319
+      "holding_time_minutes": 325
     },
     "SENSEX-PE-OTM-20260810-0950-01": {
       "trade_id": "SENSEX-PE-OTM-20260810-0950-01",
@@ -991,7 +991,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T15:04:00+05:30",
+      "last_processed_ts": "2026-08-10T15:09:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1198,11 +1198,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 6.93,
-      "current_pnl_pct": 8.28,
+      "current_price": 7.01,
+      "current_pnl_pct": 9.53,
       "maximum_profit_pct": 9.84,
       "maximum_drawdown_pct": -8.91,
-      "holding_time_minutes": 297
+      "holding_time_minutes": 302
     },
     "MIDCPNIFTY-CE-ITM-20260810-1025-01": {
       "trade_id": "MIDCPNIFTY-CE-ITM-20260810-1025-01",
@@ -2187,7 +2187,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T15:04:00+05:30",
+      "last_processed_ts": "2026-08-10T15:09:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -2373,7 +2373,7 @@
       "current_pnl_pct": 4.3,
       "maximum_profit_pct": 4.3,
       "maximum_drawdown_pct": 0.0,
-      "holding_time_minutes": 39
+      "holding_time_minutes": 44
     }
   },
   "next_seq": {
@@ -3086,7 +3086,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 486,
+    "scanned_symbols": 495,
     "valid_signals": 143,
     "rejected_signals": 813,
     "api_failures": 0,
