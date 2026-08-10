@@ -32,6 +32,9 @@ from config import (
     CANDLESTICK_DOJI_BODY_MAX_RATIO, CANDLESTICK_SMALL_BODY_MAX_RATIO,
     CANDLESTICK_LONG_WICK_MIN_MULT, CANDLESTICK_MARUBOZU_WICK_MAX_RATIO,
     CANDLESTICK_SOLDIERS_MIN_BODY_RATIO,
+    CANDLESTICK_TREND_CONTEXT_LOOKBACK, CANDLESTICK_MIN_RANGE_VS_AVG_RATIO,
+    CANDLESTICK_RANGE_AVG_LOOKBACK, CANDLESTICK_VOLUME_CONFIRM_MULT,
+    CANDLESTICK_VOLUME_CONFIRM_BONUS,
 )
 
 # ---------------------------------------------------------------------------
@@ -72,6 +75,96 @@ def _body_ratio(c: dict):
 
 
 # ---------------------------------------------------------------------------
+# Accuracy pass (2026-08-10): trend-context and range-significance helpers.
+# Both stay self-contained (pure math on the same candle list, no import
+# from indicators.py) -- matching this module's own "no broker/network
+# calls, deterministic arithmetic only" design, and no dependency on
+# whatever else scanner.py has already computed this cycle.
+# ---------------------------------------------------------------------------
+
+def _preceding_trend(candles: list, lookback: int = None):
+    """
+    'up'/'down'/None -- net close-to-close direction over `lookback`
+    candles immediately BEFORE the most recent one. The most recent
+    candle (candles[-1]) is EXCLUDED from this read -- it's the
+    pattern candle a reversal-type pattern (Hammer/Shooting Star) is
+    being read on, so it must not contaminate "what was the trend
+    INTO this candle" (comparing it against itself would trivially
+    bias the read). None if there aren't enough prior candles, or if
+    the net move over the window is exactly flat (open to ambiguity,
+    not a claimed direction).
+    """
+    lookback = lookback or CANDLESTICK_TREND_CONTEXT_LOOKBACK
+    if len(candles) < lookback + 2:
+        return None
+    start_close = candles[-(lookback + 2)]["close"]
+    end_close = candles[-2]["close"]
+    if start_close == end_close:
+        return None
+    return "up" if end_close > start_close else "down"
+
+
+def _recent_avg_range(candles: list, lookback: int = None, exclude_last: int = 1):
+    """
+    Simple average high-low range over `lookback` candles BEFORE the
+    most recent `exclude_last` candle(s) -- a lightweight volatility
+    reference so a pattern's own range can be judged against what's
+    typical right now, without importing indicators.compute_atr()
+    (kept self-contained, see module docstring). None if there aren't
+    enough prior candles.
+    """
+    lookback = lookback or CANDLESTICK_RANGE_AVG_LOOKBACK
+    window = candles[-(lookback + exclude_last):-exclude_last] if exclude_last else candles[-lookback:]
+    if not window:
+        return None
+    return sum(_range(c) for c in window) / len(window)
+
+
+def _range_significant(candles: list, candle: dict) -> bool:
+    """
+    True if `candle`'s own range is at least
+    CANDLESTICK_MIN_RANGE_VS_AVG_RATIO of the recent average range --
+    filters out statistically-insignificant micro-candles that happen
+    to match a pattern's shape ratios but carry little real
+    directional weight (e.g. a "Marubozu" whose absolute range is far
+    below today's normal volatility). If there isn't enough history to
+    compute a recent average yet, this does NOT block the pattern --
+    same "insufficient data is not confirmed-bad" posture the rest of
+    this codebase already follows (see indicators.efficiency_ratio()'s
+    own docstring) -- it only filters when there's actually a baseline
+    to compare against.
+    """
+    avg_range = _recent_avg_range(candles)
+    if avg_range is None or avg_range <= 0:
+        return True  # no baseline yet -- don't block on absence of data
+    return _range(candle) >= avg_range * CANDLESTICK_MIN_RANGE_VS_AVG_RATIO
+
+
+def _volume_confirm_bonus(candles: list, candle: dict) -> float:
+    """
+    0 or CANDLESTICK_VOLUME_CONFIRM_BONUS -- a small, bounded strength
+    bonus when `candle`'s own volume is at/above
+    CANDLESTICK_VOLUME_CONFIRM_MULT x the recent average volume (real
+    participation behind the move, not just the candle's shape).
+    Returns 0 (no penalty, no bonus) whenever volume data is missing
+    on any relevant candle -- soft confirmation only, never a
+    requirement, matching this module's advisory-only design.
+    """
+    if candle.get("volume") is None:
+        return 0.0
+    window = candles[-(CANDLESTICK_RANGE_AVG_LOOKBACK + 1):-1]
+    volumes = [c.get("volume") for c in window if c.get("volume") is not None]
+    if not volumes:
+        return 0.0
+    avg_volume = sum(volumes) / len(volumes)
+    if avg_volume <= 0:
+        return 0.0
+    if candle["volume"] >= avg_volume * CANDLESTICK_VOLUME_CONFIRM_MULT:
+        return CANDLESTICK_VOLUME_CONFIRM_BONUS
+    return 0.0
+
+
+# ---------------------------------------------------------------------------
 # 1-candle patterns
 # ---------------------------------------------------------------------------
 
@@ -100,7 +193,14 @@ def is_spinning_top(candles: list) -> bool:
 def marubozu_direction(candles: list):
     """Returns 'bullish', 'bearish', or None. Full-body candle: both
     wicks negligible relative to range -- a strong, uninterrupted
-    directional close."""
+    directional close.
+
+    ACCURACY (2026-08-10): now also requires the candle's range to be
+    "significant" against recent average range (see
+    _range_significant()) -- a full-body candle whose absolute range
+    is tiny compared to today's normal volatility isn't a strong move,
+    just a quiet candle with clean geometry.
+    """
     if not candles:
         return None
     c = candles[-1]
@@ -110,6 +210,8 @@ def marubozu_direction(candles: list):
     if (_upper_wick(c) / rng) > CANDLESTICK_MARUBOZU_WICK_MAX_RATIO:
         return None
     if (_lower_wick(c) / rng) > CANDLESTICK_MARUBOZU_WICK_MAX_RATIO:
+        return None
+    if not _range_significant(candles, c):
         return None
     if _is_bullish(c):
         return "bullish"
@@ -123,7 +225,14 @@ def is_hammer(candles: list) -> bool:
     upper wick. Bullish-reversal shape -- caller supplies trend context
     (this function only reads the candle's own geometry, same
     "pure math in, caller applies direction/context" convention as
-    indicators.ema_trend_direction())."""
+    indicators.ema_trend_direction()).
+
+    ACCURACY (2026-08-10): also requires range significance (see
+    _range_significant()) -- preceding-trend context (the OTHER half
+    of a real Hammer read: this shape after an uptrend is a Hanging
+    Man, not a Hammer) is applied by the caller (detect(), below),
+    not here, since this function's contract is geometry only.
+    """
     if not candles:
         return False
     c = candles[-1]
@@ -135,12 +244,16 @@ def is_hammer(candles: list) -> bool:
         return False  # zero-body is Doji territory, not Hammer
     lower = _lower_wick(c)
     upper = _upper_wick(c)
-    return lower >= CANDLESTICK_LONG_WICK_MIN_MULT * body and upper <= body
+    if not (lower >= CANDLESTICK_LONG_WICK_MIN_MULT * body and upper <= body):
+        return False
+    return _range_significant(candles, c)
 
 
 def is_shooting_star(candles: list) -> bool:
     """Mirror of is_hammer(): small body near the BOTTOM of the range,
-    long upper wick, small/no lower wick. Bearish-reversal shape."""
+    long upper wick, small/no lower wick. Bearish-reversal shape.
+    See is_hammer()'s docstring for the range-significance and
+    trend-context notes -- identical reasoning, mirrored."""
     if not candles:
         return False
     c = candles[-1]
@@ -152,7 +265,9 @@ def is_shooting_star(candles: list) -> bool:
         return False
     upper = _upper_wick(c)
     lower = _lower_wick(c)
-    return upper >= CANDLESTICK_LONG_WICK_MIN_MULT * body and lower <= body
+    if not (upper >= CANDLESTICK_LONG_WICK_MIN_MULT * body and lower <= body):
+        return False
+    return _range_significant(candles, c)
 
 
 # ---------------------------------------------------------------------------
@@ -163,22 +278,36 @@ def is_bullish_engulfing(candles: list) -> bool:
     if len(candles) < 2:
         return False
     c1, c2 = candles[-2], candles[-1]
-    return (
+    # ACCURACY (2026-08-10): c1 must itself have a real body -- without
+    # this, a near-zero-body c1 (a Doji-like candle) gets trivially
+    # "engulfed" by almost any c2, producing spurious Engulfing reads
+    # on quiet/choppy days that aren't a genuine reversal of anything.
+    c1_ratio = _body_ratio(c1)
+    if c1_ratio is None or c1_ratio <= CANDLESTICK_DOJI_BODY_MAX_RATIO:
+        return False
+    if not (
         _is_bearish(c1) and _is_bullish(c2)
         and c2["open"] <= c1["close"] and c2["close"] >= c1["open"]
         and _body(c2) > _body(c1)
-    )
+    ):
+        return False
+    return _range_significant(candles, c2)
 
 
 def is_bearish_engulfing(candles: list) -> bool:
     if len(candles) < 2:
         return False
     c1, c2 = candles[-2], candles[-1]
-    return (
+    c1_ratio = _body_ratio(c1)
+    if c1_ratio is None or c1_ratio <= CANDLESTICK_DOJI_BODY_MAX_RATIO:
+        return False
+    if not (
         _is_bullish(c1) and _is_bearish(c2)
         and c2["open"] >= c1["close"] and c2["close"] <= c1["open"]
         and _body(c2) > _body(c1)
-    )
+    ):
+        return False
+    return _range_significant(candles, c2)
 
 
 def is_inside_bar(candles: list) -> bool:
@@ -285,21 +414,14 @@ def is_three_black_crows(candles: list) -> bool:
 # Aggregation: detect() + direction-aware scoring
 # ---------------------------------------------------------------------------
 
-# (pattern key, detector fn, bias -- "bullish"/"bearish"/"dynamic"/"neutral",
-#  base_strength 0-1 used by pattern_alignment_score() below). "dynamic" bias
-# patterns (Marubozu, Outside Bar) derive their own bias per-read rather than
-# having one fixed here.
-_SINGLE_CANDLE_PATTERNS = (
-    ("Doji", is_doji, "neutral", 0.30),
-    ("Spinning Top", is_spinning_top, "neutral", 0.25),
-    ("Hammer", is_hammer, "bullish", 0.70),
-    ("Shooting Star", is_shooting_star, "bearish", 0.70),
-)
-_TWO_CANDLE_PATTERNS = (
-    ("Bullish Engulfing", is_bullish_engulfing, "bullish", 0.90),
-    ("Bearish Engulfing", is_bearish_engulfing, "bearish", 0.90),
-    ("Inside Bar", is_inside_bar, "neutral", 0.20),
-)
+# (pattern key, detector fn, bias, base_strength 0-1 used by
+# pattern_alignment_score() below). Only the 3-candle patterns still use
+# this table-driven form -- Doji/Spinning Top/Hammer/Shooting Star/
+# Marubozu/Engulfing/Inside Bar/Outside Bar are now handled inline in
+# detect() below (2026-08-10 accuracy pass: several of them need
+# per-read context -- preceding trend, range significance, volume
+# confirmation -- that a fixed (name, fn, bias, strength) tuple can't
+# express).
 _THREE_CANDLE_PATTERNS = (
     ("Morning Star", is_morning_star, "bullish", 0.85),
     ("Evening Star", is_evening_star, "bearish", 0.85),
@@ -317,24 +439,57 @@ def detect(candles: list) -> list:
     e.g. a Marubozu close can also complete an Engulfing pattern).
     Empty list if there aren't enough candles or nothing matched --
     never raises.
+
+    ACCURACY (2026-08-10): Hammer/Shooting Star are reversal-type
+    patterns that classically only mean what they're scored as in the
+    RIGHT preceding-trend context (a Hammer after a downtrend is
+    bullish reversal; the identical shape after an uptrend is a
+    Hanging Man -- bearish exhaustion, not implemented here, see
+    module docstring). When the preceding trend (see
+    _preceding_trend()) CONTRADICTS the pattern's expected reversal
+    context, its bias is downgraded to "neutral" here rather than
+    confidently scored the wrong direction -- still reported in
+    patterns_detected/detail for visibility, just excluded from
+    pattern_alignment_score()'s directional average (which only
+    counts bullish/bearish entries). Unknown preceding trend (None,
+    not enough history) does NOT downgrade -- absence of context isn't
+    evidence of the WRONG context.
     """
     if not candles:
         return []
 
     found = []
-    for name, fn, bias, strength in _SINGLE_CANDLE_PATTERNS:
-        if fn(candles):
-            found.append({"pattern": name, "bias": bias, "strength": strength})
+
+    if is_doji(candles):
+        found.append({"pattern": "Doji", "bias": "neutral", "strength": 0.30})
+    if is_spinning_top(candles):
+        found.append({"pattern": "Spinning Top", "bias": "neutral", "strength": 0.25})
+
+    if is_hammer(candles):
+        bias = "neutral" if _preceding_trend(candles) == "up" else "bullish"
+        strength = 0.70 + (_volume_confirm_bonus(candles, candles[-1]) if bias != "neutral" else 0.0)
+        found.append({"pattern": "Hammer", "bias": bias, "strength": min(1.0, strength)})
+
+    if is_shooting_star(candles):
+        bias = "neutral" if _preceding_trend(candles) == "down" else "bearish"
+        strength = 0.70 + (_volume_confirm_bonus(candles, candles[-1]) if bias != "neutral" else 0.0)
+        found.append({"pattern": "Shooting Star", "bias": bias, "strength": min(1.0, strength)})
 
     marubozu_bias = marubozu_direction(candles)
     if marubozu_bias:
-        found.append({"pattern": "Marubozu", "bias": marubozu_bias, "strength": 0.60})
+        strength = 0.60 + _volume_confirm_bonus(candles, candles[-1])
+        found.append({"pattern": "Marubozu", "bias": marubozu_bias, "strength": min(1.0, strength)})
 
     if len(candles) >= 2:
-        for name, fn, bias, strength in _TWO_CANDLE_PATTERNS:
-            if fn(candles):
-                found.append({"pattern": name, "bias": bias, "strength": strength})
-        if is_outside_bar(candles):
+        if is_bullish_engulfing(candles):
+            strength = 0.90 + _volume_confirm_bonus(candles, candles[-1])
+            found.append({"pattern": "Bullish Engulfing", "bias": "bullish", "strength": min(1.0, strength)})
+        if is_bearish_engulfing(candles):
+            strength = 0.90 + _volume_confirm_bonus(candles, candles[-1])
+            found.append({"pattern": "Bearish Engulfing", "bias": "bearish", "strength": min(1.0, strength)})
+        if is_inside_bar(candles):
+            found.append({"pattern": "Inside Bar", "bias": "neutral", "strength": 0.20})
+        if is_outside_bar(candles) and _range_significant(candles, candles[-1]):
             outside_bias = "bullish" if _is_bullish(candles[-1]) else "bearish"
             found.append({"pattern": "Outside Bar", "bias": outside_bias, "strength": 0.50})
 
