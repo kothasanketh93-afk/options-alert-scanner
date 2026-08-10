@@ -1361,9 +1361,13 @@ CANDLESTICK_PATTERNS_ENABLED = True             # master flag -- False fully res
 CANDLESTICK_PATTERNS_INFLUENCE_ENABLED = False  # if True, a confidently-opposing candlestick read can nudge
                                                  # decision_object["confidence_score"] down by up to
                                                  # CANDLESTICK_MAX_CONFIDENCE_DELTA points (see candlestick_adapter.py)
-CANDLESTICK_PATTERN_LOOKBACK = 3                # candles examined for the most-recent formation (engulfing/
-                                                 # star/soldiers patterns need up to 3; single-candle patterns
-                                                 # like doji/hammer/marubozu only look at the last one)
+# CANDLESTICK_PATTERN_LOOKBACK: REMOVED (2026-08-10, accuracy review) --
+# was documented as "candles examined for the most-recent formation"
+# but nothing in candlestick_patterns.py ever read it; each detector
+# already uses the fixed candle count its own formation needs (1/2/3),
+# hardcoded directly (is_morning_star() etc. slice candles[-3:] etc.)
+# rather than a shared lookback constant. Dead config, removed rather
+# than wired into something that doesn't need it.
 CANDLESTICK_MAX_CONFIDENCE_DELTA = 6            # points -- hard cap on how much the influence nudge above can
                                                  # move confidence_score in either direction, deliberately small
                                                  # relative to Decision Engine's other inputs
@@ -1379,6 +1383,35 @@ CANDLESTICK_LONG_WICK_MIN_MULT = 2.0        # wick >= 2x body -> "long wick" (ha
 CANDLESTICK_MARUBOZU_WICK_MAX_RATIO = 0.05  # both wicks <= 5% of range -> Marubozu
 CANDLESTICK_SOLDIERS_MIN_BODY_RATIO = 0.50  # each candle's body >= 50% of its own range -> qualifies for
                                              # Three White Soldiers / Three Black Crows (filters out noise)
+
+# --- Accuracy pass (2026-08-10) ---
+# CANDLESTICK_TREND_CONTEXT_LOOKBACK: how many candles BEFORE the
+# pattern candle are examined to read the preceding trend, for
+# reversal-type patterns (Hammer, Shooting Star) that classically only
+# mean what they're scored as when they appear in the RIGHT prior
+# context (a Hammer after a downtrend is bullish reversal; the
+# identical shape after an uptrend is a Hanging Man -- bearish
+# exhaustion, NOT implemented here, see candlestick_patterns.py's own
+# docstring on why -- rather than mislabel it, that occurrence is now
+# excluded from directional scoring instead of confidently wrong).
+CANDLESTICK_TREND_CONTEXT_LOOKBACK = 5
+# CANDLESTICK_MIN_RANGE_VS_AVG_RATIO: a pattern's own candle range
+# must be at least this fraction of the recent average range to count
+# -- filters out statistically-insignificant micro-candles (e.g. a
+# "Marubozu" whose absolute range is far below today's normal
+# volatility isn't a strong directional move, just a quiet candle that
+# happens to have a full body). Applies to Marubozu/Hammer/Shooting
+# Star/Engulfing/Outside Bar -- NOT to Doji/Spinning Top/Inside Bar,
+# which are inherently about being small.
+CANDLESTICK_MIN_RANGE_VS_AVG_RATIO = 0.5
+CANDLESTICK_RANGE_AVG_LOOKBACK = 14
+# CANDLESTICK_VOLUME_CONFIRM_MULT: a directional pattern's own candle
+# volume at/above this multiple of the recent average volume earns a
+# bounded strength bonus (real buying/selling behind the move, not
+# just the shape) -- soft bonus, not a requirement: candles.get("volume")
+# missing/None leaves strength unchanged rather than penalizing.
+CANDLESTICK_VOLUME_CONFIRM_MULT = 1.5
+CANDLESTICK_VOLUME_CONFIRM_BONUS = 0.10     # added to strength, capped at 1.0
 
 # =============================================================================
 # ATR Warmup (market_data.get_atr_warmup_candles()) -- production fix,
@@ -1544,18 +1577,14 @@ PREMIUM_RANGE = {
     "BANKNIFTY": (120, 350),
 }
 
-# --- Adaptive Entry Score (trade_score.py/scanner.py) ---
-# ENTRY_SCORE (55) stays the baseline. During the opening window the floor
-# is raised (less live directional data -- see Candle Readiness Gate above,
-# this is the next layer of caution on TOP of that, not a replacement for
-# it). When THIS symbol's own trend_strength is already reading a strong,
-# clean trend, the floor is relaxed slightly, since a high-efficiency-ratio
-# setup has already cleared the hardest factor to earn.
-ADAPTIVE_ENTRY_SCORE_ENABLED = True
-OPENING_SESSION_MINUTES = 30                     # minutes after MARKET_OPEN_HHMM treated as "opening session"
-OPENING_SESSION_ENTRY_SCORE = ENTRY_SCORE + 10   # 65
-STRONG_TREND_EFFICIENCY_THRESHOLD = 0.60         # efficiency_ratio() reading counted as "strong confirmed trend"
-STRONG_TREND_ENTRY_SCORE = ENTRY_SCORE - 5       # 50
+# --- Adaptive Entry Score: REMOVED (2026-08-10, "do we need all this"
+# review). Used to raise/lower ENTRY_SCORE by session-time/trend
+# independently of detect_setups()'s own regime-based floor
+# (REGIME_SCORE_PENALTY below) -- the two disagreed in ways that
+# produced misleading SCORE log lines and silently-dropped candidates.
+# Consolidated to the single regime-based floor; see
+# scanner.score_strike()'s comment at its old adaptive-floor call site
+# for the specific contradiction this removal fixes.
 
 # --- Candlestick Confidence Penalty (scanner.py) ---
 # candlestick_patterns.py already detects these and returns them advisory-
@@ -1575,17 +1604,16 @@ CANDLESTICK_CONFIDENCE_PENALTY_PCT = 0.10   # 10% multiplicative score reduction
 
 # =============================================================================
 # Part 14 -- Evidence-Integrity Pass (2026-08-10): Options Intelligence filter
-# actually enforced, mandatory-core-evidence hard check, canonical R:R
-# logging. See scanner.py's inline comments at each check for the specific
-# log evidence (trade_score=100/probability=97% alongside an independent
-# Options Intelligence REJECT, etc.) that motivated each one.
+# actually enforced, canonical R:R logging. See scanner.py's inline comments
+# at each check for the specific log evidence (trade_score=100/probability=
+# 97% alongside an independent Options Intelligence REJECT, etc.) that
+# motivated each one.
+#
+# NOTE: this Part originally also added a Mandatory Core Evidence Check
+# (trend/EMA(15m)/HTF all None -> reject). REMOVED later the same day
+# ("do we need all this" review) as redundant with, and in one confirmed
+# case contradicted by, the Mandatory Structural Confirmation check
+# already inside filters.directional_confirmation_status() (which also
+# considers 5-min EMA, not just 15-min EMA + HTF) -- see that function's
+# docstring for the specific reproduction.
 # =============================================================================
-
-# --- Mandatory Core Evidence Check (scanner.py) ---
-# Separate from DIRECTIONAL_CONFIRMATION_MIN_COUNT above: rejects a
-# strike outright when trend, EMA, AND HTF are all three simultaneously
-# unavailable (None), regardless of how high liquidity/volume/OI push
-# the renormalized score. See scanner.score_strike()'s own comment at
-# the check itself for why this is a distinct check, not a rewording of
-# the confirmation-count gate.
-MANDATORY_CORE_EVIDENCE_ENABLED = True

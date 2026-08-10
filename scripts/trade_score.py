@@ -35,9 +35,7 @@ from config import (
     STOCK_SYMBOLS, STOCK_MIN_OI, STOCK_MIN_OPTION_VOLUME,
     ATR_VOLATILE_PCT_THRESHOLD, EXPIRY_DAY_THRESHOLD_DAYS,
     PROBABILITY_BANDS,
-    ENTRY_SCORE, ADAPTIVE_ENTRY_SCORE_ENABLED, OPENING_SESSION_MINUTES,
-    OPENING_SESSION_ENTRY_SCORE, STRONG_TREND_EFFICIENCY_THRESHOLD,
-    STRONG_TREND_ENTRY_SCORE, MARKET_OPEN_HHMM,
+    ENTRY_SCORE,
     CANDLESTICK_CONFIDENCE_PENALTY_ENABLED, CANDLESTICK_INDECISION_PATTERNS,
     CANDLESTICK_CONFIDENCE_PENALTY_PCT,
 )
@@ -435,55 +433,16 @@ def factor_checklist(strengths: dict, pass_threshold: float = 0.5) -> list:
 # confidence penalty, structured rejection logging.
 # ---------------------------------------------------------------------------
 
-def effective_entry_score(now, trend_strength_value) -> int:
-    """
-    Replaces the flat ENTRY_SCORE floor with a session/trend-aware one.
-    ENTRY_SCORE (55) is still the baseline and is returned unchanged
-    when config.ADAPTIVE_ENTRY_SCORE_ENABLED is False, so this is a
-    strict extension, not a redesign of the existing threshold.
-
-    Resolution order (first match wins):
-      1. Opening session (first config.OPENING_SESSION_MINUTES minutes
-         after config.MARKET_OPEN_HHMM) -> OPENING_SESSION_ENTRY_SCORE
-         (stricter -- this is deliberately layered ON TOP of the
-         Candle Readiness Gate in filters.py, not a replacement for
-         it: readiness stops scoring on literally-too-little data,
-         this raises the bar further during the window where even
-         "enough to compute" data is still thin/noisy).
-      2. THIS symbol's own trend_strength reading at/above
-         STRONG_TREND_EFFICIENCY_THRESHOLD -> STRONG_TREND_ENTRY_SCORE
-         (relaxed slightly -- the single hardest factor to earn
-         honestly is already strong).
-      3. Otherwise -> ENTRY_SCORE (baseline, unchanged).
-
-    trend_strength_value: the SAME 0-1-or-None value going into
-    strengths["trend"] for this strike (trade_score.trend_strength()'s
-    output) -- None (not enough candles) never qualifies for the
-    strong-trend relaxation, it just falls through to the baseline.
-
-    Caller (scanner.score_strike()) compares the raw `score` int
-    against this return value directly -- it does NOT change
-    compute_grade()'s A+/A/B+/B/Watchlist label, which stays keyed off
-    the static ENTRY_SCORE-based TRADE_SCORE_GRADE_THRESHOLDS for
-    display purposes. That's an intentional split: the accept/reject
-    DECISION is adaptive, the display LABEL stays on a fixed scale so
-    "B" always means the same thing on every alert regardless of what
-    time of day it fired.
-    """
-    if not ADAPTIVE_ENTRY_SCORE_ENABLED:
-        return ENTRY_SCORE
-
-    market_open_today = now.replace(
-        hour=MARKET_OPEN_HHMM[0], minute=MARKET_OPEN_HHMM[1], second=0, microsecond=0,
-    )
-    minutes_since_open = (now - market_open_today).total_seconds() / 60
-    if 0 <= minutes_since_open < OPENING_SESSION_MINUTES:
-        return OPENING_SESSION_ENTRY_SCORE
-
-    if trend_strength_value is not None and trend_strength_value >= STRONG_TREND_EFFICIENCY_THRESHOLD:
-        return STRONG_TREND_ENTRY_SCORE
-
-    return ENTRY_SCORE
+# REMOVED (2026-08-10, "do we need all this" review): effective_entry_score()
+# used to live here -- a session-time/trend-aware adaptive floor,
+# independent of detect_setups()'s own regime-based floor
+# (config.ENTRY_SCORE + config.REGIME_SCORE_PENALTY[regime]). Removed
+# as a redundant, disagreeing SECOND floor -- see scanner.score_strike()'s
+# comment at its old call site for the specific contradiction this
+# caused. detect_setups()'s regime-aware floor is now the SOLE
+# adaptive threshold; this function's static ENTRY_SCORE baseline
+# (via `grade == "Reject"`) is the only check inside score_strike()
+# itself.
 
 
 def apply_candlestick_penalty(score: int, candlestick_read: dict) -> tuple:

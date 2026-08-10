@@ -103,7 +103,6 @@ from config import (
     SESSION_WINDOWS, STRIKE_STEP, STRIKE_RANGE, SYMBOLS,
     ENTRY_SCORE, T1_ATR_MULT,
     ATR_CHASE_FILTER_ENABLED, ATR_CHASE_MULTIPLIER,
-    MANDATORY_CORE_EVIDENCE_ENABLED,
 )
 
 from indicators import (
@@ -283,6 +282,18 @@ def resolve_strike_candidates(symbol: str, direction: str, atm_strike, spot_pric
 
 
 def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_history) -> dict:
+    # Declared once, at the top, for the whole function -- a `global`
+    # statement must textually precede every use of the name in the
+    # function it's declared in (see the "SyntaxError: name
+    # '_rejection_count' is assigned to before global declaration"
+    # note further below, from the one time this WASN'T done and broke
+    # the whole module import). Simplest way to guarantee that as more
+    # rejection points were added over time (2026-08-10: Candle
+    # Readiness Gate and ATR Chase Filter now also increment this,
+    # previously they didn't -- see config.MIN_ALERT_PROBABILITY's
+    # sibling note on why an accurate rejected-signal count matters for
+    # the daily summary) is one declaration here, before anything else.
+    global _rejection_count
     underlying_key = resolve_underlying_key(symbol)
     expiry = current_expiry(symbol)
 
@@ -357,6 +368,7 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     # broker call in practice).
     candles_5m = market_data.get_recent_underlying_candles(underlying_key, "5minute", 30)
     if not candles_ready(len(candles_5m), len(candles_15m)):
+        _rejection_count += 1
         _logger.info(
             f"SKIPPED {symbol} {direction} {moneyness} strike={strike} - "
             f"Insufficient candle history (5m={len(candles_5m)}, 15m={len(candles_15m)})."
@@ -466,6 +478,7 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         move_from_open = abs(spot_price - session_open)
         chase_ceiling = atr_index_points * ATR_CHASE_MULTIPLIER
         if move_from_open > chase_ceiling:
+            _rejection_count += 1
             _logger.info(
                 f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
                 f"Reasons: Price extended beyond ATR chase ceiling "
@@ -538,7 +551,6 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         f"hard_gate={'PASS' if hard_gate_pass else 'FAIL'} | {factor_summary}"
     )
     if not hard_gate_pass:
-        global _rejection_count
         _rejection_count += 1
         _logger.info(
             f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
@@ -559,12 +571,8 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         vwap_confirmed, direction, m5_direction=m5_direction,
     )
     if not directional_status["passed"]:
-        # `global _rejection_count` already declared earlier in this
-        # function (see the hard_gate_pass branch above) -- a function
-        # needs only one `global` statement per name (see the
-        # 2026-07-?? merge-fix note further below in this same
-        # function for the SyntaxError this caused the one time it was
-        # duplicated).
+        # `global _rejection_count` is declared once, at the top of
+        # this function (see that declaration's own comment for why).
         _rejection_count += 1
         _logger.info(
             f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
@@ -572,37 +580,20 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         )
         return None
 
-    # --- Mandatory Core Evidence Check (2026-08-10,
-    # config.MANDATORY_CORE_EVIDENCE_ENABLED) ---
-    # Defense-in-depth, deliberately SEPARATE from the count-based gate
-    # above: even at exactly DIRECTIONAL_CONFIRMATION_MIN_COUNT (2/5),
-    # compute_trade_score()'s renormalization (see its own docstring)
-    # can still push the score very high on liquidity/volume/OI/VWAP
-    # alone if the genuinely CORE directional reads -- trend, EMA, HTF
-    # -- are ALL three simultaneously None (not "weak", literally no
-    # data, e.g. option_chain.directional_bias()'s own
-    # "no 5-min or 15-min EMA trend available" case). The count-based
-    # gate above answers "how many signals corroborate", this answers
-    # a narrower, stricter question: "is there ANY real directional
-    # data at all" -- and if the answer is no, no score is trusted
-    # enough to alert on, however high liquidity alone pushed it.
-    # INSUFFICIENT_EVIDENCE is a distinct rejection reason (not folded
-    # into "Low Score" or the confirmation-count message) precisely
-    # because raising the count requirement or the score floor would
-    # NOT have fixed this case -- it needs its own check.
-    if (
-        MANDATORY_CORE_EVIDENCE_ENABLED
-        and trend_value is None
-        and ema_direction is None
-        and mtf_confirmed_tristate is None
-    ):
-        _rejection_count += 1
-        _logger.info(
-            f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
-            f"Reasons: INSUFFICIENT_EVIDENCE -- trend/EMA/HTF all unavailable "
-            f"(no real directional data this cycle, regardless of liquidity/volume/OI)"
-        )
-        return None
+    # REMOVED (2026-08-10, "do we need all this" review): a Mandatory
+    # Core Evidence Check used to live here (trend/EMA(15m)/HTF all
+    # None -> reject). Removed as redundant AND contradictory with the
+    # Mandatory Structural Confirmation check the Directional
+    # Confirmation Gate above already performs (filters.
+    # directional_confirmation_status()'s structural_ok, which also
+    # considers m5_direction/5-min EMA): a strike confirmed via 5-min
+    # EMA alone (real evidence) could pass that gate and then get
+    # rejected here anyway, purely because this check never looked at
+    # m5_direction -- confirmed live via direct simulation. The
+    # Directional Confirmation Gate already enforces "is there real
+    # directional evidence" more precisely (across 15m EMA, 5m EMA, and
+    # HTF, not just 15m EMA + HTF) -- this check added nothing that
+    # gate didn't already cover, only a false-rejection risk.
 
     # NOTE: volume_confirmed above reuses liquidity_ok()'s pass/fail as a
     # placeholder for the OLD binary "reasons" factor only --
@@ -673,11 +664,9 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     if candlestick_penalty_applied:
         grade = trade_score.compute_grade(score)
 
-    min_score_required = trade_score.effective_entry_score(datetime.now(IST), strengths.get("trend"))
-
     _logger.info(
         f"SCORE {symbol} {direction} {moneyness} strike={strike} "
-        f"trade_score={score}/100 grade={grade} (entry_floor={min_score_required}"
+        f"trade_score={score}/100 grade={grade} (entry_floor={ENTRY_SCORE}"
         + (f", pre_candlestick_penalty={original_score}" if candlestick_penalty_applied else "")
         + ") | "
         # FIX (2026-07-31): strengths.items() can legitimately contain
@@ -702,21 +691,32 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
             f"alignment={candlestick_read.get('alignment_score_pct')}"
         )
 
-    # BUGFIX (2026-08-07): previously gated on `grade == "Reject"`,
-    # which is equivalent to `score < ENTRY_SCORE` (55, the static
-    # floor baked into TRADE_SCORE_GRADE_THRESHOLDS) -- that silently
-    # ignored the adaptive floor computed above (min_score_required can
-    # be 65 during the opening session or 50 on a strong confirmed
-    # trend). Gating on `score < min_score_required` directly makes the
-    # adaptive threshold actually binding; `grade` itself is left
-    # alone and still reported/used for display (A+/A/B+/B/Watchlist)
-    # exactly as before -- see trade_score.effective_entry_score()'s
-    # docstring for why the label intentionally stays on a fixed scale
-    # even though the accept/reject decision no longer is.
-    if score < min_score_required:
+    # REMOVED (2026-08-10, "do we need all this" review): an Adaptive
+    # Entry Score (trade_score.effective_entry_score(), a SEPARATE
+    # session-time/trend-aware floor: 50/55/65 depending on time of
+    # day and this strike's own trend reading) used to be computed and
+    # gated on here. Removed because detect_setups() (the caller, one
+    # level up) ALREADY applies its own independent, regime-aware floor
+    # (config.ENTRY_SCORE + config.REGIME_SCORE_PENALTY[regime], via
+    # market_regime() -- see detect_setups()'s own min_quality_score
+    # variable) to every candidate this function returns. The two
+    # floors were computed completely independently and could
+    # disagree -- e.g. a strike passing THIS function's old 50-point
+    # strong-trend floor could still get silently dropped by
+    # detect_setups()'s 70-point VOLATILE-regime floor a few lines
+    # later, with the SCORE log line here misleadingly showing
+    # "entry_floor=50" for a strike that never actually became a
+    # candidate. Consolidating to ONE floor (detect_setups()'s
+    # regime-aware one) removes that contradiction; this function now
+    # gates only on the static baseline (`grade == "Reject"`, i.e.
+    # score < ENTRY_SCORE) so obviously-too-low-score strikes still
+    # skip the remaining (levels/probability/Options Intelligence)
+    # computation below, same efficiency reasoning as before, just
+    # without a second, disagreeing adaptive threshold.
+    if grade == "Reject":
         _logger.info(
             f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
-            f"Reasons: {'; '.join(trade_score.rejection_detail_lines(True, directional_status, score, min_score_required, True))}"
+            f"Reasons: {'; '.join(trade_score.rejection_detail_lines(True, directional_status, score, ENTRY_SCORE, True))}"
         )
         return None
 
@@ -830,6 +830,14 @@ def detect_setups(symbol: str, oi_history: dict) -> list:
         return []  # outside a scan window -- deliberately silent, this is expected most of the day
 
     underlying_key = resolve_underlying_key(symbol)
+    # This is now the SOLE entry-score floor (2026-08-10, "do we need
+    # all this" review) -- score_strike() used to also apply its own
+    # separate, session-time/trend-aware adaptive floor
+    # (trade_score.effective_entry_score(), since removed), which could
+    # disagree with this regime-based one. Consolidated here: baseline
+    # ENTRY_SCORE, adjusted up for a choppier/more volatile regime via
+    # market_regime()'s penalty -- one floor, always regime-aware, no
+    # separate session-time adjustment layered on top of it.
     min_quality_score = ENTRY_SCORE  # floor matching the lowest grade, "Watchlist" (trade_score.py, Phase 3/4)
     if underlying_key:
         candles_15m = market_data.get_recent_underlying_candles(underlying_key, "15minute", 30)
