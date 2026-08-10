@@ -116,7 +116,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T10:15:00+05:30",
+      "last_processed_ts": "2026-08-10T10:20:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -286,11 +286,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 139.8,
-      "current_pnl_pct": -7.75,
+      "current_price": 130.6,
+      "current_pnl_pct": -13.82,
       "maximum_profit_pct": 0.0,
-      "maximum_drawdown_pct": -8.45,
-      "holding_time_minutes": 29
+      "maximum_drawdown_pct": -13.82,
+      "holding_time_minutes": 34
     },
     "SENSEX-PE-OTM-20260810-0950-01": {
       "trade_id": "SENSEX-PE-OTM-20260810-0950-01",
@@ -393,26 +393,27 @@
           "trade_score": 86
         }
       ],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-08-10T09:51:00+05:30",
       "tracked_entry_price": 380.0,
       "highest_since_entry": 391.0,
-      "lowest_since_entry": 343.05,
+      "lowest_since_entry": 322.15,
       "max_favorable_pct": 2.89,
-      "max_adverse_pct": -9.72,
+      "max_adverse_pct": -15.22,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-08-10T10:18:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T10:15:00+05:30",
+      "last_processed_ts": "2026-08-10T10:20:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "SL_HIT"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [
         {
@@ -590,11 +591,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 344.75,
-      "current_pnl_pct": -9.28,
+      "current_price": 307.95,
+      "current_pnl_pct": -18.96,
       "maximum_profit_pct": 0.26,
-      "maximum_drawdown_pct": -9.28,
-      "holding_time_minutes": 24
+      "maximum_drawdown_pct": -18.96,
+      "holding_time_minutes": 29
     },
     "NIFTY-PE-ATM-20260810-0955-01": {
       "trade_id": "NIFTY-PE-ATM-20260810-0955-01",
@@ -697,26 +698,27 @@
           "trade_score": 73
         }
       ],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-08-10T09:56:00+05:30",
       "tracked_entry_price": 91.3,
       "highest_since_entry": 94.4,
-      "lowest_since_entry": 82.0,
+      "lowest_since_entry": 73.5,
       "max_favorable_pct": 3.4,
-      "max_adverse_pct": -10.19,
+      "max_adverse_pct": -19.5,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-08-10T10:18:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T10:14:00+05:30",
+      "last_processed_ts": "2026-08-10T10:20:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "SL_HIT"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [
         {
@@ -890,11 +892,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 84.85,
-      "current_pnl_pct": -7.06,
+      "current_price": 70.5,
+      "current_pnl_pct": -22.78,
       "maximum_profit_pct": 0.77,
-      "maximum_drawdown_pct": -7.06,
-      "holding_time_minutes": 19
+      "maximum_drawdown_pct": -22.78,
+      "holding_time_minutes": 24
     },
     "SAMVRDHNA MTHRSN INTL LTD-PE-ITM-20260810-1001-01": {
       "trade_id": "SAMVRDHNA MTHRSN INTL LTD-PE-ITM-20260810-1001-01",
@@ -989,7 +991,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T10:15:00+05:30",
+      "last_processed_ts": "2026-08-10T10:20:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1196,11 +1198,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 6.72,
-      "current_pnl_pct": 5.0,
+      "current_price": 6.7,
+      "current_pnl_pct": 4.69,
       "maximum_profit_pct": 5.0,
       "maximum_drawdown_pct": -1.57,
-      "holding_time_minutes": 7
+      "holding_time_minutes": 12
     }
   },
   "next_seq": {
@@ -1211,22 +1213,22 @@
   },
   "next_display_num": 4,
   "summary_sent": false,
-  "consecutive_sl_streak": 0,
+  "consecutive_sl_streak": 2,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
     "NSE_FO|41011": 12682670.0,
-    "NSE_FO|41013": 13533845.0,
-    "NSE_FO|41015": 27633450.0,
-    "NSE_FO|41016": 13925925.0,
-    "NSE_FO|41014": 11089650.0,
+    "NSE_FO|41013": 12254970.0,
+    "NSE_FO|41015": 26059215.0,
+    "NSE_FO|41016": 14668225.0,
+    "NSE_FO|41014": 12028640.0,
     "NSE_FO|41012": 18268770.0,
-    "NSE_FO|59092": 229140.0,
-    "NSE_FO|59094": 285270.0,
-    "NSE_FO|59096": 411810.0,
-    "NSE_FO|59097": 224700.0,
-    "NSE_FO|59095": 243330.0,
-    "NSE_FO|59093": 208140.0,
+    "NSE_FO|59092": 221910.0,
+    "NSE_FO|59094": 269640.0,
+    "NSE_FO|59096": 405870.0,
+    "NSE_FO|59097": 225180.0,
+    "NSE_FO|59095": 247650.0,
+    "NSE_FO|59093": 198270.0,
     "NSE_FO|60621": 48360.0,
     "NSE_FO|60623": 24360.0,
     "NSE_FO|60625": 342240.0,
@@ -1234,41 +1236,41 @@
     "NSE_FO|60624": 39480.0,
     "NSE_FO|60622": 41160.0,
     "BSE_FO|847188": 222820.0,
-    "BSE_FO|841906": 550020.0,
-    "BSE_FO|847642": 1203020.0,
-    "BSE_FO|841676": 908280.0,
-    "BSE_FO|846956": 576260.0,
+    "BSE_FO|841906": 523320.0,
+    "BSE_FO|847642": 1190500.0,
+    "BSE_FO|841676": 944820.0,
+    "BSE_FO|846956": 588180.0,
     "BSE_FO|848769": 513580.0,
-    "NSE_FO|128379": 4520250.0,
-    "NSE_FO|125346": 9520200.0,
+    "NSE_FO|128379": 4551000.0,
+    "NSE_FO|125346": 9643200.0,
     "NSE_FO|128414": 5412000.0,
     "NSE_FO|128431": 467400.0,
-    "NSE_FO|125347": 6137700.0,
-    "NSE_FO|128380": 3892950.0,
+    "NSE_FO|125347": 6180750.0,
+    "NSE_FO|128380": 3837600.0,
     "NSE_FO|77654": 15925.0,
-    "NSE_FO|92633": 142675.0,
-    "NSE_FO|77750": 105300.0,
+    "NSE_FO|92633": 142350.0,
+    "NSE_FO|77750": 103675.0,
     "NSE_FO|77751": 64675.0,
-    "NSE_FO|92634": 212225.0,
-    "NSE_FO|77655": 77350.0,
-    "NSE_FO|85146": 423550.0,
-    "NSE_FO|85148": 2726200.0,
-    "NSE_FO|85150": 2562800.0,
+    "NSE_FO|92634": 212875.0,
+    "NSE_FO|77655": 76700.0,
+    "NSE_FO|85146": 421400.0,
+    "NSE_FO|85148": 2728350.0,
+    "NSE_FO|85150": 2569250.0,
     "NSE_FO|85151": 737450.0,
     "NSE_FO|85149": 2580000.0,
-    "NSE_FO|85147": 924500.0,
-    "NSE_FO|101290": 219450.0,
-    "NSE_FO|101292": 330450.0,
-    "NSE_FO|101294": 559950.0,
+    "NSE_FO|85147": 926650.0,
+    "NSE_FO|101290": 216300.0,
+    "NSE_FO|101292": 324750.0,
+    "NSE_FO|101294": 558600.0,
     "NSE_FO|101295": 104700.0,
-    "NSE_FO|101293": 171750.0,
-    "NSE_FO|101291": 292800.0,
+    "NSE_FO|101293": 167700.0,
+    "NSE_FO|101291": 287850.0,
     "NSE_FO|117648": 3284400.0,
     "NSE_FO|117658": 1425200.0,
     "NSE_FO|117660": 7385000.0,
     "NSE_FO|117661": 2748200.0,
     "NSE_FO|117659": 722400.0,
-    "NSE_FO|117655": 3238200.0,
+    "NSE_FO|117655": 3234000.0,
     "NSE_FO|41009": 1941615.0,
     "NSE_FO|41010": 5421975.0,
     "NSE_FO|59088": 82560.0,
@@ -1277,14 +1279,18 @@
     "NSE_FO|59089": 115830.0,
     "BSE_FO|849013": 82180.0,
     "BSE_FO|843108": 340820.0,
-    "NSE_FO|60627": 41760.0,
-    "NSE_FO|60632": 38880.0,
-    "NSE_FO|128377": 5645700.0,
-    "NSE_FO|128378": 8911350.0,
-    "NSE_FO|60633": 42480.0,
-    "NSE_FO|60634": 27000.0,
-    "BSE_FO|845849": 739060.0,
-    "BSE_FO|847419": 374000.0
+    "NSE_FO|60627": 40680.0,
+    "NSE_FO|60632": 40320.0,
+    "NSE_FO|128377": 5651850.0,
+    "NSE_FO|128378": 8954400.0,
+    "NSE_FO|60633": 45120.0,
+    "NSE_FO|60634": 29760.0,
+    "BSE_FO|845849": 709380.0,
+    "BSE_FO|847419": 382860.0,
+    "NSE_FO|41017": 11856910.0,
+    "NSE_FO|41019": 4166110.0,
+    "NSE_FO|60635": 19080.0,
+    "NSE_FO|60638": 12000.0
   },
   "probability_history": {
     "MIDCPNIFTY-PE": [
@@ -1327,6 +1333,14 @@
       {
         "time": "10:15",
         "pct": 71
+      },
+      {
+        "time": "10:20",
+        "pct": 71
+      },
+      {
+        "time": "10:20",
+        "pct": 69
       }
     ],
     "SENSEX-PE": [
@@ -1487,6 +1501,18 @@
       {
         "time": "10:15",
         "pct": 80
+      },
+      {
+        "time": "10:20",
+        "pct": 82
+      },
+      {
+        "time": "10:20",
+        "pct": 79
+      },
+      {
+        "time": "10:20",
+        "pct": 78
       }
     ],
     "NIFTY-PE": [
@@ -1611,9 +1637,9 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 117,
-    "valid_signals": 77,
-    "rejected_signals": 389,
+    "scanned_symbols": 126,
+    "valid_signals": 82,
+    "rejected_signals": 431,
     "api_failures": 0,
     "broker_errors": 0
   },
