@@ -116,7 +116,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T12:04:00+05:30",
+      "last_processed_ts": "2026-08-10T12:19:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -286,11 +286,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 114.1,
-      "current_pnl_pct": -24.71,
+      "current_price": 115.0,
+      "current_pnl_pct": -24.12,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -26.49,
-      "holding_time_minutes": 139
+      "holding_time_minutes": 154
     },
     "SENSEX-PE-OTM-20260810-0950-01": {
       "trade_id": "SENSEX-PE-OTM-20260810-0950-01",
@@ -991,7 +991,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T12:04:00+05:30",
+      "last_processed_ts": "2026-08-10T12:19:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1198,11 +1198,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 6.12,
-      "current_pnl_pct": -4.38,
+      "current_price": 6.05,
+      "current_pnl_pct": -5.47,
       "maximum_profit_pct": 7.66,
       "maximum_drawdown_pct": -8.91,
-      "holding_time_minutes": 117
+      "holding_time_minutes": 132
     },
     "MIDCPNIFTY-CE-ITM-20260810-1025-01": {
       "trade_id": "MIDCPNIFTY-CE-ITM-20260810-1025-01",
@@ -1290,7 +1290,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T12:04:00+05:30",
+      "last_processed_ts": "2026-08-10T12:19:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1453,11 +1453,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 215.05,
-      "current_pnl_pct": 2.58,
+      "current_price": 218.75,
+      "current_pnl_pct": 4.34,
       "maximum_profit_pct": 6.56,
       "maximum_drawdown_pct": -2.75,
-      "holding_time_minutes": 86
+      "holding_time_minutes": 101
     },
     "SENSEX-PE-ITM-20260810-1031-01": {
       "trade_id": "SENSEX-PE-ITM-20260810-1031-01",
@@ -1547,26 +1547,27 @@
           "trade_score": 57
         }
       ],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-08-10T10:36:00+05:30",
       "tracked_entry_price": 461.25,
       "highest_since_entry": 467.0,
-      "lowest_since_entry": 402.25,
+      "lowest_since_entry": 393.1,
       "max_favorable_pct": 1.25,
-      "max_adverse_pct": -12.79,
+      "max_adverse_pct": -14.78,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-08-10T12:15:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T12:04:00+05:30",
+      "last_processed_ts": "2026-08-10T12:19:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "SL_HIT"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [
         {
@@ -1804,11 +1805,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 429.2,
-      "current_pnl_pct": -6.95,
+      "current_price": 399.5,
+      "current_pnl_pct": -13.39,
       "maximum_profit_pct": 3.72,
-      "maximum_drawdown_pct": -10.38,
-      "holding_time_minutes": 89
+      "maximum_drawdown_pct": -13.39,
+      "holding_time_minutes": 104
     }
   },
   "next_seq": {
@@ -1821,7 +1822,7 @@
   },
   "next_display_num": 6,
   "summary_sent": false,
-  "consecutive_sl_streak": 2,
+  "consecutive_sl_streak": 3,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
@@ -2488,7 +2489,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 279,
+    "scanned_symbols": 288,
     "valid_signals": 138,
     "rejected_signals": 687,
     "api_failures": 0,
