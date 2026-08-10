@@ -116,7 +116,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T15:20:00+05:30",
+      "last_processed_ts": "2026-08-10T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -286,11 +286,12 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 119.75,
-      "current_pnl_pct": -20.98,
+      "current_price": 116.9,
+      "current_pnl_pct": -22.86,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -31.67,
-      "holding_time_minutes": 335
+      "holding_time_minutes": 339,
+      "_marked_open_at_eod": true
     },
     "SENSEX-PE-OTM-20260810-0950-01": {
       "trade_id": "SENSEX-PE-OTM-20260810-0950-01",
@@ -991,7 +992,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T15:20:00+05:30",
+      "last_processed_ts": "2026-08-10T15:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1202,7 +1203,8 @@
       "current_pnl_pct": 9.06,
       "maximum_profit_pct": 9.84,
       "maximum_drawdown_pct": -8.91,
-      "holding_time_minutes": 312
+      "holding_time_minutes": 317,
+      "_marked_open_at_eod": true
     },
     "MIDCPNIFTY-CE-ITM-20260810-1025-01": {
       "trade_id": "MIDCPNIFTY-CE-ITM-20260810-1025-01",
@@ -3088,7 +3090,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 513,
+    "scanned_symbols": 522,
     "valid_signals": 143,
     "rejected_signals": 813,
     "api_failures": 0,
