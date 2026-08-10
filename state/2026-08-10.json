@@ -116,7 +116,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T10:25:00+05:30",
+      "last_processed_ts": "2026-08-10T10:30:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -286,11 +286,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 125.75,
-      "current_pnl_pct": -17.02,
+      "current_price": 126.75,
+      "current_pnl_pct": -16.36,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -17.02,
-      "holding_time_minutes": 39
+      "holding_time_minutes": 45
     },
     "SENSEX-PE-OTM-20260810-0950-01": {
       "trade_id": "SENSEX-PE-OTM-20260810-0950-01",
@@ -982,16 +982,16 @@
       "actual_entry_time": "2026-08-10T10:08:00+05:30",
       "tracked_entry_price": 6.4,
       "highest_since_entry": 6.82,
-      "lowest_since_entry": 6.23,
+      "lowest_since_entry": 6.21,
       "max_favorable_pct": 6.56,
-      "max_adverse_pct": -2.66,
+      "max_adverse_pct": -2.97,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T10:25:00+05:30",
+      "last_processed_ts": "2026-08-10T10:30:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1198,11 +1198,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 6.7,
-      "current_pnl_pct": 4.69,
+      "current_price": 6.54,
+      "current_pnl_pct": 2.19,
       "maximum_profit_pct": 5.0,
       "maximum_drawdown_pct": -1.57,
-      "holding_time_minutes": 17
+      "holding_time_minutes": 23
     },
     "MIDCPNIFTY-CE-ITM-20260810-1025-01": {
       "trade_id": "MIDCPNIFTY-CE-ITM-20260810-1025-01",
@@ -1290,7 +1290,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T10:25:43.146784+05:30",
+      "last_processed_ts": "2026-08-10T10:30:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -1451,6 +1451,356 @@
           "enabled": false,
           "reason": "no candlestick read attached to this trade"
         }
+      },
+      "current_price": 205.7,
+      "current_pnl_pct": -1.48,
+      "maximum_profit_pct": 0.0,
+      "maximum_drawdown_pct": -1.48,
+      "holding_time_minutes": 5
+    },
+    "SENSEX-PE-ITM-20260810-1031-01": {
+      "trade_id": "SENSEX-PE-ITM-20260810-1031-01",
+      "display_label": "Trade 6",
+      "symbol": "SENSEX",
+      "direction": "PE",
+      "moneyness": "ITM",
+      "instrument_key": "BSE_FO|842138",
+      "strike": 78700.0,
+      "expiry": "2026-08-13",
+      "spot_price": 78616.64,
+      "alert_time": "2026-08-10T10:31:14.844982+05:30",
+      "alert_premium": 453.45,
+      "entry_low": 449.14,
+      "entry_high": 457.76,
+      "stop_loss": 395.98,
+      "target_1": 539.66,
+      "target_2": 597.13,
+      "session": "09:30-10:35",
+      "grade": "B+",
+      "trade_score": 71,
+      "probability_pct": 74,
+      "probability_label": "Potential Trade",
+      "score_breakdown": [
+        "+15 Volume Spike",
+        "+15 OI Build-up",
+        "-2 Trend Alignment",
+        "+5 Risk:Reward",
+        "+5 Liquidity",
+        "-1 VWAP Positioning",
+        "-1 Market Strength"
+      ],
+      "confidence_score": 7.1,
+      "risk_score": 1.0,
+      "reward_score": 5.0,
+      "expected_rr": "1:1.5",
+      "factor_checklist": [
+        "Trend \u26a0\ufe0f",
+        "Volume \u2705",
+        "OI \u2705",
+        "Momentum \u26a0\ufe0f",
+        "VWAP \u26a0\ufe0f",
+        "EMA \u26a0\ufe0f",
+        "Risk Reward \u2705",
+        "Liquidity \u2705",
+        "Market Strength \u26a0\ufe0f",
+        "HTF \u26a0\ufe0f"
+      ],
+      "confidence_stars": "\u2605\u2605\u2605\u2606\u2606",
+      "confidence_label": "Moderate",
+      "risk_rating": "\ud83d\udfe2",
+      "risk_label": "Low",
+      "expected_holding_minutes": [
+        15,
+        30
+      ],
+      "why_reasons": [
+        "\u2713 Below VWAP",
+        "\u2713 Volume Expansion",
+        "\u2713 Strong OI Build-up",
+        "\u2713 Excellent Liquidity",
+        "\u2713 No Nearby Support",
+        "\u2713 Healthy Delta",
+        "\u2713 Theta Risk Acceptable",
+        "\u2713 Premium In Configured Range"
+      ],
+      "alternatives": [
+        {
+          "symbol": "NIFTY",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "B",
+          "trade_score": 69
+        },
+        {
+          "symbol": "SAMVRDHNA MTHRSN INTL LTD",
+          "direction": "PE",
+          "moneyness": "ITM",
+          "grade": "B",
+          "trade_score": 69
+        },
+        {
+          "symbol": "MIDCPNIFTY",
+          "direction": "PE",
+          "moneyness": "ATM",
+          "grade": "Watchlist",
+          "trade_score": 57
+        }
+      ],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-08-10T10:31:14.844982+05:30",
+      "messages_sent": [
+        "NEW_TRADE_ALERT"
+      ],
+      "streak_counted": false,
+      "strategy": "trade_score",
+      "probability_history": [
+        {
+          "time": "09:45",
+          "pct": 97
+        },
+        {
+          "time": "09:45",
+          "pct": 85
+        },
+        {
+          "time": "09:45",
+          "pct": 83
+        },
+        {
+          "time": "09:50",
+          "pct": 96
+        },
+        {
+          "time": "09:50",
+          "pct": 94
+        },
+        {
+          "time": "09:50",
+          "pct": 88
+        },
+        {
+          "time": "09:55",
+          "pct": 97
+        },
+        {
+          "time": "09:55",
+          "pct": 97
+        },
+        {
+          "time": "09:55",
+          "pct": 96
+        },
+        {
+          "time": "10:01",
+          "pct": 83
+        },
+        {
+          "time": "10:01",
+          "pct": 81
+        },
+        {
+          "time": "10:01",
+          "pct": 71
+        },
+        {
+          "time": "10:05",
+          "pct": 79
+        },
+        {
+          "time": "10:05",
+          "pct": 73
+        },
+        {
+          "time": "10:05",
+          "pct": 68
+        },
+        {
+          "time": "10:10",
+          "pct": 83
+        },
+        {
+          "time": "10:10",
+          "pct": 75
+        },
+        {
+          "time": "10:10",
+          "pct": 69
+        },
+        {
+          "time": "10:31",
+          "pct": 74
+        },
+        {
+          "time": "10:31",
+          "pct": 74
+        },
+        {
+          "time": "10:31",
+          "pct": 74
+        }
+      ],
+      "probability_trend": "Stable",
+      "decision": {
+        "enabled": true,
+        "decision": "Trade Approved",
+        "approved": true,
+        "trade_quality_score": 72.7,
+        "confidence_score": 71.0,
+        "probability": {
+          "win_probability_pct": 73.1,
+          "loss_probability_pct": 26.9,
+          "trade_success_probability_pct": 73.1,
+          "historical_similarity_pct": null,
+          "source": "upstream_probability_pct"
+        },
+        "risk": {
+          "max_risk_per_unit": 57.47,
+          "expected_reward_per_unit": 143.68,
+          "risk_score": 74.7,
+          "capital_risk_pct": 0.06
+        },
+        "risk_reward": {
+          "entry": 453.45,
+          "stop_loss": 395.98,
+          "target_1": 539.66,
+          "target_2": 597.13,
+          "risk_reward_ratio": 2.5,
+          "min_rr_threshold": 1.5,
+          "passes_rr_floor": true
+        },
+        "entry": 453.45,
+        "stop_loss": 395.98,
+        "stop_loss_detail": {
+          "active_stop_loss": 395.98,
+          "style": "atr_dynamic",
+          "distance_pct": 12.67,
+          "percentage_stop_reference": 226.72,
+          "recommendation": null
+        },
+        "target_1": 539.66,
+        "target_2": 597.13,
+        "target_3": 625.87,
+        "position_size": {
+          "mode": "dynamic",
+          "quantity": 17,
+          "lot_size": 1
+        },
+        "entry_validation": {
+          "entry_quality_score": 52.5,
+          "sub_scores": {
+            "entry_distance": 60.0,
+            "volume_confirmation": 50.0,
+            "market_alignment": 50.0,
+            "options_confirmation": 50.0,
+            "institutional_confirmation": null
+          },
+          "passed": true,
+          "reasons": []
+        },
+        "priority": "High",
+        "explanation": [
+          "Trade Approved",
+          "Trade Quality 72.7/100",
+          "Probability 73.1%",
+          "Risk:Reward 1:2.5",
+          "Trade Score 71/100 (Potential Trade), probability 74%"
+        ],
+        "rejection_reasons": [],
+        "warnings": [],
+        "engines_used": [
+          "market_snapshot",
+          "early_breakout",
+          "trade_score_engine",
+          "options_intelligence"
+        ],
+        "engines_available": [
+          "trade_score_engine"
+        ],
+        "execution_time_ms": 0.15,
+        "timestamp": "2026-08-10T10:31:35.954241+05:30",
+        "quant_intelligence": {
+          "enabled": true,
+          "decision": "REJECTED",
+          "probability": 0.0,
+          "confidence": "VERY LOW",
+          "signal_quality_grade": "Reject",
+          "regime": "Sideways",
+          "regime_confidence": "LOW",
+          "risk": {
+            "entry": 453.45,
+            "stop_loss": null,
+            "trailing_stop_loss": null,
+            "target_1": null,
+            "target_2": null,
+            "target_3": null,
+            "risk_reward_ratio": null,
+            "position_score": 0.0
+          },
+          "pattern": {
+            "pattern_key": "PE|Sideways|NA|na|na|na",
+            "historical_win_pct": null,
+            "historical_loss_pct": null,
+            "sample_size": 0,
+            "pattern_confidence": "NONE"
+          },
+          "explanation": "SENSEX PE: REJECTED (grade Reject, probability 0.0% [VERY LOW]). Regime: Sideways (LOW). No historical pattern sample yet. Primary rejection reason: Weak momentum: momentum data unavailable.",
+          "reasons": {
+            "probability": [
+              "TREND provides little/no confirmation (strength 0.00).",
+              "EMA provides little/no confirmation (strength 0.00).",
+              "OI provides little/no confirmation (strength 0.00)."
+            ],
+            "signal_quality": [
+              "Weak momentum: momentum data unavailable.",
+              "Weak volume: volume/threshold data unavailable.",
+              "Poor liquidity: OI/threshold data unavailable.",
+              "Poor risk reward: risk/reward could not be computed.",
+              "Low confidence: probability 0.0 below minimum 40."
+            ],
+            "regime": [
+              "Insufficient directional signal to classify a trend; defaulting to sideways read."
+            ],
+            "risk": [
+              "Insufficient price/ATR data to compute risk levels."
+            ],
+            "pattern": [
+              "No historical setups recorded yet for this pattern."
+            ]
+          },
+          "errors": [],
+          "execution_time_ms": 12.89
+        },
+        "news_intelligence": {
+          "enabled": true,
+          "news_score": 0.0,
+          "sentiment": "neutral",
+          "impact": "ignore",
+          "confidence": 0.0,
+          "reasons": [
+            "No recent news found for this symbol"
+          ],
+          "article_count": 0,
+          "most_recent_headline": "",
+          "most_recent_url": "",
+          "execution_time_ms": 0.03
+        },
+        "candlestick_patterns": {
+          "enabled": false,
+          "reason": "no candlestick read attached to this trade"
+        }
       }
     }
   },
@@ -1459,26 +1809,27 @@
     "SENSEX-PE-OTM": 1,
     "NIFTY-PE-ATM": 1,
     "SAMVRDHNA MTHRSN INTL LTD-PE-ITM": 1,
-    "MIDCPNIFTY-CE-ITM": 1
+    "MIDCPNIFTY-CE-ITM": 1,
+    "SENSEX-PE-ITM": 1
   },
-  "next_display_num": 5,
+  "next_display_num": 6,
   "summary_sent": false,
   "consecutive_sl_streak": 2,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
     "NSE_FO|41011": 12682670.0,
-    "NSE_FO|41013": 10189595.0,
-    "NSE_FO|41015": 24417120.0,
-    "NSE_FO|41016": 16966755.0,
-    "NSE_FO|41014": 13420420.0,
+    "NSE_FO|41013": 9133735.0,
+    "NSE_FO|41015": 24211330.0,
+    "NSE_FO|41016": 18684120.0,
+    "NSE_FO|41014": 14462045.0,
     "NSE_FO|41012": 18268770.0,
-    "NSE_FO|59092": 213480.0,
-    "NSE_FO|59094": 275580.0,
-    "NSE_FO|59096": 396900.0,
-    "NSE_FO|59097": 223980.0,
-    "NSE_FO|59095": 256770.0,
-    "NSE_FO|59093": 203790.0,
+    "NSE_FO|59092": 212670.0,
+    "NSE_FO|59094": 283470.0,
+    "NSE_FO|59096": 398340.0,
+    "NSE_FO|59097": 225060.0,
+    "NSE_FO|59095": 260040.0,
+    "NSE_FO|59093": 212460.0,
     "NSE_FO|60621": 48360.0,
     "NSE_FO|60623": 24360.0,
     "NSE_FO|60625": 342240.0,
@@ -1487,34 +1838,34 @@
     "NSE_FO|60622": 41160.0,
     "BSE_FO|847188": 222820.0,
     "BSE_FO|841906": 523320.0,
-    "BSE_FO|847642": 1119260.0,
-    "BSE_FO|841676": 1025240.0,
+    "BSE_FO|847642": 1040660.0,
+    "BSE_FO|841676": 1066620.0,
     "BSE_FO|846956": 588180.0,
     "BSE_FO|848769": 513580.0,
-    "NSE_FO|128379": 4587900.0,
-    "NSE_FO|125346": 9538650.0,
+    "NSE_FO|128379": 4563300.0,
+    "NSE_FO|125346": 9311100.0,
     "NSE_FO|128414": 5412000.0,
     "NSE_FO|128431": 467400.0,
-    "NSE_FO|125347": 6076200.0,
-    "NSE_FO|128380": 3819150.0,
-    "NSE_FO|77654": 15925.0,
-    "NSE_FO|92633": 143000.0,
+    "NSE_FO|125347": 6039300.0,
+    "NSE_FO|128380": 3825300.0,
+    "NSE_FO|77654": 16250.0,
+    "NSE_FO|92633": 143975.0,
     "NSE_FO|77750": 104000.0,
     "NSE_FO|77751": 64675.0,
-    "NSE_FO|92634": 211575.0,
-    "NSE_FO|77655": 76700.0,
+    "NSE_FO|92634": 210600.0,
+    "NSE_FO|77655": 76375.0,
     "NSE_FO|85146": 421400.0,
-    "NSE_FO|85148": 2717600.0,
-    "NSE_FO|85150": 2569250.0,
-    "NSE_FO|85151": 733150.0,
-    "NSE_FO|85149": 2575700.0,
-    "NSE_FO|85147": 922350.0,
-    "NSE_FO|101290": 221550.0,
-    "NSE_FO|101292": 324600.0,
-    "NSE_FO|101294": 555150.0,
-    "NSE_FO|101295": 103800.0,
-    "NSE_FO|101293": 169350.0,
-    "NSE_FO|101291": 286800.0,
+    "NSE_FO|85148": 2704700.0,
+    "NSE_FO|85150": 2573550.0,
+    "NSE_FO|85151": 735300.0,
+    "NSE_FO|85149": 2580000.0,
+    "NSE_FO|85147": 924500.0,
+    "NSE_FO|101290": 222300.0,
+    "NSE_FO|101292": 322650.0,
+    "NSE_FO|101294": 563700.0,
+    "NSE_FO|101295": 103200.0,
+    "NSE_FO|101293": 169200.0,
+    "NSE_FO|101291": 289200.0,
     "NSE_FO|117648": 3284400.0,
     "NSE_FO|117658": 1425200.0,
     "NSE_FO|117660": 7385000.0,
@@ -1529,20 +1880,20 @@
     "NSE_FO|59089": 115830.0,
     "BSE_FO|849013": 82180.0,
     "BSE_FO|843108": 340820.0,
-    "NSE_FO|60627": 39240.0,
-    "NSE_FO|60632": 40920.0,
-    "NSE_FO|128377": 5639550.0,
-    "NSE_FO|128378": 8935950.0,
-    "NSE_FO|60633": 44280.0,
-    "NSE_FO|60634": 35640.0,
-    "BSE_FO|845849": 694860.0,
-    "BSE_FO|847419": 422060.0,
-    "NSE_FO|41017": 10919415.0,
-    "NSE_FO|41019": 4763460.0,
-    "NSE_FO|60635": 19440.0,
+    "NSE_FO|60627": 38520.0,
+    "NSE_FO|60632": 40680.0,
+    "NSE_FO|128377": 5608800.0,
+    "NSE_FO|128378": 8917500.0,
+    "NSE_FO|60633": 44400.0,
+    "NSE_FO|60634": 36120.0,
+    "BSE_FO|845849": 687140.0,
+    "BSE_FO|847419": 480000.0,
+    "NSE_FO|41017": 10973170.0,
+    "NSE_FO|41019": 5110625.0,
+    "NSE_FO|60635": 19680.0,
     "NSE_FO|60638": 12480.0,
-    "BSE_FO|848108": 394480.0,
-    "BSE_FO|842138": 232100.0
+    "BSE_FO|848108": 426140.0,
+    "BSE_FO|842138": 261900.0
   },
   "probability_history": {
     "MIDCPNIFTY-PE": [
@@ -1593,6 +1944,10 @@
       {
         "time": "10:20",
         "pct": 69
+      },
+      {
+        "time": "10:31",
+        "pct": 65
       }
     ],
     "SENSEX-PE": [
@@ -1667,6 +2022,18 @@
       {
         "time": "10:10",
         "pct": 69
+      },
+      {
+        "time": "10:31",
+        "pct": 74
+      },
+      {
+        "time": "10:31",
+        "pct": 74
+      },
+      {
+        "time": "10:31",
+        "pct": 74
       }
     ],
     "SAMVRDHNA MTHRSN INTL LTD-PE": [
@@ -1777,6 +2144,18 @@
       {
         "time": "10:25",
         "pct": 77
+      },
+      {
+        "time": "10:31",
+        "pct": 72
+      },
+      {
+        "time": "10:31",
+        "pct": 71
+      },
+      {
+        "time": "10:31",
+        "pct": 71
       }
     ],
     "NIFTY-PE": [
@@ -1823,6 +2202,14 @@
       {
         "time": "10:10",
         "pct": 71
+      },
+      {
+        "time": "10:31",
+        "pct": 72
+      },
+      {
+        "time": "10:31",
+        "pct": 72
       }
     ],
     "CROMPT GREA CON ELEC LTD-PE": [
@@ -1907,9 +2294,9 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 135,
-    "valid_signals": 86,
-    "rejected_signals": 473,
+    "scanned_symbols": 144,
+    "valid_signals": 95,
+    "rejected_signals": 510,
     "api_failures": 0,
     "broker_errors": 0
   },
