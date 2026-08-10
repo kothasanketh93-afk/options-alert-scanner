@@ -116,7 +116,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T11:34:00+05:30",
+      "last_processed_ts": "2026-08-10T11:49:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -286,11 +286,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 112.5,
-      "current_pnl_pct": -25.77,
+      "current_price": 113.85,
+      "current_pnl_pct": -24.88,
       "maximum_profit_pct": 0.0,
       "maximum_drawdown_pct": -26.49,
-      "holding_time_minutes": 109
+      "holding_time_minutes": 125
     },
     "SENSEX-PE-OTM-20260810-0950-01": {
       "trade_id": "SENSEX-PE-OTM-20260810-0950-01",
@@ -991,7 +991,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T11:34:00+05:30",
+      "last_processed_ts": "2026-08-10T11:49:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1198,11 +1198,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 5.95,
-      "current_pnl_pct": -7.03,
+      "current_price": 6.07,
+      "current_pnl_pct": -5.16,
       "maximum_profit_pct": 7.66,
       "maximum_drawdown_pct": -8.91,
-      "holding_time_minutes": 87
+      "holding_time_minutes": 102
     },
     "MIDCPNIFTY-CE-ITM-20260810-1025-01": {
       "trade_id": "MIDCPNIFTY-CE-ITM-20260810-1025-01",
@@ -1290,7 +1290,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T11:34:00+05:30",
+      "last_processed_ts": "2026-08-10T11:49:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1453,11 +1453,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 218.0,
-      "current_pnl_pct": 3.98,
+      "current_price": 215.1,
+      "current_pnl_pct": 2.6,
       "maximum_profit_pct": 6.56,
       "maximum_drawdown_pct": -2.75,
-      "holding_time_minutes": 56
+      "holding_time_minutes": 71
     },
     "SENSEX-PE-ITM-20260810-1031-01": {
       "trade_id": "SENSEX-PE-ITM-20260810-1031-01",
@@ -1561,7 +1561,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-08-10T11:34:00+05:30",
+      "last_processed_ts": "2026-08-10T11:49:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -1804,11 +1804,11 @@
           "reason": "no candlestick read attached to this trade"
         }
       },
-      "current_price": 439.2,
-      "current_pnl_pct": -4.78,
+      "current_price": 426.65,
+      "current_pnl_pct": -7.5,
       "maximum_profit_pct": 3.72,
       "maximum_drawdown_pct": -10.38,
-      "holding_time_minutes": 59
+      "holding_time_minutes": 74
     }
   },
   "next_seq": {
@@ -2488,7 +2488,7 @@
     ]
   },
   "daily_stats": {
-    "scanned_symbols": 261,
+    "scanned_symbols": 270,
     "valid_signals": 138,
     "rejected_signals": 687,
     "api_failures": 0,
