@@ -124,10 +124,23 @@ def record_iv_reading(instrument_key: str, iv) -> None:
 def is_iv_abnormal(iv) -> bool:
     """True if IV is outside a sane band -- almost always a stale or
     garbage quote (a dead/illiquid leg), not a genuinely "very cheap"
-    or "very rich" option. Reject engine uses this directly."""
+    or "very rich" option. Reject engine uses this directly.
+
+    `iv` arrives here in percentage-point scale (e.g. 14.12 meaning
+    14.12%) -- both angelone.py and upstox.py return it that way (see
+    IV_SCALE_VERIFICATION.md), and record_iv_reading()/iv_percentile()/
+    iv_rank() all operate on that same raw scale. IV_ABNORMAL_LOW_PCT /
+    IV_ABNORMAL_HIGH_PCT are on the 0-1 fraction scale instead (0.08 =
+    8%, 1.20 = 120%; see config.py's inline comments and
+    config_validator.py's _FRACTION_FIELD_ALLOWLIST note on
+    IV_ABNORMAL_HIGH_PCT), so `iv` is converted to a fraction here at
+    the comparison site -- exactly the normalization
+    IV_SCALE_VERIFICATION.md flagged as still outstanding when this
+    function gets wired up."""
     if iv is None:
         return False  # absent isn't "abnormal", just unknown -- see module docstring
-    return iv < IV_ABNORMAL_LOW_PCT or iv > IV_ABNORMAL_HIGH_PCT
+    iv_fraction = iv / 100.0
+    return iv_fraction < IV_ABNORMAL_LOW_PCT or iv_fraction > IV_ABNORMAL_HIGH_PCT
 
 
 def iv_percentile(instrument_key: str, current_iv) -> float:
