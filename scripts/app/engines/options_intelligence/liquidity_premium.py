@@ -52,10 +52,41 @@ def premium_score(spot_price: float, strike: float, direction: str, premium: flo
     bank" as intrinsic value. An ITM strike with real intrinsic value
     scores highest; a strike right at the configured time-value
     ceiling scores near zero.
+
+    BUGFIX (2026-08-10): for ATM/OTM strikes, intrinsic value is
+    ALWAYS exactly 0 by definition -- meaning pct_time_value was
+    ALWAYS ~100% (>= PREMIUM_TIME_VALUE_MAX_PCT) and this returned 0.0
+    for every single ATM/OTM strike regardless of the actual quote's
+    quality. Confirmed live: this is the direct source of the "Poor
+    Premium Quality (mostly time value)" warning appearing on every
+    ATM/OTM OPTIONS_INTEL log line in the logs reviewed this session --
+    not a quote-quality signal at all, just this strike's moneyness.
+    Once config.OPTIONS_INTELLIGENCE_FILTER_ENABLED was turned on (see
+    that flag's own history), scoring.options_filter()'s "any hard-
+    hygiene sub-score < 0.2 -> reject" rule turned this into an
+    unconditional reject of every ATM/OTM strike, leaving only ITM
+    strikes able to ever pass -- a moneyness bias never intended: this
+    system deliberately scores ITM/ATM/OTM as three parallel,
+    independently-competing strategies (see scanner.moneyness_offsets()/
+    STRIKE_RANGE), not a de facto ITM-only filter.
+
+    The intrinsic/extrinsic split this function is built on is only a
+    meaningful quality signal for ITM strikes -- there, most of the
+    premium SHOULD be intrinsic, so a high time-value percentage on an
+    ITM strike (e.g. a barely-ITM strike right before expiry with
+    skewed IV) genuinely is an anomaly worth penalizing. For ATM/OTM,
+    intrinsic == 0 always, so the entire metric is structurally
+    inapplicable, not evidence of a bad quote -- returning a neutral,
+    non-penalizing 1.0 there. Genuinely bad ATM/OTM premiums are still
+    caught elsewhere: filters.premium_in_range() (absolute band per
+    symbol) and this same engine's OTHER sub-scores (liquidity, IV,
+    greeks) don't share this blind spot.
     """
     if not premium:
         return 0.0
     intrinsic = intrinsic_value(spot_price, strike, direction)
+    if intrinsic <= 0:
+        return 1.0  # ATM/OTM -- see BUGFIX note above; not a quality read for these
     extrinsic = extrinsic_value(premium, intrinsic)
     pct_time_value = time_value_pct(premium, extrinsic)
     if PREMIUM_TIME_VALUE_MAX_PCT <= 0:
