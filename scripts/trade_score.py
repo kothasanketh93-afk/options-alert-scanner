@@ -229,15 +229,87 @@ def compute_grade(trade_score: int) -> str:
 
 def compute_probability_pct(trade_score: int) -> int:
     """
-    Simple linear calibration, NOT a backtested probability model --
-    same honesty as opportunity_score.py's documented approximations.
-    Maps the 60-100 alertable range onto roughly 65%-97%, so a 92
-    trade score reads close to the spec's own 92->91% example. Revisit
-    once enough resolved trades exist to fit this against actual
-    win-rate (the same win-rate check the old grade-vs-outcome
-    feedback loop, mentioned in README.md, was built for).
+    Simple linear rescaling of trade_score -- NOT a probability, NOT
+    backtested against any outcome data. Kept ONLY as a display/ranking
+    heuristic (e.g. sorting candidates within the same grade tier) --
+    see calibrated_probability_pct() below for the ONLY function
+    permitted to feed the alert-eligibility probability gate.
+
+    BUGFIX (2026-08-12) -- P0 audit, "probability must not be
+    fabricated": this function's OWN docstring already said "NOT a
+    backtested probability model" since it was written, and yet
+    scanner.score_strike() was feeding its output directly into
+    candidate["probability_pct"] -- the exact field main.py's
+    MIN_ALERT_PROBABILITY gate compared against 70, and the exact
+    field the Telegram alert displayed as "Probability: 71% (Potential
+    Trade)". A monotonic rescaling of trade_score is not a probability
+    just because it's labeled one and bounded to a percentage -- it
+    encodes ONLY "how well did this candidate's own factor scores add
+    up", never "in similar past setups, how often did target beat
+    stop". Renamed in spirit (not in name, to avoid an unrelated mass
+    rename of every existing caller/test that already treats this as
+    "the trade_score rescaling function") -- its role in the pipeline
+    is now display/ranking ONLY. scanner.score_strike() no longer uses
+    this function's output for candidate["probability_pct"] -- see
+    calibrated_probability_pct() and that call site's own comment.
     """
     return round(_clamp01((trade_score - 60) / 40) * 32 + 65)
+
+
+def calibrated_probability_pct(context: dict):
+    """
+    THE ONLY function permitted to feed the alert-eligibility
+    probability gate (main.py's config.MIN_ALERT_PROBABILITY check,
+    and candidate["probability_pct"] in the Telegram alert payload).
+    Returns an int 0-100, or None when a calibrated estimate cannot be
+    produced -- callers MUST treat None as UNAVAILABLE, not as "assume
+    0" or "fall back to trade_score" (see scanner.score_strike()'s own
+    call site: None here means NO ALERT, unconditionally, however high
+    trade_score/every other gate scored).
+
+    WHAT THIS IS MEANT TO ANSWER: P(target reached before stop-loss),
+    conditional on the setup's own characteristics -- NOT "how good did
+    this candidate's factor scores add up" (that question belongs to
+    trade_score/compute_probability_pct() above, a completely different
+    concept this repository previously conflated with this one). A
+    genuine implementation would look up a calibrated win-rate from
+    HISTORICAL OUTCOME DATA (tracker.py/state.py's SL_HIT/T1_HIT/
+    T1_THEN_SL trade records already exist per-trade), bucketed by
+    characteristics meaningfully similar to `context` below -- e.g.
+    moneyness x direction x RR-bucket x extension-state x volatility-
+    regime x time-of-day -- with enough resolved trades PER BUCKET for
+    the resulting rate to mean anything statistically (a bucket with 3
+    resolved trades is not a probability estimate, it's noise dressed
+    up as one).
+
+    CURRENT STATE (2026-08-12): this repository has per-trade outcome
+    records (state.py's trade dicts reach a `final_status` of SL_HIT/
+    T1_THEN_SL/T1_SUCCESS/etc via tracker.py) but NO aggregation into a
+    bucketed calibration table anywhere, and no evidence of enough
+    resolved trades per plausible bucket to fit one reliably yet (the
+    daily summaries reviewed this session showed single-digit resolved-
+    trade counts per day). Building a real calibration model on that
+    little data would itself be fabrication with extra steps -- so this
+    function unconditionally returns None for now. This is the
+    intentional, safe default per this system's own stated principle:
+    prefer PROBABILITY UNAVAILABLE over a fabricated number, even a
+    plausible-looking one. When a real historical dataset and
+    calibration methodology exist, this is the ONE place to wire them
+    in -- every caller already treats None as "no alert" correctly, so
+    filling this in later requires no changes anywhere else in the
+    pipeline.
+
+    context: a dict describing the setup this probability would be
+        FOR -- deliberately accepted now (rather than added later when
+        real calibration lands) so callers already pass everything a
+        real model would need, and so this function's SIGNATURE change
+        doesn't become a second migration later. Expected keys (all
+        optional -- a real implementation would decide which actually
+        matter): "symbol", "direction", "moneyness", "expiry_days",
+        "trend_value", "momentum_value", "market_regime", "rr_ratio",
+        "time_of_day_bucket". Unused by this stub implementation.
+    """
+    return None
 
 
 def probability_label(probability_pct: int) -> str:
@@ -422,7 +494,19 @@ def factor_checklist(strengths: dict, pass_threshold: float = 0.5) -> list:
     for key, label in _CHECKLIST_LABELS:
         value = strengths.get(key, 0.0)
         if value is None:
-            value = 0.0  # unavailable this cycle -- display-only, same as a weak/failing read (⚠️)
+            # BUGFIX (2026-08-11): used to force None -> 0.0 -> shown as
+            # a permanent "⚠️" -- correct for a factor that's merely
+            # unavailable THIS cycle (e.g. EMA before enough candles),
+            # but wrong for "htf", which is now ALWAYS None (no genuine
+            # independent higher-timeframe source exists in this
+            # codebase -- see filters.directional_confirmation_status()'s
+            # docstring). Showing "HTF ⚠️" on every single alert forever
+            # reads as "checked and weak", not "never checked" -- exactly
+            # the misleading-terminology problem flagged in review.
+            # Skipped entirely instead, matching scoring_reasons()'s
+            # existing "no reason line for an unavailable factor" behavior
+            # just above -- both display functions now agree.
+            continue
         mark = "✅" if value >= pass_threshold else "⚠️"
         lines.append(f"{label} {mark}")
     return lines
@@ -489,12 +573,17 @@ def rejection_detail_lines(
     Structured, itemized rejection reasons for the REJECTED log line,
     replacing the old generic "Low Score (52/100, floor=55)" text with
     per-factor detail -- matches the requested log shape:
-        Direction confirmations: 1/5
-        EMA: Not Ready
-        HTF: Not Ready
+        Direction confirmations: 1/4
+        EMA (15m): Not Ready
+        EMA (5m): Not Ready
         Trend: Insufficient candles
         Momentum: Unavailable
         Score below threshold
+
+    NOTE (2026-08-11): a "HTF: ..." line used to appear here too --
+    removed along with the duplicate "htf" signal in filters.
+    directional_confirmation_status() (see that function's docstring).
+    "Direction confirmations" is now out of 4, not 5.
 
     Only called AFTER the candle-readiness and directional-confirmation
     gates have already been evaluated (scanner.score_strike() calls
@@ -510,16 +599,15 @@ def rejection_detail_lines(
         return lines
 
     detail = directional_status["detail"]
-    lines.append(f"Direction confirmations: {directional_status['count']}/5 "
+    lines.append(f"Direction confirmations: {directional_status['count']}/4 "
                  f"(need {directional_status['required']})")
     lines.append(f"EMA (15m): {detail['ema']}")
     lines.append(f"EMA (5m): {detail.get('m5', 'Not Ready')}")
-    lines.append(f"HTF: {detail['htf']}")
     lines.append(f"Trend: {detail['trend']}")
     lines.append(f"Momentum: {detail['momentum']}")
     lines.append(f"VWAP: {detail['vwap']}")
     lines.append(
-        f"Structural confirmation (EMA-5m/EMA-15m/HTF): "
+        f"Structural confirmation (EMA-5m/EMA-15m): "
         f"{directional_status.get('structural_confirmed_count', 0)}/"
         f"{directional_status.get('structural_required', 1)} "
         f"({'OK' if directional_status.get('structural_ok', True) else 'FAIL'})"

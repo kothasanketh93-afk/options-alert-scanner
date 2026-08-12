@@ -156,22 +156,46 @@ def premium_in_range(symbol: str, premium: float) -> bool:
 
 
 def directional_confirmation_status(
-    ema_direction, mtf_confirmed, trend_value, momentum_value, vwap_confirmed_flag, direction: str,
+    ema_direction, trend_value, momentum_value, vwap_confirmed_flag, direction: str,
     m5_direction=None,
 ) -> dict:
     """
-    NEW hard gate input (2026-08-07): counts how many of 5 directional
+    NEW hard gate input (2026-08-07): counts how many of the directional
     signals actually CONFIRM this trade's direction, and requires at
     least DIRECTIONAL_CONFIRMATION_MIN_COUNT of them before a strike
-    is scored at all. Independent of quality_gate()'s 3 risk gates
-    (liquidity/delta/theta) -- this is a signal-quality gate, kept
-    separate so each can be tuned/disabled on its own.
+    is scored at all. Independent of quality_gate()'s risk gates
+    (liquidity/delta/theta/premium/RR) -- this is a signal-quality
+    gate, kept separate so each can be tuned/disabled on its own.
 
-    Deliberately NOT "all 5 must pass" -- filters.quality_gate()'s own
-    docstring already documents why an unrealistic AND across several
-    semi-independent signals never once passed live (26 consecutive
-    scan cycles, 2026-07-17). DIRECTIONAL_CONFIRMATION_MIN_COUNT=2
+    Deliberately NOT "all signals must pass" -- filters.quality_gate()'s
+    own docstring already documents why an unrealistic AND across
+    several semi-independent signals never once passed live (26
+    consecutive scan cycles, 2026-07-17). DIRECTIONAL_CONFIRMATION_MIN_COUNT=2
     (default) asks for corroboration, not unanimity.
+
+    BUGFIX (2026-08-11): a SEPARATE "mtf_confirmed"/"HTF" signal used to
+    be counted here alongside `ema_direction` -- but this repository
+    has never actually had an independent higher-timeframe data source:
+    option_chain.multi_timeframe_confirms() (present since before this
+    signal-quality gate existed at all) computes ema_trend_direction()
+    on the SAME symbol's SAME 15-minute candles `ema_direction` here
+    already reads. "MTF/HTF" was a naming artifact, not a second piece
+    of evidence -- the two only ever differed by which of two separate
+    candle fetches happened to be staler, never by genuine
+    independence. Confirmed reproducible after the 2026-08-11 EMA-
+    warmup fix made both fetches equally fresh: ema_direction="CE" +
+    the derived "htf" signal both read "Confirmed" from the exact same
+    underlying fact, letting count=2 pass with zero real corroborating
+    evidence (trend/momentum/vwap all unconfirmed) -- literally the
+    "one fact satisfies the whole gate" failure mode this gate was
+    built to prevent in the first place. Removed as a counted signal
+    and from the structural-confirmation set entirely; there is
+    nothing here to rename INTO, since no independent higher-timeframe
+    read exists in this codebase to point the name at. If a genuine
+    higher-timeframe signal (e.g. 30-min or 60-min candles, not fetched
+    anywhere in this repository today) is added later, it belongs back
+    here as its own real, independently-sourced argument -- not as a
+    second read of the same 15-min data under a different name.
 
     Every input here is TRI-STATE aware (True/False/None) so a
     genuinely-not-ready signal (e.g. EMA9/21 not yet computable, or
@@ -183,11 +207,9 @@ def directional_confirmation_status(
     logging so REJECTED lines say WHY a signal didn't count, not just
     that it didn't.
 
-    ema_direction: "CE"/"PE"/None (the RAW ema_trend_direction() read,
-        not the already-collapsed ema_aligned bool -- so "not ready"
-        and "confirmed opposite" can be told apart here).
-    mtf_confirmed: True/False/None (option_chain.
-        multi_timeframe_confirmation_detail()'s tri-state result).
+    ema_direction: "CE"/"PE"/None (the RAW ema_trend_direction() read
+        on 15-MINUTE candles, warmup-aware as of 2026-08-11 -- see
+        scanner.score_strike()'s warmup_candles_15m).
     trend_value: efficiency_ratio() reading (float or None).
     momentum_value: signed momentum_pct() reading, already applied to
         `direction` (float or None) -- positive means aligned.
@@ -195,34 +217,20 @@ def directional_confirmation_status(
         False on missing data, no tri-state available at that layer).
     m5_direction: "CE"/"PE"/None -- the RAW ema_trend_direction() read
         on 5-MINUTE candles (a genuinely separate computation from
-        ema_direction above, which is the 15-min read). NOT one of the
-        5 counted signals below (this function's public "count/5"
-        shape stays exactly as before) -- feeds ONLY the Mandatory
-        Structural Confirmation check below.
+        ema_direction above -- different timeframe, different candle
+        set, so this pairing IS real independent evidence, unlike the
+        removed ema/htf duplication). NOT one of the counted signals
+        below -- feeds ONLY the Mandatory Structural Confirmation
+        check.
 
-    BUGFIX (2026-08-10): count>=required alone (the ORIGINAL 5-signal
-    gate) let `trend` (a plain efficiency_ratio() number, computed
-    from raw closes -- NOT tied to EMA structure in any way) plus
-    `vwap` alone satisfy DIRECTIONAL_CONFIRMATION_MIN_COUNT=2 while
-    EMA (15-min) AND HTF were BOTH "Not Ready" -- confirmed
-    reproducible: ema_direction=None, mtf_confirmed=None, trend_value=
-    0.45, vwap_confirmed_flag=True -> count=2, passed=True, with zero
-    real structural (EMA-based) directional evidence on either
-    timeframe. That is exactly the trend=0.45/ema=None/htf=None/
-    momentum=None -> probability=71-82% pattern from the logs.
-    MANDATORY_CORE_EVIDENCE_ENABLED in scanner.py only ever checked
-    "trend AND ema AND htf all None", which this case doesn't trigger
-    (trend is a real number here) -- a distinct, narrower gap that
-    fix didn't close.
-
-    FIX: `passed` now ALSO requires Mandatory Structural Confirmation
-    -- at least MANDATORY_STRUCTURAL_MIN_CONFIRMED (default 1) of
-    {ema_direction == direction, m5_direction == direction,
-    mtf_confirmed is True} must be true, in ADDITION to count>=required.
-    `trend`/`momentum`/`vwap` alone, however many of them agree, can
-    no longer carry a candidate through this gate on their own -- at
-    least one of the two REAL EMA-structure reads (5-min or 15-min) or
-    the tri-state HTF confirmation must independently confirm.
+    FIX (2026-08-10, still in force): `passed` also requires Mandatory
+    Structural Confirmation -- at least MANDATORY_STRUCTURAL_MIN_CONFIRMED
+    (default 1) of {ema_direction == direction, m5_direction == direction}
+    must be true, in ADDITION to count>=required. `trend`/`momentum`/
+    `vwap` alone, however many of them agree, can no longer carry a
+    candidate through this gate on their own -- at least one of the two
+    REAL, independently-computed EMA-structure reads (5-min or 15-min)
+    must independently confirm.
     """
     detail = {}
     count = 0
@@ -234,14 +242,6 @@ def directional_confirmation_status(
         count += 1
     else:
         detail["ema"] = "Not Confirmed"
-
-    if mtf_confirmed is None:
-        detail["htf"] = "Not Ready"
-    elif mtf_confirmed:
-        detail["htf"] = "Confirmed"
-        count += 1
-    else:
-        detail["htf"] = "Not Confirmed"
 
     if trend_value is None:
         detail["trend"] = "Insufficient candles"
@@ -273,7 +273,7 @@ def directional_confirmation_status(
     else:
         detail["m5"] = "Not Confirmed"
 
-    structural_confirmed_count = sum(1 for k in ("ema", "m5", "htf") if detail[k] == "Confirmed")
+    structural_confirmed_count = sum(1 for k in ("ema", "m5") if detail[k] == "Confirmed")
     structural_ok = (
         (not MANDATORY_STRUCTURAL_ENABLED)
         or structural_confirmed_count >= MANDATORY_STRUCTURAL_MIN_CONFIRMED
@@ -349,7 +349,6 @@ _REJECTION_LABELS = {
     "vwap_confirmed": "Against VWAP",
     "volume_confirmed": "Low Volume",
     "oi_building": "No OI Build-up",
-    "mtf_confirmed": "15-min Not Confirmed",
     "risk_reward_ok": "Poor Risk Reward",
 }
 
@@ -386,7 +385,6 @@ def reasons_from_factors(factors: dict) -> list:
         "volume_confirmed": "Volume Expansion",
         "oi_building": "Strong OI Build-up",
         "liquidity_ok": "Excellent Liquidity",
-        "mtf_confirmed": "15-minute Confirmed",
         "risk_reward_ok": "No Nearby Resistance" if factors.get("direction") == "CE" else "No Nearby Support",
         "delta_ok": "Healthy Delta",
         "expiry_theta_ok": "Theta Risk Acceptable",

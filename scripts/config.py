@@ -695,6 +695,22 @@ TELEGRAM_MIN_PROBABILITY = 80
 # 2026-07-24's exact bug (alert suppressed, trade still silently
 # tracked, downstream TARGET_1_HIT/SL_HIT messages for a trade the
 # channel was never told existed) rather than reintroducing it.
+#
+# UPDATE (2026-08-12, P0 probability-fabrication audit): this floor's
+# semantics changed underneath it without changing this line -- as of
+# scanner.score_strike()'s Calibrated Probability Gate,
+# candidate["probability_pct"] is now ONLY ever trade_score.
+# calibrated_probability_pct()'s output (never trade_score.
+# compute_probability_pct()'s trade_score-rescaling heuristic -- see
+# that function's own docstring for why it was demoted to display-only).
+# Since calibrated_probability_pct() currently always returns None
+# (no historical-outcome calibration data exists yet -- see its
+# docstring), scanner.py already rejects every candidate before this
+# check is ever reached: `chosen` will not exist, so this comparison
+# is presently DEAD CODE IN PRACTICE, not disabled -- it is the
+# correct, already-in-place enforcement point for the moment
+# calibrated_probability_pct() starts returning real numbers, at which
+# point this line requires no changes to start working.
 MIN_ALERT_PROBABILITY = 70
 
 # --- Liquidity engine (scanner.py) ---
@@ -1447,7 +1463,18 @@ WARMUP_CANDLE_CONTINUITY_ENABLED = True   # flipped 2026-07-31: both runs pasted
                                            # per scanned symbol per cycle, ONLY before ATR_WARMUP_CUTOFF_
                                            # HOUR:MINUTE IST -- zero calls after that, and fails open to
                                            # pre-fix (today-only-candles) behavior on any fetch error.
-ATR_WARMUP_CUTOFF_HOUR = 11     # IST -- warmup candles are only fetched/prepended before this time
+ATR_WARMUP_CUTOFF_HOUR = 11     # IST -- warmup candles are only fetched/prepended before this time,
+                                 # for ATR (market_data.get_atr_warmup_candles()) ONLY. EMA warmup
+                                 # (market_data.get_ema_warmup_candles(), added 2026-08-11) does NOT
+                                 # use this cutoff -- it has its own data-based cutoff (merges until
+                                 # today's own candles alone reach the requested period) because this
+                                 # wall-clock cutoff, tuned for ATR's shorter 15-candle need, caused a
+                                 # confirmed EMA-readiness regression: EMA ready (warmup-assisted) at
+                                 # 10:55 IST, then NOT ready again at 11:05 IST purely because the
+                                 # clock crossed this cutoff while today's own 15-min candles were
+                                 # still short of EMA21's 21-candle need (not reached until ~14:30 IST
+                                 # on today-only data). Left unchanged for ATR itself here since it
+                                 # was intentionally tuned for ATR's own (different, shorter) need.
 ATR_WARMUP_CUTOFF_MINUTE = 0
 ATR_WARMUP_TAIL_CANDLE_COUNT = 20  # previous-session candles to fetch (comfortably >= ATR's 15-candle
                                     # requirement, with headroom); trimmed to what compute_atr() needs
@@ -1519,13 +1546,17 @@ CANDLE_READINESS_MIN_5M = 3
 CANDLE_READINESS_MIN_15M = 2
 
 # --- Directional Confirmation Gate (filters.py) ---
-# Independent of the 3 existing hard risk gates (liquidity/delta/theta) --
-# this is a NEW hard gate requiring at least this many of the 5 directional
-# signals to agree before a strike is scored at all. Explicitly NOT "all 5
+# Independent of the hard risk gates (liquidity/delta/theta/premium/RR) --
+# this is a NEW hard gate requiring at least this many of the 4 directional
+# signals to agree before a strike is scored at all. Explicitly NOT "all
 # must pass" (that's the pre-2026-07-17 approach that never once passed live
 # -- see filters.quality_gate()'s docstring) and NOT folded into the
 # liquidity/delta/theta gate (those are risk checks, this is a signal-quality
 # check -- kept separate so each can be tuned/disabled independently).
+# UPDATE (2026-08-11): was 5 signals (including a separate "HTF" read) --
+# HTF was removed as a duplicate of the EMA(15m) signal, not independent
+# evidence; see filters.directional_confirmation_status()'s docstring for
+# the full trace. 4 real signals now: EMA(15m), trend, momentum, VWAP.
 DIRECTIONAL_CONFIRMATION_ENABLED = True
 DIRECTIONAL_CONFIRMATION_MIN_COUNT = 2
 # Trend confirms when efficiency_ratio() >= EFFICIENCY_TRENDING_THRESHOLD
@@ -1540,17 +1571,22 @@ MOMENTUM_CONFIRM_THRESHOLD_PCT = 0.003   # 0.3% signed 15-min move
 # BUGFIX for a gap the 2026-08-07 Directional Confirmation Gate left
 # open: `trend` (a plain efficiency_ratio() number -- NOT tied to EMA
 # structure) plus `vwap` alone could satisfy
-# DIRECTIONAL_CONFIRMATION_MIN_COUNT=2 while EMA (15-min) AND HTF were
-# BOTH "Not Ready" -- confirmed reproducible via trend=0.45/ema=None/
-# htf=None/vwap=Confirmed -> count=2, passed=True, zero real EMA-
-# structure evidence. See filters.directional_confirmation_status()'s
-# own docstring for the full reproduction and fix.
+# DIRECTIONAL_CONFIRMATION_MIN_COUNT=2 while EMA (15-min) was "Not
+# Ready" -- confirmed reproducible via trend=0.45/ema=None/
+# vwap=Confirmed -> count=2, passed=True, zero real EMA-structure
+# evidence. See filters.directional_confirmation_status()'s own
+# docstring for the full reproduction and fix.
 #
 # Requires at least this many of {15-min EMA direction, 5-min EMA
-# direction, HTF confirmation} to independently confirm -- these are
-# the only three signals in this gate actually derived from EMA
-# structure/multi-timeframe agreement, as opposed to trend/momentum
-# (plain price-path math) or VWAP (a single distance check).
+# direction} to independently confirm -- these are the only two
+# signals in this gate actually derived from EMA structure (on two
+# genuinely different timeframes/candle sets), as opposed to trend/
+# momentum (plain price-path math) or VWAP (a single distance check).
+# UPDATE (2026-08-11): a third source, "HTF confirmation", used to be
+# included here -- removed as a duplicate of the 15-min EMA direction
+# signal (this repository has never had a genuinely independent
+# higher-timeframe data source; see filters.
+# directional_confirmation_status()'s docstring for the full trace).
 MANDATORY_STRUCTURAL_ENABLED = True
 MANDATORY_STRUCTURAL_MIN_CONFIRMED = 1
 
@@ -1563,6 +1599,39 @@ MANDATORY_STRUCTURAL_MIN_CONFIRMED = 1
 # no new broker call.
 ATR_CHASE_FILTER_ENABLED = True
 ATR_CHASE_MULTIPLIER = 2.0
+
+# --- Structural Extension Filter (scanner.py, 2026-08-11) ---
+# SECOND, INDEPENDENT extension check, additive to the ATR Chase Filter
+# above (that filter is UNCHANGED by this addition -- see its own
+# comment; final rejection is "ATR extension FAIL OR structural
+# extension FAIL", not a replacement of either check by the other).
+# Where the ATR Chase Filter asks "how far has price moved from TODAY'S
+# SESSION OPEN, relative to ATR", this asks a differently-anchored
+# question: "how far has price already moved PAST the relevant recent
+# support/resistance/breakout level, in the trade's own direction,
+# relative to ATR". A move can be unremarkable relative to session-open
+# (small gap, big earlier range) while still being deep into a breakout
+# well past the level that would have justified entering in the first
+# place -- and vice versa (a big session-open move that hasn't actually
+# cleared the nearby level yet isn't "structurally extended" by this
+# definition, whatever the ATR filter says about it separately).
+#
+# Reuses indicators.find_nearby_level() -- the SAME level scanner.py
+# already computes once per strike for the RR_LEVEL_CHECK "room to
+# target" gate (filters.py has no separate S/R engine to build; see
+# scanner.score_strike()'s own comment at the RR_LEVEL_CHECK log line
+# for why that gate and this one are deliberately different questions
+# over the same input, not the same check twice).
+STRUCTURAL_EXTENSION_FILTER_ENABLED = True
+STRUCTURAL_EXTENSION_MAX_DISTANCE_ATR = 2.0   # distance already travelled PAST the level, in ATR
+                                                # multiples, before this filter rejects. Matches
+                                                # ATR_CHASE_MULTIPLIER's magnitude as a starting point
+                                                # (not independently backtested yet -- same "tune from
+                                                # live SCORE/EXTENSION_CHECK log lines" posture as this
+                                                # file's other new thresholds) -- deliberately a SEPARATE
+                                                # constant from ATR_CHASE_MULTIPLIER, not a reused
+                                                # reference to it, so the two can be tuned independently
+                                                # once live data shows whether they should diverge.
 
 # --- Premium Quality Filter (filters.py) ---
 # Per-symbol (min, max) premium band, in rupees. Only symbols listed here

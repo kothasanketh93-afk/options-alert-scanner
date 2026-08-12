@@ -203,6 +203,22 @@ def vwap_distance_pct(symbol: str, spot_price: float, direction: str):
 
 
 def multi_timeframe_confirms(symbol: str, candidate_direction: str) -> bool:
+    """
+    DEPRECATED (2026-08-11) -- not called anywhere in this codebase as
+    of the same date (confirmed via a repo-wide check). Computes
+    ema_trend_direction() on the SAME symbol's SAME 15-minute candles
+    scanner.score_strike()'s own `ema_direction` already reads --
+    "multi-timeframe"/"MTF" was a naming artifact from when this
+    function was introduced, not a genuinely independent higher-
+    timeframe signal (this repository has never fetched anything
+    beyond 5-minute/15-minute candles). Removed as a double-counted
+    "HTF" gate/score input in scanner.py and filters.
+    directional_confirmation_status() -- see that function's docstring
+    for the full trace. Left defined (not deleted) only in case a
+    future caller wants this exact un-warmed 15-min read; a genuinely
+    independent higher-timeframe signal (e.g. 30-min/60-min candles,
+    not fetched anywhere today) would need new code, not this.
+    """
     underlying_key = resolve_underlying_key(symbol)
     candles_15m = market_data.get_recent_underlying_candles(underlying_key, "15minute", 30)
     return ema_trend_direction(candles_15m) == candidate_direction
@@ -210,7 +226,9 @@ def multi_timeframe_confirms(symbol: str, candidate_direction: str) -> bool:
 
 def multi_timeframe_confirmation_detail(symbol: str, candidate_direction: str):
     """
-    ADDITIVE (2026-08-07) -- multi_timeframe_confirms() above is left
+    DEPRECATED (2026-08-11) -- see multi_timeframe_confirms()'s
+    docstring immediately above; same reasoning applies here.
+    Originally ADDITIVE (2026-08-07) -- multi_timeframe_confirms()
     completely unchanged (still used exactly where it already was, for
     factors["mtf_confirmed"]/trade_score.htf_strength()) since it's
     part of this module's existing public API. That function collapses
@@ -254,14 +272,15 @@ def directional_bias(symbol: str) -> list:
     cycles, not a genuine absence of any tradeable signal.
 
     NEW BEHAVIOUR: 15-min disagreement is now a SCORE PENALTY, applied
-    downstream where it already belongs -- scanner.score_strike()
-    still calls multi_timeframe_confirms() itself and feeds it into
-    trade_score.htf_strength() (one of the 10 weighted Trade Score
-    factors), so a disagreeing 15-min trend still costs a candidate
-    real points instead of erasing it before scoring even starts. This
-    function's only job is now picking WHICH direction(s) are worth
-    scoring strikes for, not gating on how strong the agreement is --
-    the score handles that.
+    downstream where it already belongs -- a disagreeing 15-min trend
+    still costs a candidate real points (via scanner.score_strike()'s
+    own ema_direction/ema_strength() read, not by this function or
+    multi_timeframe_confirms() -- see filters.
+    directional_confirmation_status()'s docstring for why that
+    function was retired 2026-08-11) instead of erasing the candidate
+    before scoring even starts. This function's only job is now
+    picking WHICH direction(s) are worth scoring strikes for, not
+    gating on how strong the agreement is -- the score handles that.
 
     Resolution order, always producing at least one direction unless
     there's truly no EMA data on either timeframe:

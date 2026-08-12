@@ -293,6 +293,67 @@ def get_atr_warmup_candles(instrument_key: str, interval: str, today_candles: li
     return combined, len(combined)
 
 
+def get_ema_warmup_candles(instrument_key: str, interval: str, today_candles: list,
+                            min_candles: int = 21) -> tuple:
+    """
+    EMA-specific counterpart to get_atr_warmup_candles() above (2026-08-11)
+    -- see that function's docstring for the shared previous-session-
+    fetch mechanism this reuses (same _atr_warmup_cache entry, so when
+    both this and get_atr_warmup_candles() are called for the same
+    (instrument_key, interval) this cycle -- as scanner.py's 15-minute
+    calls are -- only ONE broker call actually happens; whichever runs
+    first populates the cache for the other).
+
+    BUGFIX (2026-08-11): get_atr_warmup_candles() stops merging warmup
+    candles at a fixed WALL-CLOCK cutoff (config.ATR_WARMUP_CUTOFF_HOUR/
+    MINUTE, 11:00 IST) regardless of whether today's OWN candles have
+    actually reached the requesting indicator's period yet. That's a
+    reasonable trade-off for ATR (15-candle need, reached by ~12:45 IST
+    on 15-min data -- see that function's own FIX-2 note) but wrong for
+    EMA21: today-only 15-min data doesn't reach 21 candles until
+    ~14:30 IST, so using the SAME 11:00 cutoff for EMA created a
+    confirmed regression -- EMA ready (warmup-assisted) at 10:55 IST,
+    then NOT ready again at 11:05 IST purely because the clock crossed
+    11:00, then ready again only once today's own count finally reaches
+    21 at ~14:30. This function's cutoff is DATA-based instead: it
+    keeps merging warmup candles for as long as today's own candles
+    alone are still short of `min_candles` (21, EMA21's requirement) --
+    once today's own count reaches that on its own, warmup candles are
+    dropped and today-only is used (today-only is always preferred once
+    it can stand on its own, same posture get_atr_warmup_candles()
+    already has for its own cutoff -- this just measures "enough" by
+    data sufficiency instead of a fixed clock time).
+
+    Returns (candles_for_ema, combined_candle_count) -- same shape as
+    get_atr_warmup_candles().
+    """
+    if not WARMUP_CANDLE_CONTINUITY_ENABLED:
+        return today_candles, len(today_candles)
+    if len(today_candles) >= min_candles:
+        return today_candles, len(today_candles)
+
+    cache_key = (instrument_key, interval)
+    warmup_candles = _atr_warmup_cache.get(cache_key)
+    if warmup_candles is None:
+        try:
+            warmup_candles = _broker.get_previous_session_candles(
+                instrument_key, interval, ATR_WARMUP_TAIL_CANDLE_COUNT
+            )
+        except Exception as exc:
+            _logger.warning(
+                f"EMA_WARMUP: previous-session fetch failed for {instrument_key}/{interval} "
+                f"({type(exc).__name__}: {exc}) -- falling back to today-only candles"
+            )
+            warmup_candles = []
+        _atr_warmup_cache.set(cache_key, warmup_candles)
+
+    if not warmup_candles:
+        return today_candles, len(today_candles)
+
+    combined = warmup_candles + today_candles
+    return combined, len(combined)
+
+
 def get_option_chain(underlying_key: str, expiry_date: str) -> list:
     """
     Fetches the full option chain for one (underlying_key, expiry_date)

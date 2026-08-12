@@ -103,6 +103,7 @@ from config import (
     SESSION_WINDOWS, STRIKE_STEP, STRIKE_RANGE, SYMBOLS,
     ENTRY_SCORE, T1_ATR_MULT,
     ATR_CHASE_FILTER_ENABLED, ATR_CHASE_MULTIPLIER,
+    STRUCTURAL_EXTENSION_FILTER_ENABLED, STRUCTURAL_EXTENSION_MAX_DISTANCE_ATR,
 )
 
 from indicators import (
@@ -393,92 +394,82 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         candlestick_read = {"enabled": False, "reason": "CANDLESTICK_PATTERNS_ENABLED is False"}
 
     # FIX 2 (ATR warmup, 2026-07-30, config.WARMUP_CANDLE_CONTINUITY_ENABLED):
-    # a SEPARATE candle set, used ONLY as input to compute_atr() below.
-    # candles_15m itself (used for ema_trend_direction, find_nearby_level,
-    # momentum_pct, efficiency_ratio just below) is intentionally left
-    # completely untouched -- Opening Range, today's High/Low, Session
-    # VWAP, and breakout-level logic can never see a previous-session
-    # candle through this path. When the flag is off (default) or it's
-    # past the warmup cutoff, atr_candles IS candles_15m (same object).
-    atr_candles, combined_candle_count = market_data.get_atr_warmup_candles(
+    # a SEPARATE candle set, used as input to compute_atr() AND (as of
+    # 2026-08-11) compute_ema()/ema_trend_direction() below. candles_15m
+    # itself (used for find_nearby_level(), momentum_pct(),
+    # efficiency_ratio() just below) is intentionally left completely
+    # untouched -- Opening Range, today's High/Low, Session VWAP, and
+    # breakout-level logic can never see a previous-session candle
+    # through this path. Renamed from `atr_candles` (2026-08-11,
+    # "review this diff" pass) -- feeding EMA from a variable named for
+    # a different indicator was exactly the kind of naming mismatch
+    # that let the EMA-still-uses-candles_15m bug go unnoticed; this
+    # name says what it actually is (warmup-aware 15-min candles), not
+    # which indicator happened to ask for it first.
+    warmup_candles_15m, combined_candle_count = market_data.get_atr_warmup_candles(
         underlying_key, "15minute", candles_15m
     )
-    # BUGFIX (2026-08-11): get_atr_warmup_candles()'s own docstring has
-    # always said its result is "meant ONLY to feed compute_atr() (and,
-    # at the same call site, compute_ema())" -- but the EMA calls below
-    # were passing candles_15m (today-only) instead of atr_candles
-    # (previous-session tail candles PREPENDED, when
-    # WARMUP_CANDLE_CONTINUITY_ENABLED and before the cutoff -- see
-    # that function's docstring). Confirmed live: combined_candle_count
-    # was already 24-26 by 10:20-10:55 IST (well over EMA21's 21-candle
-    # need) while candles_fetched (today-only) was still just 4-6 --
-    # meaning EMA9/21 had enough REAL data available the entire time,
-    # it just wasn't being handed to it. This made "EMA (15m): Not
-    # Ready" mathematically unavoidable until today's own candles alone
-    # reached 21 (~14:30 IST, 21 x 15min after a 9:15 open) instead of
-    # using the warmup-merged data that was already sufficient from
-    # shortly after market open. Same fix applied to the 5-min warmup
-    # fetch below for m5_direction, which had an identical gap on the
-    # 5-min timeframe (21-candle need -> ~11:00 IST on today-only data).
-    #
-    # NOTE (still true after this fix, flagging for awareness -- not
-    # changed here): ATR_WARMUP_CUTOFF_HOUR/MINUTE (11:00 IST) stops
-    # the warmup merge for the 15-min timeframe at that time regardless
-    # of whether today's own 15-min candles have reached 21 yet (they
-    # haven't -- that only happens at ~14:30 IST) -- so there is still
-    # a gap window (roughly 11:00-14:30 IST) where 15-min EMA can go
-    # from ready (warmup-assisted) back to not-ready (today-only,
-    # insufficient) until today's own count catches up. The 5-min
-    # warmup fetch has the same cutoff-vs-need mismatch on its own
-    # timeframe. Both are pre-existing (the cutoff wasn't introduced by
-    # this fix), left as-is pending a decision on whether/how to retune
-    # ATR_WARMUP_CUTOFF_HOUR -- flagging rather than silently changing
-    # a tuned threshold.
-    candles_5m_warmup, _m5_combined_count = market_data.get_atr_warmup_candles(
-        underlying_key, "5minute", candles_5m
+    # EMA-specific warmup (2026-08-11) -- see market_data.
+    # get_ema_warmup_candles()'s own docstring for why this is a
+    # SEPARATE function from get_atr_warmup_candles() above rather than
+    # reusing its result directly: that function's cutoff is a fixed
+    # wall-clock time (config.ATR_WARMUP_CUTOFF_HOUR/MINUTE, tuned for
+    # ATR's shorter 15-candle need) that stops merging warmup candles
+    # at 11:00 IST regardless of whether today's own candles have
+    # reached EMA21's 21-candle need yet (they haven't -- that's
+    # ~14:30 IST) -- using it directly for EMA would trade the original
+    # "not ready until 14:30" bug for a new "ready, then unready again
+    # at 11:00, then ready again at 14:30" regression. This function's
+    # cutoff is DATA-based (merges until today's own count reaches 21
+    # on its own) instead of time-based, so it doesn't have that gap.
+    # Same reasoning applies to the parallel 5-minute fetch below for
+    # m5_direction (21-candle need on 5-min data -> ~11:00 IST
+    # today-only).
+    warmup_candles_15m_for_ema, _combined_15m_ema_count = market_data.get_ema_warmup_candles(
+        underlying_key, "15minute", candles_15m, min_candles=21
+    )
+    warmup_candles_5m_for_ema, _combined_5m_ema_count = market_data.get_ema_warmup_candles(
+        underlying_key, "5minute", candles_5m, min_candles=21
     )
 
-    ema_direction = ema_trend_direction(atr_candles)
+    ema_direction = ema_trend_direction(warmup_candles_15m_for_ema)
     # 5-min EMA direction read (2026-08-10) -- a genuinely SEPARATE
-    # computation from ema_direction above (15-min), reusing candles_5m
-    # already fetched for the Candle Readiness Gate above (now warmup-
-    # merged too, see BUGFIX note above). Feeds ONLY the Mandatory
-    # Structural Confirmation check in filters.
+    # computation from ema_direction above: different timeframe,
+    # different candle set (warmup-aware 5-min candles, not 15-min) --
+    # this pairing is real independent evidence. Feeds ONLY the
+    # Mandatory Structural Confirmation check in filters.
     # directional_confirmation_status() -- see that function's
     # docstring for why this exists (trend/vwap alone were satisfying
     # the confirmation-count gate with zero real EMA-structure
     # evidence on either timeframe).
-    m5_direction = ema_trend_direction(candles_5m_warmup)
+    m5_direction = ema_trend_direction(warmup_candles_5m_for_ema)
     ema_aligned = ema_direction == direction
-    ema9 = compute_ema([c["close"] for c in atr_candles], 9)
-    ema21 = compute_ema([c["close"] for c in atr_candles], 21)
+    ema9 = compute_ema([c["close"] for c in warmup_candles_15m_for_ema], 9)
+    ema21 = compute_ema([c["close"] for c in warmup_candles_15m_for_ema], 21)
     vwap_confirmed = vwap_check(symbol, spot_price, direction)
     volume_confirmed = liquidity_ok(oi, volume, bid, ask, premium, symbol)  # see NOTE below
     oi_delta_pct = oi_change_pct(oi_history, instrument_key, oi)  # read BEFORE oi_is_building mutates oi_history
     oi_building = oi_is_building(oi_history, instrument_key, oi)
     liquidity_pass = liquidity_ok(oi, volume, bid, ask, premium, symbol)
-    # BUGFIX (2026-08-11): mtf_confirmed/mtf_confirmed_tristate used to
-    # come from multi_timeframe_confirms()/multi_timeframe_confirmation_detail()
-    # (option_chain.py), which do their OWN separate 15-min candle
-    # fetch for this same symbol -- via get_recent_underlying_candles()
-    # directly, which never sees warmup candles (only
-    # get_atr_warmup_candles() does -- see that function's own
-    # docstring). That made "HTF" a REDUNDANT read of the exact same
-    # 15-min EMA9/21 crossover ema_direction above already computes
-    # (now correctly warmup-aware, see the ema_direction/atr_candles
-    # BUGFIX note above) -- just via a second, un-warmed fetch that
-    # stayed "Not Ready" long after ema_direction itself was already
-    # confirming. Deriving both directly from ema_direction here
-    # instead: same underlying signal, single warmup-aware source, and
-    # the GATE log line's "mtf_confirmed=Y/N" now can't disagree with
-    # what the Directional Confirmation Gate/htf_strength() actually
-    # used to decide. multi_timeframe_confirms()/
-    # multi_timeframe_confirmation_detail() themselves are left
-    # untouched in option_chain.py (existing public API, unused
-    # elsewhere per a repo-wide check) in case a future caller wants
-    # the un-warmed read specifically.
-    mtf_confirmed_tristate = (ema_direction == direction) if ema_direction is not None else None
-    mtf_confirmed = bool(mtf_confirmed_tristate)
+    # REMOVED (2026-08-11, "review this diff" pass): a SEPARATE
+    # "mtf_confirmed"/HTF signal used to be derived here (first from a
+    # redundant, un-warmed re-fetch via option_chain.
+    # multi_timeframe_confirmation_detail(), then -- in the immediately
+    # preceding fix -- from `ema_direction` directly). Both versions
+    # were the SAME underlying 15-min EMA9/21 fact as `ema_direction`
+    # above, just presented as if it were independent second evidence.
+    # Confirmed live: once both reads were equally fresh, ema_direction
+    # and the derived "htf" signal agreed 100% of the time by
+    # construction, letting the Directional Confirmation Gate's
+    # count>=2 requirement be satisfied by ONE fact counted twice (see
+    # filters.directional_confirmation_status()'s docstring for the
+    # full trace and reproduction). This codebase has never had a
+    # genuine independent higher-timeframe data source (option_chain.
+    # multi_timeframe_confirms() computed the identical 15-min
+    # ema_trend_direction() even in the original baseline, before this
+    # signal-quality gate existed) -- so there is nothing real here to
+    # keep under any name. delta_ok/premium_ok below are unrelated,
+    # unaffected checks.
     delta_ok = delta_acceptable(moneyness, delta)
     expiry_ok = expiry_theta_ok(moneyness, delta, expiry)
     premium_ok = premium_in_range(symbol, premium)
@@ -494,7 +485,7 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         signed_momentum = raw_momentum if direction == "CE" else -raw_momentum
 
     nearby_level = find_nearby_level(candles_15m, direction)
-    atr_index_points = compute_atr(atr_candles)
+    atr_index_points = compute_atr(warmup_candles_15m)
 
     # --- Diagnostics (TEMPORARY -- remove once EMA/ATR-unavailable
     # rejections are confirmed resolved in production; see FIX 1/FIX 2
@@ -503,7 +494,7 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         f"DIAG {symbol} {direction} {moneyness} strike={strike} | "
         f"candles_fetched={len(candles_15m)} combined_candle_count={combined_candle_count} "
         f"ema_ready={ema9 is not None and ema21 is not None} "
-        f"atr_ready={atr_index_points is not None} htf_ready={bool(mtf_confirmed_tristate)}"
+        f"atr_ready={atr_index_points is not None}"
     )
 
     if atr_index_points is None or delta == 0:
@@ -511,29 +502,125 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         return None  # dynamic_trade_levels() would raise on this -- bail before it does
 
     # --- ATR Chase Filter (2026-08-07, config.ATR_CHASE_FILTER_ENABLED) ---
-    # Rejects a strike when the underlying has already travelled more
-    # than ATR_CHASE_MULTIPLIER x today's ATR away from today's session
-    # open by the time this cycle runs -- buying an option after the
-    # move that would have justified it has already happened is exactly
-    # the "chasing an extended candle" pattern that tends to stop out.
-    # "Today's session open" = candles_15m[0]["open"] -- candles_15m is
-    # today-only (see the FIX 2/ATR-warmup comment above: atr_candles,
-    # not candles_15m, is the one that may carry previous-session tail
-    # candles), so this is genuinely today's first candle, not
-    # yesterday's close.
+    # UNCHANGED (2026-08-11 structural-extension audit: kept exactly as
+    # it was, not replaced) -- rejects a strike when the underlying has
+    # already travelled more than ATR_CHASE_MULTIPLIER x today's ATR
+    # away from today's session open by the time this cycle runs --
+    # buying an option after the move that would have justified it has
+    # already happened is exactly the "chasing an extended candle"
+    # pattern that tends to stop out. "Today's session open" =
+    # candles_15m[0]["open"] -- candles_15m is today-only (see the FIX
+    # 2/ATR-warmup comment above: warmup_candles_15m, not candles_15m,
+    # is the one that may carry previous-session tail candles), so this
+    # is genuinely today's first candle, not yesterday's close.
+    #
+    # UPDATE (2026-08-11): no longer returns None immediately on its
+    # own -- see the Structural Extension Filter and combined
+    # EXTENSION_CHECK decision right below, which this now feeds into
+    # alongside a second, independently-anchored check. The THRESHOLD
+    # and the underlying/session-open math are completely unchanged;
+    # only the control flow (compute-then-combine, instead of an
+    # immediate early return) is different.
+    atr_extended = False
+    move_from_open = None
+    chase_ceiling = None
     if ATR_CHASE_FILTER_ENABLED:
         session_open = candles_15m[0]["open"]
         move_from_open = abs(spot_price - session_open)
         chase_ceiling = atr_index_points * ATR_CHASE_MULTIPLIER
-        if move_from_open > chase_ceiling:
-            _rejection_count += 1
+        atr_extended = move_from_open > chase_ceiling
+
+    # --- Structural Extension Filter (2026-08-11, config.
+    # STRUCTURAL_EXTENSION_FILTER_ENABLED) ---
+    # SECOND, INDEPENDENT extension check -- see config.
+    # STRUCTURAL_EXTENSION_MAX_DISTANCE_ATR's own comment for the full
+    # rationale on why this is a differently-anchored question from the
+    # ATR Chase Filter above, not a duplicate of it. Reuses
+    # `nearby_level` (already computed above, from indicators.
+    # find_nearby_level() -- the SAME level RR_LEVEL_CHECK below uses
+    # for a DIFFERENT question, "room to target", not this one,
+    # "already moved too far past entry" -- see that log line's own
+    # comment for why the two stay separate).
+    #
+    # Direction-aware distance PAST the level: for CE, find_nearby_level()
+    # returns the recent HIGH (a resistance/breakout reference) -- spot
+    # ABOVE it means price has already broken out; the distance past it
+    # is spot_price - nearby_level. For PE, the recent LOW (support/
+    # breakdown reference) -- distance past it is nearby_level -
+    # spot_price. A NEGATIVE distance (price hasn't reached/broken the
+    # level yet) is clamped to 0 -- that's a pre-breakout state, not an
+    # extended one, and is never flagged by this check.
+    #
+    # Conservative by design (requirement: never manufacture a rejection
+    # from an unreliable/absent reference) -- find_nearby_level() only
+    # returns None when `candles` itself is empty (see that function's
+    # own code), which candle-readiness/ATR-availability gates earlier
+    # in this same function already make unreachable in practice; the
+    # None branch below exists anyway as an explicit, logged no-op
+    # rather than an assumption.
+    structural_extended = False
+    structural_reference_type = None
+    structural_distance_points = None
+    structural_distance_atr = None
+    if STRUCTURAL_EXTENSION_FILTER_ENABLED:
+        if nearby_level is None:
             _logger.info(
-                f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
-                f"Reasons: Price extended beyond ATR chase ceiling "
-                f"(move={move_from_open:.2f}, ceiling={chase_ceiling:.2f} = "
-                f"{ATR_CHASE_MULTIPLIER}x ATR)"
+                f"STRUCTURAL_EXTENSION_CHECK {symbol} direction={direction} "
+                f"reference_level=None status=NO_RELIABLE_REFERENCE"
             )
-            return None
+        else:
+            structural_reference_type = "recent_high_20c" if direction == "CE" else "recent_low_20c"
+            raw_distance = (spot_price - nearby_level) if direction == "CE" else (nearby_level - spot_price)
+            structural_distance_points = max(0.0, raw_distance)
+            structural_distance_atr = structural_distance_points / atr_index_points
+            structural_extended = structural_distance_atr > STRUCTURAL_EXTENSION_MAX_DISTANCE_ATR
+            _logger.info(
+                f"STRUCTURAL_EXTENSION_CHECK {symbol} direction={direction} "
+                f"reference_level={nearby_level} reference_type={structural_reference_type} "
+                f"spot={spot_price} distance_points={structural_distance_points:.2f} "
+                f"distance_atr={structural_distance_atr:.2f} "
+                f"threshold_atr={STRUCTURAL_EXTENSION_MAX_DISTANCE_ATR} "
+                f"extended={'Y' if structural_extended else 'N'}"
+            )
+
+    # --- Combined Extension Decision (2026-08-11) ---
+    # "ATR extension FAIL OR structural extension FAIL -> NO ALERT" --
+    # neither check can rescue a rejection from the other; both must
+    # pass. This runs before trade score/strengths/probability/Options
+    # Intelligence are computed (immediately below) and before
+    # detect_setups()'s regime floor / main.py's MIN_ALERT_PROBABILITY,
+    # same as the original ATR-only version already was.
+    final_extension_pass = not (atr_extended or structural_extended)
+    _logger.info(
+        f"EXTENSION_CHECK {symbol} {direction} {moneyness} strike={strike} | "
+        f"atr_extended={'Y' if atr_extended else 'N'} "
+        f"structural_extended={'Y' if structural_extended else 'N'} "
+        f"final_extension_pass={'Y' if final_extension_pass else 'N'}"
+        + ("" if final_extension_pass else
+           " reason=" + "+".join(
+               r for r, flag in (("ATR_EXTENSION", atr_extended), ("STRUCTURAL_EXTENSION", structural_extended))
+               if flag
+           ))
+    )
+    if not final_extension_pass:
+        _rejection_count += 1
+        reasons = []
+        if atr_extended:
+            reasons.append(
+                f"Price extended beyond ATR chase ceiling "
+                f"(move={move_from_open:.2f}, ceiling={chase_ceiling:.2f} = {ATR_CHASE_MULTIPLIER}x ATR)"
+            )
+        if structural_extended:
+            reasons.append(
+                f"Price extended beyond structural reference level "
+                f"({structural_reference_type}={nearby_level}, "
+                f"distance={structural_distance_atr:.2f}x ATR > {STRUCTURAL_EXTENSION_MAX_DISTANCE_ATR}x)"
+            )
+        _logger.info(
+            f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
+            f"Reasons: {'; '.join(reasons)}"
+        )
+        return None
 
     # Provisional T1 distance (pre-cap) just to test room against the
     # nearby level -- dynamic_trade_levels() below recomputes/caps this
@@ -557,6 +644,20 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     # The RR log line right after this block prints both explicitly so
     # that's visible in the log instead of looking like two disagreeing
     # copies of "the same" number.
+    #
+    # SEPARATE FROM (2026-08-11): the Structural Extension Filter above
+    # (STRUCTURAL_EXTENSION_CHECK/EXTENSION_CHECK log lines, already run
+    # by this point) also uses `nearby_level` -- but asks a THIRD
+    # distinct question, "has price already moved too far PAST this
+    # level to still be a fresh entry", using a direction-signed
+    # distance normalized by ATR (STRUCTURAL_EXTENSION_MAX_DISTANCE_ATR).
+    # This RR check below uses an UNSIGNED distance
+    # (abs(nearby_level - spot_price)) against a delta-scaled target
+    # distance -- "is there room left toward the level", not "how far
+    # past it has price already gone". Same input, three genuinely
+    # different questions (risk_reward_ok here, risk_reward_strength()
+    # in the score, and structural_extended above) -- not the same
+    # check three times.
     provisional_t1_distance = atr_index_points * abs(delta) * T1_ATR_MULT
     if nearby_level is not None:
         index_distance_to_level = abs(nearby_level - spot_price)
@@ -577,7 +678,6 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         "volume_confirmed": volume_confirmed,
         "oi_building": oi_building,
         "liquidity_ok": liquidity_pass,
-        "mtf_confirmed": mtf_confirmed,
         "risk_reward_ok": risk_reward_ok,
         "delta_ok": delta_ok,
         "expiry_theta_ok": expiry_ok,
@@ -608,14 +708,17 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
 
     # --- Directional Confirmation Gate (2026-08-07,
     # config.DIRECTIONAL_CONFIRMATION_ENABLED) ---
-    # NEW hard gate, separate from quality_gate()'s 3 risk checks above:
-    # requires at least DIRECTIONAL_CONFIRMATION_MIN_COUNT of {EMA
-    # aligned, HTF confirmed, trend above threshold, momentum above
-    # threshold, VWAP confirmed} before a strike proceeds to scoring.
-    # Deliberately NOT "all must pass" -- see
-    # filters.directional_confirmation_status()'s docstring for why.
+    # NEW hard gate, separate from quality_gate()'s risk checks above:
+    # requires at least DIRECTIONAL_CONFIRMATION_MIN_COUNT of {EMA(15m)
+    # aligned, trend above threshold, momentum above threshold, VWAP
+    # confirmed} before a strike proceeds to scoring. Deliberately NOT
+    # "all must pass" -- see filters.directional_confirmation_status()'s
+    # docstring for why. A separate "HTF" signal used to be counted
+    # here too -- removed 2026-08-11 as a duplicate of the EMA(15m)
+    # signal, not independent evidence; see that function's docstring
+    # for the full trace.
     directional_status = directional_confirmation_status(
-        ema_direction, mtf_confirmed_tristate, trend_value, signed_momentum,
+        ema_direction, trend_value, signed_momentum,
         vwap_confirmed, direction, m5_direction=m5_direction,
     )
     if not directional_status["passed"]:
@@ -681,11 +784,21 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         "risk_reward": trade_score.risk_reward_strength(target_distance, sl_distance),
         "liquidity": trade_score.liquidity_strength(oi, volume, bid, ask, premium, symbol),
         "market_strength": trade_score.market_strength(_broad_market_efficiency_ratio()),
-        # BUGFIX (2026-08-07): htf_strength() now takes the tri-state
-        # mtf_confirmed_tristate (True/False/None) instead of the plain
-        # bool -- "15-min EMA not yet computable" is excluded from the
-        # weighted average instead of scored as confirmed-against.
-        "htf": trade_score.htf_strength(mtf_confirmed_tristate),
+        # REMOVED (2026-08-11, "review this diff" pass): htf_strength()
+        # used to be fed a value derived from the same 15-min EMA9/21
+        # crossover "ema" above already scores -- double-crediting one
+        # fact across two weighted factors (10 + 5 = 15 of 100 points
+        # for what was really one signal). This repository has never
+        # had a genuine independent higher-timeframe data source (see
+        # filters.directional_confirmation_status()'s docstring for the
+        # full trace) -- None here lets compute_trade_score()'s
+        # existing None-exclusion/renormalization correctly drop this
+        # factor's weight instead of inflating the score with a
+        # duplicate. TRADE_SCORE_WEIGHTS' "htf" slot is left in place
+        # (not deleted) in case a genuine higher-timeframe signal is
+        # added later -- it belongs back here as real, independently-
+        # sourced evidence, not removed and re-added under a new name.
+        "htf": trade_score.htf_strength(None),
     }
     score = trade_score.compute_trade_score(strengths)
     grade = trade_score.compute_grade(score)
@@ -775,14 +888,28 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     risk_emoji, risk_label = trade_score.risk_emoji_label(risk_score)
     rr_ratio = (target_distance / sl_distance) if sl_distance else 0.0
     reward_score = trade_score.compute_reward_score(rr_ratio)
-    probability_pct = trade_score.compute_probability_pct(score)
-    probability_band = trade_score.probability_label(probability_pct)
+    # BUGFIX (2026-08-12) -- P0 audit, "probability must not be
+    # fabricated": renamed locally from `probability_pct` -- this is
+    # trade_score.compute_probability_pct()'s output, a deterministic
+    # RESCALING of `score` (see that function's own docstring, unchanged
+    # in substance since it was written: "NOT a backtested probability
+    # model"). It used to be written straight into
+    # candidate["probability_pct"] -- the exact field main.py's
+    # MIN_ALERT_PROBABILITY gate and the Telegram alert both treated as
+    # a genuine probability. Kept here ONLY as an internal ranking/
+    # display heuristic (logged below, distinctly labeled) -- see
+    # calibrated_probability_pct further down for the value that
+    # actually gates the alert and gets sent to Telegram.
+    trade_score_heuristic_pct = trade_score.compute_probability_pct(score)
+    heuristic_band = trade_score.probability_label(trade_score_heuristic_pct)
     score_breakdown = trade_score.scoring_reasons(strengths)
     confidence_score = trade_score.compute_confidence_score(score)
     _logger.info(
-        f"PROBABILITY {symbol} {direction} {moneyness} strike={strike} "
-        f"probability={probability_pct}% ({probability_band}) | "
-        + " | ".join(score_breakdown) + f" | Final Probability = {probability_pct}%"
+        f"TRADE_SCORE_HEURISTIC {symbol} {direction} {moneyness} strike={strike} "
+        f"heuristic_pct={trade_score_heuristic_pct}% ({heuristic_band}) -- "
+        f"a rescaling of trade_score, NOT a calibrated probability; see "
+        f"CALIBRATED_PROBABILITY below for the value that actually gates this alert | "
+        + " | ".join(score_breakdown)
     )
     expected_rr = trade_score.expected_rr_text(premium, levels["stop_loss"], levels["target_1"])
     holding_minutes = estimated_holding_minutes(atr_index_points, target_distance / abs(delta) if delta else 0)
@@ -814,6 +941,44 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
             f"Reasons (Options Intelligence): {', '.join(oi_intel.get('rejection_reasons') or [])}"
         )
         return None
+
+    # --- Calibrated Probability Gate (2026-08-12, P0 audit) ---
+    # THE alert-eligibility probability check -- see trade_score.
+    # calibrated_probability_pct()'s own docstring for the full
+    # rationale and current honest state (this repository has no
+    # aggregated, bucketed historical-outcome calibration table yet,
+    # so this call always returns None today -- that is the deliberate,
+    # safe default, not a bug: "prefer PROBABILITY UNAVAILABLE over a
+    # fabricated number" is this system's own stated design principle).
+    # `context` intentionally passes everything a real calibration
+    # model would plausibly need, even though this stub ignores all of
+    # it -- so wiring in a real model later touches only that one
+    # function, not this call site.
+    calibration_context = {
+        "symbol": symbol, "direction": direction, "moneyness": moneyness,
+        "expiry_days": expiry_days, "trend_value": trend_value,
+        "momentum_value": signed_momentum, "market_regime": market_regime(candles_15m)[0],
+        "rr_ratio": rr_ratio, "atr_index_points": atr_index_points,
+    }
+    calibrated_pct = trade_score.calibrated_probability_pct(calibration_context)
+    if calibrated_pct is None:
+        _rejection_count += 1
+        _logger.info(
+            f"CALIBRATED_PROBABILITY {symbol} {direction} {moneyness} strike={strike} status=UNAVAILABLE"
+        )
+        _logger.info(
+            f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
+            f"Reasons: CALIBRATED_PROBABILITY_UNAVAILABLE -- no alert without a "
+            f"genuine, evidence-based probability estimate (trade_score={score}/100, "
+            f"heuristic_pct={trade_score_heuristic_pct}% -- neither is a substitute)"
+        )
+        return None
+    probability_pct = calibrated_pct
+    probability_band = trade_score.probability_label(probability_pct)
+    _logger.info(
+        f"CALIBRATED_PROBABILITY {symbol} {direction} {moneyness} strike={strike} "
+        f"probability={probability_pct}% ({probability_band}) status=AVAILABLE"
+    )
 
     return {
         "symbol": symbol,
