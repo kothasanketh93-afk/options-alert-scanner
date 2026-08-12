@@ -111,8 +111,7 @@ from indicators import (
 )
 from option_chain import (
     UNDERLYING_INSTRUMENT_KEYS, current_expiry, _extract_leg,
-    vwap_check, vwap_distance_pct, multi_timeframe_confirms,
-    multi_timeframe_confirmation_detail, directional_bias,
+    vwap_check, vwap_distance_pct, directional_bias,
     get_atm_strike, resolve_underlying_key, days_to_expiry,
 )
 from filters import (
@@ -404,33 +403,82 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     atr_candles, combined_candle_count = market_data.get_atr_warmup_candles(
         underlying_key, "15minute", candles_15m
     )
+    # BUGFIX (2026-08-11): get_atr_warmup_candles()'s own docstring has
+    # always said its result is "meant ONLY to feed compute_atr() (and,
+    # at the same call site, compute_ema())" -- but the EMA calls below
+    # were passing candles_15m (today-only) instead of atr_candles
+    # (previous-session tail candles PREPENDED, when
+    # WARMUP_CANDLE_CONTINUITY_ENABLED and before the cutoff -- see
+    # that function's docstring). Confirmed live: combined_candle_count
+    # was already 24-26 by 10:20-10:55 IST (well over EMA21's 21-candle
+    # need) while candles_fetched (today-only) was still just 4-6 --
+    # meaning EMA9/21 had enough REAL data available the entire time,
+    # it just wasn't being handed to it. This made "EMA (15m): Not
+    # Ready" mathematically unavoidable until today's own candles alone
+    # reached 21 (~14:30 IST, 21 x 15min after a 9:15 open) instead of
+    # using the warmup-merged data that was already sufficient from
+    # shortly after market open. Same fix applied to the 5-min warmup
+    # fetch below for m5_direction, which had an identical gap on the
+    # 5-min timeframe (21-candle need -> ~11:00 IST on today-only data).
+    #
+    # NOTE (still true after this fix, flagging for awareness -- not
+    # changed here): ATR_WARMUP_CUTOFF_HOUR/MINUTE (11:00 IST) stops
+    # the warmup merge for the 15-min timeframe at that time regardless
+    # of whether today's own 15-min candles have reached 21 yet (they
+    # haven't -- that only happens at ~14:30 IST) -- so there is still
+    # a gap window (roughly 11:00-14:30 IST) where 15-min EMA can go
+    # from ready (warmup-assisted) back to not-ready (today-only,
+    # insufficient) until today's own count catches up. The 5-min
+    # warmup fetch has the same cutoff-vs-need mismatch on its own
+    # timeframe. Both are pre-existing (the cutoff wasn't introduced by
+    # this fix), left as-is pending a decision on whether/how to retune
+    # ATR_WARMUP_CUTOFF_HOUR -- flagging rather than silently changing
+    # a tuned threshold.
+    candles_5m_warmup, _m5_combined_count = market_data.get_atr_warmup_candles(
+        underlying_key, "5minute", candles_5m
+    )
 
-    ema_direction = ema_trend_direction(candles_15m)
+    ema_direction = ema_trend_direction(atr_candles)
     # 5-min EMA direction read (2026-08-10) -- a genuinely SEPARATE
     # computation from ema_direction above (15-min), reusing candles_5m
-    # already fetched for the Candle Readiness Gate above. Feeds ONLY
-    # the Mandatory Structural Confirmation check in
-    # filters.directional_confirmation_status() -- see that function's
+    # already fetched for the Candle Readiness Gate above (now warmup-
+    # merged too, see BUGFIX note above). Feeds ONLY the Mandatory
+    # Structural Confirmation check in filters.
+    # directional_confirmation_status() -- see that function's
     # docstring for why this exists (trend/vwap alone were satisfying
     # the confirmation-count gate with zero real EMA-structure
     # evidence on either timeframe).
-    m5_direction = ema_trend_direction(candles_5m)
+    m5_direction = ema_trend_direction(candles_5m_warmup)
     ema_aligned = ema_direction == direction
-    ema9 = compute_ema([c["close"] for c in candles_15m], 9)
-    ema21 = compute_ema([c["close"] for c in candles_15m], 21)
+    ema9 = compute_ema([c["close"] for c in atr_candles], 9)
+    ema21 = compute_ema([c["close"] for c in atr_candles], 21)
     vwap_confirmed = vwap_check(symbol, spot_price, direction)
     volume_confirmed = liquidity_ok(oi, volume, bid, ask, premium, symbol)  # see NOTE below
     oi_delta_pct = oi_change_pct(oi_history, instrument_key, oi)  # read BEFORE oi_is_building mutates oi_history
     oi_building = oi_is_building(oi_history, instrument_key, oi)
     liquidity_pass = liquidity_ok(oi, volume, bid, ask, premium, symbol)
-    # mtf_confirmed (plain bool, unchanged) still feeds factors["mtf_confirmed"]/
-    # reasons_from_factors() exactly as before -- multi_timeframe_confirms()
-    # itself is untouched. mtf_confirmed_tristate (True/False/None) is the
-    # NEW, richer read used for trade_score.htf_strength() and the
-    # Directional Confirmation Gate below, via the additive
-    # multi_timeframe_confirmation_detail() (see option_chain.py).
-    mtf_confirmed = multi_timeframe_confirms(symbol, direction)
-    mtf_confirmed_tristate, _mtf_ema_direction = multi_timeframe_confirmation_detail(symbol, direction)
+    # BUGFIX (2026-08-11): mtf_confirmed/mtf_confirmed_tristate used to
+    # come from multi_timeframe_confirms()/multi_timeframe_confirmation_detail()
+    # (option_chain.py), which do their OWN separate 15-min candle
+    # fetch for this same symbol -- via get_recent_underlying_candles()
+    # directly, which never sees warmup candles (only
+    # get_atr_warmup_candles() does -- see that function's own
+    # docstring). That made "HTF" a REDUNDANT read of the exact same
+    # 15-min EMA9/21 crossover ema_direction above already computes
+    # (now correctly warmup-aware, see the ema_direction/atr_candles
+    # BUGFIX note above) -- just via a second, un-warmed fetch that
+    # stayed "Not Ready" long after ema_direction itself was already
+    # confirming. Deriving both directly from ema_direction here
+    # instead: same underlying signal, single warmup-aware source, and
+    # the GATE log line's "mtf_confirmed=Y/N" now can't disagree with
+    # what the Directional Confirmation Gate/htf_strength() actually
+    # used to decide. multi_timeframe_confirms()/
+    # multi_timeframe_confirmation_detail() themselves are left
+    # untouched in option_chain.py (existing public API, unused
+    # elsewhere per a repo-wide check) in case a future caller wants
+    # the un-warmed read specifically.
+    mtf_confirmed_tristate = (ema_direction == direction) if ema_direction is not None else None
+    mtf_confirmed = bool(mtf_confirmed_tristate)
     delta_ok = delta_acceptable(moneyness, delta)
     expiry_ok = expiry_theta_ok(moneyness, delta, expiry)
     premium_ok = premium_in_range(symbol, premium)

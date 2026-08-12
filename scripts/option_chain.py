@@ -9,7 +9,7 @@ chain, VWAP-on-futures check, and multi-timeframe / directional bias.
 from datetime import datetime, timezone, timedelta
 
 import market_data
-from config import STRIKE_STEP, STOCK_SYMBOLS
+from config import STRIKE_STEP
 from indicators import ema_trend_direction, compute_vwap, vwap_confirms
 from logging_setup import get_logger
 from exceptions import ConfigurationError
@@ -62,28 +62,51 @@ def resolve_underlying_key(symbol: str) -> str:
     Single place every function below goes through to get `symbol`'s
     underlying instrument_key -- indices resolve instantly from the
     static UNDERLYING_INSTRUMENT_KEYS dict above (their NSE_INDEX|...
-    key never changes). Individual stocks (config.STOCK_SYMBOLS) have
-    no equivalent stable key to hand-type here -- an equity's
-    instrument_key is tied to its ISIN, which isn't something to
-    copy into source and trust -- so instead it's resolved fresh each
-    call via Broker.resolve_equity_instrument_key(symbol) (see
-    upstox.py), the same "resolve fresh from the instrument master,
-    don't hardcode" approach vwap_check() below already uses for the
-    futures contract key.
+    key never changes). Individual stocks have no equivalent stable
+    key to hand-type here -- an equity's instrument_key is tied to its
+    ISIN, which isn't something to copy into source and trust -- so
+    instead it's resolved fresh each call via
+    Broker.resolve_equity_instrument_key(symbol) (see upstox.py), the
+    same "resolve fresh from the instrument master, don't hardcode"
+    approach vwap_check() below already uses for the futures contract
+    key.
 
-    Raises NotImplementedError if `symbol` is neither a known index
-    nor in STOCK_SYMBOLS -- same failure mode the three functions
-    below used to raise individually before this was centralized.
+    BUGFIX (2026-08-11): used to additionally require `symbol in
+    STOCK_SYMBOLS` (the ~19-27 entry STATIC watchlist) before even
+    attempting resolve_equity_instrument_key() -- but that call is
+    already fully dynamic (any valid NSE equity symbol resolves from
+    the live instrument master, no hardcoded list needed at all).
+    Confirmed live: opportunity_score._safe_total_oi() calls this for
+    every symbol in the DYNAMIC universe (config.DYNAMIC_UNIVERSE_TOP_N
+    = 150, scored separately from STOCK_SYMBOLS) AFTER already
+    confirming via instrument_master.validate_symbol() that the symbol
+    genuinely has option contracts -- yet this function refused every
+    one of those ~120+ symbols outright just for not being on the much
+    shorter static list, both flooding the log with NotImplementedError
+    tracebacks every cycle and silently leaving OI-build scoring
+    (TRADE_SCORE_WEIGHTS' 15-point "oi" factor, plus Options
+    Intelligence's OI/PCR sub-scores) unavailable for most of what
+    was actually being scanned. The STOCK_SYMBOLS check added no real
+    protection -- resolve_equity_instrument_key() itself is still the
+    safety net for a genuinely bad/unresolvable symbol string, it just
+    now raises its own (broker-level) error instead of this function's
+    NotImplementedError, with identical graceful-degrade handling at
+    every call site (see e.g. opportunity_score._safe_total_oi()'s
+    try/except).
+
+    Raises NotImplementedError only when `symbol` is neither a known
+    index NOR resolvable as an equity at all (STOCK_SYMBOLS is no
+    longer consulted here).
     """
     underlying_key = UNDERLYING_INSTRUMENT_KEYS.get(symbol)
     if underlying_key:
         return underlying_key
-    if symbol in STOCK_SYMBOLS:
+    if symbol:
         return market_data.get_broker().resolve_equity_instrument_key(symbol)
     raise NotImplementedError(
         f"No underlying instrument key resolution configured for '{symbol}' "
-        f"-- add it to UNDERLYING_INSTRUMENT_KEYS (index) or STOCK_SYMBOLS "
-        f"(stock) in config.py."
+        f"-- add it to UNDERLYING_INSTRUMENT_KEYS (index) in config.py, or "
+        f"pass a non-empty equity symbol."
     )
 
 
