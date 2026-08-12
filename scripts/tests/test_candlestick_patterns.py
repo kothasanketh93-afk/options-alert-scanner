@@ -124,6 +124,46 @@ def run():
     assert empty_result["alignment_score"] is None
     assert empty_result["alignment_score_pct"] is None
 
+    # --- ACCURACY PASS (2026-08-10): trend-context gating for Hammer/
+    # Shooting Star ---
+    down_history = [c(100 - i, 100 - i + 1, 100 - i - 1, 100 - i - 0.8) for i in range(10)]
+    hammer_candle = c(88, 88.5, 80, 88.3)  # small body near top, long lower wick
+    assert cp.is_hammer([hammer_candle]) is True  # geometry alone still matches
+    hammer_after_downtrend = cp.detect(down_history + [hammer_candle])
+    hammer_entry = next(d for d in hammer_after_downtrend if d["pattern"] == "Hammer")
+    assert hammer_entry["bias"] == "bullish"  # right context -- real Hammer read
+
+    up_history = [c(80 + i, 80 + i + 1, 80 + i - 1, 80 + i + 0.8) for i in range(10)]
+    hammer_after_uptrend = cp.detect(up_history + [hammer_candle])
+    hammer_entry2 = next(d for d in hammer_after_uptrend if d["pattern"] == "Hammer")
+    assert hammer_entry2["bias"] == "neutral"  # wrong context (Hanging-Man shape) -- not scored bullish
+    # excluded from directional scoring as a result:
+    assert cp.pattern_alignment_score(up_history + [hammer_candle], "CE") is None or \
+        all(d["pattern"] != "Hammer" for d in cp.detect(up_history + [hammer_candle]) if d["bias"] != "neutral")
+
+    # --- Range-significance filter: Marubozu shape with a tiny absolute
+    # range against a much-higher-volatility recent history is filtered out ---
+    high_vol_history = [c(100, 110, 90, 105) for _ in range(14)]
+    tiny_marubozu = c(100, 100.5, 99.9, 100.48)
+    assert cp.marubozu_direction(high_vol_history + [tiny_marubozu]) is None
+
+    normal_vol_history = [c(100, 101, 99, 100.2) for _ in range(14)]
+    real_marubozu = c(100, 101.9, 99.95, 101.85)
+    assert cp.marubozu_direction(normal_vol_history + [real_marubozu]) == "bullish"
+
+    # --- Engulfing c1-body floor: a Doji-like c1 does not count as engulfed ---
+    doji_c1 = c(100, 101, 99, 100.05)
+    real_c2 = c(100, 102, 99.5, 101.5)
+    assert cp.is_bullish_engulfing(normal_vol_history[:-2] + [doji_c1, real_c2]) is False
+
+    # --- Volume-confirmation bonus: same shape, higher volume -> higher strength ---
+    low_vol_candle = dict(real_marubozu, volume=1000)
+    high_vol_candle = dict(real_marubozu, volume=2000)
+    low_vol_history_v = [dict(x, volume=1000) for x in normal_vol_history]
+    low_strength = next(d for d in cp.detect(low_vol_history_v + [low_vol_candle]) if d["pattern"] == "Marubozu")
+    high_strength = next(d for d in cp.detect(low_vol_history_v + [high_vol_candle]) if d["pattern"] == "Marubozu")
+    assert high_strength["strength"] > low_strength["strength"]
+
     print("test_candlestick_patterns: all checks passed")
 
 

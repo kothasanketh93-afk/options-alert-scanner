@@ -140,14 +140,24 @@ def test_scoring_reasons_does_not_crash_on_none_and_skips_it():
     print("test_scoring_reasons_does_not_crash_on_none_and_skips_it passed")
 
 
-def test_factor_checklist_does_not_crash_on_none():
+def test_factor_checklist_skips_none_instead_of_showing_a_permanent_failing_mark():
+    """
+    BUGFIX (2026-08-11): used to force None -> 0.0 -> "⚠️" -- correct-
+    looking for a factor that's merely unavailable THIS cycle, but
+    actively misleading for a factor that's ALWAYS None (e.g. "htf",
+    since 2026-08-11 -- see filters.directional_confirmation_status()'s
+    docstring for why no genuine independent higher-timeframe source
+    exists in this codebase): showing "HTF ⚠️" on every alert forever
+    reads as "checked and weak", not "never checked". Skipped entirely
+    now, matching scoring_reasons()'s existing "no reason line for an
+    unavailable factor" behavior (see the test just above this one).
+    """
     strengths = _all_factors_at(1.0)
     strengths["ema"] = None
     lines = trade_score.factor_checklist(strengths)
     ema_lines = [l for l in lines if l.startswith("EMA ")]
-    assert len(ema_lines) == 1
-    assert "⚠️" in ema_lines[0]  # unavailable displays as a weak/failing read, same as a real 0.0
-    print("test_factor_checklist_does_not_crash_on_none passed")
+    assert ema_lines == [], "EMA unavailable this cycle should produce NO checklist line, not a '⚠️' one"
+    print("test_factor_checklist_skips_none_instead_of_showing_a_permanent_failing_mark passed")
 
 
 if __name__ == "__main__":
@@ -160,5 +170,5 @@ if __name__ == "__main__":
     test_multiple_none_factors_renormalize_correctly()
     test_every_factor_none_scores_zero_not_a_crash()
     test_scoring_reasons_does_not_crash_on_none_and_skips_it()
-    test_factor_checklist_does_not_crash_on_none()
+    test_factor_checklist_skips_none_instead_of_showing_a_permanent_failing_mark()
     print("\nAll trade_score EMA-None tests passed.")
