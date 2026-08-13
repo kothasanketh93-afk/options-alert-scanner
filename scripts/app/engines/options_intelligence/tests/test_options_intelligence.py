@@ -127,9 +127,16 @@ def test_greeks_score_penalizes_high_gamma_theta():
 
 
 def test_iv_abnormal_detection():
-    check(greeks_iv.is_iv_abnormal(0.01) is True, "IV far below the floor is abnormal")
-    check(greeks_iv.is_iv_abnormal(2.0) is True, "IV far above the ceiling is abnormal")
-    check(greeks_iv.is_iv_abnormal(0.20) is False, "a normal IV reading is not abnormal")
+    # is_iv_abnormal() takes iv in percentage-point scale (e.g. 20.0
+    # meaning 20%) -- the scale both angelone.py and upstox.py actually
+    # return (see IV_SCALE_VERIFICATION.md) and the scale engine.py
+    # actually passes in from leg["iv"]. IV_ABNORMAL_LOW_PCT/HIGH_PCT in
+    # config.py are 0-1 fraction scale (0.08/1.20); the function
+    # converts internally, so these test inputs must be percentage-point
+    # to match real call sites, not fraction-scale.
+    check(greeks_iv.is_iv_abnormal(1.0) is True, "IV far below the floor is abnormal")
+    check(greeks_iv.is_iv_abnormal(200.0) is True, "IV far above the ceiling is abnormal")
+    check(greeks_iv.is_iv_abnormal(20.0) is False, "a normal IV reading is not abnormal")
     check(greeks_iv.is_iv_abnormal(None) is False, "missing IV is 'unknown', not 'abnormal'")
 
 
@@ -146,13 +153,45 @@ def test_iv_percentile_and_trend():
 # Liquidity / Premium Engines
 # ---------------------------------------------------------------------------
 
-def test_premium_score_penalizes_pure_time_value():
-    # Deep OTM call: strike far above spot -> intrinsic value is 0,
-    # premium is ALL time value.
+def test_premium_score_does_not_penalize_atm_otm_for_being_atm_otm():
+    """
+    BUGFIX (2026-08-10): premium_score() used to score EVERY ATM/OTM
+    strike 0.0 unconditionally -- intrinsic value is always exactly 0
+    for ATM/OTM by definition, so pct_time_value was always ~100% and
+    that alone tripped the "mostly time value" penalty, regardless of
+    whether the quote itself was actually fine. Confirmed live: this
+    was the source of "Poor Premium Quality (mostly time value)" on
+    every single ATM/OTM OPTIONS_INTEL log line reviewed, and once
+    config.OPTIONS_INTELLIGENCE_FILTER_ENABLED was turned on this
+    became an unconditional reject of every ATM/OTM strike (scoring.
+    options_filter()'s <0.2 hard-hygiene rule) -- a de facto ITM-only
+    filter never intended by this system's parallel ITM/ATM/OTM design
+    (see scanner.moneyness_offsets()/STRIKE_RANGE).
+
+    Fixed: ATM/OTM (intrinsic <= 0) now scores a neutral 1.0 -- not a
+    quality read for these, so not a penalty either. ITM strikes keep
+    the real intrinsic/extrinsic check.
+    """
     otm_score = liquidity_premium.premium_score(spot_price=24000, strike=25000, direction="CE", premium=20)
-    # ITM call: real intrinsic value backing most of the premium.
-    itm_score = liquidity_premium.premium_score(spot_price=24000, strike=23000, direction="CE", premium=1050)
-    check(itm_score > otm_score, "an ITM strike with real intrinsic value scores higher than a pure-time-value OTM strike")
+    atm_score = liquidity_premium.premium_score(spot_price=24000, strike=24000, direction="CE", premium=120)
+    check(otm_score == 1.0, "OTM (intrinsic=0) must not be penalized for its own moneyness")
+    check(atm_score == 1.0, "ATM (intrinsic=0) must not be penalized for its own moneyness")
+
+
+def test_premium_score_still_penalizes_a_genuinely_anomalous_itm_quote():
+    """
+    Companion to the fix above: an ITM strike (real intrinsic value)
+    whose premium is STILL mostly time value despite that is a genuine
+    anomaly (e.g. IV skew, stale/bad quote) -- this is the one case
+    the intrinsic/extrinsic split is actually a meaningful signal for,
+    and it must still be caught.
+    """
+    intrinsic = liquidity_premium.intrinsic_value(24000, 23900, "CE")  # 100
+    anomalous_itm_score = liquidity_premium.premium_score(spot_price=24000, strike=23900, direction="CE", premium=500)
+    healthy_itm_score = liquidity_premium.premium_score(spot_price=24000, strike=23000, direction="CE", premium=1050)
+    check(intrinsic == 100, "sanity check on the intrinsic value used above")
+    check(anomalous_itm_score < 0.2, "ITM premium that's still mostly time value must score low (genuine anomaly)")
+    check(healthy_itm_score > anomalous_itm_score, "a healthy, mostly-intrinsic ITM premium scores clearly higher")
 
 
 def test_intrinsic_extrinsic_split():
