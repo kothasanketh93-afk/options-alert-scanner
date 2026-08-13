@@ -123,3 +123,31 @@ jobs:
           name: scan-log-export-${{ github.run_id }}
           path: export.json
           retention-days: 7
+
+      - name: Send to Telegram
+        if: always()
+        working-directory: scripts
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python3 -c "
+          import os
+          import telegram_notify
+
+          path = '../export.json'
+          if not os.path.exists(path):
+              print('export.json missing (Export step likely failed) -- nothing to send.')
+              raise SystemExit(0)
+
+          size_mb = os.path.getsize(path) / (1024 * 1024)
+          if size_mb > 45:
+              # Telegram bots cap uploads at 50MB -- leaves a safety
+              # margin instead of racing the exact limit.
+              print(f'export.json is {size_mb:.1f}MB, over the safe Telegram upload size -- '
+                    f'skipping Telegram delivery. Download it from the workflow Artifact instead.')
+              raise SystemExit(0)
+
+          telegram_notify.send_document(path, caption='Scanner troubleshooting log export')
+          print('Sent export.json to Telegram.')
+          "
