@@ -1,0 +1,103 @@
+# export-scan-logs.yml
+# ---------------------
+# Manual, on-demand export of the centralized scan-log store
+# (scan_log_store.py, see that module's own docstring) into ONE
+# downloadable JSON file. Never runs on a schedule -- workflow_dispatch
+# only, matching config.SCAN_LOG_RETENTION_TRADING_DAYS's own design
+# principle: retention/capture happens automatically every scan cycle,
+# export only happens when explicitly requested.
+#
+# Read-only against the `state` branch (export_logs() never writes to
+# or deletes the stored .jsonl files -- see its own docstring) --
+# permissions below are contents: read, not write, unlike trader.yml.
+#
+# Same auth/checkout pattern as trader.yml (see that file's own
+# comments for why each secret/env var is there) -- reused here rather
+# than reinvented so both workflows stay consistent.
+
+name: Export Scan Logs
+
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "Exact trading date YYYY-MM-DD (leave blank for no single-date filter)"
+        required: false
+        default: ""
+      date_start:
+        description: "Range start YYYY-MM-DD, inclusive (leave blank for no range filter)"
+        required: false
+        default: ""
+      date_end:
+        description: "Range end YYYY-MM-DD, inclusive (leave blank for no range filter)"
+        required: false
+        default: ""
+      underlying:
+        description: "Filter to one underlying symbol, e.g. NIFTY (leave blank for all)"
+        required: false
+        default: ""
+      candidate_id:
+        description: "Filter to one SYMBOL:DIRECTION:STRIKE:EXPIRY (leave blank for all)"
+        required: false
+        default: ""
+      only_rejected:
+        description: "Only rejected candidates"
+        type: boolean
+        required: false
+        default: false
+      only_eligible:
+        description: "Only alert-eligible candidates (takes precedence over only_rejected if both checked)"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Check out state branch (read-only)
+        working-directory: scripts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_URL: https://github.com/${{ github.repository }}.git
+        run: |
+          python3 -c "
+          import os, state
+          state.ensure_state_branch_checked_out(os.environ['REPO_URL'], os.environ['GITHUB_TOKEN'], allow_create=False)
+          "
+
+      - name: Export
+        working-directory: scripts
+        run: |
+          ARGS="--output ../export.json"
+          if [ -n "${{ github.event.inputs.date }}" ]; then ARGS="$ARGS --date ${{ github.event.inputs.date }}"; fi
+          if [ -n "${{ github.event.inputs.date_start }}" ]; then ARGS="$ARGS --date-start ${{ github.event.inputs.date_start }}"; fi
+          if [ -n "${{ github.event.inputs.date_end }}" ]; then ARGS="$ARGS --date-end ${{ github.event.inputs.date_end }}"; fi
+          if [ -n "${{ github.event.inputs.underlying }}" ]; then ARGS="$ARGS --underlying '${{ github.event.inputs.underlying }}'"; fi
+          if [ -n "${{ github.event.inputs.candidate_id }}" ]; then ARGS="$ARGS --candidate-id '${{ github.event.inputs.candidate_id }}'"; fi
+          if [ "${{ github.event.inputs.only_rejected }}" = "true" ]; then ARGS="$ARGS --only-rejected"; fi
+          if [ "${{ github.event.inputs.only_eligible }}" = "true" ]; then ARGS="$ARGS --only-eligible"; fi
+          eval python3 scan_log_store.py $ARGS
+
+      - name: Upload export
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-log-export-${{ github.run_id }}
+          path: export.json
+          retention-days: 7
