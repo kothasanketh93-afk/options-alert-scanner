@@ -83,16 +83,38 @@ jobs:
 
       - name: Export
         working-directory: scripts
+        env:
+          IN_DATE: ${{ github.event.inputs.date }}
+          IN_DATE_START: ${{ github.event.inputs.date_start }}
+          IN_DATE_END: ${{ github.event.inputs.date_end }}
+          IN_UNDERLYING: ${{ github.event.inputs.underlying }}
+          IN_CANDIDATE_ID: ${{ github.event.inputs.candidate_id }}
+          IN_ONLY_REJECTED: ${{ github.event.inputs.only_rejected }}
+          IN_ONLY_ELIGIBLE: ${{ github.event.inputs.only_eligible }}
         run: |
-          ARGS="--output ../export.json"
-          if [ -n "${{ github.event.inputs.date }}" ]; then ARGS="$ARGS --date ${{ github.event.inputs.date }}"; fi
-          if [ -n "${{ github.event.inputs.date_start }}" ]; then ARGS="$ARGS --date-start ${{ github.event.inputs.date_start }}"; fi
-          if [ -n "${{ github.event.inputs.date_end }}" ]; then ARGS="$ARGS --date-end ${{ github.event.inputs.date_end }}"; fi
-          if [ -n "${{ github.event.inputs.underlying }}" ]; then ARGS="$ARGS --underlying '${{ github.event.inputs.underlying }}'"; fi
-          if [ -n "${{ github.event.inputs.candidate_id }}" ]; then ARGS="$ARGS --candidate-id '${{ github.event.inputs.candidate_id }}'"; fi
-          if [ "${{ github.event.inputs.only_rejected }}" = "true" ]; then ARGS="$ARGS --only-rejected"; fi
-          if [ "${{ github.event.inputs.only_eligible }}" = "true" ]; then ARGS="$ARGS --only-eligible"; fi
-          eval python3 scan_log_store.py $ARGS
+          python3 -c "
+          import os
+          import scan_log_store
+
+          def _val(name):
+              v = os.environ.get(name, '')
+              return v if v else None
+
+          def _flag(name):
+              return os.environ.get(name, '').lower() == 'true'
+
+          count = scan_log_store.export_logs(
+              '../export.json',
+              trading_date=_val('IN_DATE'),
+              date_start=_val('IN_DATE_START'),
+              date_end=_val('IN_DATE_END'),
+              underlying=_val('IN_UNDERLYING'),
+              candidate_id=_val('IN_CANDIDATE_ID'),
+              only_rejected=_flag('IN_ONLY_REJECTED'),
+              only_eligible=_flag('IN_ONLY_ELIGIBLE'),
+          )
+          print(f'Exported {count} records to export.json')
+          "
 
       - name: Upload export
         if: always()
