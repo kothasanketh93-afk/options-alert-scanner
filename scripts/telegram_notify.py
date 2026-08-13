@@ -23,11 +23,14 @@ too, they're listed as text only -- never opened as separate trades.
 """
 
 from datetime import datetime
+import os
 
 from auth import get_telegram_credentials
 from retry_utils import request_with_retry
 from exceptions import TelegramFailure
 from logging_setup import get_logger
+
+DOCUMENT_API_URL = "https://api.telegram.org/bot{token}/sendDocument"
 
 API_URL = f"https://api.telegram.org/bot{{token}}/sendMessage"
 log = get_logger("telegram")
@@ -76,6 +79,41 @@ def send(text: str):
         log.error("Telegram send failed after retries (message len=%d).", len(text))
         raise
     log.info("Telegram message sent (len=%d).", len(text))
+    return resp.json()
+
+
+def send_document(file_path: str, caption: str = None):
+    """
+    Sends a FILE (not a text message) to the configured chat via
+    Telegram's sendDocument endpoint -- added 2026-08-13 so
+    scan_log_store.py's on-demand export can be delivered straight to
+    the same Telegram chat alerts already go to, instead of only being
+    reachable via a GitHub Actions Artifact download. Reuses the same
+    credentials/retry policy/error type as send() above -- this is a
+    second endpoint on the same bot, not a separate integration.
+
+    caption: optional, shown under the file in Telegram (max ~1024
+    chars per Telegram's own limit -- not enforced here, an overly long
+    one is Telegram's 4xx to reject, not retried, same as any other
+    malformed-request failure per request_with_retry()'s own policy).
+
+    Telegram bots cap uploads at 50MB -- a file over that limit fails
+    here with a TelegramFailure (Telegram's own 4xx rejection, not
+    retried) rather than being silently truncated or skipped.
+    """
+    bot_token, chat_id = get_telegram_credentials()
+    url = DOCUMENT_API_URL.format(token=bot_token)
+    with open(file_path, "rb") as f:
+        try:
+            resp = request_with_retry(
+                "POST", url, error_cls=TelegramFailure, timeout=60,
+                data={"chat_id": chat_id, "caption": caption or ""},
+                files={"document": (os.path.basename(file_path), f)},
+            )
+        except TelegramFailure:
+            log.error("Telegram document send failed after retries (%s).", file_path)
+            raise
+    log.info("Telegram document sent: %s", file_path)
     return resp.json()
 
 
