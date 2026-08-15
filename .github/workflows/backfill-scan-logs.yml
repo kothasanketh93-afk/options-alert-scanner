@@ -1,0 +1,99 @@
+# backfill-scan-logs.yml
+# -----------------------
+# One-off, manual-trigger export of PAST Trader workflow runs' raw logs
+# (from GitHub Actions' own retained run history, typically ~90 days)
+# combined into a single file -- for troubleshooting days that ran
+# BEFORE scan_log_store.py's centralized structured store existed (that
+# store never backfills; see its own docstring). This workflow does
+# not touch the `state` branch / scan_logs/ store at all.
+#
+# Read-only against GitHub's Actions history (permissions: actions:
+# read) -- never modifies or deletes anything.
+
+name: Backfill Trader Logs
+
+on:
+  workflow_dispatch:
+    inputs:
+      date_start:
+        description: "Start date YYYY-MM-DD (inclusive, UTC)"
+        required: true
+      date_end:
+        description: "End date YYYY-MM-DD (inclusive, UTC)"
+        required: true
+      underlying:
+        description: "Only keep lines mentioning this symbol, e.g. NIFTY (leave blank for everything)"
+        required: false
+        default: ""
+      workflow_file:
+        description: "Workflow FILE name under .github/workflows/ to pull runs from (not the display name)"
+        required: false
+        default: "trader.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Backfill
+        working-directory: scripts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 backfill_export.py \
+            --repo "${{ github.repository }}" \
+            --date-start "${{ github.event.inputs.date_start }}" \
+            --date-end "${{ github.event.inputs.date_end }}" \
+            --underlying "${{ github.event.inputs.underlying }}" \
+            --workflow-file "${{ github.event.inputs.workflow_file }}" \
+            --output ../backfill_export.txt
+
+      - name: Upload backfill
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backfill-logs-${{ github.run_id }}
+          path: backfill_export.txt
+          retention-days: 7
+
+      - name: Send to Telegram
+        if: always()
+        working-directory: scripts
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python3 -c "
+          import os
+          import telegram_notify
+
+          path = '../backfill_export.txt'
+          if not os.path.exists(path):
+              print('backfill_export.txt missing -- nothing to send.')
+              raise SystemExit(0)
+
+          size_mb = os.path.getsize(path) / (1024 * 1024)
+          if size_mb > 45:
+              print(f'backfill_export.txt is {size_mb:.1f}MB, over the safe Telegram upload size -- '
+                    f'skipping Telegram delivery. Narrow the date range or underlying filter, '
+                    f'or download it from the workflow Artifact instead.')
+              raise SystemExit(0)
+
+          telegram_notify.send_document(path, caption='Backfilled Trader run logs')
+          print('Sent backfill_export.txt to Telegram.')
+          "
