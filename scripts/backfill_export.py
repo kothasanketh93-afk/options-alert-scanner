@@ -176,8 +176,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description="Backfill-export raw Trader workflow logs from GitHub Actions history.")
     parser.add_argument("--repo", required=True, help="owner/repo")
-    parser.add_argument("--date-start", required=True, help="2026-08-13 (inclusive)")
-    parser.add_argument("--date-end", required=True, help="2026-08-14 (inclusive)")
+    parser.add_argument("--date-start", required=True, help="YYYY-MM-DD (inclusive)")
+    parser.add_argument("--date-end", required=True, help="YYYY-MM-DD (inclusive)")
     parser.add_argument("--workflow-file", default="trader.yml")
     parser.add_argument("--underlying", default=None, help="Only keep lines mentioning this symbol")
     parser.add_argument("--output", default="backfill_export.txt")
