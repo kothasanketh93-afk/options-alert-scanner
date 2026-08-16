@@ -222,6 +222,54 @@ class UpstoxBroker(Broker):
             return float(quote["last_price"])
         raise InstrumentNotFound(f"no LTP returned for {instrument_key}")
 
+    def get_native_pcr(self, instrument_key: str, expiry_date: str, date_str: str,
+                        bucket_interval: int = 60):
+        """
+        Upstox's own dedicated PCR endpoint -- added 2026-08-14
+        (architecture cleanup audit) as a DIAGNOSTIC-ONLY parity check
+        against chain_metrics.overall_pcr() (this repo's existing,
+        self-computed PCR from the fetched option chain). NOT part of
+        the abstract Broker interface (AngelOne has no equivalent
+        exposed here) and NOT called from options_intelligence/engine.py
+        itself (that package deliberately stays independent of live
+        broker clients at import time -- see its own analyze()
+        docstring) -- callers reach this directly via market_data._upstox,
+        same pattern get_india_vix() uses.
+
+        Endpoint confirmed against Upstox's own documented example:
+        GET /v2/market/pcr?instrument_key=...&expiry=...&date=...&bucket_interval=...
+        -- returns PCR at intraday intervals from market open. This
+        method intentionally does NOT replace the self-computed PCR
+        anywhere; it exists so the two can be logged side by side and
+        compared before any future decision to switch (see this
+        session's own audit for why "verify parity, don't replace yet"
+        was the explicit instruction).
+
+        Returns the LATEST bucket's PCR value from the response, or
+        None if the response shape doesn't contain one -- never raises
+        (this is optional diagnostic context, must never interrupt a
+        scan cycle).
+        """
+        try:
+            url = f"{BASE_URL}/market/pcr"
+            resp = request_with_retry(
+                "GET", url, headers=self._headers(), timeout=10,
+                params={
+                    "instrument_key": instrument_key, "expiry": expiry_date,
+                    "date": date_str, "bucket_interval": bucket_interval,
+                },
+                error_cls=BrokerAPIError,
+            )
+            payload = resp.json()
+            data = payload.get("data")
+            if isinstance(data, list) and data:
+                return data[-1].get("pcr")
+            if isinstance(data, dict):
+                return data.get("pcr")
+            return None
+        except Exception:
+            return None
+
     def get_option_chain(self, underlying_key: str, expiry_date: str) -> list:
         """
         Upstox's raw response for one strike looks like this (verified
@@ -281,8 +329,18 @@ class UpstoxBroker(Broker):
                 entry[prefix + "oi"] = market.get("oi", 0.0)
                 entry[prefix + "prev_oi"] = market.get("prev_oi")
                 entry[prefix + "volume"] = market.get("volume", 0.0)
-                entry[prefix + "bid"] = market.get("bid_price", 0.0)
-                entry[prefix + "ask"] = market.get("ask_price", 0.0)
+                # BUGFIX (2026-08-15, P0 bid/ask evidence audit): used
+                # to default to 0.0 when Upstox's response genuinely
+                # lacked bid_price/ask_price -- silently making a
+                # MISSING quote indistinguishable from a real zero-width
+                # spread. Missing now correctly stays None all the way
+                # through to filters.liquidity_ok() (see that function's
+                # own updated docstring) instead of masquerading as
+                # perfect liquidity. ltp/oi/volume above are UNCHANGED
+                # (out of this fix's approved scope -- only bid/ask were
+                # audited and approved for this specific correction).
+                entry[prefix + "bid"] = market.get("bid_price")
+                entry[prefix + "ask"] = market.get("ask_price")
                 greeks = side.get("option_greeks") or {}
                 raw_iv = greeks.get("iv")
                 entry[prefix + "delta"] = greeks.get("delta")

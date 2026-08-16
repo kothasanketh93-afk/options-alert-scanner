@@ -96,6 +96,7 @@ telegram_notify.py already handle these):
 from datetime import datetime, timezone, timedelta
 
 import market_data
+from state import trading_date_str
 import instrument_master
 from logging_setup import get_logger
 from exceptions import ConfigurationError
@@ -304,11 +305,66 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         return None  # this strike isn't listed / no data -- not a gate failure, just absent
 
     instrument_key = leg["instrument_key"]
-    premium = leg["ltp"]
+    premium = leg["ltp"]  # UNCHANGED (2026-08-15 P0 audit): this remains the ONLY
+                           # price dynamic_trade_levels()/entry/SL/T1/T2/RR/scoring
+                           # read -- see the evidence-only block immediately below,
+                           # which is additive and never feeds back into `premium`.
     oi = leg["oi"]
     volume = leg["volume"]
     delta = leg["delta"]
-    bid, ask = leg["bid"], leg["ask"]
+    bid, ask = leg.get("bid"), leg.get("ask")
+
+    # --- Bid/Ask Execution Evidence (2026-08-15, P0 approved scope) ---
+    # Evidence-only: does NOT feed dynamic_trade_levels()/entry/SL/T1/T2/
+    # RR/trade_score/probability/alert eligibility -- none of those are
+    # touched by this block, all still read `premium` (LTP) exactly as
+    # before. This exists solely to persist ltp/bid/ask/spread/spread_pct
+    # into the centralized evidence log for future statistical
+    # validation, per this session's own P0 audit finding that this
+    # data was being computed-and-discarded (filters.liquidity_ok())
+    # rather than recorded.
+    #
+    # bid/ask are None when genuinely UNAVAILABLE (both brokers fixed
+    # this session to stop defaulting a missing quote to 0.0 -- see
+    # upstox.py/angelone.py's own comments). A literal <=0 value (not
+    # None) is a THIRD, distinct state -- INVALID, not unavailable and
+    # not a genuine zero-width spread -- matching filters.liquidity_ok()'s
+    # own <=0 check added alongside this fix.
+    #
+    # BUGFIX (2026-08-15, P0 audit follow-up): this block used to only
+    # check `is not None`, so bid=0.0/ask=0.0 (a real, present, but
+    # INVALID value for an option's price) was treated as fully valid
+    # and given a computed spread/spread_pct -- inconsistent with
+    # liquidity_ok()'s own <=0 rejection for the exact same input.
+    # Evidence logging now follows the SAME three-state rule as the
+    # gate: VALID (bid>0 and ask>0) -> real spread/spread_pct; anything
+    # else -> UNAVAILABLE (None) or INVALID (<=0), spread/spread_pct
+    # never fabricated for either. spread_pct uses the midpoint of
+    # bid/ask as its base (per this audit's own specified formula) --
+    # a DIFFERENT, evidence-focused percentage from filters.
+    # liquidity_ok()'s own internal spread_pct (which is
+    # (ask-bid)/premium, unchanged, still gates on MAX_SPREAD_PCT
+    # exactly as before) -- two related but distinct numbers, not a
+    # duplicate of the same one.
+    if bid is None or ask is None:
+        bid_ask_status = "UNAVAILABLE"
+        spread, spread_pct = None, None
+    elif bid <= 0 or ask <= 0:
+        bid_ask_status = "INVALID"
+        spread, spread_pct = None, None
+    else:
+        bid_ask_status = "VALID"
+        spread = ask - bid
+        midpoint = (bid + ask) / 2
+        spread_pct = (spread / midpoint * 100) if midpoint else None
+    _logger.info(
+        f"PRICING_EVIDENCE {symbol} {direction} {moneyness} strike={strike} "
+        f"ltp={premium} bid={bid if bid is not None else 'UNAVAILABLE'} "
+        f"ask={ask if ask is not None else 'UNAVAILABLE'} "
+        f"status={bid_ask_status} "
+        f"spread={spread if spread is not None else bid_ask_status} "
+        f"spread_pct={round(spread_pct, 2) if spread_pct is not None else bid_ask_status}"
+    )
 
     # --- Contract Resolution Assertion (2026-08-10) ---
     # Confirms the leg _extract_leg() just returned actually matches
@@ -925,6 +981,42 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         strike=strike, leg=leg, chain=chain, spot_price=spot_price, expiry=expiry,
         oi_history=oi_history, oi_delta_pct=oi_delta_pct,
     )
+    # PCR parity check, diagnostic-only (2026-08-14, architecture cleanup
+    # audit) -- compares this repo's existing, self-computed PCR
+    # (chain_metrics.overall_pcr(), already returned above as
+    # oi_intel["overall_pcr"]) against Upstox's own dedicated PCR
+    # endpoint. Logged only -- oi_intel's actual PCR score/decision is
+    # completely UNCHANGED by this; see upstox.UpstoxBroker.
+    # get_native_pcr()'s own docstring for why this stays a comparison,
+    # not a replacement, until parity is confirmed over real data.
+    # Max Pain parity is NOT checked here -- Upstox's own Max Pain
+    # endpoint's exact URL/parameters were not found in verified
+    # documentation this session, and this repo's own standing rule is
+    # to never invent an unverified API shape.
+    self_computed_pcr = oi_intel.get("overall_pcr")
+    if self_computed_pcr is not None:
+        native_pcr = market_data._upstox.get_native_pcr(
+            resolve_underlying_key(symbol), expiry, trading_date_str()
+        )
+        if native_pcr is not None:
+            try:
+                diff = round(self_computed_pcr - native_pcr, 3)
+            except TypeError:
+                # Defensive: this endpoint's response typing wasn't
+                # confirmed via a live call this session (only its URL/
+                # shape from documentation) -- if `pcr` ever comes back
+                # as something non-numeric, log that plainly instead of
+                # letting an arithmetic error interrupt this strike's scan.
+                _logger.info(f"PCR_PARITY_CHECK {symbol} {expiry} self_computed={self_computed_pcr} "
+                             f"upstox_native={native_pcr!r} (non-numeric, diff not computed)")
+                native_pcr = None
+            if native_pcr is not None:
+                _logger.info(
+                    f"PCR_PARITY_CHECK {symbol} {expiry} self_computed={self_computed_pcr} "
+                    f"upstox_native={native_pcr} diff={diff}"
+                )
+        else:
+            _logger.info(f"PCR_PARITY_CHECK {symbol} {expiry} self_computed={self_computed_pcr} upstox_native=UNAVAILABLE")
     if OPTIONS_INTELLIGENCE_FILTER_ENABLED and oi_intel.get("enabled") and not oi_intel.get("accepted", True):
         # NOTE (merge fix): `global _rejection_count` was already declared
         # earlier in this same function (see the hard_gate_pass branch

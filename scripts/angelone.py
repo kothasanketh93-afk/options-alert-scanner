@@ -522,8 +522,17 @@ class AngelOneBroker(Broker):
                 depth = quote.get("depth", {})
                 buy = depth.get("buy") or [{}]
                 sell = depth.get("sell") or [{}]
-                entry[prefix + "bid"] = buy[0].get("price", 0.0)
-                entry[prefix + "ask"] = sell[0].get("price", 0.0)
+                # BUGFIX (2026-08-15, P0 bid/ask evidence audit): used
+                # to default to 0.0 -- same fix as upstox.py's parallel
+                # code, see that file's comment for the full rationale.
+                # `buy`/`sell` above already fall back to `[{}]` when the
+                # depth list itself is empty, so `.get("price")` (no
+                # default) on that empty dict correctly yields None too
+                # -- both "no depth at all" and "depth present but this
+                # specific price field missing" now converge on the
+                # same explicit None, not 0.0.
+                entry[prefix + "bid"] = buy[0].get("price")
+                entry[prefix + "ask"] = sell[0].get("price")
                 entry[prefix + "ltp"] = quote.get("ltp", 0.0)
 
                 greeks = greeks_by_strike.get((round(strike, 2), option_type), {})
