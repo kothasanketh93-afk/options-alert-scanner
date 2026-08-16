@@ -141,11 +141,32 @@ def compute_weighted_score(strengths: dict) -> int:
     """The 100-point weighted composite (config.EARLY_BREAKOUT_WEIGHTS:
     Underlying Trend 20 / Institutional 15 / Base 15 / Breakout 15 /
     Follow-through 10 / Volume 10 / Momentum 5 / Liquidity 5 /
-    Risk-Reward 5 / Smart Money 5)."""
+    Risk-Reward 5 / Smart Money 5).
+
+    BUGFIX (2026-08-15, P0 audit follow-up): `strengths.get(key, 0.0)`
+    only supplies its default when `key` is genuinely ABSENT from the
+    dict -- it does nothing when the key IS present but its value is
+    None (e.g. trade_score.liquidity_strength() now correctly returns
+    None for a missing/invalid quote -- see that function's own
+    docstring). `_clamp01(None)` would raise, since every key this
+    caller supplies IS always present (just sometimes None). Now
+    explicitly excludes a None-valued factor from BOTH the weighted
+    sum and the total weight, renormalizing over whatever's actually
+    available -- same "None means insufficient evidence, not a zero
+    score" principle trade_score.compute_trade_score() already applies
+    (this module never reused that function directly, so it needed its
+    own, parallel fix)."""
     total = 0.0
+    available_weight = 0.0
     for key, weight in EARLY_BREAKOUT_WEIGHTS.items():
-        total += _clamp01(strengths.get(key, 0.0)) * weight
-    return round(total)
+        value = strengths.get(key)
+        if value is None:
+            continue
+        total += _clamp01(value) * weight
+        available_weight += weight
+    if available_weight <= 0:
+        return 0
+    return round(total * (sum(EARLY_BREAKOUT_WEIGHTS.values()) / available_weight))
 
 
 def total_score(strengths: dict, oi_state: str, fresh_score: int = 100, fvg_confirmed: bool = False, price_action_confirmed: bool = False) -> int:

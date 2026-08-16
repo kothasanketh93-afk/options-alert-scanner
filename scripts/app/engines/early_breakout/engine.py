@@ -312,7 +312,11 @@ def _score_symbol_direction(symbol: str, direction: str, session: str, oi_histor
         "follow_through": "Confirmed on the next candle (structure + volume)",
         "volume": (f"{(bc.get('volume') or 0) / breakout['avg_volume']:.1f}x base-window average"
                    if breakout["avg_volume"] else "n/a"),
-        "liquidity": "Comfortable" if strengths["liquidity"] >= 0.5 else "Thin, but passing the hard filter",
+        "liquidity": (
+            "Comfortable" if strengths["liquidity"] is not None and strengths["liquidity"] >= 0.5
+            else "Unavailable/invalid quote data" if strengths["liquidity"] is None
+            else "Thin, but passing the hard filter"
+        ),
         "momentum": f"{mom['score'] * 100:.0f}/100 (ADX/ROC/RSI-slope/MACD-hist/EMA-slope/vol-accel/body%/VWAP-dist)",
         "smart_money": f"Smart Money Score {smart_money['smart_money_score']}/100",
         "fair_value_gap": (
