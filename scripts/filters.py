@@ -44,7 +44,7 @@ def oi_is_building(oi_history: dict, instrument_key: str, current_oi: float) -> 
     return (current_oi - previous) / previous >= OI_BUILD_THRESHOLD_PCT
 
 
-def liquidity_ok(oi: float, volume: float, bid: float, ask: float, premium: float,
+def liquidity_ok(oi: float, volume: float, bid, ask, premium: float,
                   symbol: str = None) -> bool:
     """
     symbol is optional (defaults to the index thresholds below for
@@ -53,6 +53,25 @@ def liquidity_ok(oi: float, volume: float, bid: float, ask: float, premium: floa
     instead of the NIFTY/BANKNIFTY-tuned globals, which are far too
     strict for mid/smallcap stock options and would reject nearly
     every stock strike outright otherwise.
+
+    BUGFIX (2026-08-15, P0 bid/ask evidence audit): `bid`/`ask` used to
+    always be real floats (both brokers silently defaulted a genuinely
+    missing quote to 0.0 -- see upstox.py/angelone.py's own fix
+    comments) -- meaning a MISSING bid/ask computed spread_pct =
+    (0.0-0.0)/premium = 0%, the best possible reading, exactly
+    backwards from what missing market-depth data should mean. Now
+    that both brokers correctly pass None through for a genuinely
+    missing quote, this function fails CLOSED on that case (returns
+    False -- insufficient evidence to confirm liquidity, not "assume
+    it's fine") rather than either crashing on `None - None` or
+    silently reproducing the old zero-spread bug. This does NOT add a
+    new threshold and does NOT change MAX_SPREAD_PCT -- it only
+    prevents missing quote data from bypassing the EXISTING spread
+    check entirely. Also fails closed on a literal <=0 bid/ask (INVALID,
+    not UNAVAILABLE -- distinct from the None case, same fail-closed
+    outcome): a real option premium never legitimately has a bid/ask
+    of exactly 0 or below, so that combination is data-invalid, not a
+    genuine zero-width spread.
     """
     is_stock = symbol in STOCK_SYMBOLS
     min_oi = STOCK_MIN_OI if is_stock else MIN_OI
@@ -64,6 +83,19 @@ def liquidity_ok(oi: float, volume: float, bid: float, ask: float, premium: floa
     if volume < min_volume:
         return False
     if premium < min_premium:
+        return False
+    if bid is None or ask is None:
+        return False  # insufficient evidence to confirm spread -- fail closed, not "assume 0 spread"
+    if bid <= 0 or ask <= 0:
+        # A literal 0 (or negative, impossible but defensive) bid/ask is
+        # not "missing" (that's the None case above) -- it's an INVALID
+        # quote for a real option premium (either the exchange genuinely
+        # has no two-sided market, or a broker-side data glitch) and,
+        # per this fix's approved scope, must not be interpreted as a
+        # tight/zero spread either. Same fail-closed treatment, different
+        # reason -- distinguishing None (unavailable) from <=0 (invalid)
+        # is exactly the AVAILABLE/UNAVAILABLE/INVALID distinction this
+        # repository's data-quality convention already uses elsewhere.
         return False
     spread_pct = (ask - bid) / premium
     if spread_pct > MAX_SPREAD_PCT:
