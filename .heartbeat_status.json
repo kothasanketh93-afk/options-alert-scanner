@@ -1,12 +1,12 @@
 {
-  "checked_at": "2026-08-21T11:15:40.898555+05:30",
+  "checked_at": "2026-08-21T11:45:40.541736+05:30",
   "scanner_completed": {
     "ok": true,
-    "gap_minutes": 4.6
+    "gap_minutes": 10.0
   },
   "angelone_reachable": {
     "ok": false,
-    "detail": "unreachable: GET https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json failed: ('Connection broken: IncompleteRead(542186 bytes read, 36410735 more expected)', IncompleteRead(542186 bytes read, 36410735 more expected))"
+    "detail": "unreachable: GET https://margincalculator.angelbroking.com/OpenAPI_File/files/OpenAPIScripMaster.json failed: ('Connection broken: IncompleteRead(2573802 bytes read, 34379119 more expected)', IncompleteRead(2573802 bytes read, 34379119 more expected))"
   },
   "upstox_reachable": {
     "ok": true,
