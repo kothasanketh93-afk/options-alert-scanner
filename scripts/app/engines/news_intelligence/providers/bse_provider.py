@@ -53,6 +53,25 @@ class BSEProvider(BaseProvider):
         elif isinstance(payload, list):
             items = payload
         else:
+            # BUGFIX (2026-08-23, live-log finding): BSE's API returns
+            # the literal string "No Record Found!" (not an error, not
+            # a maintenance notice -- this is BSE's own documented
+            # response text for "your query matched zero announcements
+            # today") every single cycle on days with genuinely no
+            # matching announcements -- confirmed live at 59/59 cycles
+            # on one full trading day, meaning this was almost
+            # certainly being logged as a WARNING every 5 minutes for
+            # entirely normal "nothing to report" behavior, not an
+            # actual data-quality problem. That specific, known-benign
+            # string is now recognized and degrades to [] SILENTLY
+            # (matching what an empty {"Table": []} response already
+            # does above) -- any OTHER unexpected string/int/None still
+            # warns exactly as before, since those genuinely could
+            # indicate a real problem (rate limiting, a changed API
+            # shape, a maintenance page, etc.) that this fix does not
+            # touch.
+            if isinstance(payload, str) and payload.strip().lower() == "no record found!":
+                return []
             # FIX (2026-07-31): logging only type(payload).__name__ meant
             # every occurrence looked identical in the logs with no way
             # to tell "BSE is serving a maintenance notice" apart from

@@ -52,6 +52,27 @@ class RSSProvider(BaseProvider):
         try:
             return self._parse_feed(feed_name, feed_url, xml_text)
         except ET.ParseError as exc:
+            # BUGFIX (2026-08-23, live-log finding): Moneycontrol's feed
+            # failed 12 times on one trading day with previews showing
+            # an HTML "Login Consent - Moneycontrol" page, not RSS XML
+            # at all -- this is an access block (cookie/consent wall or
+            # bot detection redirecting the request), not a malformed
+            # feed from the source. Bypassing that redirect is out of
+            # scope here (would need investigating what
+            # headers/cookies/session Moneycontrol's real RSS access
+            # requires, unverified) -- this only makes the DIAGNOSIS
+            # correct: an HTML-shaped response gets a distinct log tag
+            # so a future read of this warning immediately says "access
+            # blocked", not "malformed feed", without conflating it with
+            # PIB's genuinely-different BOM issue (fixed separately,
+            # same date) under one generic error message.
+            if "<html" in xml_text[:500].lower() or "<!doctype html" in xml_text[:500].lower():
+                _logger.warning(
+                    f"NEWS_PROVIDER RSS access_blocked feed={feed_name} -- received an HTML page "
+                    f"instead of RSS XML (likely a login/consent wall or bot-detection redirect, "
+                    f"not a malformed feed) preview={xml_text[:200]!r}"
+                )
+                return []
             # FIX (2026-07-31): same diagnostic technique that revealed
             # BSE's real issue (turned out to be a plain "No Record
             # Found!" string, not a broken endpoint) -- a truncated
@@ -72,6 +93,25 @@ class RSSProvider(BaseProvider):
 
     @staticmethod
     def _parse_feed(feed_name: str, feed_url: str, xml_text: str) -> list[dict]:
+        # BUGFIX (2026-08-23, live-log finding): PIB's feed consistently
+        # failed with "not well-formed (invalid token): line 1, column 1"
+        # every single scan cycle (59/59 on a full trading day) -- the
+        # preview showed a literal 'ï»¿<?xml...' prefix. That's a UTF-8
+        # byte-order-mark (EF BB BF) mis-decoded as three separate
+        # Latin-1 characters -- fetch_text() (http_client.py) uses
+        # requests' own `.text`, which falls back to a guessed encoding
+        # (commonly Latin-1, HTTP's own default for text/* with no
+        # explicit charset) when the server doesn't declare one, and
+        # that guess doesn't strip/interpret a leading BOM the way
+        # `utf-8-sig` would. Stripping BOTH the correctly-decoded BOM
+        # character (\ufeff) and this specific mis-decoded triplet from
+        # the start of the text before parsing handles it regardless of
+        # which decoding path actually produced it, without changing
+        # fetch_text()'s general-purpose behavior for every other
+        # provider that already works fine.
+        xml_text = xml_text.lstrip("\ufeff")
+        if xml_text.startswith("ï»¿"):
+            xml_text = xml_text[3:]
         root = ET.fromstring(xml_text)
         rows: list[dict] = []
 
