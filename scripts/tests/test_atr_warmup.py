@@ -128,11 +128,19 @@ def test_flag_disabled_returns_today_candles_unchanged():
     print("test_flag_disabled_returns_today_candles_unchanged passed")
 
 
-def test_flag_enabled_but_past_cutoff_returns_today_candles_unchanged():
-    today = _some_today_candles()
-    # Cutoff at 00:00 IST -- "now" (any time after midnight) is always >= cutoff,
-    # deterministically exercising the "past cutoff" branch regardless of
-    # wall-clock time when this test runs.
+def test_flag_enabled_but_today_data_already_sufficient_returns_unchanged():
+    # BUGFIX (2026-08-20, root-cause audit): this test used to force
+    # the "past cutoff" branch via cutoff_hour=0 -- that whole
+    # wall-clock-cutoff mechanism was removed (see get_atr_warmup_
+    # candles()'s own 2026-08-20 BUGFIX comment: it was silently
+    # starving ATR of warmup candles from 11:00 IST onward regardless
+    # of whether today's own candles had actually reached the 15
+    # needed, matching a live-reported "candles_fetched=7,
+    # atr_ready=False" symptom exactly). The function is now DATA-based
+    # -- this test now exercises "today's own candles already meet
+    # min_candles" (15 by default), which must still short-circuit to
+    # unchanged regardless of what cutoff_hour/minute are set to.
+    today = _some_today_candles(n=15)
     _reset(flag_enabled=True, cutoff_hour=0, cutoff_minute=0,
            broker=_FakeBroker(candles=_prev_session_candles()))
     try:
@@ -141,7 +149,25 @@ def test_flag_enabled_but_past_cutoff_returns_today_candles_unchanged():
         assert count == len(today)
     finally:
         _restore()
-    print("test_flag_enabled_but_past_cutoff_returns_today_candles_unchanged passed")
+    print("test_flag_enabled_but_today_data_already_sufficient_returns_unchanged passed")
+
+
+def test_flag_enabled_today_data_insufficient_merges_regardless_of_clock():
+    # The exact scenario that used to be silently broken past 11:00 IST:
+    # today's own candles (7, matching the live-reported symptom) are
+    # nowhere near the 15 ATR needs -- warmup candles must be merged
+    # even with cutoff_hour set to a time that's already "passed",
+    # since the merge decision no longer depends on the clock at all.
+    today = _some_today_candles(n=7)
+    prev = _prev_session_candles(n=20)
+    _reset(flag_enabled=True, cutoff_hour=0, cutoff_minute=0, broker=_FakeBroker(candles=prev))
+    try:
+        result, count = market_data.get_atr_warmup_candles("NSE_INDEX|Nifty 50", "15minute", today)
+        assert result == prev + today, "7 today-only candles must still get warmup merged, even past the old 11:00 cutoff"
+        assert count == len(prev) + len(today)
+    finally:
+        _restore()
+    print("test_flag_enabled_today_data_insufficient_merges_regardless_of_clock passed")
 
 
 def test_flag_enabled_before_cutoff_prepends_warmup_candles():
@@ -226,7 +252,8 @@ def test_compute_atr_actually_succeeds_with_warmup_when_today_alone_is_insuffici
 
 if __name__ == "__main__":
     test_flag_disabled_returns_today_candles_unchanged()
-    test_flag_enabled_but_past_cutoff_returns_today_candles_unchanged()
+    test_flag_enabled_but_today_data_already_sufficient_returns_unchanged()
+    test_flag_enabled_today_data_insufficient_merges_regardless_of_clock()
     test_flag_enabled_before_cutoff_prepends_warmup_candles()
     test_broker_exception_fails_open_to_today_only()
     test_broker_empty_result_fails_open_to_today_only()

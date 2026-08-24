@@ -22,11 +22,13 @@ workflow / one writer):
 
 import sys
 import os
+import logging
 from datetime import datetime, timezone, timedelta
 
 sys.path.insert(0, os.path.dirname(__file__))
 
 import state as state_mod
+import scan_log_store
 import tracker
 import telegram_notify as tg
 import market_data
@@ -139,17 +141,49 @@ def apply_decision_engine(trade: dict) -> dict:
     Part 6 -- Enterprise Decision Engine (app/engines/decision_engine/),
     added 2026-07-26. Final-authority pass over a trade dict that has
     already been through Market Snapshot -> (Early Breakout | Trade
-    Score Engine) -> Options Intelligence. Additive: always computes
-    and attaches trade["decision"] for visibility/logging; only
-    actually blocks the alert when config.DECISION_ENGINE_FILTER_ENABLED
-    is explicitly turned on (default False -- see config.py's Part 6
-    section for the full rollout rationale, same pattern as
-    OPTIONS_INTELLIGENCE_FILTER_ENABLED).
+    Score Engine) -> Options Intelligence.
+
+    DEPRECATED FROM THE LIVE PATH (2026-08-14, architecture cleanup
+    audit): decision_engine.evaluate() -> app/engines/quant_intelligence/
+    probability/scorer.py computes its OWN trend/EMA/VWAP/ATR/PCR/OI/IV/
+    momentum scores -- re-deriving conclusions from the exact same raw
+    facts trade_score.py and options_intelligence/engine.py already
+    score, under different function names. Confirmed by repo audit this
+    session: this ran UNCONDITIONALLY on every trade even while
+    config.DECISION_ENGINE_FILTER_ENABLED=False made its verdict purely
+    advisory -- real computation (and broker calls) spent every time
+    for zero current effect, and a live trap: re-enabling the flag
+    later, without first reconciling this module's signals against the
+    ones already scored, would recreate the HTF/MTF duplicate-evidence
+    bug this session fixed, just at a larger scale.
+
+    Now gated behind the SAME config.DECISION_ENGINE_FILTER_ENABLED
+    flag that already controlled enforcement -- when False (the
+    default), this function no longer calls decision_engine.evaluate()
+    at all, and returns a clearly-labeled placeholder instead. The
+    decision_engine/quant_intelligence CODE ITSELF is left in place
+    (not deleted) -- this is a deprecation of the live call, not a
+    removal of the module -- in case a future redesign reconciles its
+    signals against the existing scoring and re-enables it deliberately.
 
     market_snapshot.get_market_snapshot() is a per-process cache (see
     app/market/snapshot.py), so calling it again here for a symbol
-    Early Breakout already snapshotted this cycle is free.
+    Early Breakout already snapshotted this cycle is free -- unaffected
+    by this change, still called when the engine itself runs.
     """
+    if not config.DECISION_ENGINE_FILTER_ENABLED:
+        decision = {
+            "approved": True,
+            "rejection_reasons": [],
+            "status": "SKIPPED_DEPRECATED_FROM_LIVE_PATH",
+            "note": (
+                "decision_engine.evaluate() was not called -- deprecated from the "
+                "live path 2026-08-14 (duplicates trade_score.py/options_intelligence "
+                "signals; see apply_decision_engine()'s own docstring)."
+            ),
+        }
+        trade["decision"] = decision
+        return decision
     snapshot = market_snapshot.get_market_snapshot(trade["symbol"])
     decision = decision_engine.evaluate(trade, snapshot=snapshot)
     trade["decision"] = decision
@@ -181,7 +215,14 @@ def run_scanner_step(state: dict, now: datetime):
                            "could not be sent -- will retry next run.")
         return
 
+    scanner.reset_shadow_candidates()
     ranked = scanner.detect_all_setups(state["oi_history"])
+    # Phase-2 Shadow/Validation Mode (2026-08-23): drains whatever
+    # scanner.detect_all_setups() captured on the side this cycle (see
+    # scanner.py's own module-level buffer comment) -- completely
+    # independent of `ranked`/`chosen` below; a shadow candidate can
+    # never influence which live candidate (if any) gets alerted.
+    create_shadow_candidates(state, now)
 
     # Medium priority (EOD daily statistics): fold this run's counts
     # into today's running total. market_data.get_broker().switch_log
@@ -434,12 +475,25 @@ def _dispatch_tracker_events(trade: dict, events: list):
             notify_once(trade, "ENTRY_ACTIVATED", tg.fmt_entry_activated, trade)
         elif etype == "T1_HIT":
             mins = tracker.compute_time_taken(trade["actual_entry_time"], trade["t1_hit_time"])
+            # Centralized outcome tracking (2026-08-14, architecture
+            # cleanup audit) -- `mins` used to be computed here ONLY as
+            # a formatting argument for the Telegram message, never
+            # stored back onto `trade` -- meaning it was lost the
+            # moment the message was sent, unavailable to
+            # save_state()/scan_log_store's persisted trade record for
+            # any future calibration dataset. max_favorable_pct/
+            # max_adverse_pct (this file's own MFE/MAE) were already
+            # correctly persisted this way -- this brings
+            # time-to-target/time-to-stop to the same standard.
+            trade["time_to_target_1_minutes"] = mins
             notify_once(trade, "T1_HIT", tg.fmt_t1_hit, trade, mins)
         elif etype == "T2_HIT":
             mins = tracker.compute_time_taken(trade["actual_entry_time"], trade["t2_hit_time"])
+            trade["time_to_target_2_minutes"] = mins
             notify_once(trade, "T2_HIT", tg.fmt_t2_hit, trade, mins)
         elif etype == "SL_HIT":
             mins = tracker.compute_time_taken(trade["actual_entry_time"], trade["sl_hit_time"])
+            trade["time_to_stop_minutes"] = mins
             notify_once(trade, "SL_HIT", tg.fmt_sl_hit, trade, mins)
         elif etype == "TRAILING_SL_ADJUSTED":
             # 2026-07-31: notify_once keys on trade["messages_sent"], which
@@ -517,6 +571,164 @@ def run_tracker_step(state: dict, now: datetime):
                        trade_id, type(exc).__name__, exc)
 
 
+def _dispatch_shadow_tracker_events(trade: dict, events: list):
+    """
+    Phase-2 Shadow/Validation Mode (2026-08-23) counterpart to
+    _dispatch_tracker_events() above -- SAME event types from the SAME
+    tracker.process_trade_candles() call, but LOGS each outcome instead
+    of ever calling notify_once()/Telegram. This is the one place that
+    structurally guarantees requirement #8 (shadow candidates cannot be
+    accidentally converted into live alerts) -- there is no Telegram
+    call anywhere in this function to accidentally trigger, unlike
+    _dispatch_tracker_events() which exists specifically to send them.
+    """
+    for event in events:
+        etype = event["type"]
+        if etype == "ENTRY_ACTIVATED":
+            log.info("SHADOW_ENTRY_ACTIVATED %s %s %s strike=%s candidate_id=%s",
+                     trade["symbol"], trade["direction"], trade["moneyness"],
+                     trade["strike"], trade.get("candidate_id"))
+        elif etype == "T1_HIT":
+            mins = tracker.compute_time_taken(trade["actual_entry_time"], trade["t1_hit_time"])
+            trade["time_to_target_1_minutes"] = mins
+            log.info("SHADOW_OUTCOME_T1_FIRST %s %s strike=%s candidate_id=%s time_to_t1_minutes=%s",
+                     trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"), mins)
+        elif etype == "T2_HIT":
+            mins = tracker.compute_time_taken(trade["actual_entry_time"], trade["t2_hit_time"])
+            trade["time_to_target_2_minutes"] = mins
+            log.info("SHADOW_OUTCOME_T2_FIRST %s %s strike=%s candidate_id=%s time_to_t2_minutes=%s",
+                     trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"), mins)
+        elif etype == "SL_HIT":
+            mins = tracker.compute_time_taken(trade["actual_entry_time"], trade["sl_hit_time"])
+            trade["time_to_stop_minutes"] = mins
+            log.info("SHADOW_OUTCOME_SL_FIRST %s %s strike=%s candidate_id=%s time_to_sl_minutes=%s",
+                     trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"), mins)
+        elif etype == "NOT_ENTERED":
+            log.info("SHADOW_OUTCOME_NOT_ENTERED %s %s strike=%s candidate_id=%s",
+                     trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"))
+        elif etype == "EOD_CLOSED":
+            log.info("SHADOW_OUTCOME_TIMEOUT %s %s strike=%s candidate_id=%s",
+                     trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"))
+        elif etype in ("AMBIGUOUS", "AMBIGUOUS_AFTER_T1"):
+            log.info("SHADOW_OUTCOME_AMBIGUOUS %s %s strike=%s candidate_id=%s",
+                     trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"))
+        # TRAILING_SL_ADJUSTED: intentionally not logged as a distinct
+        # SHADOW_OUTCOME_* line -- it isn't a terminal outcome, and
+        # trailing-stop mechanics are already covered by the live path;
+        # process_trade_candles() still updates trade["stop_loss"] in
+        # place regardless of whether this function logs it.
+
+
+def create_shadow_candidates(state: dict, now: datetime):
+    """
+    Phase-2 Shadow/Validation Mode (2026-08-23). Drains
+    scanner.get_shadow_candidates() (populated during THIS cycle's
+    scanner.detect_setups() calls, one entry per candidate that
+    cleared every hard gate but had no calibrated probability) and
+    creates a shadow trade record for each -- reusing main.
+    new_trade_record() UNCHANGED (same trade-record shape the live
+    path uses, so tracker.process_trade_candles() and
+    trade_lifecycle.update_lifecycle_metrics() both work on shadow
+    trades with zero code duplication) plus the shadow-specific tag
+    fields already present on the candidate dict itself
+    (probability_status/execution_mode/live_alert_sent/candidate_id).
+
+    No-op entirely (does not even drain the buffer) unless
+    config.PROBABILITY_SHADOW_MODE_ENABLED is True.
+
+    Dedup (requirement #7): a candidate_id already present among
+    state["shadow_trades"] in a NON-terminal status is not recreated --
+    the same setup re-appearing on a later 5-minute cycle (the SAME
+    "is this one evolving candidate or four independent ones" question
+    this session's own scan_log_store.py audit raised for the
+    troubleshooting log) must not spawn duplicate shadow trades. A
+    candidate_id whose prior shadow trade already resolved to a
+    terminal status IS allowed to create a fresh one -- that's a
+    genuinely new occurrence of the same setup shape on a later day/
+    session, not a duplicate of the one already tracked to completion.
+    """
+    if not config.PROBABILITY_SHADOW_MODE_ENABLED:
+        return
+
+    shadow_candidates = scanner.get_shadow_candidates()
+    if not shadow_candidates:
+        return
+
+    shadow_trades = state.setdefault("shadow_trades", {})
+    active_candidate_ids = {
+        t.get("candidate_id") for t in shadow_trades.values()
+        if t["status"] not in TERMINAL_STATUSES
+    }
+
+    for candidate in shadow_candidates:
+        candidate_id = candidate["candidate_id"]
+        if candidate_id in active_candidate_ids:
+            log.info("SHADOW_CANDIDATE_DUPLICATE_SKIPPED candidate_id=%s -- already tracked, not terminal", candidate_id)
+            continue
+
+        shadow_id = f"SHADOW-{len(shadow_trades) + 1}-{now.strftime('%H%M%S')}"
+        display_label = f"Shadow {len(shadow_trades) + 1}"
+        trade = new_trade_record(candidate, shadow_id, now, display_label)
+        # Shadow-specific tags, on top of the otherwise-identical live
+        # trade-record shape -- these are what every consumer (this
+        # file's own run_shadow_tracker_step(), any future export/
+        # analysis tooling) checks to confirm this is a shadow record,
+        # never a live one.
+        trade["probability_status"] = candidate["probability_status"]
+        trade["execution_mode"] = candidate["execution_mode"]
+        trade["live_alert_sent"] = False
+        trade["candidate_id"] = candidate_id
+
+        shadow_trades[shadow_id] = trade
+        active_candidate_ids.add(candidate_id)
+        log.info(
+            "SHADOW_CANDIDATE_CREATED shadow_id=%s %s %s strike=%s candidate_id=%s trade_score=%s/100",
+            shadow_id, trade["symbol"], trade["direction"], trade["strike"], candidate_id, trade["trade_score"],
+        )
+
+
+def run_shadow_tracker_step(state: dict, now: datetime):
+    """
+    Phase-2 Shadow/Validation Mode (2026-08-23) counterpart to
+    run_tracker_step() above -- SAME candle-fetch/process_trade_candles()
+    mechanism, applied to state["shadow_trades"] instead of
+    state["trades"], dispatched via _dispatch_shadow_tracker_events()
+    (log-only, never Telegram) instead of _dispatch_tracker_events().
+
+    No-op entirely unless config.PROBABILITY_SHADOW_MODE_ENABLED is
+    True -- with the flag off, state.get("shadow_trades", {}) is always
+    empty anyway (create_shadow_candidates() never populated it), so
+    this loop would do nothing regardless; the explicit early return
+    just avoids the no-op iteration/log-noise cost every cycle.
+    """
+    if not config.PROBABILITY_SHADOW_MODE_ENABLED:
+        return
+
+    for shadow_id, trade in state.get("shadow_trades", {}).items():
+        if trade["status"] in TERMINAL_STATUSES:
+            continue
+        try:
+            candles = market_data.get_1min_candles_since(
+                trade["instrument_key"], trade["last_processed_ts"]
+            )
+            if not candles:
+                continue
+            events = tracker.process_trade_candles(trade, candles)
+            _dispatch_shadow_tracker_events(trade, events)
+        except (BrokerAPIError, TelegramFailure) as exc:
+            # Same per-trade containment posture as run_tracker_step()
+            # above -- one shadow trade's broker hiccup must not stop
+            # every other shadow (or live) trade's tracking this cycle.
+            # TelegramFailure is caught here defensively even though
+            # this path never calls Telegram -- purely to keep this
+            # function's error-handling contract identical to its live
+            # counterpart, in case a future change to
+            # _dispatch_shadow_tracker_events() ever needed one.
+            log.error("Shadow trade %s: tracker step failed (%s: %s) -- continuing with "
+                      "remaining shadow trades; this one will be retried next run.",
+                      shadow_id, type(exc).__name__, exc)
+
+
 def run_btst_recommendations(state: dict, now: datetime):
     """
     BTST/STBT Recommendation Engine dispatch (Part 12 merge). For every
@@ -576,6 +788,76 @@ def maybe_send_daily_summary(state: dict, now: datetime):
         # Leave summary_sent False so it's retried next run instead of
         # silently never being sent for the day.
         log.error("Daily summary could not be sent (Telegram failure) -- will retry next run.")
+
+
+def maybe_send_shadow_summary(state: dict, now: datetime):
+    """
+    Phase-2 Shadow/Validation Mode (2026-08-23) daily dataset summary,
+    per requirement #10 (part 2): total_shadow_candidates, T1_FIRST,
+    SL_FIRST, T2_FIRST, TIMEOUT, INVALIDATED, AMBIGUOUS. A SEPARATE
+    Telegram message from maybe_send_daily_summary() above -- that
+    function returns early on `if not trades: return`, i.e. it never
+    sends at all while zero LIVE trades exist (today's actual reality,
+    per calibrated_probability_pct() always returning None), so a
+    shadow-only summary would never surface if folded into it. Sent
+    independently, gated on shadow_trades existing (not live trades),
+    idempotent via its own state["shadow_summary_sent"] flag (same
+    pattern as summary_sent above, deliberately a SEPARATE flag so
+    neither summary's send/retry status affects the other's).
+
+    No-op entirely unless config.PROBABILITY_SHADOW_MODE_ENABLED is
+    True.
+
+    final_status -> bucket mapping (tracker.py's own vocabulary is
+    finer-grained than the 6 buckets requested; documented here so a
+    future reader can see exactly which raw statuses fold into which
+    bucket):
+      T2_FIRST:    T2_HIT
+      SL_FIRST:    SL_HIT, TRAILING_SL_HIT (no T1 first)
+      T1_FIRST:    T1_THEN_SL, T1_THEN_TRAILING_SL, T1_HIT_THEN_EOD
+                   (T1 reached, did not go on to T2)
+      AMBIGUOUS:   AMBIGUOUS, T1_HIT_THEN_AMBIGUOUS
+      TIMEOUT:     EOD_CLOSED (never reached T1 at all, closed at EOD)
+      INVALIDATED: NOT_ENTERED (never got a valid entry fill)
+    """
+    if not config.PROBABILITY_SHADOW_MODE_ENABLED:
+        return
+    hhmm = (now.hour, now.minute)
+    if hhmm < SUMMARY_HHMM or state.get("shadow_summary_sent"):
+        return
+    shadow_trades = list(state.get("shadow_trades", {}).values())
+    if not shadow_trades:
+        return
+
+    _BUCKET_MAP = {
+        "T2_HIT": "T2_FIRST",
+        "SL_HIT": "SL_FIRST", "TRAILING_SL_HIT": "SL_FIRST",
+        "T1_THEN_SL": "T1_FIRST", "T1_THEN_TRAILING_SL": "T1_FIRST", "T1_HIT_THEN_EOD": "T1_FIRST",
+        "AMBIGUOUS": "AMBIGUOUS", "T1_HIT_THEN_AMBIGUOUS": "AMBIGUOUS",
+        "EOD_CLOSED": "TIMEOUT",
+        "NOT_ENTERED": "INVALIDATED",
+    }
+    counts = {"T1_FIRST": 0, "SL_FIRST": 0, "T2_FIRST": 0, "TIMEOUT": 0, "INVALIDATED": 0, "AMBIGUOUS": 0}
+    still_active = 0
+    for trade in shadow_trades:
+        final_status = trade.get("final_status")
+        bucket = _BUCKET_MAP.get(final_status)
+        if bucket:
+            counts[bucket] += 1
+        elif trade["status"] not in TERMINAL_STATUSES:
+            still_active += 1
+
+    lines = [
+        f"📊 Shadow/Validation Dataset Summary -- {state['date']}",
+        f"total_shadow_candidates: {len(shadow_trades)}",
+        f"still_active: {still_active}",
+    ] + [f"{bucket}: {count}" for bucket, count in counts.items()]
+    text = "\n".join(lines)
+    try:
+        tg.send(text)
+        state["shadow_summary_sent"] = True
+    except TelegramFailure:
+        log.error("Shadow summary could not be sent (Telegram failure) -- will retry next run.")
 
 
 def main():
@@ -692,6 +974,30 @@ def main():
 
     state_mod.ensure_state_branch_checked_out(repo_url, github_token)
 
+    # Centralized troubleshooting log retention (2026-08-12): captures
+    # every "trading_system.*" log line emitted during this run (same
+    # root logger logging_setup.py's own stdout handler is attached to
+    # -- this is a SECOND, independent handler, nothing about the
+    # existing stdout logging changes) for persistence to the `state`
+    # git branch. See scan_log_store.py's module docstring for the full
+    # design. Attached here (state branch clone dir is ready) and
+    # flushed/detached near the end of this function, alongside the
+    # existing state save -- deliberately outside the try/except below,
+    # same reasoning as state_mod.save_state(): a run that errors out
+    # partway through should still persist whatever it already logged,
+    # not discard it.
+    scan_cycle_id = f"{date_str}-{now.strftime('%H%M%S')}"
+    _scan_log_handler = scan_log_store.ScanLogCaptureHandler(scan_cycle_id)
+    logging.getLogger("trading_system").addHandler(_scan_log_handler)
+
+    # Market context, logging-only (2026-08-14, architecture cleanup) --
+    # see market_data.get_india_vix()'s own comment: never wired into
+    # scoring/gating, fetched once per run (not once per strike),
+    # purely so a human reading the scan-log store has today's
+    # volatility-regime context alongside the gate-by-gate evidence.
+    india_vix = market_data.get_india_vix()
+    log.info("MARKET_CONTEXT_VIX %s", india_vix if india_vix is not None else "UNAVAILABLE")
+
     # Phase 1 (opportunity_score.py): swap SYMBOLS/STOCK_SYMBOLS from
     # the safe import-time fallback (config.FALLBACK_STOCK_WATCHLIST)
     # to today's real opportunity shortlist, now that the state branch
@@ -755,6 +1061,7 @@ def main():
             log.error("Early Breakout Engine step failed (%s: %s) -- continuing with "
                        "the rest of this run.", type(exc).__name__, exc, exc_info=True)
         run_tracker_step(state, now)
+        run_shadow_tracker_step(state, now)
 
         # Trade Lifecycle EOD check (~15:25 IST, config.EOD_STATUS_CHECK_HHMM):
         # label -- not close -- any still-open trade as "OPEN AT EOD" if
@@ -784,6 +1091,10 @@ def main():
     if run_error is not None:
         commit_message += " (partial run -- error occurred, see job log)"
     state_mod.save_state(state, commit_message=commit_message)
+
+    logging.getLogger("trading_system").removeHandler(_scan_log_handler)
+    scan_log_store.run_retention_and_flush(_scan_log_handler.records, date_str)
+
     log.info("Run complete for %s @ %s IST.", date_str, now.strftime("%H:%M:%S"))
 
     if run_error is not None:

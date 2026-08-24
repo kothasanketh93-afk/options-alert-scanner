@@ -73,7 +73,7 @@ def scan_candidates(now: datetime = None) -> list:
                 continue
 
         try:
-            biases = option_chain.directional_bias(symbol)
+            biases, _trend_status = option_chain.directional_bias(symbol)
         except Exception as exc:
             _logger.error(
                 f"BTST_SYMBOL_FAILED {symbol}: directional_bias failed ({type(exc).__name__}: {exc})",

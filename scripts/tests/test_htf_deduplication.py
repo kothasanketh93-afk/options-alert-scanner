@@ -89,22 +89,23 @@ class _FakeBroker:
         return self._candles
 
 
-def test_b_ema_warmup_has_no_wall_clock_cutoff_unlike_atr_warmup():
+def test_b_ema_and_atr_warmup_both_data_based_no_wall_clock_cutoff():
     """
-    get_atr_warmup_candles() (unchanged) stops merging warmup candles at
-    config.ATR_WARMUP_CUTOFF_HOUR/MINUTE (11:00 IST) regardless of data
-    sufficiency -- confirmed here by simulating "now" at 11:05 IST and
-    showing it falls back to today-only. get_ema_warmup_candles() (new)
-    must NOT have this behavior -- it has no wall-clock check at all, only
-    a data-sufficiency check -- confirmed by calling it with the exact
-    same insufficient today_candles and same available warmup candles,
-    with no time simulation needed (proving time is irrelevant to it).
+    BUGFIX (2026-08-20, root-cause audit): get_atr_warmup_candles() used
+    to stop merging warmup candles at config.ATR_WARMUP_CUTOFF_HOUR/
+    MINUTE (11:00 IST) regardless of data sufficiency -- this test used
+    to document that as EXPECTED, unchanged ATR behavior, contrasted
+    against EMA's already-fixed data-based cutoff. That wall-clock
+    mechanism was removed from get_atr_warmup_candles() too (matching a
+    live-reported "candles_fetched=7, atr_ready=False" symptom exactly
+    -- 9:15-11:00 IST is precisely 7 fifteen-minute candles). Both
+    functions are now data-based and behave consistently: simulating
+    "now" well past the old 11:00 cutoff must NOT stop either one from
+    merging warmup candles when today's own data is still insufficient.
     """
     today_candles = [{"close": 100.0 + i} for i in range(4)]
     previous_session_candles = [{"close": 90.0 + i} for i in range(20)]
 
-    # get_atr_warmup_candles(): simulate being past its 11:00 cutoff by
-    # patching market_data.datetime to a fixed 11:05 IST "now".
     class _FixedDatetime(datetime):
         @classmethod
         def now(cls, tz=None):
@@ -116,10 +117,10 @@ def test_b_ema_warmup_has_no_wall_clock_cutoff_unlike_atr_warmup():
         atr_combined, atr_count = market_data.get_atr_warmup_candles(
             "TEST|B", "15minute", today_candles,
         )
-    assert atr_count == 4, (
-        f"ATR warmup must fall back to today-only past its 11:00 cutoff "
-        f"regardless of data sufficiency (this is EXPECTED, unchanged "
-        f"behavior for ATR) -- got {atr_count}"
+    assert atr_count == 24, (
+        f"ATR warmup must NOT regress to today-only just because the clock is "
+        f"past the old 11:00 cutoff while today's own candles ({len(today_candles)}) "
+        f"are still short of the 15-candle need -- got {atr_count}"
     )
 
     # get_ema_warmup_candles(): same insufficient today_candles, same
@@ -135,7 +136,7 @@ def test_b_ema_warmup_has_no_wall_clock_cutoff_unlike_atr_warmup():
         f"clock crossed 11:00 while today's own candles ({len(today_candles)}) "
         f"are still short of the 21-candle need -- got {ema_count}"
     )
-    print("test_b_ema_warmup_has_no_wall_clock_cutoff_unlike_atr_warmup passed")
+    print("test_b_ema_and_atr_warmup_both_data_based_no_wall_clock_cutoff passed")
 
 
 def test_b_variant_ema_warmup_stops_once_today_alone_is_sufficient():
@@ -250,7 +251,7 @@ def test_f_no_structural_evidence_blocks_even_with_count_met():
 
 if __name__ == "__main__":
     test_a_ema_ready_with_sufficient_warmup_candles()
-    test_b_ema_warmup_has_no_wall_clock_cutoff_unlike_atr_warmup()
+    test_b_ema_and_atr_warmup_both_data_based_no_wall_clock_cutoff()
     test_b_variant_ema_warmup_stops_once_today_alone_is_sufficient()
     test_c_m5_plus_15m_confirmation_is_valid_structural_evidence()
     test_d_no_way_to_pass_a_duplicate_htf_signal_into_the_gate()

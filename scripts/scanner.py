@@ -142,6 +142,7 @@ from config import OPTIONS_INTELLIGENCE_FILTER_ENABLED
 # module docstring and config.py's CANDLESTICK_* block.
 import candlestick_patterns
 from config import CANDLESTICK_PATTERNS_ENABLED
+from config import PROBABILITY_SHADOW_MODE_ENABLED
 
 _logger = get_logger("scanner")
 
@@ -152,6 +153,29 @@ _logger = get_logger("scanner")
 # list, same as every other caller/spec expects).
 _rejection_count = 0
 _last_scan_stats = {}
+
+# --- Phase-2 Shadow/Validation Mode (2026-08-23) ---
+# See config.PROBABILITY_SHADOW_MODE_ENABLED's own comment for the
+# full rationale. This buffer is purely additive: score_strike()'s
+# LIVE return value (what feeds detect_setups()'s `ranked` list, and
+# therefore main.py's `chosen` candidate) is COMPLETELY UNCHANGED by
+# shadow mode -- a calibration-unavailable candidate still returns
+# None to the live pipeline exactly as before. Shadow candidates are
+# captured here, on the side, and drained once per scan cycle by
+# main.py -- never merged into `ranked`, never able to become `chosen`,
+# never able to block or displace a genuinely live-eligible candidate.
+_shadow_candidates_this_cycle = []
+
+
+def reset_shadow_candidates():
+    """Called once per scan cycle by main.py, before scanning starts."""
+    global _shadow_candidates_this_cycle
+    _shadow_candidates_this_cycle = []
+
+
+def get_shadow_candidates() -> list:
+    """Called once per scan cycle by main.py, after scanning completes."""
+    return list(_shadow_candidates_this_cycle)
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -553,8 +577,24 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         f"atr_ready={atr_index_points is not None}"
     )
 
-    if atr_index_points is None or delta == 0:
-        _logger.info(f"SKIP {symbol} {direction} {moneyness} strike={strike}: ATR unavailable or delta==0")
+    # SPLIT (2026-08-20, root-cause audit item #11): "ATR unavailable
+    # or delta==0" used to combine two unrelated failure causes into
+    # one ambiguous message -- impossible to tell which one actually
+    # fired from the log alone. Now two distinct, structured reason
+    # codes (matching this session's own AVAILABLE/UNAVAILABLE/INVALID
+    # data-quality vocabulary): CANDLE_HISTORY_INSUFFICIENT (ATR
+    # couldn't be computed -- see get_atr_warmup_candles()'s own
+    # 2026-08-20 fix for the specific bug this used to mask) vs.
+    # DELTA_INVALID (a genuinely separate, unrelated data problem).
+    if atr_index_points is None:
+        _logger.info(
+            f"SKIP {symbol} {direction} {moneyness} strike={strike}: "
+            f"CANDLE_HISTORY_INSUFFICIENT (ATR unavailable -- "
+            f"candles_fetched={len(candles_15m)} combined_candle_count={combined_candle_count})"
+        )
+        return None  # dynamic_trade_levels() would raise on this -- bail before it does
+    if delta == 0:
+        _logger.info(f"SKIP {symbol} {direction} {moneyness} strike={strike}: DELTA_INVALID (delta==0)")
         return None  # dynamic_trade_levels() would raise on this -- bail before it does
 
     # --- ATR Chase Filter (2026-08-07, config.ATR_CHASE_FILTER_ENABLED) ---
@@ -1064,6 +1104,47 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
             f"genuine, evidence-based probability estimate (trade_score={score}/100, "
             f"heuristic_pct={trade_score_heuristic_pct}% -- neither is a substitute)"
         )
+        if PROBABILITY_SHADOW_MODE_ENABLED:
+            # Phase-2 Shadow/Validation Mode (2026-08-23): this candidate
+            # already cleared EVERY hard gate above (liquidity, RR, OI,
+            # VWAP, trend, extension, contract validity, Options
+            # Intelligence) -- the ONLY reason it's not a live alert is
+            # the still-empty calibration model. Captured here for
+            # outcome tracking so resolved-trade data can eventually
+            # accumulate toward a real model -- see main.py's
+            # create_shadow_candidates() for what happens to this dict
+            # next. probability_pct/probability_label are explicitly
+            # None (never heuristic_pct -- that would be exactly the
+            # fabrication this system's own principle forbids), and
+            # execution_mode="SHADOW" is the one field every downstream
+            # consumer (main.py, telegram_notify.py) must check before
+            # ever treating this as alertable.
+            shadow_candidate = {
+                "symbol": symbol, "direction": direction, "moneyness": moneyness,
+                "instrument_key": instrument_key, "strike": strike, "expiry": expiry,
+                "spot_price": spot_price, "alert_premium": premium,
+                "entry_low": levels["entry_low"], "entry_high": levels["entry_high"],
+                "stop_loss": levels["stop_loss"], "target_1": levels["target_1"],
+                "target_2": levels["target_2"], "grade": grade,
+                "trade_score": score, "probability_pct": None, "probability_label": None,
+                "score_breakdown": score_breakdown, "confidence_score": confidence_score,
+                "risk_score": risk_score, "reward_score": reward_score, "expected_rr": expected_rr,
+                "factor_checklist": trade_score.factor_checklist(strengths),
+                "confidence_stars": stars, "confidence_label": confidence_label,
+                "risk_rating": risk_emoji, "risk_label": risk_label,
+                "expected_holding_minutes": holding_minutes,
+                "why_reasons": reasons_from_factors(factors), "session": session,
+                "alternatives": [],
+                "probability_status": "UNAVAILABLE",
+                "execution_mode": "SHADOW",
+                "live_alert_sent": False,
+                "candidate_id": f"{symbol}:{direction}:{strike}:{expiry}",
+            }
+            _shadow_candidates_this_cycle.append(shadow_candidate)
+            _logger.info(
+                f"SHADOW_CANDIDATE_CREATED {symbol} {direction} {moneyness} strike={strike} "
+                f"candidate_id={shadow_candidate['candidate_id']} trade_score={score}/100"
+            )
         return None
     probability_pct = calibrated_pct
     probability_band = trade_score.probability_label(probability_pct)
@@ -1149,9 +1230,16 @@ def detect_setups(symbol: str, oi_history: dict) -> list:
         regime, penalty = market_regime(candles_15m)
         min_quality_score += penalty
 
-    biases = directional_bias(symbol)
+    biases, trend_status = directional_bias(symbol)
     # Diagnostics (TEMPORARY -- see FIX 1/FIX 2 deliverables notes).
-    _logger.info(f"DIAG {symbol}: bias_ready={bool(biases)}")
+    # BUGFIX (2026-08-20): "bias_ready=True" used to be logged even in
+    # the UNKNOWN/CE+PE fallback case (directional_bias() always
+    # returns a non-empty list except when the instrument itself can't
+    # be resolved) -- meaning this line could never actually prove real
+    # EMA data existed. trend_status is now logged explicitly alongside
+    # it (CONFIRMED/CONFLICTED/UNKNOWN, see directional_bias()'s own
+    # docstring) so "ready" and "confirmed" are never conflated again.
+    _logger.info(f"DIAG {symbol}: bias_ready={bool(biases)} trend_status={trend_status}")
     if not biases:
         # As of the 2026-07-24 fix, directional_bias() no longer
         # returns [] on 5-min/15-min EMA disagreement (that's a score

@@ -258,7 +258,7 @@ def multi_timeframe_confirmation_detail(symbol: str, candidate_direction: str):
     return (ema_direction == candidate_direction), ema_direction
 
 
-def directional_bias(symbol: str) -> list:
+def directional_bias(symbol: str) -> tuple:
     """
     5-min EMA9/21 crossover is still the primary directional signal;
     15-min agreement is still read here too -- but as of the
@@ -282,6 +282,43 @@ def directional_bias(symbol: str) -> list:
     picking WHICH direction(s) are worth scoring strikes for, not
     gating on how strong the agreement is -- the score handles that.
 
+    BUGFIX (2026-08-20): this used to fetch candles via
+    market_data.get_recent_underlying_candles() -- today-only, NO
+    warmup mechanism -- meaning early-session (before ~14:30 IST on
+    5-min data, per get_ema_warmup_candles()'s own EMA21 requirement)
+    this function's OWN ema_trend_direction() reads could be None even
+    though scanner.py's SEPARATE ema9/ema21 computation (already fixed
+    2026-08-11 via get_ema_warmup_candles()) had real data. Now reuses
+    that SAME existing warmup-aware mechanism (not a duplicate fetch
+    -- get_ema_warmup_candles() itself dedupes the underlying broker
+    call via the shared _atr_warmup_cache when called for the same
+    (instrument_key, interval) within a run) instead of the plain
+    today-only fetch.
+
+    Also now returns an explicit trend_status alongside the direction
+    list, distinguishing three states a caller must never conflate:
+      CONFIRMED  -- a real (non-None) EMA9/21 direction was read,
+                    5m and 15m don't disagree (or 15m couldn't be read)
+      CONFLICTED -- 5m and 15m both produced real directions, but they
+                    disagree -- still scores the 5m direction (penalty
+                    applied downstream, per the 2026-07-24 fix above,
+                    left unchanged), but the caller must know this
+                    wasn't a clean confirmation
+      UNKNOWN    -- neither timeframe had enough data for a read at
+                    all -- the Unknown/CE+PE fallback below. A caller
+                    MUST NOT treat this as confirmed trend for final
+                    alert-eligibility purposes (see scanner.py's own
+                    DIAG line, updated alongside this fix, and note
+                    that filters.directional_confirmation_status() --
+                    the actual alert-eligibility gate -- already reads
+                    its OWN separately-warmed ema_direction/m5_direction
+                    from scanner.py directly, never this function's
+                    output, so UNKNOWN here was already structurally
+                    incapable of leaking into that gate as "confirmed"
+                    -- this return value exists for correct diagnostic
+                    logging and any future caller, not because the
+                    existing alert gate needed rewiring).
+
     Resolution order, always producing at least one direction unless
     there's truly no EMA data on either timeframe:
       1. 5-min EMA9/21 cross, if readable -- used regardless of
@@ -301,42 +338,47 @@ def directional_bias(symbol: str) -> list:
     (e.g. price breakout above/below a range, not an EMA cross), swap
     the 5-min leg below for that logic and leave the 15-min read as-is.
 
-    Returns ["CE"], ["PE"], ["CE", "PE"] (only in the no-data fallback
-    above), or [] -- [] now only happens if resolve_underlying_key()
-    itself has nothing for this symbol (a genuinely absent instrument,
-    not a bias question).
+    Returns (directions, trend_status):
+      directions: ["CE"], ["PE"], ["CE", "PE"] (only in the UNKNOWN
+        fallback), or [] -- [] now only happens if resolve_underlying_key()
+        itself has nothing for this symbol (a genuinely absent instrument,
+        not a bias question; trend_status is "UNKNOWN" in that case too).
+      trend_status: "CONFIRMED", "CONFLICTED", or "UNKNOWN" as above.
     """
     underlying_key = resolve_underlying_key(symbol)
     if not underlying_key:
-        return []  # no instrument to read candles for at all -- not a bias question
+        return [], "UNKNOWN"  # no instrument to read candles for at all -- not a bias question
 
-    candles_5m = market_data.get_recent_underlying_candles(underlying_key, "5minute", 30)
-    candles_15m = market_data.get_recent_underlying_candles(underlying_key, "15minute", 30)
+    candles_5m_today = market_data.get_recent_underlying_candles(underlying_key, "5minute", 30)
+    candles_15m_today = market_data.get_recent_underlying_candles(underlying_key, "15minute", 30)
+    candles_5m, _ = market_data.get_ema_warmup_candles(underlying_key, "5minute", candles_5m_today, min_candles=21)
+    candles_15m, _ = market_data.get_ema_warmup_candles(underlying_key, "15minute", candles_15m_today, min_candles=21)
     bias_5m = ema_trend_direction(candles_5m)
     bias_15m = ema_trend_direction(candles_15m)
 
     if bias_5m is not None:
         if bias_15m is not None and bias_15m != bias_5m:
             _logger.info(
-                f"BIAS {symbol}: 5-min EMA={bias_5m} 15-min EMA={bias_15m} disagree -- "
+                f"BIAS {symbol}: trend_status=CONFLICTED 5-min EMA={bias_5m} 15-min EMA={bias_15m} disagree -- "
                 f"scoring {bias_5m} anyway with a penalty applied via the htf Trade "
                 f"Score factor, instead of skipping this symbol."
             )
-        return [bias_5m]
+            return [bias_5m], "CONFLICTED"
+        return [bias_5m], "CONFIRMED"
 
     if bias_15m is not None:
         _logger.info(
-            f"BIAS {symbol}: 5-min EMA trend unavailable (insufficient candles) -- "
+            f"BIAS {symbol}: trend_status=CONFIRMED 5-min EMA trend unavailable (insufficient candles) -- "
             f"falling back to 15-min EMA={bias_15m}."
         )
-        return [bias_15m]
+        return [bias_15m], "CONFIRMED"
 
     _logger.info(
-        f"BIAS {symbol}: no 5-min or 15-min EMA trend available (insufficient candle "
-        f"data on both timeframes) -- scoring BOTH CE and PE as Unknown bias instead "
+        f"BIAS {symbol}: trend_status=UNKNOWN no 5-min or 15-min EMA trend available (insufficient candle "
+        f"data on both timeframes, even after warmup) -- scoring BOTH CE and PE as Unknown bias instead "
         f"of skipping this symbol."
     )
-    return ["CE", "PE"]
+    return ["CE", "PE"], "UNKNOWN"
 
 
 def get_atm_strike(symbol: str):

@@ -713,6 +713,44 @@ TELEGRAM_MIN_PROBABILITY = 80
 # point this line requires no changes to start working.
 MIN_ALERT_PROBABILITY = 70
 
+# --- Centralized troubleshooting log retention (scan_log_store.py, 2026-08-12) ---
+# How many TRADING days (not calendar days -- weekends/NSE holidays never
+# consume a slot, since the scanner never runs on them at all; see
+# holiday_guard.should_run()) of scan_logs/<date>.jsonl to keep in the
+# `state` git branch before cleanup_old_trading_day_logs() removes the
+# oldest. Export (scan_log_store.export_logs()) is read-only and
+# unaffected by this -- it only limits how far back the CENTRALIZED
+# STORE itself reaches, not any already-exported file.
+SCAN_LOG_RETENTION_TRADING_DAYS = 5
+
+# --- Phase-2 Shadow/Validation Mode (2026-08-23) ---
+# calibrated_probability_pct() (trade_score.py) always returns None
+# today -- no historical-outcome calibration data exists yet. With
+# this OFF (the default), that means NO alert, ever, for a candidate
+# missing calibrated probability -- correct, safe LIVE behavior,
+# UNCHANGED by this flag in either position.
+#
+# When explicitly turned ON: a candidate that clears EVERY existing
+# hard gate (liquidity, RR, OI, VWAP, trend, extension, contract
+# validity, Options Intelligence) but has no calibrated probability is
+# recorded as a SHADOW/PAPER candidate -- entry/SL/T1/T2 and all
+# entry-time features captured, tracked to a real outcome via the
+# EXISTING tracker.py infrastructure, but NEVER sent as a Telegram
+# alert and NEVER written to state["trades"] (live trades) -- see
+# main.py's create_shadow_candidates()/run_shadow_tracker_step() for
+# the full mechanism. Purpose: let resolved-trade outcomes accumulate
+# so a genuine calibration model can eventually be built FROM this
+# shadow data -- this is explicitly NOT a live-alert bypass (unlike
+# the earlier PROBABILITY_VALIDATION_MODE_ENABLED design, which WAS
+# rejected and removed for exactly that reason -- it sent a live
+# Telegram alert using the trade_score heuristic as a probability
+# substitute; this flag never sends a live alert and never uses
+# heuristic_pct as a probability value anywhere).
+#
+# Same "opt-in, off by default" posture as every other validation-mode
+# flag in this file.
+PROBABILITY_SHADOW_MODE_ENABLED = True
+
 # --- Liquidity engine (scanner.py) ---
 # Relaxed 2026-07-24 (Phase 4 "increase alert volume" pass, per an
 # explicit "relax liquidity slightly" instruction): MIN_OI/
@@ -925,11 +963,33 @@ STARTUP_GRACE_MIN = 15    # skip staleness check for this long after market open
 # likely per the count of 1 -- see instrument_master.py's own comment
 # on why) simply an incomplete download that never included this
 # symbol's real OPTSTK/CE/PE rows at all.
-INSTRUMENT_MASTER_DEBUG_DUMP_ENABLED = True    # ON for the next premarket run to capture
-                                                 # the 2026-08-10 "A"/"EQUITY"-only case live --
-                                                 # turn this back to False once that data is
-                                                 # in hand, so it doesn't stay noisy every day.
+INSTRUMENT_MASTER_DEBUG_DUMP_ENABLED = False   # OFF (2026-08-17) -- turned back off after the
+                                                 # 2026-08-14 09:01 IST premarket run's dump confirmed
+                                                 # the root cause: TATASTEEL/HINDALCO/VEDL/JINDALSTEL/
+                                                 # (and a 5th symbol) each had EXACTLY 2 rows in the
+                                                 # instrument master -- one NSE EQUITY row, one BSE "A"
+                                                 # row -- with option_type/expiry/strike_price all None
+                                                 # on both. No OPTSTK/CE/PE rows exist for these symbols
+                                                 # in the downloaded file at all -- confirmed an
+                                                 # incomplete/wrong instrument master download, NOT an
+                                                 # unmapped broker instrumenttype code and NOT a
+                                                 # field-mapping bug in this codebase. Re-enable this
+                                                 # flag only if that specific "A"/"EQUITY"-only pattern
+                                                 # needs to be captured again for further diagnosis of
+                                                 # the download itself (a separate, not-yet-fixed issue
+                                                 # from the one this flag was added to investigate).
 INSTRUMENT_MASTER_DEBUG_DUMP_MAX_SYMBOLS = 5   # stop after this many affected symbols per run -- avoid log spam
+
+# --- Instrument master download-completeness validation (2026-08-20, ---
+# --- root-cause audit item #4) ---
+# Deliberately conservative: a genuinely complete NSE.json.gz is a very
+# large file (tens of thousands of rows across equity + F&O + index).
+# 5000 is far below any legitimate complete download, high enough to
+# catch a genuinely truncated/incomplete one (the observed failure was
+# 2 rows for an affected symbol -- orders of magnitude below this
+# floor either way) without ever risking a false-positive rejection of
+# real data due to routine day-to-day row-count fluctuation.
+INSTRUMENT_MASTER_MIN_ROWS = 5000
 
 # --- Broker failover (broker_failover.py) ---
 # Switch from the primary broker to the fallback broker (Upstox

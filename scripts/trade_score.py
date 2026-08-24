@@ -115,8 +115,8 @@ def risk_reward_strength(target_distance: float, sl_distance: float) -> float:
     return _clamp01(rr_ratio / TS_RR_BASELINE)
 
 
-def liquidity_strength(oi: float, volume: float, bid: float, ask: float,
-                        premium: float, symbol: str = None) -> float:
+def liquidity_strength(oi: float, volume: float, bid, ask,
+                        premium: float, symbol: str = None):
     """
     Averages three sub-ratios (OI vs. min, volume vs. min, and spread
     tightness) -- same "strength, not just pass/fail" idea
@@ -126,6 +126,26 @@ def liquidity_strength(oi: float, volume: float, bid: float, ask: float,
     filters.liquidity_ok()'s hard gate -- a strike can pass the hard
     gate by a hair (liquidity_strength close to 0) or clear it
     comfortably (liquidity_strength close to 1).
+
+    BUGFIX (2026-08-15, P0 audit follow-up): `bid`/`ask` used to always
+    be real floats (both brokers silently defaulted a genuinely missing
+    quote to 0.0 -- fixed earlier this session in upstox.py/angelone.py).
+    Once that fix let bid/ask genuinely be None for the first time, this
+    function's unguarded `ask - bid` started raising TypeError --
+    confirmed live via a read-only impact audit, reachable from BOTH the
+    main scanner.py -> options_intelligence.engine -> liquidity_premium
+    path AND the early_breakout.engine path.
+
+    Now returns None (this repo's established "unavailable" sentinel,
+    same convention as trend_strength()/momentum_strength() etc.) when
+    bid/ask are None, non-numeric, or <=0 (a literal 0/negative quote
+    is INVALID for a real option premium, not a genuine zero-width
+    spread -- same distinction filters.liquidity_ok() now draws).
+    Callers must treat None as "insufficient evidence to score this
+    factor," never as 0 (worst) or 1 (best) -- see
+    options_intelligence/scoring.py's aggregation functions and
+    early_breakout/engine.py's own fixes made alongside this one for
+    how each caller now handles it.
     """
     is_stock = symbol in STOCK_SYMBOLS
     min_oi = STOCK_MIN_OI if is_stock else MIN_OI
@@ -133,6 +153,9 @@ def liquidity_strength(oi: float, volume: float, bid: float, ask: float,
 
     oi_ratio = _clamp01(oi / (min_oi * TS_LIQUIDITY_CEILING_MULT)) if min_oi else 0.0
     vol_ratio = _clamp01(volume / (min_volume * TS_LIQUIDITY_CEILING_MULT)) if min_volume else 0.0
+
+    if not isinstance(bid, (int, float)) or not isinstance(ask, (int, float)) or bid <= 0 or ask <= 0:
+        return None  # unavailable/invalid quote -- insufficient evidence for the spread component at all
 
     if premium:
         spread_pct = (ask - bid) / premium

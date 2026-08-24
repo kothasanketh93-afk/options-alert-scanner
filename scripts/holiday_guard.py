@@ -78,19 +78,46 @@ def _is_fixed_date_holiday(now: datetime) -> bool:
     return now.strftime("%m-%d") in FIXED_DATE_HOLIDAYS_MMDD
 
 
+def is_trading_day(date: datetime) -> bool:
+    """
+    Date-parametrized core of should_run() below -- extracted (2026-08-12,
+    troubleshooting-log-retention work) so callers that need to check an
+    ARBITRARY past/future date (not just "right now") can reuse the exact
+    same weekend+holiday rules instead of duplicating them. should_run()
+    itself is UNCHANGED in behavior -- it now just calls this with
+    datetime.now(IST) instead of inlining the same three checks.
+
+    `date` must already be IST-aware (or at least represent the intended
+    IST calendar date) -- this function does no timezone conversion of
+    its own, matching should_run()'s original behavior of operating
+    directly on whatever `now` it was given.
+    """
+    if date.weekday() >= 5:  # Sat=5, Sun=6
+        return False
+    if _is_fixed_date_holiday(date):
+        return False
+    if date.year != NSE_HOLIDAYS_YEAR:
+        # Same "stale movable-holiday set" caveat as should_run() below --
+        # only the movable (lunar-calendar) holidays are affected; fixed-
+        # date holidays above are still caught correctly regardless of
+        # year. No warning printed here (unlike should_run()) since this
+        # is meant for silent, repeated use (e.g. filtering a list of
+        # dates for retention) rather than a single once-per-run check.
+        return True
+    if date.strftime("%Y-%m-%d") in NSE_MOVABLE_HOLIDAYS_2026:
+        return False
+    return True
+
+
 def should_run() -> bool:
     now = datetime.now(IST)
-    if now.weekday() >= 5:  # Sat=5, Sun=6
-        return False
-    if _is_fixed_date_holiday(now):
-        return False
     if now.year != NSE_HOLIDAYS_YEAR:
         # The movable-holiday set is year-specific and provides no
         # protection for any year other than NSE_HOLIDAYS_YEAR. Fixed-
-        # date holidays above are still caught correctly regardless of
-        # year -- only the movable ones are affected. A loud warning
-        # doesn't fix the list (only next year's actual dates can), but
-        # turns a silent gap into a visible one in the job log.
+        # date holidays are still caught correctly regardless of year --
+        # only the movable ones are affected. A loud warning doesn't fix
+        # the list (only next year's actual dates can), but turns a
+        # silent gap into a visible one in the job log.
         print(
             f"[holiday_guard] WARNING: NSE_MOVABLE_HOLIDAYS_{NSE_HOLIDAYS_YEAR} is "
             f"for {NSE_HOLIDAYS_YEAR}, but today is {now.year} -- movable-holiday "
@@ -98,10 +125,7 @@ def should_run() -> bool:
             f"caught correctly). Add this year's movable holidays from NSE's "
             f"published calendar."
         )
-        return True
-    if now.strftime("%Y-%m-%d") in NSE_MOVABLE_HOLIDAYS_2026:
-        return False
-    return True
+    return is_trading_day(now)
 
 
 if __name__ == "__main__":

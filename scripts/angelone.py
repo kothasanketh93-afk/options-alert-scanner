@@ -601,6 +601,8 @@ class AngelOneBroker(Broker):
 
         greeks = {}
         _iv_sample_logged = False
+        expiry_field_seen = False
+        expiry_mismatches_skipped = 0
         for row in payload.get("data") or []:
             try:
                 strike = round(float(row["strikePrice"]), 2)
@@ -609,6 +611,29 @@ class AngelOneBroker(Broker):
             option_type = row.get("optionType")
             if option_type not in ("CE", "PE"):
                 continue
+            # BUGFIX (2026-08-24, recurring-issues audit item #5): this
+            # loop used to trust every row's strike/optionType blindly,
+            # never checking whether the row's OWN expiry actually
+            # matches the `expiry_date` this call requested. This
+            # module's own docstring above already flags a "weekly vs
+            # monthly expiry mismatch" reported by other Angel One
+            # SmartAPI users for this exact endpoint -- if that ever
+            # happens live, a Greeks value for the WRONG contract could
+            # silently be used for delta/theta gating without any way
+            # to tell. Response rows are checked here, defensively,
+            # against several plausible expiry-field names (this
+            # endpoint's exact response shape for a per-row expiry
+            # field was not independently confirmed live this session
+            # -- see this function's own docstring on why it's less
+            # officially documented than this file's other endpoints):
+            # a row whose expiry field is present AND doesn't match the
+            # requested one is skipped and counted, never silently used.
+            row_expiry = row.get("expiry") or row.get("expirydate") or row.get("expiryDate")
+            if row_expiry is not None:
+                expiry_field_seen = True
+                if str(row_expiry).strip().upper() != str(expiry_date).strip().upper():
+                    expiry_mismatches_skipped += 1
+                    continue
             raw_iv = row.get("impliedVolatility")
             if not _iv_sample_logged:
                 # IV SCALE VERIFICATION (diagnostic only, no normalization/threshold
@@ -636,6 +661,29 @@ class AngelOneBroker(Broker):
                 "vega": _safe_float(row.get("vega")),
                 "iv": _safe_float(raw_iv),
             }
+        if expiry_mismatches_skipped:
+            log.warning(
+                "optionGreek: %d row(s) for %s skipped -- their own expiry field did not "
+                "match the requested expirydate=%s (this is exactly the weekly/monthly "
+                "expiry mismatch this module's docstring already flagged as a known "
+                "caveat for this endpoint) -- never used for delta/theta gating.",
+                expiry_mismatches_skipped, name, expiry_date,
+            )
+        elif not expiry_field_seen and payload.get("data"):
+            # Diagnostic-only: confirms whether this endpoint's response
+            # shape even EXPOSES a per-row expiry field to validate
+            # against in the first place -- if this line ever prints in
+            # production, it means the mismatch-detection above is
+            # currently a no-op (nothing to check), not that no
+            # mismatch occurred -- see this function's own docstring
+            # for why that specific caveat couldn't be independently
+            # confirmed live this session.
+            log.info(
+                "optionGreek: response for %s %s has no per-row expiry field under any of "
+                "the checked names -- expiry cross-validation not possible from this "
+                "endpoint's response shape; requested expirydate is trusted as-is.",
+                name, expiry_date,
+            )
         self._greeks_cache.set(cache_key, greeks)
         return greeks
 

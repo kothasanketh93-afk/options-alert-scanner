@@ -33,6 +33,7 @@ import market_data
 from daily_cache import DailyCache
 from logging_setup import get_logger
 from config import INSTRUMENT_MASTER_DEBUG_DUMP_ENABLED, INSTRUMENT_MASTER_DEBUG_DUMP_MAX_SYMBOLS
+from config import INSTRUMENT_MASTER_MIN_ROWS
 
 IST = timezone(timedelta(hours=5, minutes=30))
 _logger = get_logger("instrument_master")
@@ -56,6 +57,38 @@ def today_str(now: datetime = None) -> str:
     return now.strftime("%Y-%m-%d")
 
 
+def _validate_master_rows(rows: list, trading_date: str) -> tuple:
+    """
+    Root-cause-audit item #4 (2026-08-20): validation-before-overwrite
+    for the instrument master, deliberately NOT tied to any specific
+    download-mechanism theory -- the prior turn's own re-verification
+    left the exact download-layer root cause at LOW CONFIDENCE, so this
+    validates the OUTPUT (what actually got downloaded) rather than
+    guessing at a cause to prevent. Returns (ok: bool, reason: str).
+
+    Checks, deliberately conservative (won't false-positive-reject a
+    legitimate quarterly F&O delisting for an individual stock -- only
+    NIFTY/BANKNIFTY, which are never delisted, are checked by name):
+      - total row count above a sane floor (a genuinely complete NSE
+        master is a very large file; a near-empty one is never valid)
+      - NIFTY and BANKNIFTY both have at least one INDEX_OPTION row
+    """
+    total = len(rows)
+    if total < INSTRUMENT_MASTER_MIN_ROWS:
+        return False, f"only {total} total rows (expected at least {INSTRUMENT_MASTER_MIN_ROWS})"
+
+    for required_symbol in ("NIFTY", "BANKNIFTY"):
+        has_options = any(
+            r.get("contract_class") == "INDEX_OPTION" and
+            (r.get("underlying_symbol") == required_symbol or r.get("symbol", "").startswith(required_symbol))
+            for r in rows
+        )
+        if not has_options:
+            return False, f"{required_symbol} has zero INDEX_OPTION rows -- master is missing this index's F&O data entirely"
+
+    return True, f"{total} rows, NIFTY/BANKNIFTY F&O present"
+
+
 def download_and_cache_instrument_master(trading_date: str = None) -> list:
     """
     Downloads via market_data.get_broker().download_instrument_master()
@@ -70,9 +103,45 @@ def download_and_cache_instrument_master(trading_date: str = None) -> list:
     below) -- an intraday run that finds no cache yet just pays the
     download cost once, the same run that would have paid it anyway
     under the OLD per-run TTLCache-only behavior.
+
+    VALIDATION (2026-08-20, root-cause audit item #4): before
+    persisting, the downloaded rows are checked by _validate_master_rows()
+    above. If validation FAILS, this does NOT overwrite the state
+    branch's existing cache -- it logs the failure with structured
+    fields and falls back to YESTERDAY's cached master if one exists
+    (still usable data, one day stale, strictly better than silently
+    trusting a genuinely incomplete download as today's canonical
+    source), or to today-only in-process (not persisted) if no
+    previous-day cache exists either -- in that worst case a later run
+    the same day will simply retry the download itself, same as the
+    existing "no cache found yet" fallback path in
+    load_instrument_master() below already does.
     """
     trading_date = trading_date or today_str()
     rows = market_data.get_broker().download_instrument_master()
+    valid, reason = _validate_master_rows(rows, trading_date)
+    _logger.info(
+        f"INSTRUMENT_MASTER_VALIDATION trading_date={trading_date} "
+        f"total_rows={len(rows)} validation_status={'VALID' if valid else 'INVALID'} reason={reason}"
+    )
+    if not valid:
+        _logger.error(
+            f"Instrument master download for {trading_date} FAILED validation ({reason}) -- "
+            f"NOT overwriting the existing cache. Falling back to the most recent known-good "
+            f"cached master instead."
+        )
+        fallback_rows = _fallback_to_previous_good_master(trading_date)
+        if fallback_rows is not None:
+            _inprocess_master[trading_date] = fallback_rows
+            return fallback_rows
+        _logger.error(
+            f"No previous-day cached master available to fall back to -- returning today's "
+            f"INVALID download unpersisted (in-process only) so this run isn't left with nothing; "
+            f"a later run today will retry the download from scratch."
+        )
+        _inprocess_master[trading_date] = rows
+        return rows
+
     payload = {"trading_date": trading_date, "row_count": len(rows), "rows": rows}
     ok = _CACHE.write(trading_date, payload,
                        commit_message=f"instrument_master: {trading_date} ({len(rows)} rows)")
@@ -84,6 +153,26 @@ def download_and_cache_instrument_master(trading_date: str = None) -> list:
         )
     _inprocess_master[trading_date] = rows
     return rows
+
+
+def _fallback_to_previous_good_master(trading_date: str, max_days_back: int = 5):
+    """Looks back up to max_days_back calendar days for the most recent
+    cached master under a DIFFERENT date key, returning its rows, or
+    None if nothing is found. Deliberately capped (not unbounded) --
+    an instrument master more than a few days stale is a bigger risk
+    than an INVALID one (strike/expiry grids genuinely change), so
+    past this point the caller's own "no fallback, unpersisted today's
+    download" path is the safer choice.
+    """
+    cursor = datetime.strptime(trading_date, "%Y-%m-%d")
+    for _ in range(max_days_back):
+        cursor -= timedelta(days=1)
+        candidate_date = cursor.strftime("%Y-%m-%d")
+        cached = _CACHE.read(candidate_date)
+        if cached is not None and cached.get("rows"):
+            _logger.info(f"INSTRUMENT_MASTER_FALLBACK using {candidate_date}'s cached master ({len(cached['rows'])} rows)")
+            return cached["rows"]
+    return None
 
 
 def load_instrument_master(trading_date: str = None) -> list:

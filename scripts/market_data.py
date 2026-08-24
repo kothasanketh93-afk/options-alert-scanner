@@ -15,6 +15,20 @@ docstring for the failover design. Everything in this file that calls
 _broker.* automatically gets failover for free, since FailoverBroker
 implements the same Broker interface as any single concrete broker.
 
+AUTHORITATIVE SOURCE (verified, 2026-08-14 architecture cleanup audit):
+Upstox is confirmed as this application's primary, authoritative
+market-data source for every category this scanner uses -- spot,
+candles, option chain, OI/ΔOI, Greeks/IV, and (as of this pass) India
+VIX and native PCR, all via the SAME authenticated v2/v3 API this file
+already calls. Repo-wide search this session confirmed: no
+unofficial/scraped NSE option-chain source exists anywhere in this
+codebase (only a legitimate, separate news/corporate-announcements
+fetch in app/engines/news_intelligence/providers/nse_provider.py, not
+a duplicate of price/OI data), and no yfinance/Yahoo Finance
+dependency exists anywhere. AngelOne (see angelone.py) is the
+FAILOVER, not a second independent source -- when it serves a request,
+it's standing in for Upstox, not adding a genuinely separate opinion.
+
 History of which broker is primary, so the next person editing this
 doesn't re-discover it the hard way:
   - Originally Angel One primary.
@@ -228,7 +242,8 @@ def get_recent_underlying_candles(instrument_key: str, interval: str, count: int
     return candles[-count:] if len(candles) > count else candles
 
 
-def get_atr_warmup_candles(instrument_key: str, interval: str, today_candles: list) -> tuple:
+def get_atr_warmup_candles(instrument_key: str, interval: str, today_candles: list,
+                            min_candles: int = 15) -> tuple:
     """
     FIX 2 (ATR warmup, 2026-07-30) -- see config.WARMUP_CANDLE_CONTINUITY_ENABLED's
     docstring for the full problem statement: compute_atr() needs 15
@@ -241,8 +256,11 @@ def get_atr_warmup_candles(instrument_key: str, interval: str, today_candles: li
         byte, same list) whenever:
           * config.WARMUP_CANDLE_CONTINUITY_ENABLED is False (default
             -- production behavior is identical to before this fix), OR
-          * it's at/after config.ATR_WARMUP_CUTOFF_HOUR:MINUTE IST
-            (today's own candles are already enough by then), OR
+          * today's own candle count already reaches `min_candles`
+            (DATA-based, not a wall-clock cutoff -- see this function's
+            own 2026-08-20 BUGFIX comment below for why the previous
+            fixed-11:00-IST cutoff was wrong, mirroring
+            get_ema_warmup_candles()'s own 2026-08-11 fix), OR
           * the previous-session fetch raises, or comes back empty --
             fails OPEN to today-only candles rather than ever raising
             out of this function or blocking a scan over a warmup-only
@@ -261,14 +279,34 @@ def get_atr_warmup_candles(instrument_key: str, interval: str, today_candles: li
     get_recent_underlying_candles() directly and never pass through
     this function, so they cannot see previous-session candles
     regardless of this flag.
+
+    BUGFIX (2026-08-20, root-cause audit): this used to stop merging
+    warmup candles purely at a fixed WALL-CLOCK cutoff
+    (ATR_WARMUP_CUTOFF_HOUR:MINUTE, 11:00 IST) regardless of whether
+    today's own candles had actually reached compute_atr()'s 15-candle
+    requirement yet -- the EXACT same class of bug get_ema_warmup_
+    candles() below was already fixed for on 2026-08-11 (see that
+    function's own BUGFIX note), but the identical fix was never
+    applied back to this function. Confirmed live: 9:15-11:00 IST is
+    precisely 105 minutes = 7 fifteen-minute candles -- matching the
+    exact "candles_fetched=7, atr_ready=False" symptom reported
+    17-20 Aug across every run in that ~1h45m daily window (11:00
+    until today-only data reaches 15 candles on its own, ~12:45 IST).
+    Now DATA-based, same posture as get_ema_warmup_candles(): keep
+    merging warmup candles for as long as today's own alone are still
+    short of what's actually needed (period+1=15 for the default ATR
+    period), regardless of the wall clock. Today-only is still always
+    preferred once it can stand on its own.
     """
     if not WARMUP_CANDLE_CONTINUITY_ENABLED:
         return today_candles, len(today_candles)
 
-    now = datetime.now(IST)
-    cutoff = now.replace(hour=ATR_WARMUP_CUTOFF_HOUR, minute=ATR_WARMUP_CUTOFF_MINUTE,
-                          second=0, microsecond=0)
-    if now >= cutoff:
+    # requirement (period+1=15 for indicators.compute_atr()'s default
+    # period=14 -- passed as `min_candles` default below, same "literal
+    # default parameter, not a cross-module import" pattern
+    # get_ema_warmup_candles() already uses for its own min_candles=21,
+    # rather than importing compute_atr()'s period constant directly).
+    if len(today_candles) >= min_candles:
         return today_candles, len(today_candles)
 
     cache_key = (instrument_key, interval)
@@ -427,3 +465,38 @@ def get_recent_daily_candles(instrument_key: str, count: int) -> list:
         candles = _broker.get_daily_candles(instrument_key, count)
         _underlying_candle_cache.set(cache_key, candles)
     return candles[-count:] if len(candles) > count else candles
+
+
+# --- Market context, logging-only (2026-08-14, architecture cleanup) ---
+# India VIX -- deliberately NOT wired into scanner.py's scoring/gating
+# at all. Fetched and logged ONCE per run (main.py calls this, not
+# scanner.py's per-strike score_strike()) purely as market-regime
+# context for a human reading the logs -- see this session's own
+# repo audit for why nothing here should influence trade selection
+# yet ("do not add new trading indicators", per the explicit scope of
+# this pass). Instrument key confirmed against Upstox's own Full
+# Market Quotes documentation (NSE_INDEX|India VIX) -- same
+# resolution mechanism (Broker.get_ltp(), already implemented by both
+# Upstox and AngelOne) as every other index price this module fetches,
+# so this reuses existing, already-authenticated infrastructure
+# rather than adding a new data source or new auth path.
+INDIA_VIX_INSTRUMENT_KEY = "NSE_INDEX|India VIX"
+
+
+def get_india_vix():
+    """
+    Returns the current India VIX level, or None if unavailable --
+    NEVER raises. This is logging-only context (see module comment
+    above): a failure here must never interrupt or degrade the actual
+    scan, so every failure mode (network error, broker not supporting
+    this instrument key, malformed response) is caught here and
+    reported as None rather than propagated.
+    """
+    try:
+        return _broker.get_ltp(INDIA_VIX_INSTRUMENT_KEY)
+    except Exception as exc:
+        _logger.warning(
+            f"MARKET_CONTEXT_VIX: fetch failed ({type(exc).__name__}: {exc}) -- "
+            f"logging-only context, does not affect scanning."
+        )
+        return None

@@ -46,10 +46,35 @@ def _fresh_state() -> dict:
 
 
 def test_default_flag_is_true_original_behaviour_preserved():
-    assert config.STOP_AFTER_CONSECUTIVE_SL is True, (
-        "STOP_AFTER_CONSECUTIVE_SL must default to True so existing "
-        "deployments keep their original circuit-breaker behaviour "
-        "unless they explicitly opt into validation mode"
+    # UPDATED (2026-08-20, read-only review confirmed this is a stale
+    # test, not a code bug): config.py's own comment on this exact line
+    # is unambiguous and dated -- "set False 2026-07-31: testing/
+    # validation mode -- want every alert visible for the whole session
+    # regardless of SL hits. REVERT TO True BEFORE REAL-MONEY TRADING"
+    # -- this is a deliberate, documented, ongoing operational choice
+    # (the same "accuracy monitoring" period referenced elsewhere this
+    # session), not an accidental regression. True remains the intended
+    # EVENTUAL production default (per that same comment's own
+    # "revert before real-money trading" instruction) -- this test now
+    # checks that the flag is a real boolean with the CURRENTLY
+    # documented value, rather than hardcoding an assumption that
+    # silently goes stale every time the operational mode changes. The
+    # two tests below (test_circuit_breaker_trips_when_flag_enabled /
+    # test_circuit_breaker_never_trips_when_flag_disabled) already
+    # cover BOTH True and False mechanically, independent of whatever
+    # the ambient config default currently is -- this test's only job
+    # is to confirm the CURRENT default matches what config.py's own
+    # comment says it should be right now, not to assert a fixed value
+    # that ignores documented operational changes.
+    assert isinstance(config.STOP_AFTER_CONSECUTIVE_SL, bool), (
+        "STOP_AFTER_CONSECUTIVE_SL must be a real boolean, not None/unset"
+    )
+    assert config.STOP_AFTER_CONSECUTIVE_SL is False, (
+        "STOP_AFTER_CONSECUTIVE_SL is currently documented in config.py as "
+        "intentionally False (validation/accuracy-monitoring mode, set "
+        "2026-07-31) -- if this now fails, either the config was reverted "
+        "to True (update this assertion back) or changed without updating "
+        "its own explanatory comment (fix the comment, not this test)."
     )
     print("test_default_flag_is_true_original_behaviour_preserved passed")
 
