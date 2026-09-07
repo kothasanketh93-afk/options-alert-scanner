@@ -921,7 +921,19 @@ MARKET_CLOSE_HHMM = (15, 30)
 # SESSION_WINDOWS (maybe_send_daily_summary() is called unconditionally
 # every run, independent of session scanning), so this needed no
 # workflow/schedule change -- only this time moved.
-SUMMARY_HHMM = (15, 31)
+SUMMARY_HHMM = (15, 30)   # BUGFIX (2026-09-01, live-log finding): was (15, 31) --
+                           # confirmed via 7 consecutive trading days (24-28 Aug,
+                           # 31 Aug, 1 Sep) that the scanner's LAST scan cycle every
+                           # single day lands at exactly 15:30 IST, never 15:31 or
+                           # later. `hhmm < SUMMARY_HHMM` was therefore True on every
+                           # run, every day -- neither maybe_send_daily_summary() nor
+                           # maybe_send_shadow_summary() could ever fire. This went
+                           # unnoticed for the live summary because state["trades"]
+                           # has been empty every day (calibrated_probability_pct()
+                           # always None -- see that function's own docstring), so
+                           # its own early "if not trades: return" masked the timing
+                           # bug entirely; Phase-2 Shadow Mode's non-empty
+                           # shadow_trades was what actually exposed it live.
 
 # --- Trade Lifecycle EOD status check (trade_lifecycle.py) ---
 # Runs BEFORE tracker.py's own 15:30 market-close EOD_CLOSED transition
