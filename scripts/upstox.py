@@ -467,7 +467,30 @@ class UpstoxBroker(Broker):
                 strike_price = None
             normalized.append({
                 "symbol": trading_symbol or name,
-                "underlying_symbol": name,
+                # BUGFIX (2026-09-19, live diagnostic confirmed): used
+                # to be `name` unconditionally -- for INDEX rows
+                # (NIFTY/BANKNIFTY) Upstox's raw "name" field already
+                # IS the short ticker ("BANKNIFTY"), so this happened
+                # to work there. For STOCK option rows, raw "name" is
+                # the FULL company name ("TATA STEEL LIMITED",
+                # "HINDALCO  INDUSTRIES  LTD") while Upstox's response
+                # ALREADY provides a separate, correct raw
+                # "underlying_symbol" field holding the short ticker
+                # ("TATASTEEL", "HINDALCO") -- confirmed via a live
+                # debug_futures_masters.py run against the real
+                # downloaded master (2026-09-18). This code was
+                # discarding that correct raw field and overwriting it
+                # with the full company name instead, which is why
+                # instrument_master.validate_symbol()'s
+                # `r.get("underlying_symbol") == symbol` (comparing
+                # against the bare ticker) could NEVER match these
+                # rows -- explaining the long-standing, always-the-
+                # same-14-symbols "not F&O eligible" false negative.
+                # Now prefers the raw response's own "underlying_symbol"
+                # field (confirmed correct for both indices AND stocks
+                # in the same diagnostic run), falling back to `name`
+                # only if that raw field is ever genuinely absent.
+                "underlying_symbol": row.get("underlying_symbol") or name,
                 "exchange": row.get("exchange") or row.get("segment"),
                 "contract_class": contract_class,
                 "option_type": option_type,
