@@ -751,6 +751,32 @@ SCAN_LOG_RETENTION_TRADING_DAYS = 5
 # flag in this file.
 PROBABILITY_SHADOW_MODE_ENABLED = True
 
+# --- Shadow TIMEOUT Extension (2026-09-19) ---
+# By default, a shadow candidate that reaches EOD with neither target
+# nor SL hit is recorded as TIMEOUT and tracking stops there (see
+# tracker.py's own ACTIVE -> EOD_CLOSED transition, a TERMINAL status).
+# For NIFTY/BANKNIFTY weekly options this is deliberately correct as
+# the DEFAULT: theta decay overnight and the approaching weekly expiry
+# mean a fresh day is not really "the same setup" anymore for a real
+# intraday trader.
+#
+# When explicitly turned ON, a shadow candidate's TIMEOUT is treated as
+# provisional rather than final: tracking resumes the NEXT trading day
+# using the SAME entry/SL/T1/T2 levels already recorded (deliberately
+# NOT recalculated -- recalculating them daily would mean each
+# extension day is really a different setup wearing the same
+# candidate_id, contaminating the outcome label this is meant to
+# produce), for up to SHADOW_TIMEOUT_EXTENSION_MAX_DAYS additional
+# trading days OR until the contract's own expiry, whichever comes
+# first (an expired contract cannot be meaningfully tracked further --
+# see main.py's create_shadow_candidates()/run_shadow_tracker_step()
+# for exactly where this is checked). This is SHADOW-MODE ONLY --
+# tracker.py's own live-trade EOD_CLOSED transition, and everything
+# about LIVE alert eligibility/probability/threshold, is completely
+# untouched by this flag in either position.
+SHADOW_TIMEOUT_EXTENSION_ENABLED = True
+SHADOW_TIMEOUT_EXTENSION_MAX_DAYS = 2   # up to 2 additional trading days beyond the entry day (3 total)
+
 # --- Liquidity engine (scanner.py) ---
 # Relaxed 2026-07-24 (Phase 4 "increase alert volume" pass, per an
 # explicit "relax liquidity slightly" instruction): MIN_OI/

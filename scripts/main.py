@@ -571,7 +571,7 @@ def run_tracker_step(state: dict, now: datetime):
                        trade_id, type(exc).__name__, exc)
 
 
-def _dispatch_shadow_tracker_events(trade: dict, events: list):
+def _dispatch_shadow_tracker_events(trade: dict, events: list, now: datetime):
     """
     Phase-2 Shadow/Validation Mode (2026-08-23) counterpart to
     _dispatch_tracker_events() above -- SAME event types from the SAME
@@ -607,8 +607,57 @@ def _dispatch_shadow_tracker_events(trade: dict, events: list):
             log.info("SHADOW_OUTCOME_NOT_ENTERED %s %s strike=%s candidate_id=%s",
                      trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"))
         elif etype == "EOD_CLOSED":
-            log.info("SHADOW_OUTCOME_TIMEOUT %s %s strike=%s candidate_id=%s",
-                     trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"))
+            # Shadow TIMEOUT Extension (2026-09-19, config.
+            # SHADOW_TIMEOUT_EXTENSION_ENABLED). With the flag off
+            # (default False), this is unchanged: log TIMEOUT, the
+            # EOD_CLOSED status set by tracker.py stays terminal, this
+            # candidate is never picked up again. With the flag on,
+            # extend rather than finalize -- UNLESS the contract's own
+            # expiry has been reached, or the extension budget
+            # (SHADOW_TIMEOUT_EXTENSION_MAX_DAYS additional trading
+            # days beyond entry day) is already used up -- in either
+            # of those cases, fall through to the same final TIMEOUT
+            # logging as the flag-off path, so a candidate can never be
+            # extended past what config allows or past its own expiry.
+            days_used = trade.get("timeout_extension_days_used", 0)
+            expiry_reached = now.strftime("%Y-%m-%d") >= trade["expiry"]
+            if (config.SHADOW_TIMEOUT_EXTENSION_ENABLED and not expiry_reached
+                    and days_used < config.SHADOW_TIMEOUT_EXTENSION_MAX_DAYS):
+                # Reset back to the SAME state tracker.py's own
+                # ACTIVE -> EOD_CLOSED transition moved it FROM (both
+                # branches that set EOD_CLOSED in tracker.py transition
+                # from ACTIVE -- see that file's own state-machine
+                # comment) -- next run's market_data.get_1min_candles_
+                # since(instrument_key, last_processed_ts) naturally
+                # picks up the NEXT trading day's candles once the
+                # market reopens, since last_processed_ts is left
+                # exactly where tracker.py set it (the EOD candle just
+                # processed). Entry/SL/T1/T2 are deliberately NOT
+                # recalculated -- see config.SHADOW_TIMEOUT_EXTENSION_
+                # ENABLED's own comment for why keeping the SAME levels
+                # across the extension is the correct choice here, not
+                # a temporary simplification.
+                trade["status"] = "ACTIVE"
+                trade["final_status"] = None
+                trade["timeout_extension_days_used"] = days_used + 1
+                log.info(
+                    "SHADOW_TIMEOUT_EXTENDED %s %s strike=%s candidate_id=%s "
+                    "extension_day=%d/%d",
+                    trade["symbol"], trade["direction"], trade["strike"],
+                    trade.get("candidate_id"), days_used + 1, config.SHADOW_TIMEOUT_EXTENSION_MAX_DAYS,
+                )
+            else:
+                if trade.get("timeout_extension_days_used"):
+                    log.info(
+                        "SHADOW_OUTCOME_TIMEOUT %s %s strike=%s candidate_id=%s "
+                        "(after %d extension day(s)%s)",
+                        trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"),
+                        trade["timeout_extension_days_used"],
+                        ", expiry reached" if expiry_reached else "",
+                    )
+                else:
+                    log.info("SHADOW_OUTCOME_TIMEOUT %s %s strike=%s candidate_id=%s",
+                             trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"))
         elif etype in ("AMBIGUOUS", "AMBIGUOUS_AFTER_T1"):
             log.info("SHADOW_OUTCOME_AMBIGUOUS %s %s strike=%s candidate_id=%s",
                      trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"))
@@ -714,7 +763,7 @@ def run_shadow_tracker_step(state: dict, now: datetime):
             if not candles:
                 continue
             events = tracker.process_trade_candles(trade, candles)
-            _dispatch_shadow_tracker_events(trade, events)
+            _dispatch_shadow_tracker_events(trade, events, now)
         except (BrokerAPIError, TelegramFailure) as exc:
             # Same per-trade containment posture as run_tracker_step()
             # above -- one shadow trade's broker hiccup must not stop
