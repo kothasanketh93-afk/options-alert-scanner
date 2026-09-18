@@ -1081,6 +1081,18 @@ def main():
             run_btst_recommendations(state, now)
 
         maybe_send_daily_summary(state, now)
+        # BUGFIX (2026-09-10, live-log finding): maybe_send_shadow_summary()
+        # was DEFINED (see its own docstring) but never actually CALLED
+        # anywhere in main() -- confirmed live: with
+        # PROBABILITY_SHADOW_MODE_ENABLED=True and shadow_trades genuinely
+        # non-empty (80 candidates over 4 days), the "Shadow/Validation
+        # Dataset Summary" Telegram message never appeared even after
+        # SUMMARY_HHMM's own separate timing bug was fixed on 2026-09-01
+        # -- because the timing fix was moot without this call existing
+        # at all. Placed right after maybe_send_daily_summary() so both
+        # summaries are attempted at the same point in the run, same as
+        # they were always intended to be.
+        maybe_send_shadow_summary(state, now)
     except Exception as exc:
         run_error = exc
         log.error("Unexpected error during run (%s: %s) -- saving whatever progress "
