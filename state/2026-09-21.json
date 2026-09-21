@@ -58,7 +58,7 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 290,
+    "scanned_symbols": 295,
     "valid_signals": 0,
     "rejected_signals": 571,
     "api_failures": 0,
@@ -310,7 +310,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
+      "status": "ACTIVE",
       "final_status": null,
       "actual_entry_time": "2026-09-21T09:51:00+05:30",
       "tracked_entry_price": 6.95,
@@ -323,8 +323,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-09-21T15:24:00+05:30",
+      "eod_last_price": 7.35,
+      "last_processed_ts": "2026-09-21T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -332,7 +332,8 @@
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
       "candidate_id": "BHEL:CE:435.0:2026-09-29",
-      "time_to_target_1_minutes": 159
+      "time_to_target_1_minutes": 159,
+      "timeout_extension_days_used": 1
     },
     "SHADOW-4-103539": {
       "trade_id": "SHADOW-4-103539",
@@ -400,7 +401,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
+      "status": "ACTIVE",
       "final_status": null,
       "actual_entry_time": "2026-09-21T10:36:00+05:30",
       "tracked_entry_price": 10.5,
@@ -413,8 +414,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-09-21T15:24:00+05:30",
+      "eod_last_price": 10.3,
+      "last_processed_ts": "2026-09-21T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -422,7 +423,8 @@
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
       "candidate_id": "BHEL:CE:430.0:2026-09-29",
-      "time_to_target_1_minutes": 130
+      "time_to_target_1_minutes": 130,
+      "timeout_extension_days_used": 1
     },
     "SHADOW-5-104610": {
       "trade_id": "SHADOW-5-104610",
@@ -512,5 +514,6 @@
       "candidate_id": "BANKNIFTY:PE:56300.0:2026-09-29",
       "time_to_stop_minutes": 148
     }
-  }
+  },
+  "shadow_summary_sent": true
 }
