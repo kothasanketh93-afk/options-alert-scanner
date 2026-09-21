@@ -53,14 +53,15 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 175,
+    "scanned_symbols": 180,
     "valid_signals": 0,
     "rejected_signals": 340,
     "api_failures": 0,
     "broker_errors": 0
   },
   "rerank_slots_done": [
-    "11:30"
+    "11:30",
+    "13:30"
   ],
   "shadow_trades": {
     "SHADOW-1-094548": {
@@ -317,7 +318,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-09-21T13:04:00+05:30",
+      "last_processed_ts": "2026-09-21T13:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -407,7 +408,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-09-21T13:04:00+05:30",
+      "last_processed_ts": "2026-09-21T13:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -481,28 +482,29 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-09-21T10:47:00+05:30",
       "tracked_entry_price": 326.05,
       "highest_since_entry": 327.2,
-      "lowest_since_entry": 295.2,
+      "lowest_since_entry": 284.55,
       "max_favorable_pct": 0.35,
-      "max_adverse_pct": -9.46,
+      "max_adverse_pct": -12.73,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-09-21T13:15:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-09-21T13:04:00+05:30",
+      "last_processed_ts": "2026-09-21T13:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
       "probability_status": "UNAVAILABLE",
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
-      "candidate_id": "BANKNIFTY:PE:56300.0:2026-09-29"
+      "candidate_id": "BANKNIFTY:PE:56300.0:2026-09-29",
+      "time_to_stop_minutes": 148
     }
   }
 }
