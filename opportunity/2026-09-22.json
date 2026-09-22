@@ -2,16 +2,781 @@
   "trading_date": "2026-09-22",
   "shortlist": [
     {
-      "symbol": "BHEL",
-      "score": 45,
-      "total_oi": 58359000.0
+      "symbol": "PATANJALI",
+      "score": 82,
+      "total_oi": 45612250.0
+    },
+    {
+      "symbol": "MANKIND",
+      "score": 73,
+      "total_oi": 3810500.0
+    },
+    {
+      "symbol": "OFSS",
+      "score": 69,
+      "total_oi": 2674400.0
+    },
+    {
+      "symbol": "SOLARINDS",
+      "score": 67,
+      "total_oi": 2812250.0
+    },
+    {
+      "symbol": "BSE",
+      "score": 67,
+      "total_oi": 20844000.0
     }
   ],
   "all_scored": [
     {
-      "symbol": "BHEL",
+      "symbol": "PATANJALI",
+      "score": 82,
+      "total_oi": 45612250.0
+    },
+    {
+      "symbol": "MANKIND",
+      "score": 73,
+      "total_oi": 3810500.0
+    },
+    {
+      "symbol": "OFSS",
+      "score": 69,
+      "total_oi": 2674400.0
+    },
+    {
+      "symbol": "SOLARINDS",
+      "score": 67,
+      "total_oi": 2812250.0
+    },
+    {
+      "symbol": "BSE",
+      "score": 67,
+      "total_oi": 20844000.0
+    },
+    {
+      "symbol": "OBEROIRLTY",
+      "score": 67,
+      "total_oi": 4738650.0
+    },
+    {
+      "symbol": "KAYNES",
+      "score": 64,
+      "total_oi": 4542900.0
+    },
+    {
+      "symbol": "JUBLFOOD",
+      "score": 64,
+      "total_oi": 12526250.0
+    },
+    {
+      "symbol": "HCLTECH",
+      "score": 63,
+      "total_oi": 17197600.0
+    },
+    {
+      "symbol": "TATAELXSI",
+      "score": 59,
+      "total_oi": 3216000.0
+    },
+    {
+      "symbol": "PREMIERENE",
+      "score": 58,
+      "total_oi": 11954800.0
+    },
+    {
+      "symbol": "IDEA",
+      "score": 57,
+      "total_oi": 2801891475.0
+    },
+    {
+      "symbol": "SWIGGY",
+      "score": 57,
+      "total_oi": 66201875.0
+    },
+    {
+      "symbol": "PAGEIND",
+      "score": 57,
+      "total_oi": 192740.0
+    },
+    {
+      "symbol": "COLPAL",
+      "score": 56,
+      "total_oi": 4797100.0
+    },
+    {
+      "symbol": "NAUKRI",
+      "score": 56,
+      "total_oi": 4970900.0
+    },
+    {
+      "symbol": "CONCOR",
+      "score": 56,
+      "total_oi": 16292500.0
+    },
+    {
+      "symbol": "VOLTAS",
+      "score": 56,
+      "total_oi": 10685250.0
+    },
+    {
+      "symbol": "HDFCLIFE",
+      "score": 55,
+      "total_oi": 40385400.0
+    },
+    {
+      "symbol": "ICICIGI",
+      "score": 55,
+      "total_oi": 4055350.0
+    },
+    {
+      "symbol": "DLF",
+      "score": 54,
+      "total_oi": 19510150.0
+    },
+    {
+      "symbol": "OIL",
+      "score": 54,
+      "total_oi": 14229600.0
+    },
+    {
+      "symbol": "KPITTECH",
+      "score": 53,
+      "total_oi": 15220225.0
+    },
+    {
+      "symbol": "PIIND",
+      "score": 53,
+      "total_oi": 4028325.0
+    },
+    {
+      "symbol": "RADICO",
+      "score": 53,
+      "total_oi": 1039650.0
+    },
+    {
+      "symbol": "BANDHANBNK",
+      "score": 53,
+      "total_oi": 47307600.0
+    },
+    {
+      "symbol": "MOTILALOFS",
+      "score": 52,
+      "total_oi": 5199475.0
+    },
+    {
+      "symbol": "DRREDDY",
+      "score": 52,
+      "total_oi": 18114375.0
+    },
+    {
+      "symbol": "COALINDIA",
+      "score": 52,
+      "total_oi": 68814900.0
+    },
+    {
+      "symbol": "RVNL",
+      "score": 52,
+      "total_oi": 50664075.0
+    },
+    {
+      "symbol": "WAAREEENER",
+      "score": 51,
+      "total_oi": 4349100.0
+    },
+    {
+      "symbol": "INDHOTEL",
+      "score": 51,
+      "total_oi": 11520000.0
+    },
+    {
+      "symbol": "TCS",
+      "score": 51,
+      "total_oi": 31098375.0
+    },
+    {
+      "symbol": "TITAN",
+      "score": 51,
+      "total_oi": 5986925.0
+    },
+    {
+      "symbol": "SUNPHARMA",
+      "score": 51,
+      "total_oi": 13765500.0
+    },
+    {
+      "symbol": "ATHERENERG",
+      "score": 50,
+      "total_oi": 9318750.0
+    },
+    {
+      "symbol": "PNBHOUSING",
+      "score": 50,
+      "total_oi": 4879550.0
+    },
+    {
+      "symbol": "AUROPHARMA",
+      "score": 50,
+      "total_oi": 8587150.0
+    },
+    {
+      "symbol": "SONACOMS",
+      "score": 50,
+      "total_oi": 12683650.0
+    },
+    {
+      "symbol": "MFSL",
+      "score": 49,
+      "total_oi": 3331600.0
+    },
+    {
+      "symbol": "MAZDOCK",
+      "score": 49,
+      "total_oi": 7940925.0
+    },
+    {
+      "symbol": "CHOLAFIN",
+      "score": 49,
+      "total_oi": 6612500.0
+    },
+    {
+      "symbol": "SUPREMEIND",
+      "score": 49,
+      "total_oi": 1512350.0
+    },
+    {
+      "symbol": "MARICO",
+      "score": 49,
+      "total_oi": 12586800.0
+    },
+    {
+      "symbol": "NYKAA",
+      "score": 49,
+      "total_oi": 15887500.0
+    },
+    {
+      "symbol": "MCX",
+      "score": 49,
+      "total_oi": 11300400.0
+    },
+    {
+      "symbol": "PGEL",
+      "score": 49,
+      "total_oi": 9495250.0
+    },
+    {
+      "symbol": "INOXWIND",
+      "score": 49,
+      "total_oi": 56524800.0
+    },
+    {
+      "symbol": "ICICIPRULI",
+      "score": 48,
+      "total_oi": 10939975.0
+    },
+    {
+      "symbol": "MANAPPURAM",
+      "score": 48,
+      "total_oi": 31791000.0
+    },
+    {
+      "symbol": "UNOMINDA",
+      "score": 48,
+      "total_oi": 3981450.0
+    },
+    {
+      "symbol": "SBILIFE",
+      "score": 47,
+      "total_oi": 6601875.0
+    },
+    {
+      "symbol": "GVT&D",
+      "score": 47,
+      "total_oi": 3555250.0
+    },
+    {
+      "symbol": "RBLBANK",
+      "score": 47,
+      "total_oi": 35404425.0
+    },
+    {
+      "symbol": "CIPLA",
+      "score": 47,
+      "total_oi": 9474100.0
+    },
+    {
+      "symbol": "TECHM",
+      "score": 47,
+      "total_oi": 14436600.0
+    },
+    {
+      "symbol": "BIOCON",
+      "score": 47,
+      "total_oi": 50230000.0
+    },
+    {
+      "symbol": "ZYDUSLIFE",
+      "score": 46,
+      "total_oi": 8458200.0
+    },
+    {
+      "symbol": "NAM-INDIA",
+      "score": 46,
+      "total_oi": 3181250.0
+    },
+    {
+      "symbol": "BPCL",
+      "score": 46,
+      "total_oi": 22487350.0
+    },
+    {
+      "symbol": "PHOENIXLTD",
+      "score": 46,
+      "total_oi": 1726550.0
+    },
+    {
+      "symbol": "VBL",
+      "score": 46,
+      "total_oi": 40324425.0
+    },
+    {
+      "symbol": "360ONE",
+      "score": 46,
+      "total_oi": 4400000.0
+    },
+    {
+      "symbol": "BHARATFORG",
+      "score": 46,
+      "total_oi": 7383000.0
+    },
+    {
+      "symbol": "IOC",
+      "score": 46,
+      "total_oi": 72774000.0
+    },
+    {
+      "symbol": "ALKEM",
       "score": 45,
-      "total_oi": 58359000.0
+      "total_oi": 668000.0
+    },
+    {
+      "symbol": "BAJAJHLDNG",
+      "score": 45,
+      "total_oi": 144900.0
+    },
+    {
+      "symbol": "UPL",
+      "score": 45,
+      "total_oi": 16362980.0
+    },
+    {
+      "symbol": "POWERINDIA",
+      "score": 45,
+      "total_oi": 872800.0
+    },
+    {
+      "symbol": "PERSISTENT",
+      "score": 45,
+      "total_oi": 3195250.0
+    },
+    {
+      "symbol": "HDFCBANK",
+      "score": 44,
+      "total_oi": 221832650.0
+    },
+    {
+      "symbol": "ETERNAL",
+      "score": 44,
+      "total_oi": 108225325.0
+    },
+    {
+      "symbol": "DMART",
+      "score": 44,
+      "total_oi": 3377850.0
+    },
+    {
+      "symbol": "DABUR",
+      "score": 44,
+      "total_oi": 24287500.0
+    },
+    {
+      "symbol": "MAXHEALTH",
+      "score": 44,
+      "total_oi": 5213775.0
+    },
+    {
+      "symbol": "LAURUSLABS",
+      "score": 44,
+      "total_oi": 20904050.0
+    },
+    {
+      "symbol": "HEROMOTOCO",
+      "score": 43,
+      "total_oi": 4420050.0
+    },
+    {
+      "symbol": "KALYANKJIL",
+      "score": 43,
+      "total_oi": 41877000.0
+    },
+    {
+      "symbol": "GODREJPROP",
+      "score": 43,
+      "total_oi": 8992425.0
+    },
+    {
+      "symbol": "ITC",
+      "score": 43,
+      "total_oi": 161836050.0
+    },
+    {
+      "symbol": "PFC",
+      "score": 43,
+      "total_oi": 51368200.0
+    },
+    {
+      "symbol": "COFORGE",
+      "score": 43,
+      "total_oi": 18258050.0
+    },
+    {
+      "symbol": "APLAPOLLO",
+      "score": 43,
+      "total_oi": 4451650.0
+    },
+    {
+      "symbol": "ANGELONE",
+      "score": 42,
+      "total_oi": 36867500.0
+    },
+    {
+      "symbol": "MAHABANK",
+      "score": 42,
+      "total_oi": 53527500.0
+    },
+    {
+      "symbol": "MUTHOOTFIN",
+      "score": 42,
+      "total_oi": 9205900.0
+    },
+    {
+      "symbol": "ABCAPITAL",
+      "score": 42,
+      "total_oi": 26787100.0
+    },
+    {
+      "symbol": "LODHA",
+      "score": 42,
+      "total_oi": 11715625.0
+    },
+    {
+      "symbol": "WIPRO",
+      "score": 42,
+      "total_oi": 152622000.0
+    },
+    {
+      "symbol": "SAGILITY",
+      "score": 42,
+      "total_oi": 78468000.0
+    },
+    {
+      "symbol": "PRESTIGE",
+      "score": 42,
+      "total_oi": 5019300.0
+    },
+    {
+      "symbol": "LUPIN",
+      "score": 42,
+      "total_oi": 6751125.0
+    },
+    {
+      "symbol": "HYUNDAI",
+      "score": 42,
+      "total_oi": 3209250.0
+    },
+    {
+      "symbol": "LICI",
+      "score": 42,
+      "total_oi": 33755400.0
+    },
+    {
+      "symbol": "CAMS",
+      "score": 42,
+      "total_oi": 10255575.0
+    },
+    {
+      "symbol": "TATACONSUM",
+      "score": 42,
+      "total_oi": 9959400.0
+    },
+    {
+      "symbol": "FEDERALBNK",
+      "score": 41,
+      "total_oi": 60337500.0
+    },
+    {
+      "symbol": "BAJAJFINSV",
+      "score": 41,
+      "total_oi": 9952800.0
+    },
+    {
+      "symbol": "ADANIENT",
+      "score": 41,
+      "total_oi": 12219714.0
+    },
+    {
+      "symbol": "NATIONALUM",
+      "score": 41,
+      "total_oi": 52706250.0
+    },
+    {
+      "symbol": "ADANIENSOL",
+      "score": 41,
+      "total_oi": 12371400.0
+    },
+    {
+      "symbol": "BOSCHLTD",
+      "score": 41,
+      "total_oi": 347725.0
+    },
+    {
+      "symbol": "ADANIPOWER",
+      "score": 41,
+      "total_oi": 93198150.0
+    },
+    {
+      "symbol": "HINDPETRO",
+      "score": 41,
+      "total_oi": 23955750.0
+    },
+    {
+      "symbol": "YESBANK",
+      "score": 41,
+      "total_oi": 675243200.0
+    },
+    {
+      "symbol": "ADANIPORTS",
+      "score": 41,
+      "total_oi": 16593175.0
+    },
+    {
+      "symbol": "GLENMARK",
+      "score": 41,
+      "total_oi": 3282000.0
+    },
+    {
+      "symbol": "BRITANNIA",
+      "score": 41,
+      "total_oi": 2440875.0
+    },
+    {
+      "symbol": "MOTHERSON",
+      "score": 41,
+      "total_oi": 63375750.0
+    },
+    {
+      "symbol": "SBICARD",
+      "score": 40,
+      "total_oi": 14310400.0
+    },
+    {
+      "symbol": "AMBER",
+      "score": 40,
+      "total_oi": 1512900.0
+    },
+    {
+      "symbol": "SUZLON",
+      "score": 40,
+      "total_oi": 302666400.0
+    },
+    {
+      "symbol": "ADANIGREEN",
+      "score": 40,
+      "total_oi": 9525000.0
+    },
+    {
+      "symbol": "SHRIRAMFIN",
+      "score": 40,
+      "total_oi": 24477750.0
+    },
+    {
+      "symbol": "HAL",
+      "score": 40,
+      "total_oi": 7262550.0
+    },
+    {
+      "symbol": "BAJFINANCE",
+      "score": 40,
+      "total_oi": 38725500.0
+    },
+    {
+      "symbol": "VEDL",
+      "score": 40,
+      "total_oi": 66044500.0
+    },
+    {
+      "symbol": "DIVISLAB",
+      "score": 40,
+      "total_oi": 3354100.0
+    },
+    {
+      "symbol": "GRASIM",
+      "score": 39,
+      "total_oi": 3548250.0
+    },
+    {
+      "symbol": "HINDZINC",
+      "score": 39,
+      "total_oi": 39614050.0
+    },
+    {
+      "symbol": "ONGC",
+      "score": 39,
+      "total_oi": 80745750.0
+    },
+    {
+      "symbol": "BDL",
+      "score": 39,
+      "total_oi": 15381175.0
+    },
+    {
+      "symbol": "FORCEMOT",
+      "score": 39,
+      "total_oi": 248800.0
+    },
+    {
+      "symbol": "SAIL",
+      "score": 39,
+      "total_oi": 32528700.0
+    },
+    {
+      "symbol": "CROMPTON",
+      "score": 38,
+      "total_oi": 35842650.0
+    },
+    {
+      "symbol": "MARUTI",
+      "score": 38,
+      "total_oi": 5325150.0
+    },
+    {
+      "symbol": "JSWENERGY",
+      "score": 38,
+      "total_oi": 10838150.0
+    },
+    {
+      "symbol": "M&M",
+      "score": 38,
+      "total_oi": 11781800.0
+    },
+    {
+      "symbol": "ASIANPAINT",
+      "score": 38,
+      "total_oi": 7587000.0
+    },
+    {
+      "symbol": "ASHOKLEY",
+      "score": 38,
+      "total_oi": 153910000.0
+    },
+    {
+      "symbol": "HINDUNILVR",
+      "score": 38,
+      "total_oi": 16186200.0
+    },
+    {
+      "symbol": "NMDC",
+      "score": 37,
+      "total_oi": 119920500.0
+    },
+    {
+      "symbol": "AUBANK",
+      "score": 37,
+      "total_oi": 17208000.0
+    },
+    {
+      "symbol": "BAJAJ-AUTO",
+      "score": 37,
+      "total_oi": 2811900.0
+    },
+    {
+      "symbol": "SIEMENS",
+      "score": 37,
+      "total_oi": 3014900.0
+    },
+    {
+      "symbol": "POLYCAB",
+      "score": 37,
+      "total_oi": 4567750.0
+    },
+    {
+      "symbol": "HDFCAMC",
+      "score": 37,
+      "total_oi": 3449700.0
+    },
+    {
+      "symbol": "IRFC",
+      "score": 37,
+      "total_oi": 100362500.0
+    },
+    {
+      "symbol": "SRF",
+      "score": 36,
+      "total_oi": 2535800.0
+    },
+    {
+      "symbol": "BANKINDIA",
+      "score": 36,
+      "total_oi": 64558000.0
+    },
+    {
+      "symbol": "INDIANB",
+      "score": 35,
+      "total_oi": 12904000.0
+    },
+    {
+      "symbol": "BEL",
+      "score": 35,
+      "total_oi": 81869100.0
+    },
+    {
+      "symbol": "INDUSTOWER",
+      "score": 34,
+      "total_oi": 30355200.0
+    },
+    {
+      "symbol": "PNB",
+      "score": 34,
+      "total_oi": 129144000.0
+    },
+    {
+      "symbol": "ICICIBANK",
+      "score": 33,
+      "total_oi": 64516200.0
+    },
+    {
+      "symbol": "INDUSINDBK",
+      "score": 33,
+      "total_oi": 11875500.0
+    },
+    {
+      "symbol": "KOTAKBANK",
+      "score": 32,
+      "total_oi": 99718000.0
+    },
+    {
+      "symbol": "BANKBARODA",
+      "score": 31,
+      "total_oi": 90970425.0
+    },
+    {
+      "symbol": "POWERGRID",
+      "score": 31,
+      "total_oi": 54119600.0
+    },
+    {
+      "symbol": "NTPC",
+      "score": 29,
+      "total_oi": 51444000.0
     }
   ]
 }
