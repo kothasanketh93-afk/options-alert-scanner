@@ -67,10 +67,29 @@ def _resolve_instrument_key(symbol: str, trading_date: str) -> str:
     Reuses instrument_master's cached rows to find an EQ-segment
     instrument_key for `symbol` -- daily candles and batch quotes both
     need the equity instrument, not an option/future contract.
+
+    BUGFIX (2026-09-22, live diagnostic confirmed): used to check ONLY
+    `underlying_symbol` -- for a genuinely EQUITY-class row, Upstox's
+    raw response doesn't provide a separate "underlying_symbol" field
+    (a stock IS its own underlying, unlike an option/future), so
+    upstox.py's normalization falls back to the raw "name" field there
+    -- which for most stocks is the FULL company name ("TATA STEEL
+    LIMITED"), not the short ticker. Confirmed live: this function
+    returned None for ~200+ symbols in the SAME run where instrument_
+    master.validate_symbol() (which OR's in a `symbol == ticker` check
+    too, not just underlying_symbol) correctly found all of them --
+    only BHEL survived here, because BHEL's raw company name happens
+    to equal its own ticker exactly. Now also checks the row's own
+    "symbol" field (already confirmed correct for equities -- Upstox's
+    raw "trading_symbol" for a cash-market equity listing IS the plain
+    ticker), matching validate_symbol()'s own OR-based matching instead
+    of a strict underlying_symbol-only check.
     """
     rows = instrument_master.load_instrument_master(trading_date)
     for row in rows:
-        if row.get("underlying_symbol") == symbol and row.get("contract_class") == "EQUITY":
+        if row.get("contract_class") != "EQUITY":
+            continue
+        if row.get("underlying_symbol") == symbol or row.get("symbol") == symbol:
             return row.get("instrument_key")
     return None
 
