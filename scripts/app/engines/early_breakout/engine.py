@@ -126,7 +126,21 @@ def _score_symbol_direction(symbol: str, direction: str, session: str, oi_histor
     # option-adjacent call this early, and it only reads the spot price
     # (needed to compute ATR-relative distances) -- no strike/leg is
     # resolved yet.
-    candles = market_data.get_recent_underlying_candles(underlying_key, "15minute", EARLY_BREAKOUT_CANDLE_FETCH_COUNT)
+    # BUGFIX (2026-09-25, same audit as scanner.py's candles_15m/
+    # momentum fix): this used to be the plain today-only fetch --
+    # with BASE_LOOKBACK_CANDLES=20 (the len() gate just below needing
+    # 22), today-only 15-min data can't reach that until
+    # 9:15+22*15min=~14:45 IST -- meaning this entire engine was
+    # effectively dormant for all but the last ~45 minutes of every
+    # trading day, not gated by any disabled flag (run_early_breakout_
+    # step() runs unconditionally every cycle). Same warmup reuse as
+    # scanner.py's fix -- ema50 below (needing 50 candles, never
+    # reachable from a single day's ~25 15-min candles even by close)
+    # benefits further still from get_market_snapshot()'s own EMA50
+    # read when available, but the LOCAL fallback here (used whenever
+    # that snapshot can't be built) is what this fixes directly.
+    today_candles = market_data.get_recent_underlying_candles(underlying_key, "15minute", EARLY_BREAKOUT_CANDLE_FETCH_COUNT)
+    candles, _ = market_data.get_atr_warmup_candles(underlying_key, "15minute", today_candles, min_candles=EARLY_BREAKOUT_CANDLE_FETCH_COUNT)
     if len(candles) < BASE_LOOKBACK_CANDLES + 2:
         return None  # genuine data-absence case, not a signal-quality question
 
