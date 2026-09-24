@@ -206,7 +206,14 @@ def _broad_market_efficiency_ratio():
         return _market_strength_cache["value"]
     try:
         nifty_key = UNDERLYING_INSTRUMENT_KEYS["NIFTY"]
-        candles = market_data.get_recent_underlying_candles(nifty_key, "15minute", 30)
+        # BUGFIX (2026-09-25, same audit as candles_15m/momentum above):
+        # today-only fetch, unwarmed -- efficiency_ratio() only needs
+        # >=2 candles so the practical impact window is much smaller
+        # (9:15-9:30 IST, one cycle) than the ATR/momentum cases, but
+        # it's the same class of bug and the fix is free (same cached
+        # mechanism), so applied here too for consistency.
+        today_candles = market_data.get_recent_underlying_candles(nifty_key, "15minute", 30)
+        candles, _ = market_data.get_atr_warmup_candles(nifty_key, "15minute", today_candles) if today_candles else ([], 0)
         value = efficiency_ratio(candles) if candles else None
     except Exception as exc:
         _logger.info(
@@ -428,7 +435,25 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     # Same 15-min candles used by directional_bias()'s confirmation leg
     # and market_regime() -- reused here for find_nearby_level() so the
     # S/R cap is computed against the same trend read as everything else.
-    candles_15m = market_data.get_recent_underlying_candles(underlying_key, "15minute", 30)
+    #
+    # BUGFIX (2026-09-25, shadow-mode feature-correlation audit): this
+    # used to be the plain today-only market_data.
+    # get_recent_underlying_candles() fetch -- NOT warmup-enhanced, the
+    # same class of bug already fixed for ATR (get_atr_warmup_candles())
+    # and EMA (get_ema_warmup_candles()) on 2026-08-11/08-20. Confirmed
+    # live via 20 real shadow candidates: every single one created
+    # before 11:00 IST (18/18) had momentum=None in its SCORE line --
+    # indicators.momentum_pct(lookback=6) needs >6 candles, i.e. 7,
+    # which today-only 15-min data can't reach until 9:15+105min=11:00
+    # IST -- while the 2 candidates created after 11:00 IST both had a
+    # real momentum value. Exactly the same 9:15-11:00 IST data-
+    # starvation window as the original ATR bug. Now reuses the SAME
+    # proven, cached warmup mechanism (dedupes the broker call via the
+    # shared _atr_warmup_cache whenever ATR/EMA already warmed this
+    # exact (instrument_key, interval) this cycle) instead of a fourth
+    # independent, unwarmed fetch.
+    today_candles_15m = market_data.get_recent_underlying_candles(underlying_key, "15minute", 30)
+    candles_15m, _ = market_data.get_atr_warmup_candles(underlying_key, "15minute", today_candles_15m)
     if not candles_15m:
         _logger.info(f"SKIP {symbol} {direction} {moneyness} strike={strike}: no 15-min candles returned")
         return None
@@ -1226,7 +1251,15 @@ def detect_setups(symbol: str, oi_history: dict) -> list:
     # separate session-time adjustment layered on top of it.
     min_quality_score = ENTRY_SCORE  # floor matching the lowest grade, "Watchlist" (trade_score.py, Phase 3/4)
     if underlying_key:
-        candles_15m = market_data.get_recent_underlying_candles(underlying_key, "15minute", 30)
+        # BUGFIX (2026-09-25, same audit as above): market_regime()
+        # calls compute_atr() internally (needs 15 candles) -- this was
+        # also feeding it the plain today-only fetch, so before ~12:45
+        # IST it would silently fall through to the "SIDEWAYS" default
+        # purely from insufficient data, not a genuine sideways read,
+        # skewing min_quality_score's regime penalty for the whole
+        # early session. Same warmup reuse as candles_15m above.
+        today_candles_15m_regime = market_data.get_recent_underlying_candles(underlying_key, "15minute", 30)
+        candles_15m, _ = market_data.get_atr_warmup_candles(underlying_key, "15minute", today_candles_15m_regime)
         regime, penalty = market_regime(candles_15m)
         min_quality_score += penalty
 
