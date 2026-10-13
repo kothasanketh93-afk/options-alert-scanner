@@ -85,14 +85,15 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 315,
+    "scanned_symbols": 324,
     "valid_signals": 0,
     "rejected_signals": 593,
     "api_failures": 11,
     "broker_errors": 0
   },
   "rerank_slots_done": [
-    "11:30"
+    "11:30",
+    "13:30"
   ],
   "shadow_trades": {
     "SHADOW-1-093535": {
@@ -435,21 +436,21 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "T2_HIT",
+      "final_status": "T2_HIT",
       "actual_entry_time": "2026-10-13T11:33:00+05:30",
       "tracked_entry_price": 174.6,
-      "highest_since_entry": 200.0,
+      "highest_since_entry": 208.0,
       "lowest_since_entry": 166.25,
-      "max_favorable_pct": 14.55,
+      "max_favorable_pct": 19.13,
       "max_adverse_pct": -4.78,
       "t1_hit": true,
       "t1_hit_time": "2026-10-13T11:47:00+05:30",
-      "t2_hit": false,
-      "t2_hit_time": null,
+      "t2_hit": true,
+      "t2_hit_time": "2026-10-13T13:16:00+05:30",
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-10-13T13:04:00+05:30",
+      "last_processed_ts": "2026-10-13T13:22:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -457,7 +458,8 @@
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
       "candidate_id": "MIDCPNIFTY:PE:13625.0:2026-10-27",
-      "time_to_target_1_minutes": 14
+      "time_to_target_1_minutes": 14,
+      "time_to_target_2_minutes": 103
     },
     "SHADOW-5-113112": {
       "trade_id": "SHADOW-5-113112",
