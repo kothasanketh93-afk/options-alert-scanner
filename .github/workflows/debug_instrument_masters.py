@@ -9,6 +9,16 @@ resolve_current_month_future(), verify_stock_symbols.py's
 check_upstox_stock_options()/check_angelone_equity(), etc.) can be
 fixed against ACTUAL current field names/values instead of guessing.
 
+TEMPORARY CHANGE (2026-10-19): the workflow's SECTION input was not
+reliably reaching this script's --equity-options-only/--futures-only
+flags (two separate runs with different SECTION values produced
+byte-identical output), so this version ALWAYS runs BOTH sections
+unconditionally, regardless of any flag -- removes the dependency on
+that plumbing working correctly for this one-off debug pass. The
+--equity-options-only/--futures-only flags are still accepted (so the
+command line in the workflow doesn't need to change) but are now
+no-ops; nothing is disabled by passing them.
+
 MERGED 2026-07-29: this file used to be two separate scripts run by two
 separate workflows --
 
@@ -33,9 +43,7 @@ row-dump helpers are now shared instead of duplicated.
 
 Usage:
     pip install requests
-    python debug_instrument_masters.py             # both diagnostics (default)
-    python debug_instrument_masters.py --equity-options-only
-    python debug_instrument_masters.py --futures-only
+    python debug_instrument_masters.py             # both diagnostics (always, see note above)
 """
 import argparse
 import gzip
@@ -55,8 +63,15 @@ EQUITY_OPTIONS_CHECK_SYMBOLS = ["BHEL", "TATASTEEL"]
 
 # --- Section 2 (originally debug_futures_masters.py): FUT rows, Upstox
 # only. The exact symbols that failed with InstrumentNotFound in
-# resolve_current_month_future() in the 2026-07-27 run.
+# resolve_current_month_future() -- updated 2026-10-19 to the symbols
+# actually seen failing in the Oct 5-9 production backfill (SYMBOL_FAILED/
+# InstrumentNotFound tracebacks), KOTAKBANK leading at 113 occurrences.
 FUTURES_CHECK_SYMBOLS = [
+    "KOTAKBANK", "TIINDIA", "PHOENIXLTD", "PGEL", "JUBLFOOD", "GMRAIRPORT",
+    "FORTIS", "BAJAJ-AUTO", "ANGELONE", "ADANIGREEN", "UPL", "TRENT",
+    "HINDPETRO", "POLICYBZR", "DMART", "TITAN", "MPHASIS", "MOTILALOFS",
+    "JSWSTEEL", "HDFCBANK", "AMBUJACEM",
+    # Original 2026-07-27 failure list, kept for continuity:
     "TATASTEEL", "HINDALCO", "VEDL", "JINDALSTEL", "IDEA", "SAIL",
     "NATIONALUM", "NMDC", "BHEL", "FEDERALBNK", "BANKBARODA", "PFC",
     "RECLTD", "ASHOKLEY", "MOTHERSON",
@@ -177,30 +192,26 @@ def run_futures_diagnostic(upstox_master):
 
 
 def main():
+    # Flags kept for command-line compatibility with the existing
+    # workflow step -- they are now no-ops (see the TEMPORARY CHANGE
+    # note in this module's docstring). Both sections always run.
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--equity-options-only", action="store_true",
-                         help="Run only Section 1 (EQ/CE/OPTSTK, both brokers).")
-    parser.add_argument("--futures-only", action="store_true",
-                         help="Run only Section 2 (FUT rows, Upstox only).")
-    args = parser.parse_args()
+    parser.add_argument("--equity-options-only", action="store_true", help="No-op (see module docstring).")
+    parser.add_argument("--futures-only", action="store_true", help="No-op (see module docstring).")
+    parser.parse_args()
 
-    run_equity_options = not args.futures_only
-    run_futures = not args.equity_options_only
+    upstox_master = fetch_upstox_master()
+    angelone_master = fetch_angelone_master()
 
-    upstox_master = fetch_upstox_master() if (run_equity_options or run_futures) else None
-    angelone_master = fetch_angelone_master() if run_equity_options else None
+    print("\n" + "=" * 70)
+    print("SECTION 1: Equity + Options rows (Upstox + Angel One)")
+    print("=" * 70 + "\n")
+    run_equity_options_diagnostic(upstox_master, angelone_master)
 
-    if run_equity_options:
-        print("\n" + "=" * 70)
-        print("SECTION 1: Equity + Options rows (Upstox + Angel One)")
-        print("=" * 70 + "\n")
-        run_equity_options_diagnostic(upstox_master, angelone_master)
-
-    if run_futures:
-        print("\n" + "=" * 70)
-        print("SECTION 2: Futures rows (Upstox only)")
-        print("=" * 70 + "\n")
-        run_futures_diagnostic(upstox_master)
+    print("\n" + "=" * 70)
+    print("SECTION 2: Futures rows (Upstox only)")
+    print("=" * 70 + "\n")
+    run_futures_diagnostic(upstox_master)
 
 
 if __name__ == "__main__":
