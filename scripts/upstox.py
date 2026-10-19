@@ -47,6 +47,16 @@ live downloaded master file this pass; the schema still matches
 Upstox's documented instrument master shape as of this writing, but
 confirm against an actual downloaded file before depending on it live,
 same as any broker integration.
+
+UPDATE (2026-10-19, production backfill audit, Oct 5-9 logs): the
+"not independently confirmed" caveat on resolve_current_month_future()
+below was finally checked against a live downloaded master
+(debug_instrument_masters.py's futures diagnostic section) and the
+`trading_symbol.endswith("FUT")` assumption was WRONG -- see that
+function's updated docstring and BUGFIX note for the real format and
+the fix. search_instrument() (used for options, CE/PE) still carries
+the original, never-independently-reverified caveat -- it wasn't part
+of this audit's evidence and is NOT touched by this change.
 """
 
 import gzip
@@ -745,41 +755,73 @@ class UpstoxBroker(Broker):
     def resolve_current_month_future(self, symbol: str) -> str:
         """
         Resolves the current-month (nearest unexpired) FUTURES contract
-        instrument_key for `symbol` ("NIFTY" or "BANKNIFTY") -- so the
-        VWAP futures key never needs a manual monthly update again.
-        Rolls forward automatically forever: once the current contract's
-        expiry passes, the next call simply finds whichever contract is
-        then the nearest unexpired one, with zero code changes ever
-        needed for this reason.
+        instrument_key for `symbol` -- so the VWAP futures key never
+        needs a manual monthly update again. Rolls forward automatically
+        forever: once the current contract's expiry passes, the next
+        call simply finds whichever contract is then the nearest
+        unexpired one, with zero code changes ever needed for this
+        reason.
 
         Same schema-assumption caveat as search_instrument() above
         (name, expiry, instrument_type, instrument_key field names) --
         confirm against an actual downloaded file. instrument_type for
         futures is assumed to be "FUT", matching Upstox's convention
-        (as distinct from "CE"/"PE" for options).
+        (as distinct from "CE"/"PE" for options) -- this part IS
+        confirmed live (see BUGFIX below).
 
         BUGFIX (live failure, 2026-07-17): matching purely on
         `name == symbol` -- which works for NIFTY/BANKNIFTY, where
         "name" already IS the short symbol -- failed live for BOTH
-        PNB and CANBK with InstrumentNotFound. Same root cause as the
-        equity bug in resolve_equity_instrument_key(): Upstox's
-        instrument master likely gives stock derivative rows a `name`
-        of the full listed company name too (e.g. "Canara Bank"), not
-        the short trading symbol, the same way it does for EQ rows.
-        Now also tries `trading_symbol` with the expiry/contract
-        suffix stripped (Upstox's stock-future trading_symbol
-        convention is "<SYMBOL><DDMMMYY>FUT", e.g. "CANBK26JULFUT") --
-        matching only rows whose trading_symbol STARTS WITH the plain
-        symbol and ends with "FUT". Still not independently confirmed
-        against a live downloaded file for every STOCK_SYMBOLS entry
-        -- if this still raises for a given stock, that stock likely
-        genuinely lacks a current-month future (or NSE F&O eligibility
-        changed) rather than a further field-name mismatch.
+        PNB and CANBK with InstrumentNotFound. At the time, this was
+        worked around by ALSO trying `trading_symbol` with an assumed
+        "<SYMBOL><DDMMMYY>FUT" suffix convention (e.g. "CANBK26JULFUT"),
+        matching rows whose trading_symbol STARTS WITH the plain symbol
+        and ENDS WITH "FUT".
+
+        BUGFIX #2 (2026-10-19, production backfill audit, Oct 5-9
+        logs): that "<SYMBOL><DDMMMYY>FUT"-suffix assumption was never
+        actually confirmed against a live downloaded master, and it was
+        WRONG -- confirmed via debug_instrument_masters.py's futures
+        diagnostic run against the real file. Upstox's real stock-future
+        trading_symbol format is SPACE-SEPARATED with "FUT" as a MIDDLE
+        token followed by the expiry, e.g.:
+
+            "KOTAKBANK FUT 29 DEC 26"
+
+        not a suffix like "KOTAKBANK26JULFUT". Because of this, BOTH
+        matching conditions were always False for every single stock:
+        `trading_symbol.endswith("FUT")` is False (the string ends with
+        the two-digit year, e.g. "26"), and `name == symbol` is also
+        False (name is the full company name, e.g.
+        "KOTAK MAHINDRA BANK LTD", not the short ticker "KOTAKBANK" --
+        confirmed from the same live row). The result was a 100%
+        InstrumentNotFound failure rate for every stock future's
+        resolve_current_month_future() call, confirmed from the Oct 5-9
+        production backfill: 155 SYMBOL_FAILED drops / 310 tracebacks,
+        all from this single root cause (Upstox resolution fails ->
+        AngelOne single-call fallback -> AngelOne 403 rate-limited on
+        ~16% of those fallback attempts -> full symbol drop for that
+        cycle). KOTAKBANK alone accounted for 113 InstrumentNotFound
+        occurrences and 18 SYMBOL_FAILED drops in that window.
+
+        Fixed: trading_symbol is now split on whitespace and matched by
+        TOKEN POSITION -- the first token must equal `symbol` exactly
+        and the second token must be exactly "FUT" (not a substring/
+        suffix check). This correctly matches
+        "KOTAKBANK FUT 29 DEC 26" (tokens: ["KOTAKBANK", "FUT", "29",
+        "DEC", "26"]) and still correctly matches NIFTY/BANKNIFTY via
+        the pre-existing `name == symbol` path (their `name` field
+        already IS the short index symbol, unconditionally
+        unaffected by this change).
 
         Raises InstrumentNotFound if no unexpired futures contract for
         `symbol` exists in the instrument master -- shouldn't happen
-        for NIFTY/BANKNIFTY under normal circumstances; if it does, the
-        instrument master is stale or a schema assumption above is wrong.
+        for NIFTY/BANKNIFTY or any symbol with current F&O eligibility
+        under normal circumstances; if it does now, the instrument
+        master is genuinely stale/missing that contract, or that
+        specific symbol has lost F&O eligibility -- not a further
+        field-name mismatch (that class of bug is what this fix
+        resolved).
         """
         master = self._instrument_master()
         today = datetime.now(IST).date()
@@ -789,7 +831,17 @@ class UpstoxBroker(Broker):
                 continue
             trading_symbol = str(row.get("trading_symbol") or "")
             name_matches = row.get("name") == symbol
-            trading_symbol_matches = trading_symbol.startswith(symbol) and trading_symbol.endswith("FUT")
+            # BUGFIX #2 (2026-10-19): token-position match, not
+            # substring/suffix -- see docstring above for the real
+            # Upstox format ("KOTAKBANK FUT 29 DEC 26") that broke the
+            # old startswith(...)+endswith("FUT") check 100% of the
+            # time for every stock.
+            ts_tokens = trading_symbol.split()
+            trading_symbol_matches = (
+                len(ts_tokens) >= 2
+                and ts_tokens[0] == symbol
+                and ts_tokens[1] == "FUT"
+            )
             if not (name_matches or trading_symbol_matches):
                 continue
             expiry_raw = row.get("expiry")
@@ -820,9 +872,10 @@ class UpstoxBroker(Broker):
         if not candidates:
             raise InstrumentNotFound(
                 f"no unexpired futures contract found for {symbol} in the "
-                f"instrument master -- master may be stale, or 'name'/"
-                f"'instrument_type'/'expiry' field assumptions above are wrong "
-                f"for your account segment"
+                f"instrument master -- master may be stale, 'instrument_type'/"
+                f"'expiry' field assumptions above are wrong for your account "
+                f"segment, or {symbol} genuinely has no current F&O futures "
+                f"contract (lost eligibility)"
             )
         candidates.sort(key=lambda pair: pair[0])
         return candidates[0][1]  # nearest (current-month) unexpired contract
