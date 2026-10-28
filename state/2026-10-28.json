@@ -91,14 +91,15 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 315,
+    "scanned_symbols": 324,
     "valid_signals": 0,
     "rejected_signals": 544,
     "api_failures": 0,
     "broker_errors": 0
   },
   "rerank_slots_done": [
-    "11:30"
+    "11:30",
+    "13:30"
   ],
   "shadow_trades": {
     "SHADOW-1-094548": {
@@ -181,7 +182,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-10-28T13:04:00+05:30",
+      "last_processed_ts": "2026-10-28T13:22:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
