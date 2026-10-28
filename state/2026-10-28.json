@@ -111,7 +111,7 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 522,
+    "scanned_symbols": 531,
     "valid_signals": 0,
     "rejected_signals": 960,
     "api_failures": 0,
@@ -189,7 +189,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
+      "status": "ACTIVE",
       "final_status": null,
       "actual_entry_time": "2026-10-28T09:46:00+05:30",
       "tracked_entry_price": 65.0,
@@ -202,8 +202,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-10-28T15:24:00+05:30",
+      "eod_last_price": 74.5,
+      "last_processed_ts": "2026-10-28T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -211,7 +211,8 @@
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
       "candidate_id": "APLAPOLLO:PE:2180.0:2026-11-23",
-      "time_to_target_1_minutes": 275
+      "time_to_target_1_minutes": 275,
+      "timeout_extension_days_used": 1
     },
     "SHADOW-2-095539": {
       "trade_id": "SHADOW-2-095539",
@@ -753,15 +754,17 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-10-28T15:24:00+05:30",
+      "eod_last_price": 152.55,
+      "last_processed_ts": "2026-10-28T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
       "probability_status": "UNAVAILABLE",
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
-      "candidate_id": "NIFTY:PE:22650.0:2026-11-03"
+      "candidate_id": "NIFTY:PE:22650.0:2026-11-03",
+      "timeout_extension_days_used": 1
     }
-  }
+  },
+  "shadow_summary_sent": true
 }
