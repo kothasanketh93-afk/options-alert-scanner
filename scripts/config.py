@@ -1578,29 +1578,24 @@ ATR_WARMUP_TAIL_CANDLE_COUNT = 20  # previous-session candles to fetch (comforta
                                     # requirement, with headroom); trimmed to what compute_atr() needs
 
 # =============================================================================
-# Part 12 (merge) -- BTST/STBT Recommendation Engine + Trade Lifecycle
-# dashboard tabs + feature flags (2026-07-30).
-#
-# BTST_RECOMMENDATION_ENABLED -- WIRED and functional. Gates
-#   btst_recommendation.py entirely and main.run_btst_recommendations().
-#   Default False: no recommendation is ever computed or attached to
-#   any trade, and no BTST/STBT recommendation ever appears in a
-#   Telegram alert or the dashboard. This flag controls ONLY whether
-#   the advisory text/score is computed and shown -- on or off, it can
-#   NEVER cause an order to be placed or a position to be carried
-#   automatically (see btst_recommendation.py's module docstring: a
-#   pure read/score/explain function, no broker call, no state
-#   mutation of its own).
+# Part 12 (merge) -- Trade Lifecycle dashboard tabs + feature flags
+# (2026-07-30). The BTST/STBT Recommendation Engine this Part originally
+# shipped alongside (btst_recommendation.py, BTST_RECOMMENDATION_ENABLED
+# and its thresholds, main.run_btst_recommendations(), the standalone
+# btst_*.py overnight-carry module, and the dashboard's BTST/STBT/Carry
+# History tabs) was removed entirely on 2026-10-30, at the user's
+# explicit request -- see trade_lifecycle.py/lifecycle_analytics.py's
+# own updated docstrings for what remains.
 #
 # TRADE_LIFECYCLE_ENABLED -- RESOLVED (Conflict #1, see PART12_MERGE_REPORT.md
-#   §7): kept as Option B -- gates ONLY the new /api/lifecycle/* dashboard
+#   §7): kept as Option B -- gates ONLY the /api/lifecycle/* dashboard
 #   routes' visibility of already-collected data. It does NOT gate, and was
 #   never wired to, the pre-existing production calls
 #   trade_lifecycle.update_lifecycle_metrics() / mark_open_at_eod() in
-#   main.py and btst_main.py -- those remain unconditional, exactly as they
-#   were before this Part, so that "flags OFF == today's production
-#   behavior" holds. If tracking itself ever needs a kill switch, that is a
-#   new, separate flag -- not this one, and not a decision to make silently.
+#   main.py -- those remain unconditional, exactly as they were before this
+#   Part, so that "flag OFF == today's production behavior" holds. If
+#   tracking itself ever needs a kill switch, that is a new, separate flag
+#   -- not this one, and not a decision to make silently.
 #
 # EOD_TRACKING_ENABLED -- REMOVED. It was declared but never imported or
 #   referenced anywhere (dashboard routes only check TRADE_LIFECYCLE_ENABLED),
@@ -1608,14 +1603,7 @@ ATR_WARMUP_TAIL_CANDLE_COUNT = 20  # previous-session candles to fetch (comforta
 #   Deleting an unreferenced flag changes no behavior. If EOD tracking needs
 #   its own toggle later, add it back wired to a real call site.
 # =============================================================================
-BTST_RECOMMENDATION_ENABLED = False
 TRADE_LIFECYCLE_ENABLED = False
-
-# --- BTST/STBT Recommendation Engine thresholds (btst_recommendation.py) ---
-BTST_RECOMMENDATION_MIN_SCORE = 65         # confidence score (0-100) needed for a YES
-BTST_RECOMMENDATION_MAX_SPREAD_PCT = 3.0   # bid-ask spread as % of mid price; wider is a hard-fail (gap-exit risk)
-BTST_RECOMMENDATION_MIN_RR = 1.5           # minimum risk:reward ratio for a YES
-BTST_RECOMMENDATION_MIN_DTE = 2            # days-to-expiry; fewer than this is a hard-fail (overnight theta/pin risk)
 
 # =============================================================================
 # Part 13 -- Win-Rate Improvement Pass (2026-08-07): candle-readiness gate,
@@ -1784,3 +1772,14 @@ CANDLESTICK_CONFIDENCE_PENALTY_PCT = 0.10   # 10% multiplicative score reduction
 # considers 5-min EMA, not just 15-min EMA + HTF) -- see that function's
 # docstring for the specific reproduction.
 # =============================================================================
+
+# --- Fibonacci Pivot Shadow Engine (app/engines/fib_pivot/, added 2026-10-30) ---
+# SHADOW-ONLY: see that package's __init__.py docstring for why. Off
+# switch, same "opt-in, off by default" posture would be wrong here on
+# purpose -- shadow collection should start immediately since this
+# strategy has zero data of its own yet; True is the deliberate default.
+FIB_PIVOT_SHADOW_MODE_ENABLED = True
+FIB_PIVOT_CANDLE_INTERVAL = "15minute"   # reel showed 5 or 15 min; 15 chosen as the default (fewer, less noisy signals)
+FIB_PIVOT_CANDLE_FETCH_COUNT = 30        # enough warmup for EMA9 and ATR(14) plus the 2-candle cross check
+FIB_PIVOT_EMA_PERIOD = 9
+FIB_PIVOT_MIN_RR = 1.5                   # same floor spirit as DECISION_ENGINE_MIN_RR, tighter than EARLY_BREAKOUT_MIN_RR

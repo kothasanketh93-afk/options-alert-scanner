@@ -40,10 +40,10 @@ from logging_setup import get_logger
 import config
 import trade_score
 import trade_lifecycle
-import btst_recommendation
 from config import SUMMARY_HHMM, EOD_STATUS_CHECK_HHMM
 from app.engines import early_breakout as early_breakout_engine
 from app.engines import decision_engine
+from app.engines import fib_pivot as fib_pivot_engine
 from app.market import snapshot as market_snapshot
 
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -778,46 +778,6 @@ def run_shadow_tracker_step(state: dict, now: datetime):
                       shadow_id, type(exc).__name__, exc)
 
 
-def run_btst_recommendations(state: dict, now: datetime):
-    """
-    BTST/STBT Recommendation Engine dispatch (Part 12 merge). For every
-    trade already marked OPEN AT EOD by trade_lifecycle.mark_open_at_eod()
-    (existing, unmodified production call above) that hasn't been
-    evaluated yet this session, computes the Recommendation Object
-    (btst_recommendation.evaluate_carry(), advisory only -- see that
-    module's docstring) and sends ONE enhanced Telegram alert covering
-    Trade ID / BTST Candidate / Confidence / Reasons / Status / PnL /
-    Carry Recommendation.
-
-    Self-gated: returns immediately, doing nothing at all, unless
-    config.BTST_RECOMMENDATION_ENABLED is True -- so this call is safe
-    to leave unconditional at its call site below; it is a true no-op
-    with the flag off, identical to today's production behavior.
-
-    Idempotent: trade["btst_recommendation"] is only computed once per
-    trade, and the Telegram send is idempotent via the existing
-    messages_sent/notify_once mechanism. Never touches trade["status"],
-    never exits/closes/carries anything, never calls a broker.
-    """
-    if not config.BTST_RECOMMENDATION_ENABLED:
-        return
-
-    for trade_id, trade in state["trades"].items():
-        if not trade.get("_marked_open_at_eod"):
-            continue
-        if "btst_recommendation" in trade:
-            continue
-
-        recommendation = btst_recommendation.evaluate_carry(trade, now=now)
-        trade["btst_recommendation"] = recommendation
-
-        try:
-            notify_once(trade, "OPEN_AT_EOD_BTST_ALERT", tg.fmt_open_at_eod_alert, trade, recommendation)
-        except TelegramFailure:
-            log.error("Trade %s: OPEN AT EOD / BTST recommendation alert could not be "
-                      "sent (Telegram failure). Recommendation is still stored on the trade.", trade_id)
-
-
 def maybe_send_daily_summary(state: dict, now: datetime):
     hhmm = (now.hour, now.minute)
     if hhmm < SUMMARY_HHMM or state.get("summary_sent"):
@@ -1109,8 +1069,15 @@ def main():
         except Exception as exc:
             log.error("Early Breakout Engine step failed (%s: %s) -- continuing with "
                        "the rest of this run.", type(exc).__name__, exc, exc_info=True)
+        try:
+            create_fib_pivot_shadow_candidates(state, now)
+        except Exception as exc:
+            log.error("Fib Pivot Shadow Engine step failed (%s: %s) -- "
+                       "continuing with the rest of this run.",
+                       type(exc).__name__, exc, exc_info=True)
         run_tracker_step(state, now)
         run_shadow_tracker_step(state, now)
+        run_fib_pivot_shadow_step(state, now)
 
         # Trade Lifecycle EOD check (~15:25 IST, config.EOD_STATUS_CHECK_HHMM):
         # label -- not close -- any still-open trade as "OPEN AT EOD" if
@@ -1123,11 +1090,6 @@ def main():
             newly_marked = trade_lifecycle.mark_open_at_eod(state, now)
             if newly_marked:
                 log.info("Trade Lifecycle: marked %d trade(s) OPEN AT EOD.", newly_marked)
-            # BTST/STBT Recommendation Engine (Part 12 merge, additive):
-            # self-gated on config.BTST_RECOMMENDATION_ENABLED (default
-            # False) -- true no-op with the flag off, identical to
-            # today's production behavior above this line.
-            run_btst_recommendations(state, now)
 
         maybe_send_daily_summary(state, now)
         # BUGFIX (2026-09-10, live-log finding): maybe_send_shadow_summary()
@@ -1164,3 +1126,182 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+def _next_fib_pivot_trade_id(state: dict, symbol: str, direction: str, alert_dt: datetime) -> str:
+    """
+    Fibonacci Pivot Shadow Engine (app/engines/fib_pivot/, added
+    2026-10-30) -- mirrors _next_early_breakout_trade_id()'s pattern
+    exactly: own "FIBPIVOT-" prefix, own per-symbol+direction sequence
+    counter in the SAME state["next_seq"] dict under a key namespace
+    ("FIBPIVOT-{symbol}-{direction}") that can never collide with the
+    main engine's or the Early Breakout Engine's own keys.
+    """
+    key = f"FIBPIVOT-{symbol}-{direction}"
+    seq = state["next_seq"].get(key, 0) + 1
+    state["next_seq"][key] = seq
+    return f"FIBPIVOT-{symbol}-{direction}-{alert_dt.strftime('%Y%m%d')}-{alert_dt.strftime('%H%M')}-{seq:02d}"
+
+
+def _dispatch_fib_pivot_shadow_events(trade: dict, events: list):
+    """
+    Fibonacci Pivot Shadow Engine counterpart to
+    _dispatch_shadow_tracker_events() -- SAME event types from the SAME
+    tracker.process_trade_candles() call, but every log line uses the
+    "FIBPIVOT_SHADOW_" prefix instead of "SHADOW_", so this strategy's
+    forward-collected data can NEVER be accidentally mixed into the
+    already-analyzed main-engine shadow dataset (N=139, this session's
+    own analysis) by a future log-scraping script that greps for
+    "SHADOW_OUTCOME_". There is no Telegram call anywhere in this
+    function, by design -- same structural guarantee
+    _dispatch_shadow_tracker_events() relies on.
+
+    Deliberately simpler than _dispatch_shadow_tracker_events(): no
+    SHADOW_TIMEOUT_EXTENSION_ENABLED-style multi-day extension here yet.
+    An EOD_CLOSED candle just logs a final TIMEOUT outcome. This is a
+    conscious scope cut, not an oversight -- see this function's own
+    "known simplification" note below -- and can be added later once
+    there's a reason to believe the extra complexity is worth it for
+    THIS strategy specifically.
+    """
+    for event in events:
+        etype = event["type"]
+        if etype == "ENTRY_ACTIVATED":
+            log.info("FIBPIVOT_SHADOW_ENTRY_ACTIVATED %s %s strike=%s candidate_id=%s",
+                     trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"))
+        elif etype == "T1_HIT":
+            mins = tracker.compute_time_taken(trade["actual_entry_time"], trade["t1_hit_time"])
+            trade["time_to_target_1_minutes"] = mins
+            log.info("FIBPIVOT_SHADOW_OUTCOME_T1_FIRST %s %s strike=%s candidate_id=%s time_to_t1_minutes=%s",
+                     trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"), mins)
+        elif etype == "T2_HIT":
+            mins = tracker.compute_time_taken(trade["actual_entry_time"], trade["t2_hit_time"])
+            trade["time_to_target_2_minutes"] = mins
+            log.info("FIBPIVOT_SHADOW_OUTCOME_T2_FIRST %s %s strike=%s candidate_id=%s time_to_t2_minutes=%s",
+                     trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"), mins)
+        elif etype == "SL_HIT":
+            mins = tracker.compute_time_taken(trade["actual_entry_time"], trade["sl_hit_time"])
+            trade["time_to_stop_minutes"] = mins
+            log.info("FIBPIVOT_SHADOW_OUTCOME_SL_FIRST %s %s strike=%s candidate_id=%s time_to_sl_minutes=%s",
+                     trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"), mins)
+        elif etype == "NOT_ENTERED":
+            log.info("FIBPIVOT_SHADOW_OUTCOME_NOT_ENTERED %s %s strike=%s candidate_id=%s",
+                     trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"))
+        elif etype == "EOD_CLOSED":
+            # Known simplification (see docstring above): no multi-day
+            # extension yet -- an EOD_CLOSED candle finalizes as TIMEOUT
+            # every time.
+            log.info("FIBPIVOT_SHADOW_OUTCOME_TIMEOUT %s %s strike=%s candidate_id=%s",
+                     trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"))
+        elif etype in ("AMBIGUOUS", "AMBIGUOUS_AFTER_T1"):
+            log.info("FIBPIVOT_SHADOW_OUTCOME_AMBIGUOUS %s %s strike=%s candidate_id=%s",
+                     trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"))
+        # TRAILING_SL_ADJUSTED: not logged as a distinct outcome line, same
+        # reasoning as _dispatch_shadow_tracker_events()'s own comment --
+        # it isn't terminal, and tracker.py already updates trade["stop_loss"]
+        # in place regardless of whether this function logs it.
+
+
+def create_fib_pivot_shadow_candidates(state: dict, now: datetime):
+    """
+    Fibonacci Pivot Shadow Engine (app/engines/fib_pivot/, added
+    2026-10-30). Mirrors create_shadow_candidates()'s structure, but:
+
+      - reads from fib_pivot_engine.detect_all_fib_pivot_setups()
+        instead of scanner.get_shadow_candidates() -- a completely
+        separate detection pipeline (its own EMA9 + Fibonacci-pivot +
+        close-confirmation logic, see that package's engine.py)
+      - stores results in state["fib_pivot_shadow_trades"], NEVER
+        state["shadow_trades"] or state["trades"] -- this is the single
+        line that keeps this strategy's forward data fully isolated
+        from both the live-alert path and the already-validated
+        Phase-2 shadow dataset.
+      - uses display labels that do NOT consume
+        state_mod.next_display_number() -- that counter numbers
+        Telegram-facing "Trade N" labels for the live engine and Early
+        Breakout Engine; this engine never sends Telegram, so it must
+        not perturb that shared sequence.
+
+    No-op entirely unless config.FIB_PIVOT_SHADOW_MODE_ENABLED is True.
+    Same dedup rule as create_shadow_candidates(): a candidate_id
+    already open (non-terminal) in fib_pivot_shadow_trades is not
+    recreated; one that already resolved to a terminal status IS
+    allowed to fire again later (a genuinely new occurrence).
+    """
+    if not config.FIB_PIVOT_SHADOW_MODE_ENABLED:
+        return
+
+    try:
+        candidates = fib_pivot_engine.detect_all_fib_pivot_setups()
+    except Exception as exc:
+        # Same isolation posture as run_early_breakout_step()'s own
+        # try/except in main() below -- a bug in this brand-new, as-yet
+        # unvalidated engine must never affect the live engine, the
+        # Early Breakout Engine, or the existing shadow dataset.
+        log.error("Fib Pivot Shadow Engine: detect_all_fib_pivot_setups() failed (%s: %s) -- "
+                   "skipping this cycle.", type(exc).__name__, exc, exc_info=True)
+        return
+
+    if not candidates:
+        return
+
+    fib_pivot_shadow_trades = state.setdefault("fib_pivot_shadow_trades", {})
+    active_candidate_ids = {
+        t.get("candidate_id") for t in fib_pivot_shadow_trades.values()
+        if t["status"] not in TERMINAL_STATUSES
+    }
+
+    for candidate in candidates:
+        candidate_id = f"{candidate['symbol']}:{candidate['direction']}:{candidate['strike']}:{candidate['expiry']}"
+        if candidate_id in active_candidate_ids:
+            log.info("FIBPIVOT_SHADOW_CANDIDATE_DUPLICATE_SKIPPED candidate_id=%s -- already tracked, not terminal",
+                      candidate_id)
+            continue
+
+        trade_id = _next_fib_pivot_trade_id(state, candidate["symbol"], candidate["direction"], now)
+        display_label = f"FibPivotShadow {len(fib_pivot_shadow_trades) + 1}"
+        trade = new_trade_record(candidate, trade_id, now, display_label)
+        trade["probability_status"] = "shadow_only"
+        trade["execution_mode"] = "shadow"
+        trade["live_alert_sent"] = False
+        trade["candidate_id"] = candidate_id
+        trade["engine"] = "fib_pivot"
+
+        fib_pivot_shadow_trades[trade_id] = trade
+        active_candidate_ids.add(candidate_id)
+        log.info(
+            "FIBPIVOT_SHADOW_CANDIDATE_CREATED trade_id=%s %s %s strike=%s candidate_id=%s "
+            "pivot_level=%s trade_score=%s/100",
+            trade_id, trade["symbol"], trade["direction"], trade["strike"], candidate_id,
+            candidate.get("pivot_level_name"), trade["trade_score"],
+        )
+
+
+def run_fib_pivot_shadow_step(state: dict, now: datetime):
+    """
+    Fibonacci Pivot Shadow Engine counterpart to run_shadow_tracker_step()
+    -- same candle-fetch/process_trade_candles() mechanism, applied to
+    state["fib_pivot_shadow_trades"], dispatched via
+    _dispatch_fib_pivot_shadow_events() (log-only, never Telegram).
+
+    No-op entirely unless config.FIB_PIVOT_SHADOW_MODE_ENABLED is True.
+    """
+    if not config.FIB_PIVOT_SHADOW_MODE_ENABLED:
+        return
+
+    for trade_id, trade in state.get("fib_pivot_shadow_trades", {}).items():
+        if trade["status"] in TERMINAL_STATUSES:
+            continue
+        try:
+            candles = market_data.get_1min_candles_since(
+                trade["instrument_key"], trade["last_processed_ts"]
+            )
+            if not candles:
+                continue
+            events = tracker.process_trade_candles(trade, candles)
+            _dispatch_fib_pivot_shadow_events(trade, events)
+        except (BrokerAPIError, TelegramFailure) as exc:
+            # Same per-trade containment posture as run_shadow_tracker_step().
+            log.error("Fib Pivot shadow trade %s: tracker step failed (%s: %s) -- continuing "
+                      "with remaining trades; this one will be retried next run.",
+                      trade_id, type(exc).__name__, exc)

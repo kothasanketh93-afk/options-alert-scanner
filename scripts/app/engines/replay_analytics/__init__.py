@@ -1,49 +1,47 @@
 """
-app/engines/replay_analytics/ -- Part 7: Replay, Learning & Analytics Engine.
+app/engines/replay_analytics/ -- Performance Analytics + Trade Journal +
+Scanner Health Engine (dashboard-facing, on-demand).
 ------------------------------------------------------------------------------
-Offline-only engine that replays historical candles against past
-signals, measures how the scanner actually performed, and produces
-statistical (non-ML) learning recommendations. NEVER places orders and
-NEVER runs inside the live scanner/tracker loop -- see engine.py's
-module docstring for exactly how (and when) this is invoked, and
-config.py's "Part 7" section for every tunable.
-
 Modules:
-  replay_engine.py         Candle-by-candle multi-timeframe replay
-                            driver (resamples 1-min candles up; never
-                            re-fetches per timeframe).
-  signal_replay.py          Per-signal replay: entry/SL/T1/T2/T3, time
-                            to target/SL, max profit/drawdown, exit
-                            reason. Reuses tracker.py's lifecycle
-                            rules, extended with a Target 3 leg.
-  outcome_classifier.py      WIN / LOSS / BREAKEVEN / NO_ENTRY /
-                            TIME_EXIT / INVALID_SIGNAL.
   performance_analytics.py  Win rate, profit factor, expectancy,
-                            drawdown, streaks, recovery factor.
-  missed_opportunity.py     Good-trades-rejected / bad-trades-accepted
-                            / late-entry / early-exit / missed
-                            breakout-reversal detection + suggestions.
-  false_signal.py           False breakout/breakdown, weak momentum,
-                            low-quality-entry, poor-option-selection
-                            detection + reasons.
-  learning_engine.py        Statistical (NOT machine-learning) grouping
-                            of results by market condition, timeframe,
-                            entry type, pattern, option characteristic.
-  scoring_calibration.py    Predicted-confidence vs actual-result
-                            comparison; RECOMMENDATIONS only, never
-                            auto-changes a production threshold.
-  health_engine.py          Scanner Health Score (0-100).
+                            drawdown, streaks, recovery factor. Used by
+                            app/backend/services/analytics_service.py
+                            and lifecycle_analytics.py's own historical
+                            BTST-success-rate computation before that
+                            was removed (2026-10-30).
   trade_journal.py          Structured per-trade journal, persisted via
                             daily_cache.py (same state-branch mechanism
-                            already used by opportunity_score.py).
-  periodic_reports.py       Daily / Weekly / Monthly analytics rollups.
-  reporting.py              Optional CSV / JSON / summary export.
-  engine.py                 run_daily_replay_analytics() -- the single
-                            entry point a scheduled job calls.
+                            already used by opportunity_score.py). Used
+                            by app/backend/services/replay_service.py.
+  health_engine.py          Composite 0-100 Scanner Health Score (signal
+                            accuracy, decision accuracy, false-positive/
+                            negative rate). Used by
+                            app/backend/services/analytics_service.py's
+                            get_scanner_health(), which is wired to the
+                            dashboard's GET /analytics health route
+                            (app/backend/api/routes/analytics.py) --
+                            confirmed a real importer, see note below.
 
-Each module is independently importable/testable, following the same
-convention app/engines/early_breakout/ and app/engines/decision_engine/
-established -- nothing here imports another engine folder's internals,
-only shared scripts/ modules (config, logging_setup, state, tracker,
-daily_cache).
+(2026-10-30, at the user's explicit request, as part of making this
+app intraday-only: this package used to be a much larger "Part 7:
+Replay, Learning & Analytics Engine" -- an offline pipeline that
+replayed historical candles against past signals and produced
+statistical learning recommendations, with its own entry point
+(engine.py's run_daily_replay_analytics(), documented as something "a
+scheduled job calls"). Confirmed this session that no GitHub Actions
+workflow ever actually called that job -- replay_engine.py,
+signal_replay.py, outcome_classifier.py, missed_opportunity.py,
+false_signal.py, learning_engine.py, scoring_calibration.py,
+periodic_reports.py, and reporting.py were built but never wired in
+anywhere, and were removed, along with engine.py itself (the offline
+pipeline's own entry point).
+
+health_engine.py was INITIALLY included in that same removal list by
+mistake -- it was corrected here after actually grepping its callers
+and finding analytics_service.py's get_scanner_health() calls
+health_engine.compute_health_score() directly, and that function is
+itself wired to a live dashboard route. health_engine.py was restored
+before anything was deleted from the real repo. performance_analytics.py,
+trade_journal.py, and health_engine.py are the three modules from this
+package genuinely still used, and are unaffected by the removal above.)
 """

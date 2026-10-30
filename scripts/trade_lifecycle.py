@@ -3,15 +3,15 @@ trade_lifecycle.py
 -------------------
 ALERTS ONLY. This module never places a trade, never modifies a broker
 position, and never force-closes anything -- it is a pure read/derive/
-label layer on top of the trade dicts main.py (state.py) and
-btst_main.py (btst_state.py) already track and persist.
+label layer on top of the trade dicts main.py (state.py) already
+tracks and persists.
 
 It does three things:
   1. Derives one flat "lifecycle_status" label (the vocabulary below)
-     from whatever granular internal status tracker.py / btst_tracker.py
-     already computed -- those two modules remain the only code that
-     decides ACTUAL trade outcomes (target/SL/EOD detection). This
-     module never overrides trade["status"]; it only reads it.
+     from whatever granular internal status tracker.py already
+     computed -- that module remains the only code that decides ACTUAL
+     trade outcomes (target/SL/EOD detection). This module never
+     overrides trade["status"]; it only reads it.
   2. Tracks the extra display/analytics fields the lifecycle spec asks
      for (current price, current PnL, running max profit/drawdown,
      holding time) as plain keys on the SAME trade dict -- no new
@@ -24,13 +24,18 @@ It does three things:
      as before.
 
 Status vocabulary (trade_lifecycle.lifecycle_status()'s return value):
-    OPEN, TARGET HIT, SL HIT, OPEN AT EOD, CLOSED, BTST, STBT, EXPIRED,
-    CANCELLED
+    OPEN, TARGET HIT, SL HIT, OPEN AT EOD, CLOSED, EXPIRED, CANCELLED
 
 Persistence: NONE of its own. Every field this module writes lives on
-the same trade/position dict that state.py's save_state() / btst_state.py's
-save() already serialize to the `state` git branch every run -- so
-lifecycle data survives a restart for free, with zero new storage code.
+the same trade dict that state.py's save_state() already serializes to
+the `state` git branch every run -- so lifecycle data survives a
+restart for free, with zero new storage code.
+
+(BTST/STBT support -- a separate overnight-carry status path keyed by
+an `is_btst` flag on lifecycle_status()/to_dashboard_record() -- was
+removed on 2026-10-30 at the user's explicit request, along with the
+standalone btst_*.py module it only ever served. Everything below is
+unchanged for the intraday path.)
 """
 
 from datetime import datetime, timezone, timedelta
@@ -42,18 +47,15 @@ STATUS_TARGET_HIT = "TARGET HIT"
 STATUS_SL_HIT = "SL HIT"
 STATUS_OPEN_AT_EOD = "OPEN AT EOD"
 STATUS_CLOSED = "CLOSED"
-STATUS_BTST = "BTST"
-STATUS_STBT = "STBT"
 STATUS_EXPIRED = "EXPIRED"
 STATUS_CANCELLED = "CANCELLED"
 
-# tracker.py / btst_tracker.py internal statuses that are still live --
-# no target/SL/close reached yet. Mirrors state.py's OPEN_STATUSES (T1_HIT
-# included -- a trade that hit T1 and is still tracking T2 is still open)
-# but kept as its own tuple here rather than importing state.py's, so this
-# read-only module has zero dependency on state.py's git/branch machinery.
+# tracker.py internal statuses that are still live -- no target/SL/close
+# reached yet. Mirrors state.py's OPEN_STATUSES (T1_HIT included -- a
+# trade that hit T1 and is still tracking T2 is still open) but kept as
+# its own tuple here rather than importing state.py's, so this read-only
+# module has zero dependency on state.py's git/branch machinery.
 _LIVE_INTRADAY = {"WAITING_ENTRY", "ACTIVE", "T1_HIT"}
-_LIVE_BTST = {"OPEN"}
 
 
 def _parse_iso(ts):
@@ -82,13 +84,12 @@ def _is_expired(trade: dict, now: datetime) -> bool:
     return now.date() > expiry_date
 
 
-def lifecycle_status(trade: dict, now: datetime = None, is_btst: bool = False) -> str:
+def lifecycle_status(trade: dict, now: datetime = None) -> str:
     """
-    Pure function: reads trade["status"] (set by tracker.py/
-    btst_tracker.py) and a couple of lifecycle-only flags this module
-    itself sets (_marked_open_at_eod, cancelled), and returns one of
-    the vocabulary strings above. Never mutates `trade`, never calls a
-    broker.
+    Pure function: reads trade["status"] (set by tracker.py) and a
+    couple of lifecycle-only flags this module itself sets
+    (_marked_open_at_eod, cancelled), and returns one of the vocabulary
+    strings above. Never mutates `trade`, never calls a broker.
     """
     now = now or datetime.now(IST)
 
@@ -96,19 +97,6 @@ def lifecycle_status(trade: dict, now: datetime = None, is_btst: bool = False) -
         return STATUS_CANCELLED
 
     internal = trade.get("status")
-
-    if is_btst:
-        if internal in _LIVE_BTST:
-            return STATUS_STBT if trade.get("strategy") == "stbt" else STATUS_BTST
-        if internal == "T2_HIT":
-            return STATUS_TARGET_HIT
-        if internal in ("SL_HIT", "GAP_SL_HIT"):
-            return STATUS_SL_HIT
-        # FORCE_EXIT is btst_tracker.py's own exit-day squareoff --
-        # inherent to the BTST strategy itself (must exit next day),
-        # not the intraday "never force exit" rule this module follows.
-        # Still just a label here: this module isn't what triggers it.
-        return STATUS_CLOSED  # FORCE_EXIT, AMBIGUOUS, or any other terminal
 
     if internal in _LIVE_INTRADAY:
         if _is_expired(trade, now):
@@ -185,7 +173,7 @@ def mark_open_at_eod(state: dict, now: datetime = None) -> int:
     return marked
 
 
-def to_dashboard_record(trade: dict, now: datetime = None, is_btst: bool = False) -> dict:
+def to_dashboard_record(trade: dict, now: datetime = None) -> dict:
     """
     Flat view using the exact field names the Trade Lifecycle spec
     asks for -- for display/API/export use. Read-only, does not
@@ -210,5 +198,5 @@ def to_dashboard_record(trade: dict, now: datetime = None, is_btst: bool = False
         "Maximum Profit": trade.get("maximum_profit_pct"),
         "Maximum Drawdown": trade.get("maximum_drawdown_pct"),
         "Holding Time": trade.get("holding_time_minutes"),
-        "Status": lifecycle_status(trade, now=now, is_btst=is_btst),
+        "Status": lifecycle_status(trade, now=now),
     }

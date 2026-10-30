@@ -101,10 +101,9 @@ _FRACTION_SUFFIXES = ("_PCT", "_FRACTION")
 # heuristic above, confirmed 2026-07-31 against each field's own
 # inline comment in config.py -- not typos, just two different uses
 # of the "_PCT" suffix that coexist in this codebase:
-#   1. BTST_RECOMMENDATION_MAX_SPREAD_PCT, MOMENTUM_ROC_CEILING_PCT,
-#      REPLAY_CALIBRATION_GAP_THRESHOLD_PCT -- these use a raw
-#      PERCENTAGE-POINT scale (e.g. 1.5 literally means "1.5%"), not
-#      the 0-1 fraction-of-1 scale this check assumes.
+#   1. MOMENTUM_ROC_CEILING_PCT, REPLAY_CALIBRATION_GAP_THRESHOLD_PCT --
+#      these use a raw PERCENTAGE-POINT scale (e.g. 1.5 literally means
+#      "1.5%"), not the 0-1 fraction-of-1 scale this check assumes.
 #   2. IV_ABNORMAL_HIGH_PCT -- DOES use the 0-1 fraction scale (1.20
 #      means "120%"), but 1.20 is the intended value: its entire job
 #      is to catch IV readings ABOVE 100%, so exceeding 1 is correct
@@ -113,7 +112,6 @@ _FRACTION_SUFFIXES = ("_PCT", "_FRACTION")
 # states the >1 value is intentional before adding it -- this list
 # existing is not itself permission to silence a real typo.
 _FRACTION_FIELD_ALLOWLIST = (
-    "BTST_RECOMMENDATION_MAX_SPREAD_PCT",
     "MOMENTUM_ROC_CEILING_PCT",
     "REPLAY_CALIBRATION_GAP_THRESHOLD_PCT",
     "IV_ABNORMAL_HIGH_PCT",
