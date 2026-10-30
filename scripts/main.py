@@ -1124,9 +1124,6 @@ def main():
         raise run_error
 
 
-if __name__ == "__main__":
-    main()
-
 
 def _next_fib_pivot_trade_id(state: dict, symbol: str, direction: str, alert_dt: datetime) -> str:
     """
@@ -1305,3 +1302,7 @@ def run_fib_pivot_shadow_step(state: dict, now: datetime):
             log.error("Fib Pivot shadow trade %s: tracker step failed (%s: %s) -- continuing "
                       "with remaining trades; this one will be retried next run.",
                       trade_id, type(exc).__name__, exc)
+
+
+if __name__ == "__main__":
+    main()
