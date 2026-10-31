@@ -47,7 +47,7 @@ def main():
                 p = {}
             data = p.get("data") or []
             say(f"  {name} {label}: HTTP {r.status_code} status={p.get('status')} candles={len(data)} "
-                f"{(data[0][0] + '..' + data[-1][0]) if data else ''} {'' if p.get('status') else str(p.get('message'))[:100]}")
+                f"{(data[0][0] + '..' + data[-1][0] + ' closeFirst=' + str(data[0][4]) + ' closeLast=' + str(data[-1][4])) if data else ''} {'' if p.get('status') else str(p.get('message'))[:100]}")
     open(OUT, "w").write("\n".join(lines) + "\n")
 
 
