@@ -1,0 +1,31 @@
+# One-off research export of liquid F&O stock 5m candles (2026-10-31). workflow_dispatch only.
+name: Export Stock History
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - name: Export
+        env:
+          UPSTOX_ACCESS_TOKEN: ${{ secrets.UPSTOX_ACCESS_TOKEN }}
+          EXPORT_DIR: ${{ runner.temp }}/stock_out
+        run: python scripts/export_stock_history.py | tee ${{ runner.temp }}/stock_log.txt
+      - name: Publish to research-data-stocks branch
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout --orphan research-data-stocks
+          git rm -rf . >/dev/null 2>&1 || true
+          mkdir history && cp ${{ runner.temp }}/stock_out/* history/ && cp ${{ runner.temp }}/stock_log.txt history/
+          git add history
+          git commit -m "Stock 5m export $(date -u +%F)"
+          git push -f origin research-data-stocks
