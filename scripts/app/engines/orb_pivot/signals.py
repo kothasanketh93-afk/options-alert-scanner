@@ -86,3 +86,15 @@ def option_levels(premium: float, delta: float, atr: float, target_atr_mult: flo
     t1 = premium + d * target_atr_mult
     t2 = t1 + d * 1.0
     return {"stop_loss": round(sl, 2), "target_1": round(t1, 2), "target_2": round(t2, 2)}
+
+
+def is_wide_prev_day(daily: list, window: int = 10, factor: float = 1.5):
+    """
+    True if the prior day's high-low range exceeds `factor` x the mean range of the last
+    `window` days (including the prior day) -- the backtest's "wide day" tag, where ORB
+    did worst. Returns None when fewer than 5 days are available. Tag only; never a filter.
+    """
+    ranges = [d["high"] - d["low"] for d in daily[-window:] if d.get("high") is not None and d.get("low") is not None]
+    if len(ranges) < 5:
+        return None
+    return ranges[-1] > factor * (sum(ranges) / len(ranges))

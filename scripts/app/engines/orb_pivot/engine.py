@@ -17,7 +17,7 @@ from . import signals
 _logger = get_logger("orb_pivot")
 
 
-def _build_setup(strategy, symbol, signal, atr, target_mult, session):
+def _build_setup(strategy, symbol, signal, atr, target_mult, session, wide_prev_day=None):
     direction = signal["direction"]
     underlying_key = resolve_underlying_key(symbol)
     atm_strike, spot_price = get_atm_strike(symbol)
@@ -61,6 +61,7 @@ def _build_setup(strategy, symbol, signal, atr, target_mult, session):
         "session": session, "alternatives": [],
         "pivot_level_name": signal["level_name"], "pivot_level_value": signal["level_value"],
         "atr": round(atr, 2),
+        "wide_prev_day": wide_prev_day,
     }
 
 
@@ -68,10 +69,11 @@ def _scan_symbol(symbol, session):
     underlying_key = resolve_underlying_key(symbol)
     if not underlying_key:
         return []
-    daily = market_data.get_recent_daily_candles(underlying_key, 3)
+    daily = market_data.get_recent_daily_candles(underlying_key, 12)
     if not daily:
         return []
     prev = daily[-1]
+    wide = signals.is_wide_prev_day(daily)
     today = market_data.get_recent_underlying_candles(
         underlying_key, config.ORB_PIVOT_CANDLE_INTERVAL, config.ORB_PIVOT_CANDLE_FETCH_COUNT)
     if len(today) < signals.OR_CANDLES + 1:
@@ -85,12 +87,12 @@ def _scan_symbol(symbol, session):
     out = []
     orb = signals.detect_orb15(today, prev["close"])
     if orb:
-        s = _build_setup("orb15", symbol, orb, atr, config.ORB15_TARGET_ATR_MULT, session)
+        s = _build_setup("orb15", symbol, orb, atr, config.ORB15_TARGET_ATR_MULT, session, wide)
         if s:
             out.append(s)
     pb = signals.detect_pivot_break(today, prev["high"], prev["low"], prev["close"])
     if pb:
-        s = _build_setup("pivot_break", symbol, pb, atr, config.PIVOT_BREAK_TARGET_ATR_MULT, session)
+        s = _build_setup("pivot_break", symbol, pb, atr, config.PIVOT_BREAK_TARGET_ATR_MULT, session, wide)
         if s:
             out.append(s)
     return out

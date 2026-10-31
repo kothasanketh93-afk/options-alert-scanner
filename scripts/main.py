@@ -43,6 +43,7 @@ from config import SUMMARY_HHMM
 from app.engines import early_breakout as early_breakout_engine
 from app.engines import fib_pivot as fib_pivot_engine
 from app.engines import orb_pivot as orb_pivot_engine
+import outcomes_ledger
 from app.market import snapshot as market_snapshot
 
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -984,6 +985,15 @@ def main():
         log.error("Unexpected error during run (%s: %s) -- saving whatever progress "
                    "was made before re-raising.", type(exc).__name__, exc, exc_info=True)
 
+    try:
+        # Outcomes ledger (2026-10-31): appended before save_state() so the same git commit
+        # carries it. Isolated: a ledger problem must never block saving state.
+        added = outcomes_ledger.append_resolved(
+            state, state_mod.STATE_CLONE_DIR / "ledger" / "outcomes.csv")
+        if added:
+            log.info("OUTCOMES_LEDGER appended %d resolved shadow trade(s)", added)
+    except Exception as exc:
+        log.error("Outcomes ledger append failed (%s: %s) -- continuing.", type(exc).__name__, exc)
     state_mod.cleanup_old_state_files(keep_today=date_str)
     commit_message = f"update {date_str} @ {now.strftime('%H:%M:%S')}"
     if run_error is not None:
@@ -1189,8 +1199,8 @@ def _dispatch_orb_pivot_shadow_events(trade: dict, events: list):
         name = tag.get(event["type"])
         if name is None:
             continue
-        log.info("ORBPIVOT_SHADOW_%s strategy=%s %s %s strike=%s candidate_id=%s%s",
-                 name, trade.get("strategy"), trade["symbol"], trade["direction"], trade["strike"],
+        log.info("ORBPIVOT_SHADOW_%s strategy=%s wide_prev_day=%s %s %s strike=%s candidate_id=%s%s",
+                 name, trade.get("strategy"), trade.get("wide_prev_day"), trade["symbol"], trade["direction"], trade["strike"],
                  trade.get("candidate_id"), _shadow_entry_context(trade) if event["type"] in
                  ("ENTRY_ACTIVATED", "SL_HIT") else "")
 
@@ -1222,6 +1232,7 @@ def create_orb_pivot_shadow_candidates(state: dict, now: datetime):
         trade["candidate_id"] = (f"{candidate['strategy']}:{candidate['symbol']}:{candidate['direction']}:"
                                  f"{candidate['strike']}:{candidate['expiry']}")
         trade["engine"] = "orb_pivot"
+        trade["wide_prev_day"] = candidate.get("wide_prev_day")
         trades[trade_id] = trade
         log.info("ORBPIVOT_SHADOW_CANDIDATE_CREATED trade_id=%s strategy=%s %s %s strike=%s level=%s",
                  trade_id, trade["strategy"], trade["symbol"], trade["direction"], trade["strike"],

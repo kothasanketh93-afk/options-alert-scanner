@@ -65,5 +65,20 @@ class Levels(unittest.TestCase):
         self.assertEqual(s.option_levels(10, 0.5, 100, 1.5)["stop_loss"], 5.0)
 
 
+
+class Wide(unittest.TestCase):
+    def d(self, ranges):
+        return [{"high": 100 + r, "low": 100} for r in ranges]
+
+    def test_wide(self):
+        self.assertTrue(s.is_wide_prev_day(self.d([10] * 9 + [40])))
+
+    def test_normal(self):
+        self.assertFalse(s.is_wide_prev_day(self.d([10] * 9 + [12])))
+
+    def test_insufficient(self):
+        self.assertIsNone(s.is_wide_prev_day(self.d([10, 10, 10])))
+
+
 if __name__ == "__main__":
     unittest.main()
