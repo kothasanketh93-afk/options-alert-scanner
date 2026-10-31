@@ -1,0 +1,37 @@
+# One-off research export of expired NIFTY weekly option candles (2026-10-31). workflow_dispatch only.
+name: Export Options History
+on:
+  workflow_dispatch:
+    inputs:
+      max_expiries:
+        description: "Limit expiries (0 = all)"
+        default: "0"
+permissions:
+  contents: write
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - name: Export
+        env:
+          UPSTOX_ACCESS_TOKEN: ${{ secrets.UPSTOX_ACCESS_TOKEN }}
+          OUT_DIR: ${{ runner.temp }}/options_out
+          MAX_EXPIRIES: ${{ github.event.inputs.max_expiries }}
+        run: python scripts/export_options_history.py | tee ${{ runner.temp }}/export_log.txt
+      - name: Publish to research-data-options branch
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout --orphan research-data-options
+          git rm -rf . >/dev/null 2>&1 || true
+          mkdir history && cp ${{ runner.temp }}/options_out/*.csv.gz history/
+          cp ${{ runner.temp }}/export_log.txt history/export_log.txt
+          git add history
+          git commit -m "Expired NIFTY options 5m export $(date -u +%F)"
+          git push -f origin research-data-options
