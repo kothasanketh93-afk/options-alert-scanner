@@ -68,7 +68,7 @@ def main():
         n = 0
         with gzip.open(out, "wt", newline="") as f:
             w = csv.writer(f)
-            w.writerow(["expiry", "strike", "type", "instrument_key", "timestamp", "open", "high", "low", "close", "volume", "oi"])
+            w.writerow(["expiry", "strike", "type", "instrument_key", "timestamp", "open", "high", "low", "close", "volume", "oi", "lot_size"])
             for x in sel:
                 key = x["instrument_key"]
                 typ = x.get("instrument_type") or x.get("option_type") or ""
@@ -79,7 +79,7 @@ def main():
                 if r.status_code != 200:
                     continue
                 for c in r.json().get("data", {}).get("candles", []):
-                    w.writerow([exp, x["strike_price"], typ, key] + c[:6] + [c[6] if len(c) > 6 else ""])
+                    w.writerow([exp, x["strike_price"], typ, key] + c[:6] + [c[6] if len(c) > 6 else "", x.get("lot_size")])
                     n += 1
         total += n
         print(f"{exp}: contracts={len(sel)}/{len(rows)} spot_range={sr[0]:.0f}-{sr[1]:.0f} rows={n} reqs={reqs}", flush=True)
