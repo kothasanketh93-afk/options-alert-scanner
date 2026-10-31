@@ -961,13 +961,6 @@ SUMMARY_HHMM = (15, 30)   # BUGFIX (2026-09-01, live-log finding): was (15, 31) 
                            # bug entirely; Phase-2 Shadow Mode's non-empty
                            # shadow_trades was what actually exposed it live.
 
-# --- Trade Lifecycle EOD status check (trade_lifecycle.py) ---
-# Runs BEFORE tracker.py's own 15:30 market-close EOD_CLOSED transition
-# and BEFORE SUMMARY_HHMM (15:31) -- purely a label ("OPEN AT EOD" instead
-# of "OPEN") applied to still-open trades so the daily summary already
-# reflects it. Does NOT close, exit, or touch any position -- alerts only.
-EOD_STATUS_CHECK_HHMM = (15, 25)
-
 # --- Heartbeat check (heartbeat_check.py) ---
 # BUGFIX (comment, not value): this used to say "7-min trader cadence"
 # -- but heartbeat.yml runs continuously across market hours,
@@ -1362,32 +1355,13 @@ ATR_WARMUP_TAIL_CANDLE_COUNT = 20  # previous-session candles to fetch (comforta
                                     # requirement, with headroom); trimmed to what compute_atr() needs
 
 # =============================================================================
-# Part 12 (merge) -- Trade Lifecycle dashboard tabs + feature flags
-# (2026-07-30). The BTST/STBT Recommendation Engine this Part originally
-# shipped alongside (btst_recommendation.py, BTST_RECOMMENDATION_ENABLED
-# and its thresholds, main.run_btst_recommendations(), the standalone
-# btst_*.py overnight-carry module, and the dashboard's BTST/STBT/Carry
-# History tabs) was removed entirely on 2026-10-30, at the user's
-# explicit request -- see trade_lifecycle.py/lifecycle_analytics.py's
-# own updated docstrings for what remains.
-#
-# TRADE_LIFECYCLE_ENABLED -- RESOLVED (Conflict #1, see PART12_MERGE_REPORT.md
-#   §7): kept as Option B -- gates ONLY the /api/lifecycle/* dashboard
-#   routes' visibility of already-collected data. It does NOT gate, and was
-#   never wired to, the pre-existing production calls
-#   trade_lifecycle.update_lifecycle_metrics() / mark_open_at_eod() in
-#   main.py -- those remain unconditional, exactly as they were before this
-#   Part, so that "flag OFF == today's production behavior" holds. If
-#   tracking itself ever needs a kill switch, that is a new, separate flag
-#   -- not this one, and not a decision to make silently.
-#
-# EOD_TRACKING_ENABLED -- REMOVED. It was declared but never imported or
-#   referenced anywhere (dashboard routes only check TRADE_LIFECYCLE_ENABLED),
-#   so it did nothing and only added ambiguity about what it controlled.
-#   Deleting an unreferenced flag changes no behavior. If EOD tracking needs
-#   its own toggle later, add it back wired to a real call site.
+# Part 12 (merge) -- removed
+# (2026-10-31, at the user's explicit request: the Trade Lifecycle module,
+# lifecycle_analytics.py and TRADE_LIFECYCLE_ENABLED were removed; the
+# BTST/STBT engine was removed earlier on 2026-10-30. The lifecycle's
+# per-cycle display fields and the 15:25 "OPEN AT EOD" label were read by
+# nothing in the live scanner -- only the removed dashboard.)
 # =============================================================================
-TRADE_LIFECYCLE_ENABLED = False
 
 # =============================================================================
 # Part 13 -- Win-Rate Improvement Pass (2026-08-07): candle-readiness gate,

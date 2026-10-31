@@ -4,8 +4,7 @@ app/engines/fib_pivot/engine.py -- Fibonacci Pivot Shadow Engine entry point.
 SHADOW-ONLY (see app/engines/fib_pivot/__init__.py's module docstring
 for why). Produces trade dicts with the same keys main.new_trade_record()
 already expects -- same reuse pattern app/engines/early_breakout/engine.py
-documents at its own top -- so tracker.process_trade_candles() and
-trade_lifecycle.update_lifecycle_metrics() work on these records with
+documents at its own top -- so tracker.process_trade_candles() works on these records with
 zero code duplication. main.create_fib_pivot_shadow_candidates() is the
 only caller; it stores results in state["fib_pivot_shadow_trades"],
 never state["trades"] or state["shadow_trades"].

@@ -39,8 +39,7 @@ from exceptions import TelegramFailure, BrokerAPIError
 from logging_setup import get_logger
 import config
 import trade_score
-import trade_lifecycle
-from config import SUMMARY_HHMM, EOD_STATUS_CHECK_HHMM
+from config import SUMMARY_HHMM
 from app.engines import early_breakout as early_breakout_engine
 from app.engines import fib_pivot as fib_pivot_engine
 from app.market import snapshot as market_snapshot
@@ -452,13 +451,6 @@ def run_tracker_step(state: dict, now: datetime):
             events = tracker.process_trade_candles(trade, candles)
             _dispatch_tracker_events(trade, events)
 
-            # Trade Lifecycle (trade_lifecycle.py): current price / PnL /
-            # running max-profit / max-drawdown / holding time -- reuses
-            # this cycle's already-fetched candles (no extra broker call).
-            # Alerts-only bookkeeping: never touches trade["status"],
-            # never exits/closes anything.
-            trade_lifecycle.update_lifecycle_metrics(trade, candles[-1]["close"], now)
-
             if trade["status"] in TERMINAL_STATUSES and not trade["streak_counted"]:
                 final_status = trade.get("final_status")
                 state_mod.record_trade_outcome_for_streak(state, final_status)
@@ -636,8 +628,8 @@ def create_shadow_candidates(state: dict, now: datetime):
     creates a shadow trade record for each -- reusing main.
     new_trade_record() UNCHANGED (same trade-record shape the live
     path uses, so tracker.process_trade_candles() and
-    trade_lifecycle.update_lifecycle_metrics() both work on shadow
-    trades with zero code duplication) plus the shadow-specific tag
+    tracker.process_trade_candles() works on shadow trades with zero
+    code duplication) plus the shadow-specific tag
     fields already present on the candidate dict itself
     (probability_status/execution_mode/live_alert_sent/candidate_id).
 
@@ -962,18 +954,6 @@ def main():
         run_tracker_step(state, now)
         run_shadow_tracker_step(state, now)
         run_fib_pivot_shadow_step(state, now)
-
-        # Trade Lifecycle EOD check (~15:25 IST, config.EOD_STATUS_CHECK_HHMM):
-        # label -- not close -- any still-open trade as "OPEN AT EOD" if
-        # neither target nor SL has been hit yet. Runs before the daily
-        # summary so the summary already reflects it. Idempotent (safe on
-        # every remaining cycle today); never touches trade["status"] and
-        # never exits a position -- tracker.py's own 15:30 market-close
-        # EOD_CLOSED transition is unchanged and still runs separately.
-        if (now.hour, now.minute) >= EOD_STATUS_CHECK_HHMM:
-            newly_marked = trade_lifecycle.mark_open_at_eod(state, now)
-            if newly_marked:
-                log.info("Trade Lifecycle: marked %d trade(s) OPEN AT EOD.", newly_marked)
 
         maybe_send_daily_summary(state, now)
         # BUGFIX (2026-09-10, live-log finding): maybe_send_shadow_summary()
