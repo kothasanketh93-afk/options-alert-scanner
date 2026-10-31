@@ -1250,151 +1250,25 @@ EARLY_ENTRY_MAX_PCT = 0.10     # premium above breakout_price * (1 + this) -> Re
 FRESH_BREAKOUT_SCORE = {0: 100, 1: 90, 2: 75, 3: 40}   # age (candles since breakout) -> score /100
 FRESH_BREAKOUT_MAX_AGE = 3     # age > this (i.e. a 5th+ candle) -> reject outright, per "Fourth Candle: Reject"
 
-# =============================================================================
-# Part 6 -- Enterprise Decision Engine (app/engines/decision_engine/)
-# -- final-authority engine, sits between the existing scoring engines
-# (Market Snapshot, Early Breakout, Trade Score Engine, Options
-# Intelligence) and the alert layer. Additive only: computed and
-# attached to every trade dict for visibility/logging regardless of
-# these settings; DECISION_ENGINE_FILTER_ENABLED (default False) is
-# the only flag that lets it actually block an alert, same rollout
-# pattern as OPTIONS_INTELLIGENCE_FILTER_ENABLED above.
-# =============================================================================
-
-DECISION_ENGINE_ENABLED = True           # master flag -- False fully restores pre-Part-6 behavior
-DECISION_ENGINE_FILTER_ENABLED = False   # if True, a rejected Decision Object blocks the alert
-
-# --- Approval floors (Trade Validation / Rejection Engines) ---
-DECISION_ENGINE_MIN_CONFIDENCE = 50.0      # 0-100
-DECISION_ENGINE_MIN_PROBABILITY = 50.0     # 0-100 (win probability %)
-DECISION_ENGINE_MIN_TRADE_QUALITY = 50.0   # 0-100
-DECISION_ENGINE_MIN_RR = 1.5               # Risk/Reward Engine floor, same spirit as EARLY_BREAKOUT_MIN_RR
-
-# --- Confidence Engine: per-plugin weights, renormalized automatically
-# over whichever plugins are available for a given trade (base.py /
-# confidence.py). Missing keys fall back to each plugin's default_weight. ---
-DECISION_ENGINE_PLUGIN_WEIGHTS = {
-    "market_snapshot": 0.15,
-    "early_breakout": 0.35,
-    "trade_score_engine": 0.35,
-    "options_intelligence": 0.20,
-}
-
-# --- Position Size Engine -- one of: "fixed_quantity", "capital_based",
-# "risk_based", "percentage_based", "dynamic" (dynamic = min of
-# capital_based and risk_based, i.e. the more conservative of the two). ---
-DECISION_ENGINE_POSITION_SIZE_MODE = "dynamic"
-DECISION_ENGINE_FIXED_QTY = 1
-DECISION_ENGINE_CAPITAL = 100000.0             # notional trading capital, purely for sizing math
-DECISION_ENGINE_RISK_PCT_OF_CAPITAL = 0.01     # 1% of capital risked per trade (risk_based/dynamic)
-DECISION_ENGINE_CAPITAL_PCT_PER_TRADE = 0.10   # 10% of capital allocated per trade (capital_based/dynamic)
-DECISION_ENGINE_LOT_SIZE_DEFAULT = 1           # rounded down to a multiple of this many units
-
-# --- Alert Priority Engine thresholds -- walked highest-first, first
-# match wins, same style as EARLY_BREAKOUT_GRADE_THRESHOLDS /
-# TRADE_SCORE_GRADE_THRESHOLDS elsewhere in this file. ---
-DECISION_ENGINE_PRIORITY_THRESHOLDS = [
-    (85, "Very High"),
-    (70, "High"),
-    (55, "Medium"),
-    (0, "Low"),
-]
-
-# (2026-10-31, at the user's explicit request: the Part 7 Replay/Analytics
-# engine config block (REPLAY_* settings, 26 constants) was removed along
-# with app/engines/replay_analytics/ and the unused dashboard API it fed.
-# Nothing in the live scanner/tracker referenced any of them.)
-
-# =============================================================================
-# Part 11 -- Quant Intelligence Engine (app/engines/quant_intelligence/)
-# -- independent probability/signal-quality/regime/risk/pattern/learning/
-# explainability engine, merged in as a plug-in of the existing Part 6
-# Decision Engine (decision_engine/quant_adapter.py). Additive only,
-# same rollout posture as every other engine in this file: computed
-# and attached to trade["decision"]["quant_intelligence"] for
-# visibility/logging regardless of these settings; QUANT_INTELLIGENCE_
-# INFLUENCE_ENABLED (default False) is the only flag that lets it
-# actually change trade["decision"]["approved"]/priority, same pattern
-# as DECISION_ENGINE_FILTER_ENABLED / OPTIONS_INTELLIGENCE_FILTER_ENABLED
-# above. If the engine is unavailable, disabled, or raises for any
-# reason, decision_engine/quant_adapter.py degrades to
-# {"enabled": False, ...} and the rest of the Decision Engine output is
-# completely unaffected -- see that module's docstring.
-#
-# The engine's own internal tuning (adaptive probability weights,
-# signal-quality grade thresholds, regime/risk/pattern thresholds,
-# cache TTL, etc.) lives in its own
-# app/engines/quant_intelligence/config/settings.yaml, per Part 11's
-# original design -- NOT duplicated here. Only the integration-level
-# toggles below (whether it runs at all, and whether it's allowed to
-# influence the decision) belong in this file.
-# =============================================================================
-
-QUANT_INTELLIGENCE_ENABLED = True             # master flag -- False fully restores pre-Part-11 behavior
-QUANT_INTELLIGENCE_INFLUENCE_ENABLED = False  # if True, a REJECTED Quant Intelligence read can flip an
-                                               # otherwise-approved trade to rejected (see quant_adapter.py)
-QUANT_INTELLIGENCE_MIN_PROBABILITY = 40.0     # 0-100 -- only enforced when the influence flag above is True
-
-# =============================================================================
-# Part 11.5 -- News Intelligence Engine (app/engines/news_intelligence/)
-# -- independent collector/sentiment/impact engine, merged in as a plug-in
-# of the existing Part 6 Decision Engine (decision_engine/news_adapter.py),
-# invoked after Quant Intelligence. Additive only, same rollout posture as
-# every other engine in this file: computed and attached to
-# trade["decision"]["news_intelligence"] for visibility/logging regardless
-# of these settings; NEWS_INTELLIGENCE_INFLUENCE_ENABLED (default False) is
-# the only flag that lets it actually change trade["decision"]["approved"].
-# If the engine is unavailable, disabled, or raises for any reason,
-# decision_engine/news_adapter.py degrades to {"enabled": False, ...} and
-# the rest of the Decision Object (including Quant Intelligence's own
-# output) is completely unaffected -- see that module's docstring.
-#
-# The engine's own internal tuning (providers, dedup, cache TTL, sentiment
-# thresholds, impact weights, etc.) lives in its own
-# app/engines/news_intelligence/config/settings.yaml, per its original
-# design -- NOT duplicated here. Only the integration-level toggles below
-# (whether it runs at all, and whether it's allowed to influence the
-# decision) belong in this file.
-# =============================================================================
-
-NEWS_INTELLIGENCE_ENABLED = True             # master flag -- False fully restores pre-Part-11.5 behavior
-NEWS_INTELLIGENCE_INFLUENCE_ENABLED = False  # if True, a confidently unfavorable News Intelligence read
-                                              # can flip an otherwise-approved trade to rejected (see news_adapter.py)
-NEWS_INTELLIGENCE_MIN_SCORE = -20.0          # -100..100, direction-aligned floor -- only enforced when the
-                                              # influence flag above is True
-NEWS_INTELLIGENCE_COLLECTION_TIMEOUT_SECONDS = 25.0  # hard wall-clock budget for the one collect() cycle
-                                              # main.py runs at startup -- see main.py's own comment for why
-                                              # this is a defense-in-depth cap on top of each provider's own
-                                              # settings.yaml timeout_seconds, not a replacement for it.
+# (2026-10-31, at the user's explicit request: the Part 6 Decision Engine,
+# Part 11 Quant Intelligence and Part 11.5 News Intelligence config blocks
+# were removed with their packages -- none of them had been called from
+# the live path since 2026-08-14 and every "influence"/"filter" flag was
+# False. Nothing in the live scanner/tracker referenced any of these.)
 
 # =============================================================================
 # Candlestick Pattern Recognition (candlestick_patterns.py) -- same
-# master-flag / influence-flag rollout pattern as Options/Quant/News
-# Intelligence above. Pure arithmetic on the SAME 15-min candles
+# master-flag rollout pattern as Options Intelligence above. Pure arithmetic on the SAME 15-min candles
 # scanner.py already fetches (candles_15m in score_strike()) -- no new
 # broker calls, no new candle history, no new dependency (stdlib only,
 # same as indicators.py). Computed and attached to the trade dict for
-# visibility either way; only affects the Decision Object's confidence
-# score when the influence flag below is explicitly turned on, and even
-# then only as a small BOUNDED nudge (see candlestick_adapter.py) --
-# never a hard reject on its own, same "advisory, not a gate" lesson
-# already learned from the 15-min MTF disagreement fix (see
-# option_chain.directional_bias()'s docstring).
+# visibility; its only live effect is trade_score.apply_candlestick_penalty()
+# (a small score penalty for indecision patterns) -- never a hard reject
+# on its own, same "advisory, not a gate" lesson already learned from the
+# 15-min MTF disagreement fix (see option_chain.directional_bias()'s
+# docstring).
 # =============================================================================
 CANDLESTICK_PATTERNS_ENABLED = True             # master flag -- False fully restores pre-existing behavior
-CANDLESTICK_PATTERNS_INFLUENCE_ENABLED = False  # if True, a confidently-opposing candlestick read can nudge
-                                                 # decision_object["confidence_score"] down by up to
-                                                 # CANDLESTICK_MAX_CONFIDENCE_DELTA points (see candlestick_adapter.py)
-# CANDLESTICK_PATTERN_LOOKBACK: REMOVED (2026-08-10, accuracy review) --
-# was documented as "candles examined for the most-recent formation"
-# but nothing in candlestick_patterns.py ever read it; each detector
-# already uses the fixed candle count its own formation needs (1/2/3),
-# hardcoded directly (is_morning_star() etc. slice candles[-3:] etc.)
-# rather than a shared lookback constant. Dead config, removed rather
-# than wired into something that doesn't need it.
-CANDLESTICK_MAX_CONFIDENCE_DELTA = 6            # points -- hard cap on how much the influence nudge above can
-                                                 # move confidence_score in either direction, deliberately small
-                                                 # relative to Decision Engine's other inputs
 
 # Shape thresholds -- ratios against each candle's own high-low range,
 # not absolute price levels, so these work identically across NIFTY

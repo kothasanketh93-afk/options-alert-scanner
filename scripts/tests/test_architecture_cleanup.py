@@ -5,8 +5,9 @@ Plain assert-based tests, same convention as this repo's other tests/*.py
 files (no pytest dependency).
 
 Covers the 2026-08-14 architecture cleanup pass:
-  A. Decision Engine is not called when DECISION_ENGINE_FILTER_ENABLED=False
-     (deprecated from the live path -- was previously called unconditionally).
+  A. (removed 2026-10-31 with the Decision Engine itself -- it had been
+     deprecated from the live path since 2026-08-14 and was deleted at the
+     owner's request; its two tests were removed here.)
   B. India VIX fetch failure never raises (logging-only, must never break a scan).
   C. PCR native-fetch failure never raises (logging-only, diagnostic only).
   D. tracker.compute_time_taken()'s result is what main.py now persists onto
@@ -42,50 +43,6 @@ class _Patch:
             setattr(self.obj, self.attr, self._orig)
         else:
             delattr(self.obj, self.attr)
-
-
-# ---------------------------------------------------------------------------
-# A. Decision Engine deprecated from the live path
-# ---------------------------------------------------------------------------
-
-def test_a_decision_engine_not_called_when_disabled():
-    import main as main_mod
-
-    call_count = {"n": 0}
-
-    def fake_evaluate(trade, snapshot=None):
-        call_count["n"] += 1
-        return {"approved": False, "rejection_reasons": ["should never be reached"]}
-
-    with _Patch(config, "DECISION_ENGINE_FILTER_ENABLED", False), \
-         _Patch(main_mod.decision_engine, "evaluate", fake_evaluate):
-        trade = {"symbol": "NIFTY"}
-        decision = main_mod.apply_decision_engine(trade)
-
-    assert call_count["n"] == 0, "A: decision_engine.evaluate() must NOT be called when the filter is disabled"
-    assert decision["approved"] is True, "A: the placeholder must default to approved=True (never blocks)"
-    assert decision["status"] == "SKIPPED_DEPRECATED_FROM_LIVE_PATH"
-    assert trade["decision"] == decision, "A: trade['decision'] must still be populated for any downstream reader"
-    print("test_a_decision_engine_not_called_when_disabled passed")
-
-
-def test_a_variant_decision_engine_still_callable_if_explicitly_reenabled():
-    import main as main_mod
-
-    call_count = {"n": 0}
-
-    def fake_evaluate(trade, snapshot=None):
-        call_count["n"] += 1
-        return {"approved": True, "rejection_reasons": []}
-
-    with _Patch(config, "DECISION_ENGINE_FILTER_ENABLED", True), \
-         _Patch(main_mod.decision_engine, "evaluate", fake_evaluate), \
-         _Patch(main_mod.market_snapshot, "get_market_snapshot", lambda symbol: {}):
-        trade = {"symbol": "NIFTY"}
-        main_mod.apply_decision_engine(trade)
-
-    assert call_count["n"] == 1, "A (variant): explicitly re-enabling the flag must still allow the real call through"
-    print("test_a_variant_decision_engine_still_callable_if_explicitly_reenabled passed")
 
 
 # ---------------------------------------------------------------------------
@@ -177,8 +134,6 @@ def test_d_variant_main_py_actually_sets_these_fields():
 
 
 if __name__ == "__main__":
-    test_a_decision_engine_not_called_when_disabled()
-    test_a_variant_decision_engine_still_callable_if_explicitly_reenabled()
     test_b_india_vix_fetch_failure_returns_none_not_raise()
     test_b_variant_india_vix_success_path()
     test_c_native_pcr_fetch_failure_returns_none_not_raise()

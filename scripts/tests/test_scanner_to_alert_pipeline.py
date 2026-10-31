@@ -36,16 +36,9 @@ APIs). Instead:
     run_scanner_step()'s mocked-detect_all_setups path to confirm it
     actually reaches tg.send().
 
-KNOWN GAP, DISCLOSED RATHER THAN SILENTLY SKIPPED: app/engines/
-decision_engine/ (Part 6, main.py's apply_decision_engine()) sits in the
-real pipeline between Options Intelligence and the Telegram send, and
-config.DECISION_ENGINE_FILTER_ENABLED defaults to False -- the exact same
-"computed but never enforced" shape config.OPTIONS_INTELLIGENCE_FILTER_ENABLED
-had before the 2026-08-10 fix. This file does NOT audit or fix that engine
-(it is mocked out below to keep these tests focused on the scanner->
-probability->options_intelligence->alert path this review was scoped to) --
-see this diff's accompanying report for why it was not blindly flipped on
-the same way Options Intelligence's flag was.
+(The Decision Engine that used to sit between Options Intelligence and the
+Telegram send was removed 2026-10-31; it had not been called in the live
+path since 2026-08-14.)
 
 Run with: python scripts/tests/test_scanner_to_alert_pipeline.py
 Exits non-zero (via AssertionError) on the first failing check.

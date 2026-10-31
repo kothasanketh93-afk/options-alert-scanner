@@ -42,7 +42,6 @@ import trade_score
 import trade_lifecycle
 from config import SUMMARY_HHMM, EOD_STATUS_CHECK_HHMM
 from app.engines import early_breakout as early_breakout_engine
-from app.engines import decision_engine
 from app.engines import fib_pivot as fib_pivot_engine
 from app.market import snapshot as market_snapshot
 
@@ -133,61 +132,6 @@ def new_trade_record(setup: dict, trade_id: str, alert_dt: datetime, display_lab
             trade[optional_key] = setup[optional_key]
 
     return trade
-
-
-
-def apply_decision_engine(trade: dict) -> dict:
-    """
-    Part 6 -- Enterprise Decision Engine (app/engines/decision_engine/),
-    added 2026-07-26. Final-authority pass over a trade dict that has
-    already been through Market Snapshot -> (Early Breakout | Trade
-    Score Engine) -> Options Intelligence.
-
-    DEPRECATED FROM THE LIVE PATH (2026-08-14, architecture cleanup
-    audit): decision_engine.evaluate() -> app/engines/quant_intelligence/
-    probability/scorer.py computes its OWN trend/EMA/VWAP/ATR/PCR/OI/IV/
-    momentum scores -- re-deriving conclusions from the exact same raw
-    facts trade_score.py and options_intelligence/engine.py already
-    score, under different function names. Confirmed by repo audit this
-    session: this ran UNCONDITIONALLY on every trade even while
-    config.DECISION_ENGINE_FILTER_ENABLED=False made its verdict purely
-    advisory -- real computation (and broker calls) spent every time
-    for zero current effect, and a live trap: re-enabling the flag
-    later, without first reconciling this module's signals against the
-    ones already scored, would recreate the HTF/MTF duplicate-evidence
-    bug this session fixed, just at a larger scale.
-
-    Now gated behind the SAME config.DECISION_ENGINE_FILTER_ENABLED
-    flag that already controlled enforcement -- when False (the
-    default), this function no longer calls decision_engine.evaluate()
-    at all, and returns a clearly-labeled placeholder instead. The
-    decision_engine/quant_intelligence CODE ITSELF is left in place
-    (not deleted) -- this is a deprecation of the live call, not a
-    removal of the module -- in case a future redesign reconciles its
-    signals against the existing scoring and re-enables it deliberately.
-
-    market_snapshot.get_market_snapshot() is a per-process cache (see
-    app/market/snapshot.py), so calling it again here for a symbol
-    Early Breakout already snapshotted this cycle is free -- unaffected
-    by this change, still called when the engine itself runs.
-    """
-    if not config.DECISION_ENGINE_FILTER_ENABLED:
-        decision = {
-            "approved": True,
-            "rejection_reasons": [],
-            "status": "SKIPPED_DEPRECATED_FROM_LIVE_PATH",
-            "note": (
-                "decision_engine.evaluate() was not called -- deprecated from the "
-                "live path 2026-08-14 (duplicates trade_score.py/options_intelligence "
-                "signals; see apply_decision_engine()'s own docstring)."
-            ),
-        }
-        trade["decision"] = decision
-        return decision
-    snapshot = market_snapshot.get_market_snapshot(trade["symbol"])
-    decision = decision_engine.evaluate(trade, snapshot=snapshot)
-    trade["decision"] = decision
-    return decision
 
 
 def notify_once(trade: dict, event_key: str, message_fn, *args):
@@ -337,14 +281,6 @@ def run_scanner_step(state: dict, now: datetime):
 
     state["trades"][trade_id] = trade
 
-    decision = apply_decision_engine(trade)
-    if config.DECISION_ENGINE_FILTER_ENABLED and not decision.get("approved", True):
-        log.info(
-            "DECISION_ENGINE_REJECTED %s: %s -- tracked internally, no alert sent.",
-            trade_id, decision.get("rejection_reasons"),
-        )
-        return
-
     # NOTE (2026-07-24, live bug fix): this used to gate the initial
     # NEW_TRADE_ALERT at probability_pct >= TELEGRAM_MIN_PROBABILITY
     # (80%) while every DOWNSTREAM tracker event for the same trade
@@ -446,14 +382,6 @@ def run_early_breakout_step(state: dict, now: datetime):
                 "tracked internally, no alert sent.",
                 trade_id, trade["trade_score"], trade.get("grade"),
                 config.EARLY_BREAKOUT_TELEGRAM_MIN_SCORE,
-            )
-            continue
-
-        decision = apply_decision_engine(trade)
-        if config.DECISION_ENGINE_FILTER_ENABLED and not decision.get("approved", True):
-            log.info(
-                "DECISION_ENGINE_REJECTED %s: %s -- tracked internally, no alert sent.",
-                trade_id, decision.get("rejection_reasons"),
             )
             continue
 
@@ -903,84 +831,9 @@ def maybe_send_shadow_summary(state: dict, now: datetime):
 def main():
     config_validation.validate_startup_config()
 
-    # Part 11.5 -- News Intelligence Engine: this process is a one-shot
-    # cron invocation (see module docstring), not a long-running daemon,
-    # so there is no persistent process to run NewsEngine's background
-    # scheduler in. Instead, run ONE synchronous collection cycle here,
-    # before any trade is scanned/decided this run, so
-    # decision_engine/news_adapter.py has fresh cache data to score
-    # against via NewsDecisionAdapter this cycle. Registers providers,
-    # initializes the cache, and validates its own settings.yaml as a
-    # side effect of NewsEngine() construction / collect() -- exactly
-    # the "Initialize News Intelligence during application startup...
-    # Fail gracefully" requirement. Never blocks or fails the run: any
-    # exception here (missing package, bad config, network-down
-    # providers) is logged and swallowed -- the scanner, Decision
-    # Engine, Quant Intelligence, Telegram, dashboard, and monitoring
-    # all continue completely unaffected, exactly as
-    # decision_engine/news_adapter.py's own per-trade degrade-to-
-    # {"enabled": False} path already guarantees for the scoring side.
-    #
-    # Fix (production-readiness review): collect_all() already bounds
-    # each individual provider by its own settings.yaml timeout_seconds
-    # (see news_intelligence/collector/collector.py), but there was no
-    # OVERALL cap on the whole cycle. Since this scanner runs on a tight
-    # 5-15 minute cadence (trader.yml), a hard wall-clock budget here is
-    # a defense-in-depth belt-and-suspenders on top of that, not a
-    # replacement for it: if collection is still running past
-    # NEWS_INTELLIGENCE_COLLECTION_TIMEOUT_SECONDS, main() gives up on
-    # it and moves straight on to scanning trades -- the background
-    # thread is simply abandoned (daemon=True) rather than joined
-    # further, so it can never hold up this run.
-    if config.NEWS_INTELLIGENCE_ENABLED:
-        try:
-            from app.engines.news_intelligence import NewsEngine
-            import concurrent.futures
-
-            # NOT using `with ThreadPoolExecutor(...) as pool:` here --
-            # its __exit__ calls shutdown(wait=True), which would block
-            # until the thread finishes regardless of the .result()
-            # timeout below, defeating the whole point of this guard.
-            # shutdown(wait=False) lets main() move on immediately while
-            # an abandoned collection thread (if any) finishes quietly
-            # in the background and writes its results into the shared
-            # NewsCache singleton for the *next* run to benefit from.
-            _pool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
-            _future = _pool.submit(lambda: NewsEngine().collect())
-            try:
-                _news_result = _future.result(
-                    timeout=config.NEWS_INTELLIGENCE_COLLECTION_TIMEOUT_SECONDS
-                )
-                # Fix: CollectionResult (news_intelligence/collector/collector.py)
-                # exposes new_items/duplicates_skipped/provider_errors, not
-                # collected_count/cache_size -- the previous getattr(...) calls
-                # always silently returned None for both, making this log line
-                # useless for observability without ever raising or being
-                # noticed. Corrected to read the fields that actually exist.
-                log.info(
-                    "NEWS_INTELLIGENCE_STARTUP new_items=%s duplicates_skipped=%s "
-                    "provider_errors=%s degraded_providers=%s",
-                    len(getattr(_news_result, "new_items", [])),
-                    getattr(_news_result, "duplicates_skipped", None),
-                    getattr(_news_result, "provider_errors", None) or "none",
-                    # FIX (2026-07-31): see CollectionResult.degraded_providers()'s
-                    # docstring -- a provider returning 0 items without raising
-                    # doesn't land in provider_errors, so this line used to be
-                    # able to read "provider_errors=none" on a run where several
-                    # providers were silently contributing nothing.
-                    (_news_result.degraded_providers() if hasattr(_news_result, "degraded_providers") else None)
-                    or "none",
-                )
-            except concurrent.futures.TimeoutError:
-                log.warning(
-                    "News Intelligence startup collection exceeded %ss budget -- "
-                    "abandoning it for this run (will retry next cycle).",
-                    config.NEWS_INTELLIGENCE_COLLECTION_TIMEOUT_SECONDS,
-                )
-            finally:
-                _pool.shutdown(wait=False)
-        except Exception as exc:  # noqa: BLE001 - startup collection must never block a scan run
-            log.warning("News Intelligence startup collection failed (ignored): %s", exc)
+    # (2026-10-31: the per-run News Intelligence collection cycle that used
+    # to run here was removed -- its only consumer, decision_engine's
+    # news_adapter, had not been called in the live path since 2026-08-14.)
 
     # Part 9 item 5: read-only pass over config.py's actual VALUES
     # (duplicate symbols, negative intervals, invalid thresholds/timings)

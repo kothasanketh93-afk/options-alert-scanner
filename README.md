@@ -1110,38 +1110,13 @@ The optional read-only FastAPI dashboard (`scripts/app/backend/`,
 only it used were removed at the owner's request -- no workflow ran
 them. `git log` has the last version if it is ever needed again.
 
-## Quant Intelligence Engine (Part 11, merged)
+## Decision Engine, Quant Intelligence, News Intelligence (removed 2026-10-31)
 
-`scripts/app/engines/quant_intelligence/` is an independent
-probability/signal-quality/regime/risk/pattern/learning/explainability
-engine, merged in as a plug-in of the existing Decision Engine
-(`scripts/app/engines/decision_engine/quant_adapter.py`). It runs as
-the final step of `decision_engine.evaluate()`, reusing data the
-scanner already computed each cycle -- no duplicate fetches or
-recalculation. By default it's additive/visible only
-(`config.QUANT_INTELLIGENCE_INFLUENCE_ENABLED = False`); any failure
-degrades gracefully without affecting the rest of the Decision Object.
-See `docs/QUANT_INTELLIGENCE_INTEGRATION.md` for the full architecture
-diagram, configuration guide, known limitations, and manual setup
-steps, and `scripts/app/engines/quant_intelligence/README.md` for the
-engine's own internals.
-
-## News Intelligence Engine (Part 11.5, merged)
-
-`scripts/app/engines/news_intelligence/` is an independent news
-collector/sentiment/impact engine (NSE/BSE/RBI/SEBI announcements +
-market RSS feeds), merged in as a second plug-in of the existing
-Decision Engine (`scripts/app/engines/decision_engine/news_adapter.py`),
-running immediately after Quant Intelligence in
-`decision_engine.evaluate()`. A single synchronous news-collection
-cycle runs once per scan invocation (see
-`docs/NEWS_INTELLIGENCE_INTEGRATION.md` for why it's synchronous
-rather than a background scheduler); scoring itself is a fast in-memory
-cache read, no network I/O per trade. By default it's additive/visible
-only (`config.NEWS_INTELLIGENCE_INFLUENCE_ENABLED = False`); any
-failure degrades gracefully without affecting the rest of the Decision
-Object, including Quant Intelligence's own output. See
-`docs/NEWS_INTELLIGENCE_INTEGRATION.md` for the full architecture
-diagram, configuration guide, dependency notes, and manual setup
-steps, and `scripts/app/engines/news_intelligence/README.md` for the
-engine's own internals.
+These three engines (`app/engines/decision_engine/`, `quant_intelligence/`,
+`news_intelligence/`) were removed at the owner's request. The Decision
+Engine had not been called from the live path since 2026-08-14 (so the
+Quant and News adapters running inside it never ran either), and every
+"influence"/"filter" flag was False. The per-run news collection cycle in
+`main.py` (about 9 outbound HTTP calls every run, with no consumer) was
+removed with them, and PyYAML / pydantic / beautifulsoup4 were dropped from
+`requirements.txt`. `git log` has the last version if ever needed.
