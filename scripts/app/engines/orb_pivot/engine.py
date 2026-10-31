@@ -88,17 +88,19 @@ def _scan_symbol(symbol, session):
         return []
 
     out = []
-    orb = signals.detect_orb15(today, prev["close"])
+    orb = signals.detect_orb15(today, prev["close"]) if symbol in config.ORB_PIVOT_SYMBOLS else None
     if orb:
         s = _build_setup("orb15", symbol, orb, atr, config.ORB15_TARGET_ATR_MULT, session, wide)
         if s:
             out.append(s)
-    pb = signals.detect_pivot_break(today, prev["high"], prev["low"], prev["close"])
+    pb = (signals.detect_pivot_break(today, prev["high"], prev["low"], prev["close"])
+          if symbol in config.ORB_PIVOT_SYMBOLS else None)
     if pb:
         s = _build_setup("pivot_break", symbol, pb, atr, config.PIVOT_BREAK_TARGET_ATR_MULT, session, wide)
         if s:
             out.append(s)
-    pdhl = signals.detect_pdhl_retest(today, prev["high"], prev["low"])
+    pdhl = (signals.detect_pdhl_retest(today, prev["high"], prev["low"])
+            if symbol in config.PDHL_SYMBOLS else None)
     if pdhl:
         s = _build_setup("pdhl_retest", symbol, pdhl, atr, config.PDHL_TARGET_ATR_MULT, session, wide)
         if s:
@@ -111,7 +113,7 @@ def detect_all_orb_pivot_setups() -> list:
     if session is None:
         return []
     found = []
-    for symbol in config.ORB_PIVOT_SYMBOLS:
+    for symbol in list(dict.fromkeys(list(config.ORB_PIVOT_SYMBOLS) + list(config.PDHL_SYMBOLS))):
         try:
             found.extend(_scan_symbol(symbol, session))
         except Exception as exc:
