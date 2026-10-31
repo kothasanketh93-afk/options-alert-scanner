@@ -1,0 +1,36 @@
+# One-off read-only MCX history feasibility probe (2026-10-31). workflow_dispatch only.
+name: Probe Angel MCX History
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - name: Probe
+        env:
+          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+          ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
+          PROBE_OUT: ${{ runner.temp }}/probe_angel_report.txt
+        run: python scripts/probe_angel_mcx.py
+      - name: Publish report to research-probe-angel branch
+        env:
+          PROBE_OUT: ${{ runner.temp }}/probe_angel_report.txt
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout --orphan research-probe-angel
+          git rm -rf . >/dev/null 2>&1 || true
+          cp "$PROBE_OUT" probe_angel_report.txt
+          git add probe_angel_report.txt
+          git commit -m "Angel MCX probe report $(date -u +%F)"
+          git push -f origin research-probe-angel
