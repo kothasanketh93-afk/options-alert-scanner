@@ -82,3 +82,31 @@ class Wide(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PDHL(unittest.TestCase):
+    # prev high 110, prev low 80. Drift up so EMA9 > EMA21 at the retest.
+    UP = [mk(0, 100, 101, 99, 100), mk(1, 100, 102, 100, 101), mk(2, 101, 103, 100, 102),
+          mk(3, 102, 106, 101, 105), mk(4, 105, 109, 104, 108)]
+
+    def test_breakout_then_retest_ce(self):
+        c = self.UP + [mk(5, 108, 113, 108, 112),            # close 112 > PDH, strong body
+                       mk(6, 112, 112, 109, 111),            # drifts, stays above
+                       mk(7, 111, 112, 109.5, 111.5)]        # low <= 110? no
+        c = c[:6] + [mk(6, 112, 113, 109.5, 111)] + [mk(7, 111, 114, 109.8, 113)]
+        r = s.detect_pdhl_retest(c, 110, 80)
+        self.assertIsNotNone(r)
+        self.assertEqual((r["direction"], r["level_name"]), ("CE", "PDH"))
+
+    def test_wick_only_break_ignored(self):
+        c = self.UP + [mk(5, 108, 115, 107, 110.5)]          # body small vs range
+        self.assertIsNone(s.detect_pdhl_retest(c, 110, 80))
+
+    def test_failed_breakout_cancels(self):
+        c = self.UP + [mk(5, 108, 113, 108, 112), mk(6, 112, 112, 107, 108), mk(7, 108, 112, 108, 111)]
+        self.assertIsNone(s.detect_pdhl_retest(c, 110, 80))
+
+    def test_stale_signal_not_chased(self):
+        c = self.UP + [mk(5, 108, 113, 108, 112), mk(6, 112, 113, 109.5, 111), mk(7, 111, 114, 110.5, 113),
+                       mk(8, 113, 114, 112, 113), mk(9, 113, 115, 112, 114)]
+        self.assertIsNone(s.detect_pdhl_retest(c, 110, 80))

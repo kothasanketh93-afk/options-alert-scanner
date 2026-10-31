@@ -98,6 +98,11 @@ def _scan_symbol(symbol, session):
         s = _build_setup("pivot_break", symbol, pb, atr, config.PIVOT_BREAK_TARGET_ATR_MULT, session, wide)
         if s:
             out.append(s)
+    pdhl = signals.detect_pdhl_retest(today, prev["high"], prev["low"])
+    if pdhl:
+        s = _build_setup("pdhl_retest", symbol, pdhl, atr, config.PDHL_TARGET_ATR_MULT, session, wide)
+        if s:
+            out.append(s)
     return out
 
 

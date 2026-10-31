@@ -98,3 +98,62 @@ def is_wide_prev_day(daily: list, window: int = 10, factor: float = 1.5):
     if len(ranges) < 5:
         return None
     return ranges[-1] > factor * (sum(ranges) / len(ranges))
+
+
+PDHL_LAST_SIGNAL_MINS = 14 * 60 + 5   # as in the backtest
+PDHL_RETEST_WINDOW = 12               # candles after the breakout in which the retest must occur
+
+
+def _ema_series(values: list, span: int) -> list:
+    k = 2.0 / (span + 1)
+    out, prev = [], None
+    for v in values:
+        prev = v if prev is None else v * k + prev * (1 - k)
+        out.append(prev)
+    return out
+
+
+def detect_pdhl_retest(candles: list, prev_high: float, prev_low: float):
+    """
+    Previous-day High/Low breakout + retest (rules fixed in the 2026-10-31 backtest, no tuning):
+      1. A 5m candle CLOSES beyond PDH (CE) / PDL (PE) with a body >= 50% of its range and in the
+         breakout direction (wick-only breaks ignored).
+      2. Within PDHL_RETEST_WINDOW candles a later candle touches the level (CE: low <= PDH; PE: high >= PDL)
+         and CLOSES back on the breakout side with a confirming colour, while EMA9 > EMA21 (CE) / < (PE).
+      3. Any close back through the level before the retest cancels the setup (failed breakout).
+    Only a signal on one of the last FRESH_WINDOW candles is returned. EMAs use today's candles only.
+    """
+    n = len(candles)
+    if n < 6 or None in (prev_high, prev_low):
+        return None
+    closes = [c["close"] for c in candles]
+    e9, e21 = _ema_series(closes, 9), _ema_series(closes, 21)
+    st = None
+    for i in range(3, n):
+        if _mins(candles[i]) > PDHL_LAST_SIGNAL_MINS:
+            break
+        c = candles[i]
+        cl, o, h, l = c["close"], c["open"], c["high"], c["low"]
+        body, rng = abs(cl - o), max(h - l, 1e-9)
+        if st is None:
+            if cl > prev_high and body >= 0.5 * rng and cl > o:
+                st = ("CE", i)
+            elif cl < prev_low and body >= 0.5 * rng and cl < o:
+                st = ("PE", i)
+            continue
+        direction, bi = st
+        if i - bi > PDHL_RETEST_WINDOW:
+            return None
+        if direction == "CE":
+            if cl < prev_high:
+                return None
+            if l <= prev_high < cl and cl > o and e9[i] > e21[i]:
+                return (None if not _fresh(i, n) else
+                        {"direction": "CE", "level_name": "PDH", "level_value": round(prev_high, 2), "signal_index": i})
+        else:
+            if cl > prev_low:
+                return None
+            if h >= prev_low > cl and cl < o and e9[i] < e21[i]:
+                return (None if not _fresh(i, n) else
+                        {"direction": "PE", "level_name": "PDL", "level_value": round(prev_low, 2), "signal_index": i})
+    return None
