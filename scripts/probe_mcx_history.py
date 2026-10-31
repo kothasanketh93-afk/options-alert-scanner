@@ -60,10 +60,27 @@ def main():
             code, err, cs = candles(key, "minutes/5", start, end)
             span = f"{cs[-1][0]}..{cs[0][0]}" if cs else "-"
             say(f"  live-contract {name} {label}: HTTP {code} candles={len(cs)} {span} {err}")
-        # expired-instruments API (separate endpoint family)
-        for path in (f"https://api.upstox.com/v2/expired-instruments/expiries?instrument_key={requests.utils.quote(key, safe='')}",):
-            rr = get(path)
-            say(f"  expired-expiries {name}: HTTP {rr.status_code} {rr.text[:200]}")
+        # expired-instruments API family: needs the UNDERLYING key, not the contract key
+        ukey = x.get("underlying_key")
+        q = requests.utils.quote(str(ukey), safe="")
+        rr = get(f"https://api.upstox.com/v2/expired-instruments/expiries?instrument_key={q}")
+        say(f"  expired-expiries {name} (underlying {ukey}): HTTP {rr.status_code} {rr.text[:300]}")
+        try:
+            exps = rr.json().get("data", [])
+        except Exception:
+            exps = []
+        say(f"  expiries listed: {len(exps)} oldest={exps[-1] if exps else '-'} newest={exps[0] if exps else '-'}")
+        for exp in (exps[-1:] + exps[:1]):
+            rc = get(f"https://api.upstox.com/v2/expired-instruments/future/contract?instrument_key={q}&expiry_date={exp}")
+            say(f"  expired-contract {name} {exp}: HTTP {rc.status_code} {rc.text[:300]}")
+            try:
+                ek = rc.json()["data"][0]["instrument_key"]
+            except Exception:
+                continue
+            d_to = date.fromisoformat(exp) - timedelta(days=1)
+            code, err, cs = candles(ek, "5minute", d_to - timedelta(days=10), d_to,
+                                    base="https://api.upstox.com/v2/expired-instruments/historical-candle")
+            say(f"  expired-candles {name} {exp} key={ek}: HTTP {code} candles={len(cs)} {err}")
     open(OUT, "w").write("\n".join(lines) + "\n")
 
 
