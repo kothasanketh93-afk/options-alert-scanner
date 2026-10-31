@@ -571,6 +571,35 @@ def run_tracker_step(state: dict, now: datetime):
                        trade_id, type(exc).__name__, exc)
 
 
+def _shadow_entry_context(trade: dict) -> str:
+    """
+    Diagnostic-only (added 2026-10-31): extra key=value fields appended to
+    SHADOW_ENTRY_ACTIVATED / SHADOW_OUTCOME_SL_FIRST log lines so the
+    retained scan logs carry what is needed to study "chased entry" SLs
+    (entry premium vs. alert premium, alert->entry delay, grade, score,
+    session, MFE/MAE) without needing the state file. Never changes any
+    trade field or decision; any missing/odd value just omits that field.
+    """
+    parts = []
+    try:
+        ap, ep = trade.get("alert_premium"), trade.get("tracked_entry_price")
+        if ap and ep:
+            parts.append(f"alert_premium={ap}")
+            parts.append(f"entry_price={ep}")
+            parts.append(f"chase_pct={round((ep - ap) / ap * 100, 2)}")
+        at, et = trade.get("alert_time"), trade.get("actual_entry_time")
+        if at and et:
+            delay = (datetime.fromisoformat(et) - datetime.fromisoformat(at)).total_seconds() / 60
+            parts.append(f"alert_to_entry_min={round(delay, 1)}")
+        for key, label in (("grade", "grade"), ("trade_score", "score"), ("session", "session"),
+                           ("max_favorable_pct", "mfe_pct"), ("max_adverse_pct", "mae_pct")):
+            if trade.get(key) is not None:
+                parts.append(f"{label}={str(trade[key]).replace(' ', '_')}")
+    except Exception:
+        return ""
+    return (" " + " ".join(parts)) if parts else ""
+
+
 def _dispatch_shadow_tracker_events(trade: dict, events: list, now: datetime):
     """
     Phase-2 Shadow/Validation Mode (2026-08-23) counterpart to
@@ -585,9 +614,10 @@ def _dispatch_shadow_tracker_events(trade: dict, events: list, now: datetime):
     for event in events:
         etype = event["type"]
         if etype == "ENTRY_ACTIVATED":
-            log.info("SHADOW_ENTRY_ACTIVATED %s %s %s strike=%s candidate_id=%s",
+            log.info("SHADOW_ENTRY_ACTIVATED %s %s %s strike=%s candidate_id=%s%s",
                      trade["symbol"], trade["direction"], trade["moneyness"],
-                     trade["strike"], trade.get("candidate_id"))
+                     trade["strike"], trade.get("candidate_id"),
+                     _shadow_entry_context(trade))
         elif etype == "T1_HIT":
             mins = tracker.compute_time_taken(trade["actual_entry_time"], trade["t1_hit_time"])
             trade["time_to_target_1_minutes"] = mins
@@ -601,8 +631,9 @@ def _dispatch_shadow_tracker_events(trade: dict, events: list, now: datetime):
         elif etype == "SL_HIT":
             mins = tracker.compute_time_taken(trade["actual_entry_time"], trade["sl_hit_time"])
             trade["time_to_stop_minutes"] = mins
-            log.info("SHADOW_OUTCOME_SL_FIRST %s %s strike=%s candidate_id=%s time_to_sl_minutes=%s",
-                     trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"), mins)
+            log.info("SHADOW_OUTCOME_SL_FIRST %s %s strike=%s candidate_id=%s time_to_sl_minutes=%s%s",
+                     trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"), mins,
+                     _shadow_entry_context(trade))
         elif etype == "NOT_ENTERED":
             log.info("SHADOW_OUTCOME_NOT_ENTERED %s %s strike=%s candidate_id=%s",
                      trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"))
