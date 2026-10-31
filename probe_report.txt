@@ -1,0 +1,30 @@
+MCX master HTTP 200
+MCX FUT rows: 157
+GOLD: nearest FUT key=MCX_FO|571445 lot=100 expiry_ms=1793903399000 underlying_key=MCX_COM|117
+GOLDM: nearest FUT key=MCX_FO|571445 lot=100 expiry_ms=1793903399000 underlying_key=MCX_COM|117
+CRUDEOIL: nearest FUT key=MCX_FO|573422 lot=100 expiry_ms=1795112999000 underlying_key=MCX_COM|294
+CRUDEOILM: nearest FUT key=MCX_FO|573423 lot=10 expiry_ms=1795112999000 underlying_key=MCX_COM|556
+  live-contract GOLD last 30d: HTTP 200 candles=3558 2026-10-01T09:00:00+05:30..2026-10-30T23:25:00+05:30 
+  live-contract GOLD ~6 months ago: HTTP 200 candles=0 - 
+  live-contract GOLD ~2 years ago: HTTP 200 candles=0 - 
+  live-contract GOLD 2022: HTTP 200 candles=0 - 
+  expired-expiries GOLD (underlying MCX_COM|117): HTTP 400 {"status":"error","errors":[{"errorCode":"UDAPI100011","message":"Invalid Instrument key","propertyPath":"getExpiriesResponse.instrumentKey","invalidValue":"MCX_COM|117","error_code":"UDAPI100011","property_path":"getExpiriesResponse.instrumentKey","invalid_value":"MCX_COM|117"}]}
+  expiries listed: 0 oldest=- newest=-
+  live-contract GOLDM last 30d: HTTP 200 candles=3558 2026-10-01T09:00:00+05:30..2026-10-30T23:25:00+05:30 
+  live-contract GOLDM ~6 months ago: HTTP 200 candles=0 - 
+  live-contract GOLDM ~2 years ago: HTTP 200 candles=0 - 
+  live-contract GOLDM 2022: HTTP 200 candles=0 - 
+  expired-expiries GOLDM (underlying MCX_COM|117): HTTP 400 {"status":"error","errors":[{"errorCode":"UDAPI100011","message":"Invalid Instrument key","propertyPath":"getExpiriesResponse.instrumentKey","invalidValue":"MCX_COM|117","error_code":"UDAPI100011","property_path":"getExpiriesResponse.instrumentKey","invalid_value":"MCX_COM|117"}]}
+  expiries listed: 0 oldest=- newest=-
+  live-contract CRUDEOIL last 30d: HTTP 200 candles=3558 2026-10-01T09:00:00+05:30..2026-10-30T23:25:00+05:30 
+  live-contract CRUDEOIL ~6 months ago: HTTP 200 candles=0 - 
+  live-contract CRUDEOIL ~2 years ago: HTTP 200 candles=0 - 
+  live-contract CRUDEOIL 2022: HTTP 200 candles=0 - 
+  expired-expiries CRUDEOIL (underlying MCX_COM|294): HTTP 400 {"status":"error","errors":[{"errorCode":"UDAPI100011","message":"Invalid Instrument key","propertyPath":"getExpiriesResponse.instrumentKey","invalidValue":"MCX_COM|294","error_code":"UDAPI100011","property_path":"getExpiriesResponse.instrumentKey","invalid_value":"MCX_COM|294"}]}
+  expiries listed: 0 oldest=- newest=-
+  live-contract CRUDEOILM last 30d: HTTP 200 candles=3558 2026-10-01T09:00:00+05:30..2026-10-30T23:25:00+05:30 
+  live-contract CRUDEOILM ~6 months ago: HTTP 200 candles=0 - 
+  live-contract CRUDEOILM ~2 years ago: HTTP 200 candles=0 - 
+  live-contract CRUDEOILM 2022: HTTP 200 candles=0 - 
+  expired-expiries CRUDEOILM (underlying MCX_COM|556): HTTP 400 {"status":"error","errors":[{"errorCode":"UDAPI100011","message":"Invalid Instrument key","propertyPath":"getExpiriesResponse.instrumentKey","invalidValue":"MCX_COM|556","error_code":"UDAPI100011","property_path":"getExpiriesResponse.instrumentKey","invalid_value":"MCX_COM|556"}]}
+  expiries listed: 0 oldest=- newest=-
