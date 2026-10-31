@@ -1,0 +1,38 @@
+# One-off research export (2026-10-31): 5-minute NIFTY/BANKNIFTY candles from Angel One,
+# committed to a separate `research-data-angel` branch. workflow_dispatch only.
+name: Export History Angel
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - name: Download candles
+        env:
+          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+          ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
+          EXPORT_DIR: ${{ runner.temp }}/history_out_angel
+        run: python scripts/export_history_angel.py
+      - name: Commit to research-data-angel branch
+        env:
+          EXPORT_DIR: ${{ runner.temp }}/history_out_angel
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout --orphan research-data-angel
+          git rm -rf . >/dev/null 2>&1 || true
+          mkdir -p history
+          cp "$EXPORT_DIR"/*.csv.gz history/
+          git add history
+          git commit -m "Angel 5-minute index candles export $(date -u +%F)"
+          git push -f origin research-data-angel
