@@ -1102,20 +1102,13 @@ a separate project — happy to help design a lightweight same-day
 score-vs-outcome correlation check using this same state file, without
 turning it into a permanent backtesting database.
 
-## Dashboard API (optional, separate process)
+## Dashboard API (removed 2026-10-31)
 
-`scripts/app/backend/` and `scripts/run_dashboard_api.py` provide a
-read-only FastAPI dashboard (health, scanner status, replay/analytics
-summaries, config snapshot, and a `/ws/dashboard` live feed) that runs
-as its **own separate process** from the scanner — it never imports
-`broker.py`/`auth.py` and never writes to the state branch. It reads
-the same state branch the scanner already writes to, at most once
-every `DASHBOARD_STATE_REFRESH_SECONDS`. See
-`scripts/app/backend/README.md` for the full endpoint list and
-`scripts/run_dashboard_api.py` for setup/run instructions. Install its
-dependencies from `requirements-dashboard.txt` (kept separate from the
-scanner's own `requirements.txt` since the two processes run on
-different hosts/schedules).
+The optional read-only FastAPI dashboard (`scripts/app/backend/`,
+`scripts/run_dashboard_api.py`, `requirements-dashboard.txt`) and the
+`production/` monitoring modules and Part 7 Replay/Analytics engine that
+only it used were removed at the owner's request -- no workflow ran
+them. `git log` has the last version if it is ever needed again.
 
 ## Quant Intelligence Engine (Part 11, merged)
 

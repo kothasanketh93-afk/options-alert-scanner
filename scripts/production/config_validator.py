@@ -15,7 +15,7 @@ today would only surface as a confusing runtime failure hours into a
 scan.
 
 This module never mutates config.py and never raises by itself --
-callers (e.g. production.startup_validator) decide what to do with
+callers (e.g. main.py) decide what to do with
 the report. Nothing in the existing scanner/decision-engine/replay/
 analytics/dashboard code has to change to get this: it's opt-in,
 read-only introspection of the config module.
@@ -101,8 +101,8 @@ _FRACTION_SUFFIXES = ("_PCT", "_FRACTION")
 # heuristic above, confirmed 2026-07-31 against each field's own
 # inline comment in config.py -- not typos, just two different uses
 # of the "_PCT" suffix that coexist in this codebase:
-#   1. MOMENTUM_ROC_CEILING_PCT, REPLAY_CALIBRATION_GAP_THRESHOLD_PCT --
-#      these use a raw PERCENTAGE-POINT scale (e.g. 1.5 literally means
+#   1. MOMENTUM_ROC_CEILING_PCT --
+#      this uses a raw PERCENTAGE-POINT scale (e.g. 1.5 literally means
 #      "1.5%"), not the 0-1 fraction-of-1 scale this check assumes.
 #   2. IV_ABNORMAL_HIGH_PCT -- DOES use the 0-1 fraction scale (1.20
 #      means "120%"), but 1.20 is the intended value: its entire job
@@ -113,7 +113,6 @@ _FRACTION_SUFFIXES = ("_PCT", "_FRACTION")
 # existing is not itself permission to silence a real typo.
 _FRACTION_FIELD_ALLOWLIST = (
     "MOMENTUM_ROC_CEILING_PCT",
-    "REPLAY_CALIBRATION_GAP_THRESHOLD_PCT",
     "IV_ABNORMAL_HIGH_PCT",
     "TRAILING_STOP_TRIGGER_PCT",  # 2026-07-31: same raw-percentage-point convention (3.0 means "3%"),
                                   # see its own comment in config.py

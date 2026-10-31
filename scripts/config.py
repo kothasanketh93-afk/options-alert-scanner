@@ -1300,100 +1300,10 @@ DECISION_ENGINE_PRIORITY_THRESHOLDS = [
     (0, "Low"),
 ]
 
-# =============================================================================
-# Part 7 -- Replay, Learning & Analytics Engine
-# (app/engines/replay_analytics/) -- offline-only engine: replays
-# historical candles against past signals, scores scanner accuracy, and
-# generates recommendations. NEVER places orders, NEVER runs inside the
-# live scanner/tracker loop, and NEVER auto-changes a production
-# threshold above (ENTRY_SCORE, DECISION_ENGINE_MIN_* etc.) -- it only
-# reads state.py's historical daily state files and its own journal,
-# and writes its own reports/recommendations. Master flag below fully
-# disables the whole engine; every sub-report has its own flag too so
-# a user can turn on just, say, daily analytics without CSV/JSON export.
-# =============================================================================
-
-REPLAY_ANALYTICS_ENABLED = True   # master flag -- False short-circuits engine.run_*() to a no-op
-
-# --- Replay Engine: supported timeframes for candle-by-candle replay.
-# Values are minutes; "D" means one daily candle (source data is
-# resampled UP from 1-minute candles for every entry below -- never
-# fetched separately per timeframe). ---
-REPLAY_TIMEFRAMES = ["1min", "3min", "5min", "15min", "30min", "1hour", "1day"]
-REPLAY_TIMEFRAME_MINUTES = {
-    "1min": 1, "3min": 3, "5min": 5, "15min": 15, "30min": 30, "1hour": 60,
-}  # "1day" handled separately (calendar-day resample, not a fixed minute bucket)
-REPLAY_DEFAULT_TIMEFRAME = "1min"   # matches tracker.py's native candle granularity
-
-# --- Trade Outcome Engine ---
-REPLAY_BREAKEVEN_BAND_PCT = 0.002   # exit within +/-0.2% of entry premium -> BREAKEVEN, not WIN/LOSS
-
-# --- Performance Analytics: no thresholds needed (pure arithmetic on
-# whatever trades are passed in), but the recovery-factor floor below
-# distinguishes "no drawdown yet" (None) from a genuine 0. ---
-REPLAY_MIN_DRAWDOWN_FOR_RECOVERY_FACTOR = 0.01   # below this, recovery_factor is reported as None (avoid div-by-~0 noise)
-
-# --- Missed Opportunity / False Signal Engines: a "rejected" candidate
-# (never alerted -- score fell below ENTRY_SCORE) counts as a "good
-# trade rejected" if replaying it forward would have hit T1+ before SL. ---
-REPLAY_MISSED_OPPORTUNITY_MIN_MOVE_PCT = 0.15   # forward move needed (as %, of premium) to call a rejected setup "missed"
-REPLAY_LATE_ENTRY_MAX_CANDLES = 2               # entry filled >2 candles after signal candle -> "late entry"
-REPLAY_EARLY_EXIT_MIN_REMAINING_MOVE_PCT = 0.10 # if price kept moving >=10% further favorably after exit -> "early exit"
-
-REPLAY_FALSE_BREAKOUT_REVERSAL_PCT = 0.05   # price reverses >=5% against the breakout direction within REPLAY_LATE_ENTRY_MAX_CANDLES*3 candles -> false breakout/breakdown
-REPLAY_WEAK_MOMENTUM_MAX_CANDLE_RANGE_PCT = 0.15   # avg candle range post-entry below this -> "weak momentum entry"
-
-# --- Learning Engine (statistical only -- NO machine learning). Groups
-# closed trades by these dimensions and ranks group win-rate/expectancy;
-# a group needs at least this many trades before it's surfaced, to
-# avoid "best timeframe: 1 trade, 100% win rate" noise. ---
-REPLAY_LEARNING_MIN_SAMPLE_SIZE = 5
-
-# --- Scoring Calibration: buckets predicted confidence into these
-# bands and compares each band's actual win rate against its midpoint;
-# a gap beyond this triggers a "recommend adjusting" note. Never
-# auto-applies a new threshold -- see module docstring. ---
-REPLAY_CALIBRATION_BANDS = [
-    (85, 100, "Very High"), (70, 85, "High"), (55, 70, "Medium"), (0, 55, "Low"),
-]
-REPLAY_CALIBRATION_GAP_THRESHOLD_PCT = 15.0   # |predicted midpoint - actual win rate| beyond this -> flag for review
-
-# --- Scanner Health Engine: 0-100 composite of signal accuracy,
-# decision accuracy, false-positive rate, false-negative rate. Weights
-# sum to 100. ---
-REPLAY_HEALTH_SCORE_WEIGHTS = {
-    "signal_accuracy": 35, "decision_accuracy": 30,
-    "false_positive_penalty": 20, "false_negative_penalty": 15,
-}
-REPLAY_HEALTH_SCORE_BANDS = [
-    (80, "Excellent"), (65, "Good"), (50, "Fair"), (0, "Poor"),
-]
-
-# --- Daily/Weekly/Monthly Analytics + Trade Journal persistence.
-# Reuses daily_cache.py's existing state-branch JSON mechanism (same
-# as opportunity_score.py/instrument_master.py) -- no new storage. ---
-REPLAY_JOURNAL_SUBDIR = "replay_analytics/journal"
-REPLAY_DAILY_REPORT_SUBDIR = "replay_analytics/daily"
-REPLAY_WEEKLY_REPORT_SUBDIR = "replay_analytics/weekly"
-REPLAY_MONTHLY_REPORT_SUBDIR = "replay_analytics/monthly"
-
-REPLAY_DAILY_ANALYTICS_ENABLED = True
-REPLAY_WEEKLY_ANALYTICS_ENABLED = True
-REPLAY_MONTHLY_ANALYTICS_ENABLED = True
-
-# --- Reporting: every export format independently toggleable, all
-# default off except the in-memory summary dict (which callers always
-# get back from engine.py regardless of these -- these three flags
-# only control whether a FILE is additionally written to disk). ---
-REPLAY_REPORT_CSV_ENABLED = False
-REPLAY_REPORT_JSON_ENABLED = False
-REPLAY_REPORT_OUTPUT_DIR = "replay_reports"   # relative path, created on first write
-
-# --- Performance: replay result caching (per symbol+direction+date
-# range key) so re-running analytics over an unchanged historical
-# window doesn't re-replay every candle again. In-process only, same
-# posture as cache.py's TTLCache -- see replay_engine.py. ---
-REPLAY_ENABLE_RESULT_CACHE = True
+# (2026-10-31, at the user's explicit request: the Part 7 Replay/Analytics
+# engine config block (REPLAY_* settings, 26 constants) was removed along
+# with app/engines/replay_analytics/ and the unused dashboard API it fed.
+# Nothing in the live scanner/tracker referenced any of them.)
 
 # =============================================================================
 # Part 11 -- Quant Intelligence Engine (app/engines/quant_intelligence/)
