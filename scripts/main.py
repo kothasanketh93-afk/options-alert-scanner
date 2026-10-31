@@ -1233,6 +1233,8 @@ def create_orb_pivot_shadow_candidates(state: dict, now: datetime):
                                  f"{candidate['strike']}:{candidate['expiry']}")
         trade["engine"] = "orb_pivot"
         trade["wide_prev_day"] = candidate.get("wide_prev_day")
+        for _k in ("entry_oi", "entry_volume", "spread_pct"):
+            trade[_k] = candidate.get(_k)
         trades[trade_id] = trade
         log.info("ORBPIVOT_SHADOW_CANDIDATE_CREATED trade_id=%s strategy=%s %s %s strike=%s level=%s",
                  trade_id, trade["strategy"], trade["symbol"], trade["direction"], trade["strike"],

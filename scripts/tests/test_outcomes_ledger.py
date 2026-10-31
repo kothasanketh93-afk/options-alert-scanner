@@ -37,6 +37,15 @@ class Ledger(unittest.TestCase):
         self.assertEqual(rows[1]["result_pct"], "25.0")
         self.assertEqual(len([l for l in open(self.p) if l.startswith("trade_id")]), 1)  # one header
 
+    def test_net_and_expiry_day(self):
+        import config
+        config.LEDGER_ROUND_TRIP_COST_PCT = 1.5
+        st = {"date": "2026-11-03", "shadow_trades": {"a": tr("a", "T2_HIT", expiry="2026-11-03", entry_oi=900)}}
+        ol.append_resolved(st, self.p)
+        r = self.rows()[0]
+        self.assertEqual((r["result_pct"], r["net_result_pct"], r["expiry_day"], r["entry_oi"]),
+                         ("25.0", "23.5", "True", "900"))
+
     def test_bad_record_skipped(self):
         st = {"date": "d", "shadow_trades": {"x": {"status": "SL_HIT"}, "a": tr("a", "SL_HIT")}}
         self.assertEqual(ol.append_resolved(st, self.p), 1)

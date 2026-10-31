@@ -12,13 +12,16 @@ import csv
 import io
 from pathlib import Path
 
+import config
+
 TERMINAL = {"T2_HIT", "SL_HIT", "NOT_ENTERED", "AMBIGUOUS", "EOD_CLOSED"}
 STATE_KEYS = (("shadow_trades", "main"), ("fib_pivot_shadow_trades", "fib_pivot"),
               ("orb_pivot_shadow_trades", "orb_pivot"))
 COLUMNS = ["trade_id", "date", "engine", "strategy", "symbol", "direction", "strike", "expiry",
            "session", "alert_time", "actual_entry_time", "alert_premium", "entry_price",
            "stop_loss", "target_1", "target_2", "final_status", "t1_hit", "result_pct",
-           "mfe_pct", "mae_pct", "grade", "trade_score", "wide_prev_day"]
+           "mfe_pct", "mae_pct", "grade", "trade_score", "wide_prev_day",
+           "expiry_day", "entry_oi", "entry_volume", "spread_pct", "cost_pct_assumed", "net_result_pct"]
 
 
 def result_pct(trade: dict):
@@ -33,8 +36,16 @@ def result_pct(trade: dict):
     return round((exit_price - entry) / entry * 100, 2)
 
 
+def net_result_pct(res):
+    """result_pct minus the ASSUMED round-trip cost (config.LEDGER_ROUND_TRIP_COST_PCT)."""
+    if res is None:
+        return None
+    return round(res - config.LEDGER_ROUND_TRIP_COST_PCT, 2)
+
+
 def _row(trade: dict, engine: str, date_str: str) -> dict:
     status = trade.get("final_status") or trade.get("status")
+    res = result_pct(trade)
     return {
         "trade_id": trade["trade_id"], "date": date_str, "engine": engine,
         "strategy": trade.get("strategy"), "symbol": trade.get("symbol"),
@@ -44,9 +55,14 @@ def _row(trade: dict, engine: str, date_str: str) -> dict:
         "alert_premium": trade.get("alert_premium"), "entry_price": trade.get("tracked_entry_price"),
         "stop_loss": trade.get("stop_loss"), "target_1": trade.get("target_1"),
         "target_2": trade.get("target_2"), "final_status": status, "t1_hit": trade.get("t1_hit"),
-        "result_pct": result_pct(trade), "mfe_pct": trade.get("max_favorable_pct"),
+        "result_pct": res, "mfe_pct": trade.get("max_favorable_pct"),
         "mae_pct": trade.get("max_adverse_pct"), "grade": trade.get("grade"),
         "trade_score": trade.get("trade_score"), "wide_prev_day": trade.get("wide_prev_day"),
+        "expiry_day": (trade.get("expiry") == date_str) if trade.get("expiry") and date_str else None,
+        "entry_oi": trade.get("entry_oi"), "entry_volume": trade.get("entry_volume"),
+        "spread_pct": trade.get("spread_pct"),
+        "cost_pct_assumed": config.LEDGER_ROUND_TRIP_COST_PCT if res is not None else None,
+        "net_result_pct": net_result_pct(res),
     }
 
 

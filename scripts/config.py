@@ -1550,3 +1550,7 @@ ORB_PIVOT_CANDLE_FETCH_COUNT = 80
 ORB_PIVOT_SYMBOLS = ["NIFTY", "BANKNIFTY"]   # the backtest covered only these two
 ORB15_TARGET_ATR_MULT = 1.5
 PIVOT_BREAK_TARGET_ATR_MULT = 2.0
+
+# Outcomes ledger cost ASSUMPTION (percent of premium, round trip: brokerage + STT + exchange charges
+# + slippage). Unverified placeholder -- replace with your real contract-note costs. Report-only.
+LEDGER_ROUND_TRIP_COST_PCT = 1.5

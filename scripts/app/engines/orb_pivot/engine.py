@@ -62,6 +62,9 @@ def _build_setup(strategy, symbol, signal, atr, target_mult, session, wide_prev_
         "pivot_level_name": signal["level_name"], "pivot_level_value": signal["level_value"],
         "atr": round(atr, 2),
         "wide_prev_day": wide_prev_day,
+        "entry_oi": leg.get("oi"), "entry_volume": leg.get("volume"),
+        "spread_pct": (round((leg["ask"] - leg["bid"]) / premium * 100, 2)
+                       if leg.get("bid") and leg.get("ask") else None),
     }
 
 
