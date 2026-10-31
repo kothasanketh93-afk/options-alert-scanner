@@ -1554,3 +1554,8 @@ PIVOT_BREAK_TARGET_ATR_MULT = 2.0
 # Outcomes ledger cost ASSUMPTION (percent of premium, round trip: brokerage + STT + exchange charges
 # + slippage). Unverified placeholder -- replace with your real contract-note costs. Report-only.
 LEDGER_ROUND_TRIP_COST_PCT = 1.5
+
+# Signal Lab (2026-10-31): underlying-level data collection for many published strategies.
+# Observation only -- no trades, no Telegram. Rows -> ledger/signal_lab.csv (state branch).
+SIGNAL_LAB_ENABLED = True
+SIGNAL_LAB_SYMBOLS = ["NIFTY", "BANKNIFTY"]

@@ -44,6 +44,7 @@ from app.engines import early_breakout as early_breakout_engine
 from app.engines import fib_pivot as fib_pivot_engine
 from app.engines import orb_pivot as orb_pivot_engine
 import outcomes_ledger
+import signal_lab_runner
 from app.market import snapshot as market_snapshot
 
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -994,6 +995,11 @@ def main():
             log.info("OUTCOMES_LEDGER appended %d resolved shadow trade(s)", added)
     except Exception as exc:
         log.error("Outcomes ledger append failed (%s: %s) -- continuing.", type(exc).__name__, exc)
+    try:
+        signal_lab_runner.collect_once(
+            state, now, state_mod.STATE_CLONE_DIR / "ledger" / "signal_lab.csv")
+    except Exception as exc:
+        log.error("Signal lab failed (%s: %s) -- continuing.", type(exc).__name__, exc)
     state_mod.cleanup_old_state_files(keep_today=date_str)
     commit_message = f"update {date_str} @ {now.strftime('%H:%M:%S')}"
     if run_error is not None:
