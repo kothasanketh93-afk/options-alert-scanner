@@ -1,0 +1,28 @@
+=== UPSTOX ===
+expiries: HTTP 200 {"status":"success","data":["2024-10-03","2024-10-10","2024-10-17","2024-10-24","2024-10-31","2024-11-07","2024-11-14","2024-11-21","2024-11-28","2024-12-05","2024-12-12","2024-12-19","2024-12-26","2025-01-02","2025-01-09","2025-01-16","2025-01-23","
+expiries listed=109 oldest=2026-10-27 newest=2024-10-03
+option contracts 2026-10-27: HTTP 200 {"status":"success","data":[{"name":"NIFTY","segment":"NSE_FO","exchange":"NSE","expiry":"2026-10-27","weekly":false,"instrument_key":"NSE_FO|51213|27-10-2026","exchange_token":"51213","trading_symbol
+  contracts=288
+  candles 5minute key=NSE_FO|51379|27-10-2026: HTTP 200 n=378 ['2026-10-21T09:15:00+05:30', 623.0, 623.0, 578.9, 588.9, 2080, 14755]
+  candles 1minute key=NSE_FO|51379|27-10-2026: HTTP 200 n=1881 ['2026-10-21T09:15:00+05:30', 623.0, 623.0, 623.0, 623.0, 130, 14560]
+  candles 30minute key=NSE_FO|51379|27-10-2026: HTTP 200 n=65 ['2026-10-21T09:15:00+05:30', 623.0, 623.0, 537.55, 555.35, 6955, 16965]
+  candles day key=NSE_FO|51379|27-10-2026: HTTP 200 n=5 ['2026-10-21T00:00:00+05:30', 623.0, 970.55, 537.55, 920.9, 16380, 14755]
+option contracts 2025-10-14: HTTP 200 {"status":"success","data":[{"name":"NIFTY","segment":"NSE_FO","exchange":"NSE","expiry":"2025-10-14","weekly":true,"instrument_key":"NSE_FO|42536|14-10-2025","exchange_token":"42536","trading_symbol"
+  contracts=174
+  candles 5minute key=NSE_FO|42673|14-10-2025: HTTP 200 n=375 ['2025-10-08T09:15:00+05:30', 200.0, 233.0, 187.4, 231.6, 2441625, 3141600]
+  candles 1minute key=NSE_FO|42673|14-10-2025: HTTP 200 n=1875 ['2025-10-08T09:15:00+05:30', 200.0, 207.8, 187.4, 192.7, 494100, 0]
+  candles 30minute key=NSE_FO|42673|14-10-2025: HTTP 200 n=65 ['2025-10-08T09:15:00+05:30', 200.0, 266.9, 187.4, 252.9, 8307075, 3246600]
+  candles day key=NSE_FO|42673|14-10-2025: HTTP 200 n=5 ['2025-10-08T00:00:00+05:30', 200.0, 266.9, 121.0, 132.8, 119960925, 4977150]
+option contracts 2024-10-03: HTTP 200 {"status":"success","data":[{"name":"NIFTY","segment":"NSE_FO","exchange":"NSE","expiry":"2024-10-03","weekly":true,"instrument_key":"NSE_FO|58423|03-10-2024","exchange_token":"58423","trading_symbol"
+  contracts=198
+  candles 5minute key=NSE_FO|58533|03-10-2024: HTTP 200 n=300 ['2024-09-27T09:15:00+05:30', 720.5, 751.25, 720.4, 748.0, 18925, 590750]
+  candles 1minute key=NSE_FO|58533|03-10-2024: HTTP 200 n=1500 ['2024-09-27T09:15:00+05:30', 720.5, 745.75, 720.4, 734.3, 8225, 591525]
+  candles 30minute key=NSE_FO|58533|03-10-2024: HTTP 200 n=52 ['2024-09-27T09:15:00+05:30', 720.5, 773.9, 720.4, 769.7, 54500, 574825]
+  candles day key=NSE_FO|58533|03-10-2024: HTTP 200 n=4 ['2024-09-27T09:15:00+05:30', 720.5, 812.0, 720.4, 739.95, 327475, 584400]
+=== ANGEL ONE ===
+NIFTY OPTIDX rows=1702 expiries=18 first=2026-11-03 last=2031-06-24
+expired expiries in master: 0
+  NIFTY03NOV2622500PE last 5d: HTTP 200 status=True n=385 2026-10-26T09:15:00+05:30
+  NIFTY03NOV2622500PE 30d ago: HTTP 200 status=True n=182 2026-10-01T09:15:00+05:30
+  NIFTY03NOV2622500PE 90d ago: HTTP 200 status=True n=0 SUCCESS
+  NIFTY03NOV2622500PE 1y ago: HTTP 200 status=True n=0 SUCCESS
