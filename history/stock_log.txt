@@ -1,0 +1,17 @@
+PROBE expiries RELIANCE NSE_EQ|INE002A01018: HTTP 200 {"status":"success","data":["2024-10-31","2024-11-28","2024-12-26","2025-01-30","2025-02-27","2025-03-27","2025-04-24","2025-05-29","2025-06-26","2025-07-31","2025-08-28","2025-09-30","2025-10-28","2025-11-25","2025-12-30","2026-01-27","2026-02-24","2026-03-30","2026-04-28","2026-05-26","2026-06-30"
+PROBE expiries n=25 oldest=2026-10-27 newest=2024-10-31
+PROBE contracts n=93 sample=[{'name': 'RELIANCE INDUSTRIES LTD', 'segment': 'NSE_FO', 'exchange': 'NSE', 'expiry': '2025-10-28', 'weekly': False, 'instrument_key': 'NSE_FO|120858|28-10-2025', 'exchange_token': '120858', 'trading_symbol': 'RELIANCE 1140 PE 28 OCT 25', 'tick_size': 5.0, 'lot_size': 500, 'instrument_type': 'PE', 'freeze_quantity': 20000.0, 'underlying_key': 'NSE_EQ|INE002A01018', 'underlying_type': 'EQUITY', 'underlying_symbol': 'RELIANCE', 'strike_price': 1140.0, 'minimum_lot': 500}, {'name': 'RELIANCE INDUSTRIES LTD', 'segment': 'NSE_FO', 'exchange': 'NSE', 'expiry': '2025-10-28', 'weekly': False, 'instrument_key': 'NSE_FO|120849|28-10-2025', 'exchange_token': '120849', 'trading_symbol': 'RELIANCE 1140 CE 28 OCT 25', 'tick_size': 5.0, 'lot_size': 500, 'instrument_type': 'CE', 'freeze_quantity': 20000.0, 'underlying_key': 'NSE_EQ|INE002A01018', 'underlying_type': 'EQUITY', 'underlying_symbol': 'RELIANCE', 'strike_price': 1140.0, 'minimum_lot': 500}]
+RELIANCE: 40149 candles key=NSE_EQ|INE002A01018 lot=1
+HDFCBANK: 40149 candles key=NSE_EQ|INE040A01034 lot=1
+ICICIBANK: 40149 candles key=NSE_EQ|INE090A01021 lot=1
+SBIN: 40149 candles key=NSE_EQ|INE062A01020 lot=1
+INFY: 40149 candles key=NSE_EQ|INE009A01021 lot=1
+TCS: 40149 candles key=NSE_EQ|INE467B01029 lot=1
+AXISBANK: 40149 candles key=NSE_EQ|INE238A01034 lot=1
+KOTAKBANK: 40149 candles key=NSE_EQ|INE237A01036 lot=1
+LT: 40149 candles key=NSE_EQ|INE018A01030 lot=1
+ITC: 40145 candles key=NSE_EQ|INE154A01025 lot=1
+BAJFINANCE: 40149 candles key=NSE_EQ|INE296A01032 lot=1
+TATASTEEL: 40149 candles key=NSE_EQ|INE081A01020 lot=1
+BHARTIARTL: 40149 candles key=NSE_EQ|INE397D01024 lot=1
+MARUTI: 40149 candles key=NSE_EQ|INE585B01010 lot=1
