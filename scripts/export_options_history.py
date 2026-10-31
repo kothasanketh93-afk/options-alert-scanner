@@ -64,7 +64,7 @@ def main():
             print("sample contract row:", rows[0], flush=True)
         lo, hi = sr[0] - PAD, sr[1] + PAD
         sel = [x for x in rows if x.get("strike_price") is not None and lo <= float(x["strike_price"]) <= hi
-               and float(x["strike_price"]) % 100 == 0]
+               and float(x["strike_price"]) % 50 == 0]
         n = 0
         with gzip.open(out, "wt", newline="") as f:
             w = csv.writer(f)
