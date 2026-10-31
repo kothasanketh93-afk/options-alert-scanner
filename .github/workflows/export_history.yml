@@ -1,0 +1,41 @@
+# export_history.yml
+# ------------------
+# ONE-OFF research export (2026-10-31): pulls ~58 months of 5-minute NIFTY /
+# BANKNIFTY candles from Upstox and commits them to a separate
+# `research-data` branch (never main or state). workflow_dispatch only.
+name: Export History
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - name: Download candles
+        env:
+          UPSTOX_ACCESS_TOKEN: ${{ secrets.UPSTOX_ACCESS_TOKEN }}
+          EXPORT_DIR: ${{ runner.temp }}/history_out
+        run: python scripts/export_history.py
+      - name: Commit to research-data branch
+        env:
+          EXPORT_DIR: ${{ runner.temp }}/history_out
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout --orphan research-data
+          git rm -rf . >/dev/null 2>&1 || true
+          mkdir -p history
+          cp "$EXPORT_DIR"/*.csv.gz history/
+          git add history
+          git commit -m "5-minute index candles export $(date -u +%F)"
+          git push -f origin research-data
