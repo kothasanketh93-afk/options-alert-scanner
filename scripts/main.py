@@ -42,6 +42,7 @@ import trade_score
 from config import SUMMARY_HHMM
 from app.engines import early_breakout as early_breakout_engine
 from app.engines import fib_pivot as fib_pivot_engine
+from app.engines import orb_pivot as orb_pivot_engine
 from app.market import snapshot as market_snapshot
 
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -953,7 +954,17 @@ def main():
                        type(exc).__name__, exc, exc_info=True)
         run_tracker_step(state, now)
         run_shadow_tracker_step(state, now)
-        run_fib_pivot_shadow_step(state, now)
+        try:
+            run_fib_pivot_shadow_step(state, now)
+        except Exception as exc:
+            log.error("Fib Pivot shadow tracker step failed (%s: %s) -- continuing.",
+                       type(exc).__name__, exc, exc_info=True)
+        try:
+            create_orb_pivot_shadow_candidates(state, now)
+            run_orb_pivot_shadow_step(state, now)
+        except Exception as exc:
+            log.error("ORB/Pivot shadow step failed (%s: %s) -- continuing with the rest of this run.",
+                       type(exc).__name__, exc, exc_info=True)
 
         maybe_send_daily_summary(state, now)
         # BUGFIX (2026-09-10, live-log finding): maybe_send_shadow_summary()
@@ -1165,6 +1176,72 @@ def run_fib_pivot_shadow_step(state: dict, now: datetime):
             # Same per-trade containment posture as run_shadow_tracker_step().
             log.error("Fib Pivot shadow trade %s: tracker step failed (%s: %s) -- continuing "
                       "with remaining trades; this one will be retried next run.",
+                      trade_id, type(exc).__name__, exc)
+
+
+def _dispatch_orb_pivot_shadow_events(trade: dict, events: list):
+    """ORBPIVOT_SHADOW_* log-only outcome lines (never Telegram); strategy name is included."""
+    tag = {"ENTRY_ACTIVATED": "ENTRY_ACTIVATED", "T1_HIT": "OUTCOME_T1_FIRST", "T2_HIT": "OUTCOME_T2_FIRST",
+           "SL_HIT": "OUTCOME_SL_FIRST", "NOT_ENTERED": "OUTCOME_NOT_ENTERED",
+           "EOD_CLOSED": "OUTCOME_TIMEOUT", "AMBIGUOUS": "OUTCOME_AMBIGUOUS",
+           "AMBIGUOUS_AFTER_T1": "OUTCOME_AMBIGUOUS"}
+    for event in events:
+        name = tag.get(event["type"])
+        if name is None:
+            continue
+        log.info("ORBPIVOT_SHADOW_%s strategy=%s %s %s strike=%s candidate_id=%s%s",
+                 name, trade.get("strategy"), trade["symbol"], trade["direction"], trade["strike"],
+                 trade.get("candidate_id"), _shadow_entry_context(trade) if event["type"] in
+                 ("ENTRY_ACTIVATED", "SL_HIT") else "")
+
+
+def create_orb_pivot_shadow_candidates(state: dict, now: datetime):
+    """
+    ORB15 + pivot-break shadow engines (app/engines/orb_pivot/). Stores in
+    state["orb_pivot_shadow_trades"] only; never Telegram. At most ONE trade
+    per strategy+symbol per day (the backtest took only the first signal).
+    """
+    if not config.ORB_PIVOT_SHADOW_MODE_ENABLED:
+        return
+    candidates = orb_pivot_engine.detect_all_orb_pivot_setups()
+    if not candidates:
+        return
+    trades = state.setdefault("orb_pivot_shadow_trades", {})
+    for candidate in candidates:
+        if any(t.get("strategy") == candidate["strategy"] and t["symbol"] == candidate["symbol"]
+               for t in trades.values()):
+            continue
+        key = f"ORBPIVOT-{candidate['strategy']}-{candidate['symbol']}"
+        seq = state["next_seq"].get(key, 0) + 1
+        state["next_seq"][key] = seq
+        trade_id = f"{key}-{candidate['direction']}-{now.strftime('%Y%m%d-%H%M')}-{seq:02d}"
+        trade = new_trade_record(candidate, trade_id, now, f"OrbPivotShadow {len(trades) + 1}")
+        trade["probability_status"] = "shadow_only"
+        trade["execution_mode"] = "shadow"
+        trade["live_alert_sent"] = False
+        trade["candidate_id"] = (f"{candidate['strategy']}:{candidate['symbol']}:{candidate['direction']}:"
+                                 f"{candidate['strike']}:{candidate['expiry']}")
+        trade["engine"] = "orb_pivot"
+        trades[trade_id] = trade
+        log.info("ORBPIVOT_SHADOW_CANDIDATE_CREATED trade_id=%s strategy=%s %s %s strike=%s level=%s",
+                 trade_id, trade["strategy"], trade["symbol"], trade["direction"], trade["strike"],
+                 candidate.get("pivot_level_name"))
+
+
+def run_orb_pivot_shadow_step(state: dict, now: datetime):
+    """Tracker step for state["orb_pivot_shadow_trades"] (same mechanism as the fib pivot step)."""
+    if not config.ORB_PIVOT_SHADOW_MODE_ENABLED:
+        return
+    for trade_id, trade in state.get("orb_pivot_shadow_trades", {}).items():
+        if trade["status"] in TERMINAL_STATUSES:
+            continue
+        try:
+            candles = market_data.get_1min_candles_since(trade["instrument_key"], trade["last_processed_ts"])
+            if not candles:
+                continue
+            _dispatch_orb_pivot_shadow_events(trade, tracker.process_trade_candles(trade, candles))
+        except (BrokerAPIError, TelegramFailure) as exc:
+            log.error("ORB/pivot shadow trade %s: tracker step failed (%s: %s) -- retry next run.",
                       trade_id, type(exc).__name__, exc)
 
 

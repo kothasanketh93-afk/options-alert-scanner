@@ -1541,3 +1541,12 @@ FIB_PIVOT_CANDLE_INTERVAL = "15minute"   # reel showed 5 or 15 min; 15 chosen as
 FIB_PIVOT_CANDLE_FETCH_COUNT = 30        # enough warmup for EMA9 and ATR(14) plus the 2-candle cross check
 FIB_PIVOT_EMA_PERIOD = 9
 FIB_PIVOT_MIN_RR = 1.5                   # same floor spirit as DECISION_ENGINE_MIN_RR, tighter than EARLY_BREAKOUT_MIN_RR
+
+# --- ORB15 + classic pivot-break SHADOW engines (app/engines/orb_pivot/, added 2026-10-31) ---
+# Shadow-only (never Telegram). Rules come from the 58-month 5m backtest; see that package's docstring.
+ORB_PIVOT_SHADOW_MODE_ENABLED = True
+ORB_PIVOT_CANDLE_INTERVAL = "5minute"
+ORB_PIVOT_CANDLE_FETCH_COUNT = 80
+ORB_PIVOT_SYMBOLS = ["NIFTY", "BANKNIFTY"]   # the backtest covered only these two
+ORB15_TARGET_ATR_MULT = 1.5
+PIVOT_BREAK_TARGET_ATR_MULT = 2.0
