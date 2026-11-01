@@ -1561,3 +1561,9 @@ LEDGER_ROUND_TRIP_COST_PCT = 1.5
 # Observation only -- no trades, no Telegram. Rows -> ledger/signal_lab.csv (state branch).
 SIGNAL_LAB_ENABLED = True
 SIGNAL_LAB_SYMBOLS = ["NIFTY", "BANKNIFTY"]
+
+# Microstructure log (2026-11-01): real bid/ask + Greeks of ATM +/- N strikes every run, plus any
+# contract with an open shadow trade. Observation only (see microstructure_log.py).
+MICROSTRUCTURE_LOG_ENABLED = True
+MICROSTRUCTURE_SYMBOLS = ["NIFTY", "BANKNIFTY"]
+MICROSTRUCTURE_STRIKE_WIDTH = 2

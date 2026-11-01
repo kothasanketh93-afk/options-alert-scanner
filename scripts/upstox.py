@@ -351,6 +351,9 @@ class UpstoxBroker(Broker):
                 # audited and approved for this specific correction).
                 entry[prefix + "bid"] = market.get("bid_price")
                 entry[prefix + "ask"] = market.get("ask_price")
+                # 2026-11-01 (additive, microstructure log only): top-of-book quantities.
+                entry[prefix + "bid_qty"] = market.get("bid_qty")
+                entry[prefix + "ask_qty"] = market.get("ask_qty")
                 greeks = side.get("option_greeks") or {}
                 raw_iv = greeks.get("iv")
                 entry[prefix + "delta"] = greeks.get("delta")

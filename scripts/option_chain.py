@@ -546,6 +546,8 @@ def _extract_leg(chain: list, strike: float, direction: str) -> dict:
                 "vega": row.get(prefix + "vega"),
                 "iv": row.get(prefix + "iv"),
                 "prev_oi": row.get(prefix + "prev_oi"),
+                "bid_qty": row.get(prefix + "bid_qty"),
+                "ask_qty": row.get(prefix + "ask_qty"),
             }
     return None
 
