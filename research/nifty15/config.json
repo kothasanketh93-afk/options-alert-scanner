@@ -1,0 +1,14 @@
+{
+ "period": {"start": "2024-10-31", "end": "2026-10-30"},
+ "split": {"dev": 0.6, "validation": 0.2, "oos": 0.2},
+ "target_points": 15, "stop_points": 10, "max_trades_per_day": 1,
+ "capital_options": [30000, 50000], "risk_pct_per_trade": 0.5, "daily_loss_pct": 1.0,
+ "signal_window": ["09:30", "14:05"], "flat_time": "15:15",
+ "slippage": {"min_points": 0.5, "pct_of_price": 0.4, "note": "ASSUMED per side; no historical bid/ask available"},
+ "target_fill_through_points": 0.5,
+ "charges": {"brokerage_per_order": 20, "stt_sell_pct_before_2026_04_01": 0.10, "stt_sell_pct_from_2026_04_01": 0.15,
+             "nse_txn_pct": 0.03503, "sebi_pct": 0.0001, "stamp_buy_pct": 0.003, "gst_pct": 18, "note": "ASSUMED, verify"},
+ "contract_selection": ["ATM", "ITM1"],
+ "regime": {"adx_trending": 25, "adx_sideways": 20, "atr_ratio_high_vol": 1.4, "vwap_slope_min_atr": 0.3},
+ "sector_weights": {"Nifty Bank": 0.35, "Nifty IT": 0.12, "Nifty Energy": 0.12, "Nifty FMCG": 0.08, "Nifty Auto": 0.07}
+}
