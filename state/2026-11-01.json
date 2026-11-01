@@ -1,5 +1,5 @@
 {
-  "date": "2026-10-31",
+  "date": "2026-11-01",
   "trades": {},
   "next_seq": {
     "FIBPIVOT-JINDALSTEL-CE": 1
@@ -127,16 +127,16 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 285,
+    "scanned_symbols": 19,
     "valid_signals": 0,
-    "rejected_signals": 222,
+    "rejected_signals": 111,
     "api_failures": 0,
     "broker_errors": 0
   },
   "rerank_slots_done": [],
   "fib_pivot_shadow_trades": {
-    "FIBPIVOT-JINDALSTEL-CE-20261031-0950-01": {
-      "trade_id": "FIBPIVOT-JINDALSTEL-CE-20261031-0950-01",
+    "FIBPIVOT-JINDALSTEL-CE-20261101-1042-01": {
+      "trade_id": "FIBPIVOT-JINDALSTEL-CE-20261101-1042-01",
       "display_label": "FibPivotShadow 1",
       "symbol": "JINDALSTEL",
       "direction": "CE",
@@ -145,14 +145,14 @@
       "strike": 1060.0,
       "expiry": "2026-11-23",
       "spot_price": 1061.2,
-      "alert_time": "2026-10-31T09:50:13.367279+05:30",
+      "alert_time": "2026-11-01T10:42:17.289273+05:30",
       "alert_premium": 27.7,
       "entry_low": 27.55,
       "entry_high": 27.85,
       "stop_loss": 25.64,
       "target_1": 30.79,
       "target_2": 32.85,
-      "session": "09:30-10:35",
+      "session": "10:35-11:35",
       "grade": "Shadow",
       "trade_score": 50,
       "probability_pct": null,
@@ -202,7 +202,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-10-31T09:50:13.367279+05:30",
+      "last_processed_ts": "2026-11-01T10:42:17.289273+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -213,5 +213,8 @@
       "engine": "fib_pivot"
     }
   },
-  "signal_lab_done": true
+  "micro_last_minute": [
+    "2026-11-01",
+    642
+  ]
 }
