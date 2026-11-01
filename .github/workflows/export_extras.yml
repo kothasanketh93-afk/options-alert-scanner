@@ -1,0 +1,31 @@
+# One-off research export of NIFTY futures + sector indices (2026-10-31). workflow_dispatch only.
+name: Export NIFTY Extras
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: write
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - name: Export
+        env:
+          UPSTOX_ACCESS_TOKEN: ${{ secrets.UPSTOX_ACCESS_TOKEN }}
+          EXPORT_DIR: ${{ runner.temp }}/extras_out
+        run: python scripts/export_nifty_extras.py | tee ${{ runner.temp }}/extras_log.txt
+      - name: Publish to research-data-extras branch
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git checkout --orphan research-data-extras
+          git rm -rf . >/dev/null 2>&1 || true
+          mkdir history && cp ${{ runner.temp }}/extras_out/* history/ && cp ${{ runner.temp }}/extras_log.txt history/
+          git add history
+          git commit -m "NIFTY extras export $(date -u +%F)"
+          git push -f origin research-data-extras
