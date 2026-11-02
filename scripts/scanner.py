@@ -95,6 +95,7 @@ telegram_notify.py already handle these):
 
 from datetime import datetime, timezone, timedelta
 
+import config
 import market_data
 from state import trading_date_str
 import instrument_master
@@ -995,7 +996,7 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     # skip the remaining (levels/probability/Options Intelligence)
     # computation below, same efficiency reasoning as before, just
     # without a second, disagreeing adaptive threshold.
-    if grade == "Reject":
+    if grade == "Reject" and config.SCORE_GATE_ENABLED:
         _logger.info(
             f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
             f"Reasons: {'; '.join(trade_score.rejection_detail_lines(True, directional_status, score, ENTRY_SCORE, True))}"
@@ -1262,6 +1263,8 @@ def detect_setups(symbol: str, oi_history: dict) -> list:
         candles_15m, _ = market_data.get_atr_warmup_candles(underlying_key, "15minute", today_candles_15m_regime)
         regime, penalty = market_regime(candles_15m)
         min_quality_score += penalty
+    if not config.SCORE_GATE_ENABLED:
+        min_quality_score = 0   # score is informational only; conditions (gates/filters) decide
 
     biases, trend_status = directional_bias(symbol)
     # Diagnostics (TEMPORARY -- see FIX 1/FIX 2 deliverables notes).

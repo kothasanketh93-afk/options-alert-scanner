@@ -542,6 +542,12 @@ PRICE_ACTION_CONFIRMATION_BONUS = 3
 # regardless of this floor. Revisit via the daily-summary win-rate
 # check same as the last two changes to this constant.
 ENTRY_SCORE = 55
+
+# 2026-11-02 (user decision, backed by shadow data: trade_score did not separate winners from losers
+# -- avg 57.2 winners vs 59.4 losers, n=17): when False the trade_score floor (ENTRY_SCORE + regime
+# penalty) no longer blocks anything; alerts/shadow setups depend only on the hard gates, the
+# directional-confirmation gate and the filters. The score is still computed and logged.
+SCORE_GATE_ENABLED = False
 STRONG_ENTRY = 85
 
 GRADE_THRESHOLDS = [
