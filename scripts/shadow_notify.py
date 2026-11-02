@@ -48,6 +48,8 @@ def _send(text):
 def notify_created(state: dict, trade: dict, now, sender=None) -> bool:
     if not getattr(config, "SHADOW_TELEGRAM_ENABLED", False):
         return False
+    if getattr(config, "CONDITIONS_ALERT_MODE", False) and not trade.get("engine"):
+        return False   # main-engine setups now alert live; no duplicate shadow message
     try:
         day = now.strftime("%Y-%m-%d")
         key = "|".join(str(x) for x in (day, trade.get("strategy") or trade.get("engine") or "scanner",

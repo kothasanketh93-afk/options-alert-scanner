@@ -548,6 +548,15 @@ ENTRY_SCORE = 55
 # penalty) no longer blocks anything; alerts/shadow setups depend only on the hard gates, the
 # directional-confirmation gate and the filters. The score is still computed and logged.
 SCORE_GATE_ENABLED = False
+
+# 2026-11-02 (user decision): LIVE alerts fire when the CONDITIONS are satisfied (all hard gates,
+# directional confirmation, structural confirmation, extension/chase filters, Options Intelligence).
+# No trade_score floor and no calibrated-probability requirement. Alerts are labelled UNVALIDATED
+# (no probability claim). Candidates are ordered by direction-confirmation count then risk-reward,
+# never by trade_score. Set False to restore the probability-gated (shadow-only) behaviour.
+CONDITIONS_ALERT_MODE = True
+# Early Breakout engine: alert floor on ITS score; 0 = no score floor (conditions decide).
+EARLY_BREAKOUT_SCORE_GATE_ENABLED = False
 STRONG_ENTRY = 85
 
 GRADE_THRESHOLDS = [

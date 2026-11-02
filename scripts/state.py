@@ -249,6 +249,8 @@ def record_probability(state: dict, symbol: str, direction: str, probability_pct
     quality gate (not just the one chosen as the active trade), so the
     evolution is visible even for setups that never became a trade.
     """
+    if probability_pct is None:
+        return   # conditions-based alerts carry no probability estimate
     key = f"{symbol}-{direction}"
     history = state.setdefault("probability_history", {}).setdefault(key, [])
     history.append({"time": now.strftime("%H:%M"), "pct": probability_pct})

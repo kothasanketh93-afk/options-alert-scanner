@@ -74,7 +74,7 @@ def _valid_kwargs(**overrides):
 
 def test_1_shadow_off_produces_no_live_candidate_and_no_shadow_candidate():
     scanner.reset_shadow_candidates()
-    with _Patch(scanner, "PROBABILITY_SHADOW_MODE_ENABLED", False):
+    with _Patch(scanner, "PROBABILITY_SHADOW_MODE_ENABLED", False), _Patch(scanner.config, "CONDITIONS_ALERT_MODE", False):
         result = pipeline._run_mocked_score_strike(**_valid_kwargs(calibrated_probability_override=None))
     assert result is None, "1: live pipeline must still reject when calibration is unavailable"
     assert scanner.get_shadow_candidates() == [], "1: shadow mode OFF must capture nothing, even when the candidate otherwise qualifies"
@@ -87,7 +87,7 @@ def test_1_shadow_off_produces_no_live_candidate_and_no_shadow_candidate():
 
 def test_2_shadow_on_qualifying_candidate_is_captured():
     scanner.reset_shadow_candidates()
-    with _Patch(scanner, "PROBABILITY_SHADOW_MODE_ENABLED", True):
+    with _Patch(scanner, "PROBABILITY_SHADOW_MODE_ENABLED", True), _Patch(scanner.config, "CONDITIONS_ALERT_MODE", False):
         result = pipeline._run_mocked_score_strike(**_valid_kwargs(calibrated_probability_override=None))
         shadow_candidates = scanner.get_shadow_candidates()
     assert result is None, "2: LIVE pipeline result must be unchanged (still None) -- shadow mode never alters it"

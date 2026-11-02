@@ -6,7 +6,7 @@ NOW = datetime(2026, 11, 2, 10, 0)
 
 
 def _trade(**kw):
-    t = {"symbol": "NIFTY", "direction": "PE", "strike": 25000, "moneyness": "ATM", "strategy": "orb15",
+    t = {"symbol": "NIFTY", "direction": "PE", "strike": 25000, "moneyness": "ATM", "strategy": "orb15", "engine": "orb_pivot",
          "alert_premium": 100.0, "stop_loss": 90.0, "target_1": 110.0, "target_2": 120.0,
          "trade_score": 62, "grade": "B", "why_reasons": ["a", "b"], "tracked_entry_price": 101.0}
     t.update(kw)
@@ -47,3 +47,9 @@ def test_outcomes_only_for_flagged_trades():
 def test_disabled_flag(monkeypatch):
     monkeypatch.setattr(sn.config, "SHADOW_TELEGRAM_ENABLED", False)
     assert sn.notify_created({}, _trade(), NOW, sender=lambda _: 1 / 0) is False
+
+
+def test_main_engine_shadow_suppressed_in_conditions_mode(monkeypatch):
+    monkeypatch.setattr(sn.config, "CONDITIONS_ALERT_MODE", True)
+    t = _trade(); t.pop("engine")
+    assert sn.notify_created({}, t, NOW, sender=lambda _: 1 / 0) is False

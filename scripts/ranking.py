@@ -17,6 +17,10 @@ def _grade_rank_key(setup: dict) -> tuple:
     # replacing the old Strong Entry/Entry pair. setup["_quality_score"] is
     # now the Trade Score itself (scanner.score_strike() sets it that way),
     # so the tiebreak below is unchanged in spirit -- just a renamed source.
+    import config
+    if getattr(config, "CONDITIONS_ALERT_MODE", False):
+        # 2026-11-02: no trade_score anywhere in the ordering -- more direction confirmations, then better R:R.
+        return tuple(setup.get("_conditions_rank", (0, 0.0)))
     grade_order = {"A+": 4, "A": 3, "B+": 2, "B": 1}
     return (grade_order.get(setup.get("grade"), 0), setup.get("_quality_score", 0))
 

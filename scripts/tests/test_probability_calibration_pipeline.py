@@ -121,7 +121,13 @@ def test_i_probability_unavailable_is_rejected_even_with_every_other_gate_passin
     probability estimate isn't available -- trade_score/the heuristic
     percentage must never be silently substituted.
     """
-    result = pipeline._run_mocked_score_strike(**_valid_kwargs(calibrated_probability_override=None))
+    import scanner as _sc
+    _orig = _sc.config.CONDITIONS_ALERT_MODE
+    _sc.config.CONDITIONS_ALERT_MODE = False   # legacy probability-gated behaviour (see test_conditions_alert_mode.py)
+    try:
+        result = pipeline._run_mocked_score_strike(**_valid_kwargs(calibrated_probability_override=None))
+    finally:
+        _sc.config.CONDITIONS_ALERT_MODE = _orig
     assert result is None, (
         "I: CALIBRATED_PROBABILITY_UNAVAILABLE must reject even a setup that cleared every other gate -- "
         "trade_score/the heuristic percentage must never be substituted for a missing calibrated estimate"

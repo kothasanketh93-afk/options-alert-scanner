@@ -148,6 +148,43 @@ def _fmt_alternatives(alternatives: list, max_shown: int = 5) -> str:
     return block
 
 
+def _fmt_new_alert_conditions(trade: dict) -> str:
+    """Conditions-based alert (2026-11-02, config.CONDITIONS_ALERT_MODE): no score, grade or probability."""
+    low_min, high_min = trade["expected_holding_minutes"]
+    why = "\n".join(trade.get("why_reasons", [])) or "—"
+    direction_emoji = "🟢" if trade["direction"] == "CE" else "🔴"
+    checklist = "\n".join(trade.get("factor_checklist", [])) or "—"
+    alts = [a for a in trade.get("alternatives", [])][:5]
+    alt_block = ("\nOther setups meeting conditions:\n" + "\n".join(
+        f"  • {a['symbol']} {a['direction']} {a['moneyness']}" for a in alts)) if alts else ""
+    return (
+        f"📣 CONDITIONS MET — {trade['display_label']}\n\n"
+        f"Trade ID: {trade['trade_id']}\n"
+        f"Symbol: {trade['symbol']} | Direction: {trade['direction']} | "
+        f"Strike: {trade['moneyness']}\n"
+        f"Session: {trade['session']}\n"
+        f"Spot: ₹{trade['spot_price']}\n"
+        f"Strike Price: {trade['strike']} | Expiry: {trade['expiry']}\n\n"
+        f"━━━━━━━━━━━━━━\n"
+        f"{direction_emoji} {'BUY CE' if trade['direction'] == 'CE' else 'BUY PE'} SIGNAL\n"
+        f"⚠️ Unvalidated: rules-based setup, no probability estimate.\n"
+        f"Risk : {trade['risk_score']}/10 | Reward : {trade['reward_score']}/10\n"
+        f"Expected RR : {trade['expected_rr']}\n"
+        f"━━━━━━━━━━━━━━\n"
+        f"{checklist}\n"
+        f"━━━━━━━━━━━━━━\n\n"
+        f"Premium: ₹{trade['alert_premium']}\n"
+        f"Entry Zone: ₹{trade['entry_low']} - ₹{trade['entry_high']}\n"
+        f"Stop Loss: ₹{trade['stop_loss']}\n"
+        f"Target 1: ₹{trade['target_1']}\n"
+        f"Target 2: ₹{trade['target_2']}\n\n"
+        f"Expected Holding: {low_min}-{high_min} minutes\n\n"
+        f"Why Recommended?\n{why}\n"
+        f"{alt_block}\n\n"
+        f"Status: WAITING_ENTRY"
+    )
+
+
 def fmt_new_alert(trade: dict) -> str:
     """
     Phase 3: shows the numeric Trade Score / Probability / Confidence /
@@ -158,6 +195,8 @@ def fmt_new_alert(trade: dict) -> str:
     still shown too, as a backward-compatible companion to the numbers,
     not a replacement for them.
     """
+    if trade.get("probability_pct") is None:
+        return _fmt_new_alert_conditions(trade)
     low_min, high_min = trade["expected_holding_minutes"]
     why = "\n".join(trade.get("why_reasons", [])) or "—"
     alt_block = _fmt_alternatives(trade.get("alternatives", []))

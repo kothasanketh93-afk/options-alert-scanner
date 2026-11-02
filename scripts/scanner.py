@@ -1120,16 +1120,24 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
     }
     calibrated_pct = trade_score.calibrated_probability_pct(calibration_context)
     if calibrated_pct is None:
-        _rejection_count += 1
+        conditions_mode = bool(getattr(config, "CONDITIONS_ALERT_MODE", False))
+        if not conditions_mode:
+            _rejection_count += 1
         _logger.info(
             f"CALIBRATED_PROBABILITY {symbol} {direction} {moneyness} strike={strike} status=UNAVAILABLE"
         )
-        _logger.info(
-            f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
-            f"Reasons: CALIBRATED_PROBABILITY_UNAVAILABLE -- no alert without a "
-            f"genuine, evidence-based probability estimate (trade_score={score}/100, "
-            f"heuristic_pct={trade_score_heuristic_pct}% -- neither is a substitute)"
-        )
+        if conditions_mode:
+            _logger.info(
+                f"CONDITIONS_MET {symbol} {direction} {moneyness} strike={strike} -- all gates passed; "
+                f"alert is UNVALIDATED (no probability estimate), trade_score={score} is informational"
+            )
+        else:
+            _logger.info(
+                f"REJECTED {symbol} {direction} {moneyness} strike={strike} | "
+                f"Reasons: CALIBRATED_PROBABILITY_UNAVAILABLE -- no alert without a "
+                f"genuine, evidence-based probability estimate (trade_score={score}/100, "
+                f"heuristic_pct={trade_score_heuristic_pct}% -- neither is a substitute)"
+            )
         if PROBABILITY_SHADOW_MODE_ENABLED:
             # Phase-2 Shadow/Validation Mode (2026-08-23): this candidate
             # already cleared EVERY hard gate above (liquidity, RR, OI,
@@ -1171,13 +1179,17 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
                 f"SHADOW_CANDIDATE_CREATED {symbol} {direction} {moneyness} strike={strike} "
                 f"candidate_id={shadow_candidate['candidate_id']} trade_score={score}/100"
             )
-        return None
-    probability_pct = calibrated_pct
-    probability_band = trade_score.probability_label(probability_pct)
-    _logger.info(
-        f"CALIBRATED_PROBABILITY {symbol} {direction} {moneyness} strike={strike} "
-        f"probability={probability_pct}% ({probability_band}) status=AVAILABLE"
-    )
+        if not conditions_mode:
+            return None
+        probability_pct = None
+        probability_band = "Conditions met (unvalidated)"
+    else:
+        probability_pct = calibrated_pct
+        probability_band = trade_score.probability_label(probability_pct)
+        _logger.info(
+            f"CALIBRATED_PROBABILITY {symbol} {direction} {moneyness} strike={strike} "
+            f"probability={probability_pct}% ({probability_band}) status=AVAILABLE"
+        )
 
     return {
         "symbol": symbol,
@@ -1214,7 +1226,8 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         "why_reasons": reasons_from_factors(factors),
         "session": session,
         "alternatives": [],  # filled in by main.py's run_scanner_step, not here
-        "_quality_score": score,  # ranking.py's tiebreak key -- now the Trade Score itself
+        "_quality_score": score,  # legacy tiebreak key (used only when CONDITIONS_ALERT_MODE is off)
+        "_conditions_rank": (directional_status["count"], round(rr_ratio, 3)),  # ranking when CONDITIONS_ALERT_MODE
         "options_intelligence": oi_intel,  # Part 5, additive -- see app/engines/options_intelligence/
         "candlestick_patterns": candlestick_read,  # additive -- see candlestick_patterns.py
     }

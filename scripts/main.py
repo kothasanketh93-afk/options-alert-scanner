@@ -233,7 +233,8 @@ def run_scanner_step(state: dict, now: datetime):
     # passed (this does not and must not run before those -- it only
     # adds a floor on top of a candidate that already cleared all of
     # them).
-    if chosen["probability_pct"] < config.MIN_ALERT_PROBABILITY:
+    if (chosen["probability_pct"] is not None
+            and chosen["probability_pct"] < config.MIN_ALERT_PROBABILITY):
         log.info(
             "PROBABILITY_BELOW_FLOOR %s %s: probability=%s%% < required %s%% -- "
             "no alert, not tracked.",
@@ -380,7 +381,8 @@ def run_early_breakout_step(state: dict, now: datetime):
         state["trades"][trade_id] = trade
 
         # Fix 12: 60-69 Watchlist only (tracked, no Telegram); 70+ alert.
-        if trade["trade_score"] < config.EARLY_BREAKOUT_TELEGRAM_MIN_SCORE:
+        if (config.EARLY_BREAKOUT_SCORE_GATE_ENABLED
+                and trade["trade_score"] < config.EARLY_BREAKOUT_TELEGRAM_MIN_SCORE):
             log.info(
                 "EB_WATCHLIST %s: score %d/100 (%s) is below the %d Telegram floor -- "
                 "tracked internally, no alert sent.",
