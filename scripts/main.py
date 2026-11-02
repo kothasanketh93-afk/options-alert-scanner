@@ -46,6 +46,7 @@ from app.engines.orb_pivot import engine as orb_pivot_engine
 import outcomes_ledger
 import signal_lab_runner
 import microstructure_runner
+import risk_guard
 import shadow_notify
 import pattern_tape_runner
 from app.market import snapshot as market_snapshot
@@ -216,6 +217,11 @@ def run_scanner_step(state: dict, now: datetime):
 
     if chosen is None:
         return  # every passing candidate conflicted with an open trade, or none passed the gate
+
+    _ok, _why = risk_guard.check(state, chosen["symbol"], now)
+    if not _ok:
+        log.info("RISK_GUARD blocked %s %s: %s", chosen["symbol"], chosen["direction"], _why)
+        return
 
     if state_mod.concurrent_limit_reached(state):
         # Cap hit -- skip silently (not worth a Telegram message per

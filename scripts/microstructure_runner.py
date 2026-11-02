@@ -19,6 +19,11 @@ def collect_once(state, now, ledger_dir: Path) -> int:
         for t in (state.get(key) or {}).values():
             if t.get("symbol") and t["symbol"] not in symbols and t.get("instrument_key") in tmap:
                 symbols.append(t["symbol"])
+    index_symbols = set(symbols)
+    if getattr(config, "MICROSTRUCTURE_INCLUDE_SHORTLIST", False):
+        for sym in list(getattr(config, "STOCK_SYMBOLS", []) or []):
+            if sym not in symbols:
+                symbols.append(sym)
     rows = []
     for symbol in symbols:
         try:
@@ -28,7 +33,7 @@ def collect_once(state, now, ledger_dir: Path) -> int:
             expiry = current_expiry(symbol)
             chain = market_data.get_option_chain(ukey, expiry)
             rows += mlog.build_rows(symbol, expiry, days_to_expiry(expiry, now), chain, now,
-                                    width=config.MICROSTRUCTURE_STRIKE_WIDTH, trade_map=tmap)
+                                    width=(config.MICROSTRUCTURE_STRIKE_WIDTH if (symbol in index_symbols) else config.MICROSTRUCTURE_STOCK_STRIKE_WIDTH), trade_map=tmap)
         except Exception as exc:
             log.error("MICROSTRUCTURE %s failed (%s: %s)", symbol, type(exc).__name__, exc)
     n = mlog.append_rows(rows, Path(ledger_dir) / f"{now.strftime('%Y-%m-%d')}.csv")

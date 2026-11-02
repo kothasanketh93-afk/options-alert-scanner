@@ -1592,3 +1592,13 @@ PATTERN_TAPE_SYMBOLS = ["NIFTY", "BANKNIFTY"]
 MICROSTRUCTURE_LOG_ENABLED = True
 MICROSTRUCTURE_SYMBOLS = ["NIFTY", "BANKNIFTY"]
 MICROSTRUCTURE_STRIKE_WIDTH = 5
+
+# --- Risk guard for live alerts (added 2026-11-02, per the build plan's risk framework) ---
+# Applies to live (Tier B/A) alerts only; shadow/data-collection paths are untouched.
+RISK_GUARD_ENABLED = True
+RISK_ENTRY_CUTOFF_HHMM = (14, 45)   # no new live alerts at/after this IST time
+RISK_MAX_OPEN_TRADES = 2            # simultaneous open live trades
+RISK_DAILY_SL_STOP = 4              # stop-losses in a day (~2% of capital at 0.5% risk/trade) -> no more alerts
+# Stock-option bid/ask logging for the daily shortlist (extends MICROSTRUCTURE_SYMBOLS at runtime)
+MICROSTRUCTURE_INCLUDE_SHORTLIST = True
+MICROSTRUCTURE_STOCK_STRIKE_WIDTH = 2   # ATM+-2 strikes for stock options (spreads are wide; keep rows small)
