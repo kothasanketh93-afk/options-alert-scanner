@@ -45,13 +45,13 @@ import trade_score
 # ---------------------------------------------------------------------------
 
 def test_a_valid_bid_ask_correct_spread():
-    ltp, bid, ask = 100.0, 99.0, 101.0
+    ltp, bid, ask = 100.0, 99.75, 100.25   # 0.5% spread: within INDEX_MAX_SPREAD_PCT (2026-11-02)
     spread = ask - bid
     midpoint = (bid + ask) / 2
     spread_pct = spread / midpoint * 100
-    assert spread == 2.0
+    assert spread == 0.5
     assert midpoint == 100.0
-    assert round(spread_pct, 4) == 2.0
+    assert round(spread_pct, 4) == 0.5
     # Sanity: liquidity_ok() itself still passes with valid data (unchanged path)
     assert filters.liquidity_ok(oi=100000, volume=50000, bid=bid, ask=ask, premium=ltp) is True
     print("test_a_valid_bid_ask_correct_spread passed")

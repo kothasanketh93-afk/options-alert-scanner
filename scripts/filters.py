@@ -7,7 +7,7 @@ rejected outright -- no partial-credit alert.
 """
 
 from config import (
-    MIN_OI, MIN_OPTION_VOLUME, MIN_PREMIUM, MAX_SPREAD_PCT,
+    MIN_OI, MIN_OPTION_VOLUME, MIN_PREMIUM, MAX_SPREAD_PCT, INDEX_MAX_SPREAD_PCT, STOCK_MAX_SPREAD_PCT,
     OI_BUILD_THRESHOLD_PCT, MIN_DELTA_OTM,
     EXPIRY_DAY_MIN_OTM_DELTA, EXPIRY_DAY_THRESHOLD_DAYS,
     STOCK_SYMBOLS, STOCK_MIN_OI, STOCK_MIN_OPTION_VOLUME, STOCK_MIN_PREMIUM,
@@ -98,7 +98,7 @@ def liquidity_ok(oi: float, volume: float, bid, ask, premium: float,
         # repository's data-quality convention already uses elsewhere.
         return False
     spread_pct = (ask - bid) / premium
-    if spread_pct > MAX_SPREAD_PCT:
+    if spread_pct > min(MAX_SPREAD_PCT, STOCK_MAX_SPREAD_PCT if is_stock else INDEX_MAX_SPREAD_PCT):
         return False
     return True
 

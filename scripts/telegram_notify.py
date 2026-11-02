@@ -148,6 +148,16 @@ def _fmt_alternatives(alternatives: list, max_shown: int = 5) -> str:
     return block
 
 
+def _limit_line(trade: dict) -> str:
+    """Use a LIMIT order at the ask; never chase above the top of the entry zone (real spread data, 2026-11-02)."""
+    ask, bid = trade.get("ask"), trade.get("bid")
+    if not ask or not bid:
+        return ""
+    sp = trade.get("spread_pct")
+    return (f"Quote: bid ₹{bid} / ask ₹{ask}" + (f" (spread {sp}%)" if sp is not None else "")
+            + f"\nPlace a LIMIT buy at ₹{ask}; do not chase above ₹{trade['entry_high']}.\n")
+
+
 def _fmt_new_alert_conditions(trade: dict) -> str:
     """Conditions-based alert (2026-11-02, config.CONDITIONS_ALERT_MODE): no score, grade or probability."""
     low_min, high_min = trade["expected_holding_minutes"]
@@ -174,6 +184,7 @@ def _fmt_new_alert_conditions(trade: dict) -> str:
         f"{checklist}\n"
         f"━━━━━━━━━━━━━━\n\n"
         f"Premium: ₹{trade['alert_premium']}\n"
+        f"{_limit_line(trade)}"
         f"Entry Zone: ₹{trade['entry_low']} - ₹{trade['entry_high']}\n"
         f"Stop Loss: ₹{trade['stop_loss']}\n"
         f"Target 1: ₹{trade['target_1']}\n"

@@ -804,6 +804,11 @@ SHADOW_TIMEOUT_EXTENSION_MAX_DAYS = 2   # up to 2 additional trading days beyond
 MIN_OI = 12_000
 MIN_OPTION_VOLUME = 4_000
 MIN_PREMIUM = 60             # reject strikes priced below this (rupees)
+# 2026-11-02: tighter, per-instrument-type caps (real quotes on day 1: NIFTY/BANKNIFTY/SENSEX ATM spread
+# median 0.2-0.3% of mid, p90 <0.4%; liquid stock options 0.7-2.6%). The effective cap is min(MAX_SPREAD_PCT, these).
+# Revisit after 2-3 weeks of ledger/microstructure data.
+INDEX_MAX_SPREAD_PCT = 0.01
+STOCK_MAX_SPREAD_PCT = 0.02
 MAX_SPREAD_PCT = 0.04        # bid-ask spread must be <= 4% of premium (was 3%).
                               # Percentage-of-premium, not absolute rupees --
                               # a flat rupee cap unfairly penalizes cheap

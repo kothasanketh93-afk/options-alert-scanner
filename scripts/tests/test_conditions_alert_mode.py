@@ -60,3 +60,17 @@ def test_telegram_alert_has_no_score_or_probability():
     r.update(display_label="Trade 1", trade_id="T", alternatives=[])
     text = tg.fmt_new_alert(r)
     assert "CONDITIONS MET" in text and "Trade Score" not in text and "Probability :" not in text and "Grade" not in text
+
+
+def test_limit_price_line_in_alert():
+    r = _score(True)
+    r.update(display_label="Trade 1", trade_id="T", alternatives=[], bid=99.0, ask=100.0, spread_pct=1.0)
+    text = tg.fmt_new_alert(r)
+    assert "LIMIT buy at ₹100.0" in text and "do not chase above" in text
+
+
+def test_spread_caps_index_vs_stock():
+    import filters
+    # index premium 100: spread 2% > 1% cap -> rejected; 0.5% -> ok (large OI/volume, symbol=None => index)
+    assert filters.liquidity_ok(10**9, 10**9, 99.0, 101.0, 100.0, None) is False
+    assert filters.liquidity_ok(10**9, 10**9, 99.75, 100.25, 100.0, None) is True

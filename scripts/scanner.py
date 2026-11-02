@@ -1227,6 +1227,7 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
         "session": session,
         "alternatives": [],  # filled in by main.py's run_scanner_step, not here
         "_quality_score": score,  # legacy tiebreak key (used only when CONDITIONS_ALERT_MODE is off)
+        "bid": bid, "ask": ask, "spread_pct": (round(spread_pct, 2) if spread_pct is not None else None),
         "_conditions_rank": (directional_status["count"], round(rr_ratio, 3)),  # ranking when CONDITIONS_ALERT_MODE
         "options_intelligence": oi_intel,  # Part 5, additive -- see app/engines/options_intelligence/
         "candlestick_patterns": candlestick_read,  # additive -- see candlestick_patterns.py

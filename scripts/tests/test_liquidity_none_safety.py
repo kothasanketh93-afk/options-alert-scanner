@@ -214,7 +214,7 @@ def test_l_variant_scanner_source_implements_three_states():
 # ---------------------------------------------------------------------------
 
 def test_m_liquidity_ok_unchanged_for_valid_data():
-    assert filters.liquidity_ok(oi=100000, volume=50000, bid=99.0, ask=101.0, premium=100.0) is True
+    assert filters.liquidity_ok(oi=100000, volume=50000, bid=99.75, ask=100.25, premium=100.0) is True  # 0.5% < INDEX_MAX_SPREAD_PCT (2026-11-02)
     assert filters.liquidity_ok(oi=100000, volume=50000, bid=None, ask=None, premium=100.0) is False
     assert filters.liquidity_ok(oi=100000, volume=50000, bid=0.0, ask=0.0, premium=100.0) is False
     print("test_m_liquidity_ok_unchanged_for_valid_data passed")

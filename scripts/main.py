@@ -79,6 +79,7 @@ def new_trade_record(setup: dict, trade_id: str, alert_dt: datetime, display_lab
         # per an explicit decision reversing the earlier V2.0 "no raw
         # numeric score ever reaches Telegram" design (see trade_score.py).
         "trade_score": setup["trade_score"],
+        "bid": setup.get("bid"), "ask": setup.get("ask"), "spread_pct": setup.get("spread_pct"),
         "probability_pct": setup["probability_pct"],
         "probability_label": setup.get("probability_label"),
         "score_breakdown": setup.get("score_breakdown", []),
