@@ -35,13 +35,33 @@
 name: Trader
 
 on:
-  # GitHub's own `schedule:` cron trigger was removed here -- triggering
-  # is now handled externally by cronjob.com hitting this workflow's
-  # workflow_dispatch API endpoint on the same cadence the old cron
-  # entries covered (Phase 1/2/3 as described above, before this edit).
-  # main.py's own session-window and holiday_guard checks still apply
-  # regardless of what triggers the run, so this can't accidentally
-  # scan when the market's actually closed.
+  # 2026-11-02: native schedule in IST (GitHub supports an IANA `timezone` on cron entries; no DST in India).
+  # Same three phases the original UTC schedule used. This coexists with the external cron-job.org triggers:
+  # the "guard" step below makes whichever trigger fires second in the same slot skip, so a slot never runs
+  # twice. Once the native schedule has proven reliable, the Trader-1..8 jobs on cron-job.org can be disabled.
+  # main.py's session-window and holiday_guard checks still apply to every run.
+  schedule:
+    # --- Phase 1: 09:15-11:30 IST -- every 5 min ---
+    - cron: '15,20,25,30,35,40,45,50,55 9 * * 1-5'
+      timezone: 'Asia/Kolkata'
+    - cron: '*/5 10 * * 1-5'
+      timezone: 'Asia/Kolkata'
+    - cron: '0,5,10,15,20,25,30 11 * * 1-5'
+      timezone: 'Asia/Kolkata'
+    # --- Phase 2: 11:35-13:35 IST -- every 15 min (lunch gap) ---
+    - cron: '35,50 11 * * 1-5'
+      timezone: 'Asia/Kolkata'
+    - cron: '5,20,35,50 12 * * 1-5'
+      timezone: 'Asia/Kolkata'
+    - cron: '5,20,35 13 * * 1-5'
+      timezone: 'Asia/Kolkata'
+    # --- Phase 3: 13:45-15:30 IST -- every 5 min (15:30 run also writes end-of-day data) ---
+    - cron: '45,50,55 13 * * 1-5'
+      timezone: 'Asia/Kolkata'
+    - cron: '*/5 14 * * 1-5'
+      timezone: 'Asia/Kolkata'
+    - cron: '0,5,10,15,20,25,30 15 * * 1-5'
+      timezone: 'Asia/Kolkata'
   workflow_dispatch: {}
 
 # One run at a time: README.md's "concurrency-protected" -- prevents
@@ -61,24 +81,46 @@ concurrency:
 # the workflow has Read and write permissions").
 permissions:
   contents: write
+  actions: read   # guard step lists recent Trader runs
 
 jobs:
   run-trader:
     runs-on: ubuntu-latest
     timeout-minutes: 10  # generous vs. the ~40-55s typical runtime -- catches a genuine hang rather than a normal slow run
     steps:
+      - name: Guard against duplicate trigger in the same slot
+        id: guard
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          # An EARLIER-created Trader run in the last 150 s means this slot was already triggered
+          # (e.g. cron-job.org + native schedule). Only the later one skips, so both can never skip.
+          since=$(date -u -d '150 seconds ago' +%Y-%m-%dT%H:%M:%SZ)
+          n=$(gh api "repos/${{ github.repository }}/actions/workflows/trader.yml/runs?per_page=10" \
+              --jq "[.workflow_runs[] | select(.id < ($RUN_ID|tonumber)) | select(.created_at > \"$since\")] | length" || echo 0)
+          if [ "${n:-0}" -gt 0 ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"; echo "Duplicate trigger -- skipping this run."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout
+        if: steps.guard.outputs.skip != 'true'
         uses: actions/checkout@v4
 
       - name: Set up Python
+        if: steps.guard.outputs.skip != 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
       - name: Install dependencies
+        if: steps.guard.outputs.skip != 'true'
         run: pip install -r requirements.txt
 
       - name: Run trader
+        if: steps.guard.outputs.skip != 'true'
         env:
           # Angel One (primary broker) -- see auth.py's docstring on
           # where ANGEL_TOTP_SECRET comes from.
