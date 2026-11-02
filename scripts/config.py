@@ -1586,6 +1586,9 @@ SIGNAL_LAB_SYMBOLS = ["NIFTY", "BANKNIFTY"]
 # contract with an open shadow trade. Observation only (see microstructure_log.py).
 # Shadow Telegram notices (2026-11-02): informational, labelled NOT A TRADE SIGNAL (shadow_notify.py).
 SHADOW_TELEGRAM_ENABLED = True
+# Pattern tape (2026-11-02): per-bar candlestick patterns + strategy signals, queryable (pattern_tape.py).
+PATTERN_TAPE_ENABLED = True
+PATTERN_TAPE_SYMBOLS = ["NIFTY", "BANKNIFTY"]
 MICROSTRUCTURE_LOG_ENABLED = True
 MICROSTRUCTURE_SYMBOLS = ["NIFTY", "BANKNIFTY"]
 MICROSTRUCTURE_STRIKE_WIDTH = 5

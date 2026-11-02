@@ -47,6 +47,7 @@ import outcomes_ledger
 import signal_lab_runner
 import microstructure_runner
 import shadow_notify
+import pattern_tape_runner
 from app.market import snapshot as market_snapshot
 
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -1012,6 +1013,11 @@ def main():
             state, now, state_mod.STATE_CLONE_DIR / "ledger" / "microstructure")
     except Exception as exc:
         log.error("Microstructure log failed (%s: %s) -- continuing.", type(exc).__name__, exc)
+    try:
+        pattern_tape_runner.collect_once(
+            state, now, state_mod.STATE_CLONE_DIR / "ledger" / "pattern_tape")
+    except Exception as exc:
+        log.error("Pattern tape failed (%s: %s) -- continuing.", type(exc).__name__, exc)
     state_mod.cleanup_old_state_files(keep_today=date_str)
     commit_message = f"update {date_str} @ {now.strftime('%H:%M:%S')}"
     if run_error is not None:
