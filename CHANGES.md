@@ -1,3 +1,8 @@
+# 2026-11-02
+- Conditions-based live alerts (no trade_score floor, no probability requirement); score is log-only. Telegram alert drops score/grade/probability.
+- Fixed ORB/pivot/PDH-PDL shadow wiring (import error since 2026-10-31).
+- Added microstructure log (real bid/ask, qty, Greeks), labelled shadow Telegram notices, TOP_N_STOCKS 5 -> 10.
+
 # Production Enhancement — Adaptive Directional Bias
 
 ## TL;DR

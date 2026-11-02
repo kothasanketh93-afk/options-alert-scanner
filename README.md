@@ -94,7 +94,7 @@ places to keep in sync, not one.
 **Phase 1 — Opportunity Score Engine: done.** `universe.py` holds the
 ~100-stock master universe; `opportunity_score.py` computes the
 pre-market 0-100 score; `build_opportunity_shortlist.py` picks the
-top `config.TOP_N_STOCKS` (35) for detailed scanning, cutting API
+top `config.TOP_N_STOCKS` (10) for detailed scanning, cutting API
 calls/runtime by ignoring the rest.
 
 **Phase 2 — Dynamic Strike Selection: done.** `instrument_master.py`
@@ -1120,3 +1120,12 @@ Quant and News adapters running inside it never ran either), and every
 `main.py` (about 9 outbound HTTP calls every run, with no consumer) was
 removed with them, and PyYAML / pydantic / beautifulsoup4 were dropped from
 `requirements.txt`. `git log` has the last version if ever needed.
+
+
+## Alert mode (2026-11-02)
+Live alerts are **conditions-based** (`config.CONDITIONS_ALERT_MODE = True`): a setup alerts when every hard gate,
+the directional/structural confirmation, the extension/chase filters and the Options Intelligence filter pass.
+There is no trade_score floor (`SCORE_GATE_ENABLED = False`) and no calibrated-probability requirement; alerts are
+labelled *unvalidated*. Candidates are ordered by confirmation count, then R:R. The score is still computed and logged.
+Set `CONDITIONS_ALERT_MODE = True/False` to switch. Shadow Telegram notices (`SHADOW_TELEGRAM_ENABLED`) cover the
+ORB15 / pivot-break / PDH-PDL engines. `ledger/microstructure/` (state branch) logs real bid/ask, quantities and Greeks.
