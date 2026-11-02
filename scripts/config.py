@@ -283,7 +283,7 @@ STOCK_MIN_PREMIUM = 2
 # --- Phase 1 (opportunity_score.py) ---
 INDEX_SYMBOLS = list(SYMBOLS)  # ["NIFTY", "BANKNIFTY", "MIDCPNIFTY"] at this point -- captured before STOCK_SYMBOLS is appended below
 
-TOP_N_STOCKS = 5    # narrowed from 20 to 5 (2026-07-31), replacing the fixed
+TOP_N_STOCKS = 10   # raised 5 -> 10 on 2026-11-02 at user request (was narrowed from 20 to 5 on 2026-07-31, replacing the fixed
                     # 10-stock STOCK_UNIVERSE_VALIDATION_MODE list -- now the
                     # daily shortlist itself (build_opportunity_shortlist.py,
                     # scored from universe.MASTER_UNIVERSE / the dynamic F&O
