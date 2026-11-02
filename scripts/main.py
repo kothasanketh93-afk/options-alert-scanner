@@ -42,7 +42,7 @@ import trade_score
 from config import SUMMARY_HHMM
 from app.engines import early_breakout as early_breakout_engine
 from app.engines import fib_pivot as fib_pivot_engine
-from app.engines import orb_pivot as orb_pivot_engine
+from app.engines.orb_pivot import engine as orb_pivot_engine
 import outcomes_ledger
 import signal_lab_runner
 import microstructure_runner
