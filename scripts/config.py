@@ -1564,6 +1564,8 @@ SIGNAL_LAB_SYMBOLS = ["NIFTY", "BANKNIFTY"]
 
 # Microstructure log (2026-11-01): real bid/ask + Greeks of ATM +/- N strikes every run, plus any
 # contract with an open shadow trade. Observation only (see microstructure_log.py).
+# Shadow Telegram notices (2026-11-02): informational, labelled NOT A TRADE SIGNAL (shadow_notify.py).
+SHADOW_TELEGRAM_ENABLED = True
 MICROSTRUCTURE_LOG_ENABLED = True
 MICROSTRUCTURE_SYMBOLS = ["NIFTY", "BANKNIFTY"]
 MICROSTRUCTURE_STRIKE_WIDTH = 5

@@ -46,6 +46,7 @@ from app.engines import orb_pivot as orb_pivot_engine
 import outcomes_ledger
 import signal_lab_runner
 import microstructure_runner
+import shadow_notify
 from app.market import snapshot as market_snapshot
 
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -689,6 +690,7 @@ def create_shadow_candidates(state: dict, now: datetime):
             "SHADOW_CANDIDATE_CREATED shadow_id=%s %s %s strike=%s candidate_id=%s trade_score=%s/100",
             shadow_id, trade["symbol"], trade["direction"], trade["strike"], candidate_id, trade["trade_score"],
         )
+        shadow_notify.notify_created(state, trade, now)
 
 
 def run_shadow_tracker_step(state: dict, now: datetime):
@@ -719,6 +721,7 @@ def run_shadow_tracker_step(state: dict, now: datetime):
                 continue
             events = tracker.process_trade_candles(trade, candles)
             _dispatch_shadow_tracker_events(trade, events, now)
+            shadow_notify.notify_events(trade, events)
         except (BrokerAPIError, TelegramFailure) as exc:
             # Same per-trade containment posture as run_tracker_step()
             # above -- one shadow trade's broker hiccup must not stop
@@ -1251,6 +1254,7 @@ def create_orb_pivot_shadow_candidates(state: dict, now: datetime):
         log.info("ORBPIVOT_SHADOW_CANDIDATE_CREATED trade_id=%s strategy=%s %s %s strike=%s level=%s",
                  trade_id, trade["strategy"], trade["symbol"], trade["direction"], trade["strike"],
                  candidate.get("pivot_level_name"))
+        shadow_notify.notify_created(state, trade, now)
 
 
 def run_orb_pivot_shadow_step(state: dict, now: datetime):
@@ -1264,7 +1268,9 @@ def run_orb_pivot_shadow_step(state: dict, now: datetime):
             candles = market_data.get_1min_candles_since(trade["instrument_key"], trade["last_processed_ts"])
             if not candles:
                 continue
-            _dispatch_orb_pivot_shadow_events(trade, tracker.process_trade_candles(trade, candles))
+            _events = tracker.process_trade_candles(trade, candles)
+            _dispatch_orb_pivot_shadow_events(trade, _events)
+            shadow_notify.notify_events(trade, _events)
         except (BrokerAPIError, TelegramFailure) as exc:
             log.error("ORB/pivot shadow trade %s: tracker step failed (%s: %s) -- retry next run.",
                       trade_id, type(exc).__name__, exc)
