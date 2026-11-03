@@ -19,8 +19,10 @@ def main(path):
         return 1
     import tempfile
     import eod_image
+    root = os.path.dirname(os.path.dirname(os.path.abspath(path)))
+    lots = eod_report.lot_sizes_from_gz(os.path.join(root, "instrument_master", f"{state.get('date')}.json.gz")) or eod_report.load_lot_sizes()
     png = os.path.join(tempfile.mkdtemp(), "eod.png")
-    eod_image.render(state, state.get("date", "?"), png, eod_report.load_lot_sizes())
+    eod_image.render(state, state.get("date", "?"), png, lots)
     tg.send_photo(png, caption=f"End-of-day trade report {state.get('date')} (image version, sample preview)")
     print("sent image")
     return 0

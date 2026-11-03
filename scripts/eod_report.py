@@ -29,6 +29,15 @@ def lot_sizes_from_rows(master_rows: list) -> dict:
     return out
 
 
+def lot_sizes_from_gz(path: str) -> dict:
+    import gzip, json
+    try:
+        with gzip.open(path, "rt", encoding="utf-8") as f:
+            return lot_sizes_from_rows(json.load(f).get("rows", []))
+    except Exception:
+        return {}
+
+
 def load_lot_sizes(trading_date: str = None) -> dict:
     """Lot sizes from today's cached instrument master (never downloads); {} on any failure -> P&L column shows '-'."""
     try:
