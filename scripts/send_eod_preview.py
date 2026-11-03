@@ -20,7 +20,7 @@ def main(path):
     import tempfile
     import eod_image
     png = os.path.join(tempfile.mkdtemp(), "eod.png")
-    eod_image.render(state, state.get("date", "?"), png)
+    eod_image.render(state, state.get("date", "?"), png, eod_report.load_lot_sizes())
     tg.send_photo(png, caption=f"End-of-day trade report {state.get('date')} (image version, sample preview)")
     print("sent image")
     return 0

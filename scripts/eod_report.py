@@ -20,14 +20,61 @@ def _fmt(x):
     return "-" if x is None else (f"{x:.2f}" if isinstance(x, (int, float)) else str(x))
 
 
-def collect(state: dict) -> list:
+def lot_sizes_from_rows(master_rows: list) -> dict:
+    """{underlying_symbol: lot_size} from the instrument master's option rows."""
+    out = {}
+    for r in master_rows or []:
+        if r.get("option_type") in ("CE", "PE") and r.get("lot_size") and r.get("underlying_symbol"):
+            out.setdefault(r["underlying_symbol"], int(r["lot_size"]))
+    return out
+
+
+def load_lot_sizes() -> dict:
+    """Lot sizes from the instrument master; {} on any failure (the P&L column then shows '-')."""
+    try:
+        import instrument_master
+        return lot_sizes_from_rows(instrument_master.load_instrument_master())
+    except Exception:
+        return {}
+
+
+def _exit_price(t, status):
+    return {"T2_HIT": t.get("target_2"), "SL_HIT": t.get("stop_loss"), "T1_THEN_SL": t.get("stop_loss"),
+            "T1_THEN_TRAILING_SL": t.get("stop_loss"), "TRAILING_SL_HIT": t.get("stop_loss"),
+            "EOD_CLOSED": t.get("eod_last_price"), "T1_HIT_THEN_EOD": t.get("eod_last_price")}.get(status)
+
+
+def collect(state: dict, lot_sizes: dict = None) -> list:
+    """One dict per tracked trade. pnl_gross/pnl_net = rupees for ONE lot (net = minus the assumed round-trip cost)."""
     rows = []
+    live_keys = {(t.get("symbol"), t.get("direction"), t.get("strike"), t.get("alert_time"))
+                 for t in (state.get("trades") or {}).values()}
     for key, label in _ENGINES:
         for t in (state.get(key) or {}).values():
             status = t.get("final_status") or t.get("status")
             res = outcomes_ledger.result_pct(t)
-            rows.append({"engine": label, "t": t, "status": status, "net": outcomes_ledger.net_result_pct(res)})
+            lot = (lot_sizes or {}).get(t.get("symbol"))
+            entry, exit_ = t.get("tracked_entry_price"), _exit_price(t, status)
+            gross = net = None
+            if lot and entry and exit_ is not None:
+                gross = round((exit_ - entry) * lot)
+                net = round(gross - entry * lot * outcomes_ledger.config.LEDGER_ROUND_TRIP_COST_PCT / 100)
+            twin = key == "shadow_trades" and (t.get("symbol"), t.get("direction"), t.get("strike"), t.get("alert_time")) in live_keys
+            rows.append({"engine": label, "t": t, "status": status, "net": outcomes_ledger.net_result_pct(res),
+                         "lot": lot, "pnl_gross": gross, "pnl_net": net, "twin_of_live": twin})
     return rows
+
+
+def totals(rows: list) -> dict:
+    """Closed-trade rupee totals for one lot each; a shadow copy of a live trade is not counted twice."""
+    def agg(sel):
+        g = [r["pnl_gross"] for r in sel if r["pnl_gross"] is not None and not r["twin_of_live"]]
+        n = [r["pnl_net"] for r in sel if r["pnl_net"] is not None and not r["twin_of_live"]]
+        return {"gross": sum(g), "net": sum(n), "n": len(g)}
+    out = {"all": agg(rows)}
+    for _k, label in _ENGINES:
+        out[label] = agg([r for r in rows if r["engine"] == label])
+    return out
 
 
 def _group_of(status):

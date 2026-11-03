@@ -783,7 +783,7 @@ def maybe_send_eod_report(state: dict, now: datetime):
             import tempfile
             import eod_image
             png = os.path.join(tempfile.mkdtemp(), f"eod_{state['date']}.png")
-            if eod_image.render(state, state["date"], png):
+            if eod_image.render(state, state["date"], png, eod_report.load_lot_sizes()):
                 tg.send_photo(png, caption=f"End-of-day trade report {state['date']} (educational, not advice)")
                 sent_image = True
         except Exception as exc:
