@@ -1602,3 +1602,7 @@ RISK_DAILY_SL_STOP = 4              # stop-losses in a day (~2% of capital at 0.
 # Stock-option bid/ask logging for the daily shortlist (extends MICROSTRUCTURE_SYMBOLS at runtime)
 MICROSTRUCTURE_INCLUDE_SHORTLIST = True
 MICROSTRUCTURE_STOCK_STRIKE_WIDTH = 2   # ATM+-2 strikes for stock options (spreads are wide; keep rows small)
+
+# Composite Options-Intelligence score floor (OPTIONS_INTELLIGENCE_MIN_SCORE) removed from the gate 2026-11-03 at user request
+# (conditions-based alerts). The individual hard-hygiene sub-score rejections (liquidity, OI, premium quality, IV) still apply.
+OPTIONS_INTELLIGENCE_SCORE_GATE_ENABLED = False

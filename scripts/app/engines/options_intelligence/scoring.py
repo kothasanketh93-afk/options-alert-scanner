@@ -9,6 +9,7 @@ decision -- engine.py's analyze() is the only caller that needs to
 know about every module above; this file is the aggregation layer.
 """
 
+import config
 from config import OPTIONS_INTELLIGENCE_WEIGHTS, OPTIONS_INTELLIGENCE_MIN_SCORE
 
 
@@ -118,7 +119,7 @@ def options_filter(score: int, sub_scores: dict, iv_abnormal: bool = False) -> t
             reasons.append(f"{label} (data unavailable)")
         elif value < 0.2:
             reasons.append(label)
-    if score < OPTIONS_INTELLIGENCE_MIN_SCORE:
+    if config.OPTIONS_INTELLIGENCE_SCORE_GATE_ENABLED and score < OPTIONS_INTELLIGENCE_MIN_SCORE:
         reasons.append(f"Options Intelligence Score below floor ({score}/{OPTIONS_INTELLIGENCE_MIN_SCORE})")
 
     accepted = not reasons
