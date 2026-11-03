@@ -1621,3 +1621,7 @@ CHASE_BYPASS_SHADOW_ENABLED = True
 # 2026-11-03 (user request): the T1 reward:risk alert gate is OFF so every conditions-met setup is alerted and its outcome
 # captured as data. R:R is still shown in the alert text. Set True to re-enable the RISK_MIN_T1_RR floor.
 RISK_RR_GATE_ENABLED = False
+
+# Run-gap notice (2026-11-04): tell the user when the external trigger skipped runs in market hours.
+RUN_GAP_ALERT_ENABLED = True
+RUN_GAP_ALERT_MIN = 15

@@ -26,7 +26,7 @@ COLUMNS = ["trade_id", "date", "engine", "strategy", "symbol", "direction", "str
            "stop_loss", "target_1", "target_2", "final_status", "t1_hit", "result_pct",
            "mfe_pct", "mae_pct", "grade", "trade_score", "wide_prev_day",
            "expiry_day", "entry_oi", "entry_volume", "spread_pct", "cost_pct_assumed", "net_result_pct",
-           "be_after_t1_pct", "half_t1_plus_be_pct"]
+           "be_after_t1_pct", "half_t1_plus_be_pct", "entry_bucket"]
 
 
 def result_pct(trade: dict):
@@ -72,6 +72,21 @@ def net_result_pct(res):
     return round(res - config.LEDGER_ROUND_TRIP_COST_PCT, 2)
 
 
+def entry_bucket(alert_time) -> str:
+    """Time-of-day bucket of the alert (IST): open / morning / midday / late / '' if unknown."""
+    try:
+        hm = (int(str(alert_time)[11:13]), int(str(alert_time)[14:16]))
+    except Exception:
+        return ""
+    if hm < (9, 45):
+        return "0915-0945"
+    if hm < (11, 30):
+        return "0945-1130"
+    if hm < (14, 0):
+        return "1130-1400"
+    return "1400+"
+
+
 def _row(trade: dict, engine: str, date_str: str) -> dict:
     status = trade.get("final_status") or trade.get("status")
     res = result_pct(trade)
@@ -94,6 +109,7 @@ def _row(trade: dict, engine: str, date_str: str) -> dict:
         "cost_pct_assumed": config.LEDGER_ROUND_TRIP_COST_PCT if res is not None else None,
         "net_result_pct": net_result_pct(res),
         "be_after_t1_pct": be, "half_t1_plus_be_pct": half,
+        "entry_bucket": entry_bucket(trade.get("alert_time")),
     }
 
 
@@ -111,6 +127,8 @@ def append_resolved(state: dict, ledger_path: Path) -> int:
             with open(ledger_path, "w", newline="") as f:
                 w0 = csv.DictWriter(f, fieldnames=COLUMNS, extrasaction="ignore")
                 w0.writeheader()
+                for r0 in old_rows:
+                    r0.setdefault("entry_bucket", entry_bucket(r0.get("alert_time")))
                 w0.writerows(old_rows)
     new_rows = []
     for key, engine in STATE_KEYS:

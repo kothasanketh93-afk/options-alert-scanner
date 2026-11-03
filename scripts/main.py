@@ -47,6 +47,7 @@ import outcomes_ledger
 import signal_lab_runner
 import microstructure_runner
 import risk_guard
+import run_gap
 import eod_report
 import shadow_notify
 import pattern_tape_runner
@@ -971,6 +972,11 @@ def main():
     config.refresh_symbols_for_today()
 
     state = state_mod.load_state(date_str)
+
+    try:
+        run_gap.check(state, now)
+    except Exception as exc:   # never block a run
+        log.warning("run-gap check failed (%s: %s)", type(exc).__name__, exc)
 
     # Phase 6 (intraday_rerank.py): if this run's clock time lands in one
     # of config.RERANK_TIMES's windows, re-score the universe and swap
