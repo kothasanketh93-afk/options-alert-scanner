@@ -778,9 +778,19 @@ def maybe_send_eod_report(state: dict, now: datetime):
     if (now.hour, now.minute) < SUMMARY_HHMM or state.get("eod_report_sent"):
         return
     try:
-        msgs = eod_report.build_messages(state, state["date"])
-        for m in msgs:
-            tg.send(m)
+        sent_image = False
+        try:   # preferred: one readable image; falls back to the text report below on any failure
+            import tempfile
+            import eod_image
+            png = os.path.join(tempfile.mkdtemp(), f"eod_{state['date']}.png")
+            if eod_image.render(state, state["date"], png):
+                tg.send_photo(png, caption=f"End-of-day trade report {state['date']} (educational, not advice)")
+                sent_image = True
+        except Exception as exc:
+            log.error("EOD image report failed (%s: %s) -- sending the text version.", type(exc).__name__, exc)
+        if not sent_image:
+            for m in eod_report.build_messages(state, state["date"]):
+                tg.send(m)
         state["eod_report_sent"] = True
     except Exception as exc:
         log.error("EOD report failed (%s: %s) -- will retry next run.", type(exc).__name__, exc)

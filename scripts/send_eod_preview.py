@@ -17,10 +17,12 @@ def main(path):
     if not msgs:
         print("no trades in that state file")
         return 1
-    msgs[0] = "🧪 <b>SAMPLE PREVIEW</b> (one-off, today's data)\n" + msgs[0]
-    for m in msgs:
-        tg.send(m)
-    print(f"sent {len(msgs)} message(s)")
+    import tempfile
+    import eod_image
+    png = os.path.join(tempfile.mkdtemp(), "eod.png")
+    eod_image.render(state, state.get("date", "?"), png)
+    tg.send_photo(png, caption=f"End-of-day trade report {state.get('date')} (image version, sample preview)")
+    print("sent image")
     return 0
 
 

@@ -31,6 +31,7 @@ from exceptions import TelegramFailure
 from logging_setup import get_logger
 
 DOCUMENT_API_URL = "https://api.telegram.org/bot{token}/sendDocument"
+PHOTO_API_URL = "https://api.telegram.org/bot{token}/sendPhoto"
 
 API_URL = f"https://api.telegram.org/bot{{token}}/sendMessage"
 log = get_logger("telegram")
@@ -114,6 +115,24 @@ def send_document(file_path: str, caption: str = None):
             log.error("Telegram document send failed after retries (%s).", file_path)
             raise
     log.info("Telegram document sent: %s", file_path)
+    return resp.json()
+
+
+def send_photo(file_path: str, caption: str = None):
+    """Send an image (PNG) inline via sendPhoto -- same credentials/retry policy as send()/send_document()."""
+    bot_token, chat_id = get_telegram_credentials()
+    url = PHOTO_API_URL.format(token=bot_token)
+    with open(file_path, "rb") as f:
+        try:
+            resp = request_with_retry(
+                "POST", url, error_cls=TelegramFailure, timeout=60,
+                data={"chat_id": chat_id, "caption": caption or ""},
+                files={"photo": (os.path.basename(file_path), f)},
+            )
+        except TelegramFailure:
+            log.error("Telegram photo send failed after retries (%s).", file_path)
+            raise
+    log.info("Telegram photo sent: %s", file_path)
     return resp.json()
 
 
