@@ -40,7 +40,7 @@ def reward_risk(setup):
 
 def rr_check(setup):
     """Live alerts need first-target reward >= RISK_MIN_T1_RR x risk at the ask. Shadows are unaffected."""
-    if not getattr(config, "RISK_GUARD_ENABLED", False):
+    if not getattr(config, "RISK_GUARD_ENABLED", False) or not getattr(config, "RISK_RR_GATE_ENABLED", False):
         return True, ""
     t1rr, _ = reward_risk(setup)
     if t1rr is None:

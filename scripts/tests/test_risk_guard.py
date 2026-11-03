@@ -52,10 +52,17 @@ def test_rr_delhivery_case_and_floor():
     s = {"ask": 9.85, "stop_loss": 8.37, "target_1": 11.4, "target_2": 12.05, "alert_premium": 9.9}
     t1, t2 = risk_guard.reward_risk(s)
     assert (t1, t2) == (1.05, 1.49)
-    assert not risk_guard.rr_check(s)[0]                       # 1.05 < 1.2
+    assert risk_guard.rr_check(s)[0]                           # gate is OFF by default (data capture)
+    risk_guard.config.RISK_RR_GATE_ENABLED = True
+    try:
+        assert not risk_guard.rr_check(s)[0]                   # 1.05 < 1.2 when enabled
+    finally:
+        risk_guard.config.RISK_RR_GATE_ENABLED = False
+    risk_guard.config.RISK_RR_GATE_ENABLED = True
     s2 = dict(s, target_1=12.0)
     assert risk_guard.rr_check(s2)[0]
     assert risk_guard.rr_check({"alert_premium": 5.0})[0]       # missing levels: do not block
+    risk_guard.config.RISK_RR_GATE_ENABLED = False
 
 
 def test_alert_text_shows_rr():

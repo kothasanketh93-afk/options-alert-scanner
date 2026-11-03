@@ -1617,3 +1617,7 @@ FAST_TRACKER_LAST_HHMM = (15, 25)   # no extra pass at/after this IST time
 # What-if shadow for the ATR chase filter (2026-11-03): ATM strikes rejected ONLY for exceeding the ATR chase ceiling are
 # still tracked as shadow trades (strategy 'chase_bypass', never live) so the data shows whether the filter helps or hurts.
 CHASE_BYPASS_SHADOW_ENABLED = True
+
+# 2026-11-03 (user request): the T1 reward:risk alert gate is OFF so every conditions-met setup is alerted and its outcome
+# captured as data. R:R is still shown in the alert text. Set True to re-enable the RISK_MIN_T1_RR floor.
+RISK_RR_GATE_ENABLED = False
