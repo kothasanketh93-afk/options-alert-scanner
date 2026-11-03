@@ -1,0 +1,11 @@
+name: Sched Probe b
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+      timezone: 'Asia/Kolkata'
+  workflow_dispatch: {}
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - run: date -u
