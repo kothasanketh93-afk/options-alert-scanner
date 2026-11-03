@@ -1225,6 +1225,7 @@ def create_fib_pivot_shadow_candidates(state: dict, now: datetime):
             trade_id, trade["symbol"], trade["direction"], trade["strike"], candidate_id,
             candidate.get("pivot_level_name"), trade["trade_score"],
         )
+        shadow_notify.notify_created(state, trade, now)
 
 
 def run_fib_pivot_shadow_step(state: dict, now: datetime):
@@ -1250,6 +1251,7 @@ def run_fib_pivot_shadow_step(state: dict, now: datetime):
                 continue
             events = tracker.process_trade_candles(trade, candles)
             _dispatch_fib_pivot_shadow_events(trade, events)
+            shadow_notify.notify_events(trade, events)
         except (BrokerAPIError, TelegramFailure) as exc:
             # Same per-trade containment posture as run_shadow_tracker_step().
             log.error("Fib Pivot shadow trade %s: tracker step failed (%s: %s) -- continuing "

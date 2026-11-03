@@ -22,8 +22,16 @@ def _fmt(x):
     return "-" if x is None else (f"{x:.2f}" if isinstance(x, (int, float)) else str(x))
 
 
+def _label(trade: dict) -> str:
+    """Engine + strategy for display/dedupe (fib_pivot shadows carry the default strategy 'trade_score')."""
+    eng, strat = trade.get("engine"), trade.get("strategy")
+    if eng and strat and strat not in ("trade_score", eng):
+        return f"{eng}/{strat}"
+    return eng or strat or "scanner"
+
+
 def format_created(trade: dict) -> str:
-    strat = trade.get("strategy") or trade.get("engine") or "scanner"
+    strat = _label(trade)
     return (f"{_DISCLAIMER}\n<b>{trade['symbol']} {trade['direction']} {trade.get('strike')}</b> "
             f"({trade.get('moneyness', '')}) – {strat}\n"
             f"Premium: {_fmt(trade.get('alert_premium'))} | SL: {_fmt(trade.get('stop_loss'))} | "
@@ -35,7 +43,7 @@ def format_created(trade: dict) -> str:
 
 def format_outcome(trade: dict, etype: str) -> str:
     return (f"{_DISCLAIMER}\n{OUTCOME_LABEL[etype]}: <b>{trade['symbol']} {trade['direction']} "
-            f"{trade.get('strike')}</b> ({trade.get('strategy') or 'scanner'})\n"
+            f"{trade.get('strike')}</b> ({_label(trade)})\n"
             f"Entry: {_fmt(trade.get('tracked_entry_price'))} | SL: {_fmt(trade.get('stop_loss'))} | "
             f"T2: {_fmt(trade.get('target_2'))}")
 
@@ -52,7 +60,7 @@ def notify_created(state: dict, trade: dict, now, sender=None) -> bool:
         return False   # main-engine setups now alert live; no duplicate shadow message
     try:
         day = now.strftime("%Y-%m-%d")
-        key = "|".join(str(x) for x in (day, trade.get("strategy") or trade.get("engine") or "scanner",
+        key = "|".join(str(x) for x in (day, _label(trade),
                                         trade.get("symbol"), trade.get("direction")))
         seen = state.setdefault("shadow_notified_keys", [])
         seen[:] = [k for k in seen if k.startswith(day)]          # keep today's keys only

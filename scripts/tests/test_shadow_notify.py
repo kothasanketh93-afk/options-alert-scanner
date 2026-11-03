@@ -53,3 +53,14 @@ def test_main_engine_shadow_suppressed_in_conditions_mode(monkeypatch):
     monkeypatch.setattr(sn.config, "CONDITIONS_ALERT_MODE", True)
     t = _trade(); t.pop("engine")
     assert sn.notify_created({}, t, NOW, sender=lambda _: 1 / 0) is False
+
+
+def test_fib_pivot_label_and_dedupe():
+    import shadow_notify as sn
+    from datetime import datetime
+    t = {"engine": "fib_pivot", "strategy": "trade_score", "symbol": "SENSEX", "direction": "CE", "strike": 76400,
+         "alert_premium": 405.0, "stop_loss": 300.0, "target_1": 539.0, "target_2": 600.0}
+    sent, st, now = [], {}, datetime(2026, 11, 3, 9, 35)
+    assert sn.notify_created(st, t, now, sender=sent.append)
+    assert not sn.notify_created(st, dict(t), now, sender=sent.append)      # same engine/symbol/direction/day
+    assert "fib_pivot" in sent[0] and "trade_score" not in sent[0]
