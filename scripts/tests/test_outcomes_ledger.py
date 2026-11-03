@@ -50,6 +50,22 @@ class Ledger(unittest.TestCase):
         st = {"date": "d", "shadow_trades": {"x": {"status": "SL_HIT"}, "a": tr("a", "SL_HIT")}}
         self.assertEqual(ol.append_resolved(st, self.p), 1)
 
+    def test_t1_then_sl_and_trailing_are_recorded_with_loss(self):
+        t1 = tr("t1", "SL_HIT", final_status="T1_THEN_SL")
+        tt = tr("t2", "SL_HIT", final_status="T1_THEN_TRAILING_SL", stop_loss=100.5)
+        eod = tr("t3", "EOD_CLOSED", final_status="T1_HIT_THEN_EOD")
+        live = tr("t4", "SL_HIT", final_status="T1_THEN_SL")
+        state = {"date": "2026-11-03", "trades": {"x": live}, "shadow_trades": {"a": t1, "b": tt, "c": eod}}
+        self.assertEqual(ol.append_resolved(state, self.p), 4)
+        by = {r["trade_id"]: r for r in self.rows()}
+        self.assertEqual(by["t1"]["result_pct"], "-10.0")      # T1 touched, then the original SL: a loss
+        self.assertEqual(by["t2"]["result_pct"], "0.5")        # trailing lock
+        self.assertEqual(by["t3"]["result_pct"], "5.0")
+        self.assertEqual(by["t4"]["engine"], "live")
+
+    def test_active_trade_not_recorded(self):
+        self.assertEqual(ol.append_resolved({"date": "d", "shadow_trades": {"a": tr("a", "T1_HIT", final_status=None)}}, self.p), 0)
+
     def test_empty_state(self):
         self.assertEqual(ol.append_resolved({"date": "d"}, self.p), 0)
         self.assertFalse(self.p.exists())

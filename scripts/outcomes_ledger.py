@@ -15,7 +15,11 @@ from pathlib import Path
 import config
 
 TERMINAL = {"T2_HIT", "SL_HIT", "NOT_ENTERED", "AMBIGUOUS", "EOD_CLOSED"}
-STATE_KEYS = (("shadow_trades", "main"), ("fib_pivot_shadow_trades", "fib_pivot"),
+# final_status values the tracker writes after T1 / trailing-stop events. BUGFIX 2026-11-03: these were missing here, so
+# every T1_THEN_SL / TRAILING_SL_HIT / T1_HIT_THEN_EOD trade was silently dropped from the ledger (losses under-counted).
+TERMINAL_FINAL = TERMINAL | {"T1_THEN_SL", "T1_THEN_TRAILING_SL", "TRAILING_SL_HIT", "T1_HIT_THEN_EOD",
+                             "T1_HIT_THEN_AMBIGUOUS"}
+STATE_KEYS = (("trades", "live"), ("shadow_trades", "main"), ("fib_pivot_shadow_trades", "fib_pivot"),
               ("orb_pivot_shadow_trades", "orb_pivot"))
 COLUMNS = ["trade_id", "date", "engine", "strategy", "symbol", "direction", "strike", "expiry",
            "session", "alert_time", "actual_entry_time", "alert_premium", "entry_price",
@@ -29,8 +33,10 @@ def result_pct(trade: dict):
     status = trade.get("final_status") or trade.get("status")
     if not entry:
         return None
-    exit_price = {"SL_HIT": trade.get("stop_loss"), "T2_HIT": trade.get("target_2"),
-                  "EOD_CLOSED": trade.get("eod_last_price")}.get(status)
+    sl = trade.get("stop_loss")   # the tracker keeps this at the level actually stopped out (trailing included)
+    exit_price = {"SL_HIT": sl, "T2_HIT": trade.get("target_2"), "EOD_CLOSED": trade.get("eod_last_price"),
+                  "T1_THEN_SL": sl, "T1_THEN_TRAILING_SL": sl, "TRAILING_SL_HIT": sl,
+                  "T1_HIT_THEN_EOD": trade.get("eod_last_price")}.get(status)
     if exit_price is None:
         return None
     return round((exit_price - entry) / entry * 100, 2)
@@ -78,7 +84,7 @@ def append_resolved(state: dict, ledger_path: Path) -> int:
         for trade in (state.get(key) or {}).values():
             try:
                 status = trade.get("final_status") or trade.get("status")
-                if status not in TERMINAL or trade["trade_id"] in existing:
+                if (status not in TERMINAL_FINAL and trade.get("status") not in TERMINAL) or trade["trade_id"] in existing:
                     continue
                 new_rows.append(_row(trade, engine, state.get("date")))
                 existing.add(trade["trade_id"])
