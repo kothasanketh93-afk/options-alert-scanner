@@ -47,6 +47,7 @@ import outcomes_ledger
 import signal_lab_runner
 import microstructure_runner
 import risk_guard
+import eod_report
 import shadow_notify
 import pattern_tape_runner
 from app.market import snapshot as market_snapshot
@@ -772,6 +773,20 @@ def maybe_send_daily_summary(state: dict, now: datetime):
         log.error("Daily summary could not be sent (Telegram failure) -- will retry next run.")
 
 
+def maybe_send_eod_report(state: dict, now: datetime):
+    """One end-of-day report listing every tracked trade by outcome (see eod_report.py). Sent once, at/after SUMMARY_HHMM."""
+    if (now.hour, now.minute) < SUMMARY_HHMM or state.get("eod_report_sent"):
+        return
+    try:
+        msgs = eod_report.build_messages(state, state["date"])
+        for m in msgs:
+            tg.send(m)
+        state["eod_report_sent"] = True
+    except Exception as exc:
+        log.error("EOD report failed (%s: %s) -- will retry next run.", type(exc).__name__, exc)
+
+
+
 def maybe_send_shadow_summary(state: dict, now: datetime):
     """
     Phase-2 Shadow/Validation Mode (2026-08-23) daily dataset summary,
@@ -1019,6 +1034,7 @@ def main():
                        type(exc).__name__, exc, exc_info=True)
 
         maybe_send_daily_summary(state, now)
+        maybe_send_eod_report(state, now)
         # BUGFIX (2026-09-10, live-log finding): maybe_send_shadow_summary()
         # was DEFINED (see its own docstring) but never actually CALLED
         # anywhere in main() -- confirmed live: with
