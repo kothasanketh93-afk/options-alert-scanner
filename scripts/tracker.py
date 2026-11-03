@@ -232,6 +232,13 @@ def process_trade_candles(trade: dict, candles: list) -> list:
             hit_sl = l <= sl
             hit_t2 = h >= t2
 
+            # What-if data (2026-11-03): did price come back to the entry price after T1 (before T2)? Lets the ledger
+            # compute "move SL to breakeven after T1" / "book half at T1" variants without changing live behaviour.
+            # Conservative: a candle that touches both entry and T2 counts as the entry touch first.
+            trade["be_tracked"] = True
+            if "be_touch_price" not in trade and l <= entry_price:
+                trade["be_touch_price"] = entry_price
+
             if hit_sl and hit_t2:
                 trade["status"] = "AMBIGUOUS"
                 trade["final_status"] = "T1_HIT_THEN_AMBIGUOUS"

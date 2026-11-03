@@ -73,3 +73,31 @@ class Ledger(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Variants(unittest.TestCase):
+    def test_t1_variants(self):
+        base = dict(t1_hit=True, target_1=110.0)
+        # stopped out after T1: breakeven rule exits at entry (0), half-and-half = +5%
+        t = tr("a", "SL_HIT", final_status="T1_THEN_SL", **base)
+        self.assertEqual(ol.t1_variants(t, ol.result_pct(t)), (0.0, 5.0))
+        # T2 reached without returning to entry
+        t = tr("b", "T2_HIT", be_tracked=True, **base)
+        self.assertEqual(ol.t1_variants(t, ol.result_pct(t)), (25.0, 17.5))
+        # T2 reached but price had returned to entry first: breakeven rule would have exited flat
+        t = tr("c", "T2_HIT", be_tracked=True, be_touch_price=100.0, **base)
+        self.assertEqual(ol.t1_variants(t, ol.result_pct(t)), (0.0, 5.0))
+        # never hit T1: unchanged; unknown path on old record: None
+        t = tr("d", "SL_HIT")
+        self.assertEqual(ol.t1_variants(t, ol.result_pct(t)), (-10.0, -10.0))
+        t = tr("e", "T2_HIT", **base)
+        self.assertEqual(ol.t1_variants(t, ol.result_pct(t)), (None, None))
+
+    def test_header_migration(self):
+        p = Path(tempfile.mkdtemp()) / "o.csv"
+        old = [c for c in ol.COLUMNS if c not in ("be_after_t1_pct", "half_t1_plus_be_pct")]
+        with open(p, "w", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=old); w.writeheader(); w.writerow({c: "x" for c in old})
+        n = ol.append_resolved({"date": "d", "shadow_trades": {"a": tr("a", "SL_HIT")}}, p)
+        rows = list(csv.DictReader(open(p)))
+        self.assertEqual((n, len(rows), list(rows[0].keys())), (1, 2, ol.COLUMNS))
