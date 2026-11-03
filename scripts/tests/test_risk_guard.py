@@ -48,8 +48,25 @@ def test_disabled_flag():
         risk_guard.config.RISK_GUARD_ENABLED = True
 
 
+def test_rr_delhivery_case_and_floor():
+    s = {"ask": 9.85, "stop_loss": 8.37, "target_1": 11.4, "target_2": 12.05, "alert_premium": 9.9}
+    t1, t2 = risk_guard.reward_risk(s)
+    assert (t1, t2) == (1.05, 1.49)
+    assert not risk_guard.rr_check(s)[0]                       # 1.05 < 1.2
+    s2 = dict(s, target_1=12.0)
+    assert risk_guard.rr_check(s2)[0]
+    assert risk_guard.rr_check({"alert_premium": 5.0})[0]       # missing levels: do not block
+
+
+def test_alert_text_shows_rr():
+    import telegram_notify as tg
+    t = {"ask": 9.85, "bid": 9.75, "spread_pct": 1.02, "entry_high": 10.02,
+         "stop_loss": 8.37, "target_1": 11.4, "target_2": 12.05, "alert_premium": 9.9}
+    assert "T1 1.05 : 1" in tg._limit_line(t)
+
+
 if __name__ == "__main__":
     for n, f in list(globals().items()):
         if n.startswith("test_"):
             f()
-    print("ok")
+    test_rr_delhivery_case_and_floor(); test_alert_text_shows_rr(); print("ok")

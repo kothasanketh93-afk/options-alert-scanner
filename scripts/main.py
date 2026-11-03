@@ -218,6 +218,11 @@ def run_scanner_step(state: dict, now: datetime):
     if chosen is None:
         return  # every passing candidate conflicted with an open trade, or none passed the gate
 
+    _ok, _why = risk_guard.rr_check(chosen)
+    if not _ok:
+        log.info("RISK_GUARD blocked %s %s: %s (shadow tracking continues)", chosen["symbol"], chosen["direction"], _why)
+        return
+
     _ok, _why = risk_guard.check(state, chosen["symbol"], now)
     if not _ok:
         log.info("RISK_GUARD blocked %s %s: %s", chosen["symbol"], chosen["direction"], _why)

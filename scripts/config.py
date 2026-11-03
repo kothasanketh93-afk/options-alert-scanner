@@ -1606,3 +1606,4 @@ MICROSTRUCTURE_STOCK_STRIKE_WIDTH = 2   # ATM+-2 strikes for stock options (spre
 # Composite Options-Intelligence score floor (OPTIONS_INTELLIGENCE_MIN_SCORE) removed from the gate 2026-11-03 at user request
 # (conditions-based alerts). The individual hard-hygiene sub-score rejections (liquidity, OI, premium quality, IV) still apply.
 OPTIONS_INTELLIGENCE_SCORE_GATE_ENABLED = False
+RISK_MIN_T1_RR = 1.2   # live alerts: (T1 - ask) / (ask - SL) must be at least this (median of past alerts ~1.57)

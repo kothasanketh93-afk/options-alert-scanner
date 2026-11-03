@@ -154,7 +154,13 @@ def _limit_line(trade: dict) -> str:
     if not ask or not bid:
         return ""
     sp = trade.get("spread_pct")
-    return (f"Quote: bid ₹{bid} / ask ₹{ask}" + (f" (spread {sp}%)" if sp is not None else "")
+    try:
+        import risk_guard
+        t1rr, t2rr = risk_guard.reward_risk(trade)
+        rr_txt = f"Reward:risk at ask -> T1 {t1rr} : 1" + (f", T2 {t2rr} : 1" if t2rr is not None else "") + "\n" if t1rr is not None else ""
+    except Exception:
+        rr_txt = ""
+    return rr_txt + (f"Quote: bid ₹{bid} / ask ₹{ask}" + (f" (spread {sp}%)" if sp is not None else "")
             + f"\nPlace a LIMIT buy at ₹{ask}; do not chase above ₹{trade['entry_high']}.\n")
 
 
