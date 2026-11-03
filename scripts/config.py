@@ -1607,3 +1607,9 @@ MICROSTRUCTURE_STOCK_STRIKE_WIDTH = 2   # ATM+-2 strikes for stock options (spre
 # (conditions-based alerts). The individual hard-hygiene sub-score rejections (liquidity, OI, premium quality, IV) still apply.
 OPTIONS_INTELLIGENCE_SCORE_GATE_ENABLED = False
 RISK_MIN_T1_RR = 1.2   # live alerts: (T1 - ask) / (ask - SL) must be at least this (median of past alerts ~1.57)
+
+# Fast tracker (added 2026-11-03): while a LIVE trade is open, one extra tracker-only pass ~150 s after each run starts
+# (scans stay on the normal 5-min cadence). Same process => single state writer. Set False to disable.
+FAST_TRACKER_ENABLED = True
+FAST_TRACKER_INTERVAL_SEC = 150
+FAST_TRACKER_LAST_HHMM = (15, 25)   # no extra pass at/after this IST time

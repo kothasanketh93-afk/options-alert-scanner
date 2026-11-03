@@ -842,6 +842,37 @@ def maybe_send_shadow_summary(state: dict, now: datetime):
         log.error("Shadow summary could not be sent (Telegram failure) -- will retry next run.")
 
 
+def maybe_fast_tracker_pass(state: dict, run_start: datetime, sleep_fn=None) -> bool:
+    """One extra tracker-only pass ~FAST_TRACKER_INTERVAL_SEC after this run started, only while a live trade is open.
+
+    Same process => same single state writer, so no race with the next scheduled run. It checks the open live
+    trades against fresh 1-min candles (SL/T1/T2 notices arrive ~2.5 min sooner on average); it never scans or
+    opens trades. Returns True if the pass ran.
+    """
+    import time as _time
+    if not getattr(config, "FAST_TRACKER_ENABLED", False):
+        return False
+    if state_mod.count_open_trades(state) <= 0:
+        return False
+    cutoff = getattr(config, "FAST_TRACKER_LAST_HHMM", (15, 25))
+    wait = config.FAST_TRACKER_INTERVAL_SEC - (state_mod.ist_now() - run_start).total_seconds()
+    target = state_mod.ist_now() + timedelta(seconds=max(wait, 0))
+    if (target.hour, target.minute) >= tuple(cutoff):
+        return False
+    if wait > 0:
+        (sleep_fn or _time.sleep)(wait)
+    try:
+        now2 = state_mod.ist_now()
+        run_tracker_step(state, now2)
+        state_mod.save_state(state, commit_message=f"fast-track {state['date']} @ {now2.strftime('%H:%M:%S')}")
+        log.info("FAST_TRACKER pass done at %s IST", now2.strftime("%H:%M:%S"))
+        return True
+    except Exception as exc:
+        log.error("Fast tracker pass failed (%s: %s) -- continuing.", type(exc).__name__, exc)
+        return False
+
+
+
 def main():
     config_validation.validate_startup_config()
 
@@ -1034,6 +1065,8 @@ def main():
     if run_error is not None:
         commit_message += " (partial run -- error occurred, see job log)"
     state_mod.save_state(state, commit_message=commit_message)
+    if run_error is None:
+        maybe_fast_tracker_pass(state, now)
 
     logging.getLogger("trading_system").removeHandler(_scan_log_handler)
     scan_log_store.run_retention_and_flush(_scan_log_handler.records, date_str)
