@@ -1613,3 +1613,7 @@ RISK_MIN_T1_RR = 1.2   # live alerts: (T1 - ask) / (ask - SL) must be at least t
 FAST_TRACKER_ENABLED = True
 FAST_TRACKER_INTERVAL_SEC = 150
 FAST_TRACKER_LAST_HHMM = (15, 25)   # no extra pass at/after this IST time
+
+# What-if shadow for the ATR chase filter (2026-11-03): ATM strikes rejected ONLY for exceeding the ATR chase ceiling are
+# still tracked as shadow trades (strategy 'chase_bypass', never live) so the data shows whether the filter helps or hurts.
+CHASE_BYPASS_SHADOW_ENABLED = True

@@ -724,7 +724,15 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
                if flag
            ))
     )
-    if not final_extension_pass:
+    # What-if shadow (2026-11-03): an ATM strike that fails ONLY the ATR chase ceiling keeps going through the pipeline so
+    # its outcome can be measured -- it is NEVER live (see the chase_bypassed guards below). Data decides if the filter helps.
+    chase_bypassed = bool(
+        not final_extension_pass and atr_extended and not structural_extended
+        and moneyness == "ATM" and getattr(config, "CHASE_BYPASS_SHADOW_ENABLED", False)
+    )
+    if chase_bypassed:
+        _logger.info(f"CHASE_BYPASS_SHADOW {symbol} {direction} {moneyness} strike={strike} | move={move_from_open:.2f} ceiling={chase_ceiling:.2f}")
+    if not final_extension_pass and not chase_bypassed:
         _rejection_count += 1
         reasons = []
         if atr_extended:
@@ -1172,14 +1180,16 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
                 "probability_status": "UNAVAILABLE",
                 "execution_mode": "SHADOW",
                 "live_alert_sent": False,
-                "candidate_id": f"{symbol}:{direction}:{strike}:{expiry}",
+                "candidate_id": f"{symbol}:{direction}:{strike}:{expiry}" + (":CHASE" if chase_bypassed else ""),
             }
+            if chase_bypassed:
+                shadow_candidate["strategy"] = "chase_bypass"
             _shadow_candidates_this_cycle.append(shadow_candidate)
             _logger.info(
                 f"SHADOW_CANDIDATE_CREATED {symbol} {direction} {moneyness} strike={strike} "
                 f"candidate_id={shadow_candidate['candidate_id']} trade_score={score}/100"
             )
-        if not conditions_mode:
+        if chase_bypassed or not conditions_mode:
             return None
         probability_pct = None
         probability_band = "Conditions met (unvalidated)"
@@ -1190,6 +1200,9 @@ def score_strike(symbol, direction, moneyness, strike, spot_price, session, oi_h
             f"CALIBRATED_PROBABILITY {symbol} {direction} {moneyness} strike={strike} "
             f"probability={probability_pct}% ({probability_band}) status=AVAILABLE"
         )
+
+    if chase_bypassed:
+        return None   # never a live setup
 
     return {
         "symbol": symbol,
