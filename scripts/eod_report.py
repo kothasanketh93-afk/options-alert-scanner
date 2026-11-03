@@ -29,11 +29,16 @@ def lot_sizes_from_rows(master_rows: list) -> dict:
     return out
 
 
-def load_lot_sizes() -> dict:
-    """Lot sizes from the instrument master; {} on any failure (the P&L column then shows '-')."""
+def load_lot_sizes(trading_date: str = None) -> dict:
+    """Lot sizes from today's cached instrument master (never downloads); {} on any failure -> P&L column shows '-'."""
     try:
-        import instrument_master
-        return lot_sizes_from_rows(instrument_master.load_instrument_master())
+        import instrument_master as im
+        d = trading_date or im.today_str()
+        rows = im._inprocess_master.get(d)
+        if rows is None:
+            cached = im._CACHE.read(d)
+            rows = (cached or {}).get("rows", [])
+        return lot_sizes_from_rows(rows)
     except Exception:
         return {}
 
