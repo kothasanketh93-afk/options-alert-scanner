@@ -15,7 +15,7 @@ def collect_once(state, now, ledger_dir: Path) -> int:
         return 0
     tmap = mlog.open_trade_map(state)
     symbols = list(config.MICROSTRUCTURE_SYMBOLS)
-    for key in ("shadow_trades", "fib_pivot_shadow_trades", "orb_pivot_shadow_trades"):
+    for key in ("shadow_trades", "fib_pivot_shadow_trades", "orb_pivot_shadow_trades", "sweep_shadow_trades"):
         for t in (state.get(key) or {}).values():
             if t.get("symbol") and t["symbol"] not in symbols and t.get("instrument_key") in tmap:
                 symbols.append(t["symbol"])

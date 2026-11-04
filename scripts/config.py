@@ -1625,3 +1625,10 @@ RISK_RR_GATE_ENABLED = False
 # Run-gap notice (2026-11-04): tell the user when the external trigger skipped runs in market hours.
 RUN_GAP_ALERT_ENABLED = True
 RUN_GAP_ALERT_MIN = 15
+
+# --- Liquidity-sweep (+FVG) SHADOW engine (app/engines/sweep_reversal/, added 2026-11-04) ---
+# Index options only; rules fixed in signals.py (do not tune on results). Shadow only, never live.
+SWEEP_SHADOW_ENABLED = True
+SWEEP_SYMBOLS = ["NIFTY", "BANKNIFTY", "MIDCPNIFTY", "SENSEX"]
+SWEEP_CANDLE_INTERVAL = "5minute"
+SWEEP_CANDLE_FETCH_COUNT = 80

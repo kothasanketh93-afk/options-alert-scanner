@@ -7,7 +7,7 @@ from html import escape
 import outcomes_ledger
 
 _ENGINES = (("trades", "LIVE"), ("shadow_trades", "Main shadow"), ("fib_pivot_shadow_trades", "Fib pivot"),
-            ("orb_pivot_shadow_trades", "ORB"))
+            ("orb_pivot_shadow_trades", "ORB"), ("sweep_shadow_trades", "Sweep"))
 _GROUPS = (
     ("win", "✅ Targets hit (T2)", ("T2_HIT",)),
     ("partial", "🟡 T1 hit, then stopped", ("T1_THEN_SL", "T1_THEN_TRAILING_SL", "T1_HIT_THEN_EOD", "T1_HIT")),
@@ -74,7 +74,11 @@ def collect(state: dict, lot_sizes: dict = None) -> list:
                 gross = round((exit_ - entry) * lot)
                 net = round(gross - entry * lot * outcomes_ledger.config.LEDGER_ROUND_TRIP_COST_PCT / 100)
             twin = key == "shadow_trades" and (t.get("symbol"), t.get("direction"), t.get("strike"), t.get("alert_time")) in live_keys
-            rows.append({"engine": label, "t": t, "status": status, "net": outcomes_ledger.net_result_pct(res),
+            if key == "sweep_shadow_trades" and t.get("strategy") == "sweep_fvg":
+                label_row = "Sweep+FVG"
+            else:
+                label_row = label
+            rows.append({"engine": label_row, "t": t, "status": status, "net": outcomes_ledger.net_result_pct(res),
                          "lot": lot, "pnl_gross": gross, "pnl_net": net, "twin_of_live": twin})
     return rows
 
@@ -86,7 +90,7 @@ def totals(rows: list) -> dict:
         n = [r["pnl_net"] for r in sel if r["pnl_net"] is not None and not r["twin_of_live"]]
         return {"gross": sum(g), "net": sum(n), "n": len(g)}
     out = {"all": agg(rows)}
-    for _k, label in _ENGINES:
+    for label in dict.fromkeys(r["engine"] for r in rows):
         out[label] = agg([r for r in rows if r["engine"] == label])
     return out
 

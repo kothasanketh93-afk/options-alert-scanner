@@ -90,7 +90,7 @@ def open_trade_map(state):
     """{instrument_key: [trade_id,...]} for every non-terminal shadow trade in state."""
     terminal = {"T2_HIT", "SL_HIT", "NOT_ENTERED", "AMBIGUOUS", "EOD_CLOSED"}
     out = {}
-    for key in ("shadow_trades", "fib_pivot_shadow_trades", "orb_pivot_shadow_trades"):
+    for key in ("shadow_trades", "fib_pivot_shadow_trades", "orb_pivot_shadow_trades", "sweep_shadow_trades"):
         for tid, t in (state.get(key) or {}).items():
             status = t.get("final_status") or t.get("status")
             if status in terminal or not t.get("instrument_key"):

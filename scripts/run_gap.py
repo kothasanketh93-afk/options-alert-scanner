@@ -32,7 +32,7 @@ def check(state: dict, now: datetime, send=None) -> bool:
     if gap_min <= config.RUN_GAP_ALERT_MIN or not (_in_market(prev) and _in_market(now)):
         return False
     state["run_gaps"] = int(state.get("run_gaps", 0)) + 1
-    open_n = sum(1 for k in ("trades", "shadow_trades", "fib_pivot_shadow_trades", "orb_pivot_shadow_trades")
+    open_n = sum(1 for k in ("trades", "shadow_trades", "fib_pivot_shadow_trades", "orb_pivot_shadow_trades", "sweep_shadow_trades")
                  for t in (state.get(k) or {}).values() if (t.get("final_status") or t.get("status")) in ("ACTIVE", "T1_HIT", "OPEN"))
     try:
         send(f"⚠️ <b>Scanner gap</b>\nNo run between {prev.strftime('%H:%M')} and {now.strftime('%H:%M')} IST "

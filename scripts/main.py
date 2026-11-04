@@ -43,6 +43,7 @@ from config import SUMMARY_HHMM
 from app.engines import early_breakout as early_breakout_engine
 from app.engines import fib_pivot as fib_pivot_engine
 from app.engines.orb_pivot import engine as orb_pivot_engine
+from app.engines.sweep_reversal import engine as sweep_engine
 import outcomes_ledger
 import signal_lab_runner
 import microstructure_runner
@@ -1049,6 +1050,13 @@ def main():
             log.error("ORB/Pivot shadow step failed (%s: %s) -- continuing with the rest of this run.",
                        type(exc).__name__, exc, exc_info=True)
 
+        try:
+            create_sweep_shadow_candidates(state, now)
+            run_sweep_shadow_step(state, now)
+        except Exception as exc:
+            log.error("Sweep shadow step failed (%s: %s) -- continuing with the rest of this run.",
+                       type(exc).__name__, exc, exc_info=True)
+
         maybe_send_daily_summary(state, now)
         maybe_send_eod_report(state, now)
         # BUGFIX (2026-09-10, live-log finding): maybe_send_shadow_summary()
@@ -1305,6 +1313,61 @@ def _dispatch_orb_pivot_shadow_events(trade: dict, events: list):
                  name, trade.get("strategy"), trade.get("wide_prev_day"), trade["symbol"], trade["direction"], trade["strike"],
                  trade.get("candidate_id"), _shadow_entry_context(trade) if event["type"] in
                  ("ENTRY_ACTIVATED", "SL_HIT") else "")
+
+
+def create_sweep_shadow_candidates(state: dict, now: datetime):
+    """Liquidity-sweep / sweep+FVG shadow engine (app/engines/sweep_reversal/). One trade per strategy+symbol per day."""
+    if not config.SWEEP_SHADOW_ENABLED:
+        return
+    candidates = sweep_engine.detect_all_sweep_setups()
+    if not candidates:
+        return
+    trades = state.setdefault("sweep_shadow_trades", {})
+    for candidate in candidates:
+        if any(t.get("strategy") == candidate["strategy"] and t["symbol"] == candidate["symbol"]
+               for t in trades.values()):
+            continue
+        key = f"SWEEP-{candidate['strategy']}-{candidate['symbol']}"
+        seq = state["next_seq"].get(key, 0) + 1
+        state["next_seq"][key] = seq
+        trade_id = f"{key}-{candidate['direction']}-{now.strftime('%Y%m%d-%H%M')}-{seq:02d}"
+        trade = new_trade_record(candidate, trade_id, now, f"SweepShadow {len(trades) + 1}")
+        trade["probability_status"] = "shadow_only"
+        trade["execution_mode"] = "shadow"
+        trade["live_alert_sent"] = False
+        trade["candidate_id"] = (f"{candidate['strategy']}:{candidate['symbol']}:{candidate['direction']}:"
+                                 f"{candidate['strike']}:{candidate['expiry']}")
+        trade["engine"] = "sweep_reversal"
+        trade["sweep_extreme"] = candidate.get("sweep_extreme")
+        trade["fvg"] = candidate.get("fvg")
+        for _k in ("entry_oi", "entry_volume", "spread_pct"):
+            trade[_k] = candidate.get(_k)
+        trades[trade_id] = trade
+        log.info("SWEEP_SHADOW_CANDIDATE_CREATED trade_id=%s strategy=%s %s %s strike=%s level=%s extreme=%s fvg=%s",
+                 trade_id, trade["strategy"], trade["symbol"], trade["direction"], trade["strike"],
+                 candidate.get("pivot_level_name"), candidate.get("sweep_extreme"), candidate.get("fvg"))
+        shadow_notify.notify_created(state, trade, now)
+
+
+def run_sweep_shadow_step(state: dict, now: datetime):
+    """Tracker step for state["sweep_shadow_trades"] (same mechanism as the ORB step)."""
+    if not config.SWEEP_SHADOW_ENABLED:
+        return
+    for trade_id, trade in state.get("sweep_shadow_trades", {}).items():
+        if trade["status"] in TERMINAL_STATUSES:
+            continue
+        try:
+            candles = market_data.get_1min_candles_since(trade["instrument_key"], trade["last_processed_ts"])
+            if not candles:
+                continue
+            _events = tracker.process_trade_candles(trade, candles)
+            for ev in _events:
+                log.info("SWEEP_SHADOW_%s strategy=%s %s %s strike=%s candidate_id=%s", ev["type"], trade.get("strategy"),
+                         trade["symbol"], trade["direction"], trade["strike"], trade.get("candidate_id"))
+            shadow_notify.notify_events(trade, _events)
+        except (BrokerAPIError, TelegramFailure) as exc:
+            log.error("Sweep shadow trade %s: tracker step failed (%s: %s) -- retry next run.",
+                      trade_id, type(exc).__name__, exc)
 
 
 def create_orb_pivot_shadow_candidates(state: dict, now: datetime):

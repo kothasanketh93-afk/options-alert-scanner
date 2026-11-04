@@ -20,7 +20,7 @@ TERMINAL = {"T2_HIT", "SL_HIT", "NOT_ENTERED", "AMBIGUOUS", "EOD_CLOSED"}
 TERMINAL_FINAL = TERMINAL | {"T1_THEN_SL", "T1_THEN_TRAILING_SL", "TRAILING_SL_HIT", "T1_HIT_THEN_EOD",
                              "T1_HIT_THEN_AMBIGUOUS"}
 STATE_KEYS = (("trades", "live"), ("shadow_trades", "main"), ("fib_pivot_shadow_trades", "fib_pivot"),
-              ("orb_pivot_shadow_trades", "orb_pivot"))
+              ("orb_pivot_shadow_trades", "orb_pivot"), ("sweep_shadow_trades", "sweep_reversal"))
 COLUMNS = ["trade_id", "date", "engine", "strategy", "symbol", "direction", "strike", "expiry",
            "session", "alert_time", "actual_entry_time", "alert_premium", "entry_price",
            "stop_loss", "target_1", "target_2", "final_status", "t1_hit", "result_pct",

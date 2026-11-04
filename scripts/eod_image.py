@@ -76,7 +76,7 @@ def render(state: dict, date_str: str, path: str, lot_sizes: dict = None) -> boo
         d.rounded_rectangle((PAD, y, W - PAD, y + 46), 10, fill=(240, 247, 242) if good else (252, 238, 238))
         d.text((PAD + 14, y + 12), f"One lot per closed trade ({a['n']} trades): gross Rs {a['gross']:+,}   |   after est. costs Rs {a['net']:+,}",
                font=f_head, fill=col)
-        parts = [f"{lab}: {tot[lab]['gross']:+,}" for _k, lab in eod_report._ENGINES if tot[lab]["n"]]
+        parts = [f"{lab}: {tot[lab]['gross']:+,}" for lab in tot if lab != "all" and tot[lab]["n"]]
         txt = "   ".join(parts)
         d.text((W - PAD - 14 - d.textlength(txt, font=f_small), y + 15), txt, font=f_small, fill=(90, 95, 105))
         y += 60
