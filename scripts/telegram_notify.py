@@ -360,6 +360,10 @@ def fmt_t1_hit(trade: dict, time_taken_min: int) -> str:
         f"Highest Reached: ₹{trade['highest_since_entry']}\n\n"
         f"Move from Entry: {trade['max_favorable_pct']:+.2f}%\n\n"
         f"Status: T1 SUCCESS\n"
+        f"Trailing SL (suggested): move your stop to entry ₹{trade['tracked_entry_price']} "
+        f"(breakeven) and consider booking part profit. Original SL was ₹{trade['stop_loss']}.\n"
+        f"Note: the tracker still scores this trade against the ORIGINAL SL; the breakeven outcome is logged "
+        f"separately for comparison.\n"
         f"Tracking continues for T2."
     )
 
