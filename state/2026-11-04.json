@@ -383,8 +383,8 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "T1_HIT_THEN_EOD",
       "actual_entry_time": "2026-11-04T13:46:00+05:30",
       "tracked_entry_price": 8.4,
       "highest_since_entry": 9.15,
@@ -396,14 +396,15 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:24:00+05:30",
+      "eod_last_price": 8.65,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
-        "T1_HIT"
+        "T1_HIT",
+        "EOD_CLOSED"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [],
       "probability_trend": "Stable",
@@ -490,8 +491,8 @@
           "trade_score": 56
         }
       ],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-11-04T13:51:00+05:30",
       "tracked_entry_price": 338.95,
       "highest_since_entry": 393.75,
@@ -503,13 +504,14 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:24:00+05:30",
+      "eod_last_price": 364.25,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "EOD_CLOSED"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [],
       "probability_trend": "Stable"
@@ -699,7 +701,7 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 798,
+    "scanned_symbols": 812,
     "valid_signals": 38,
     "rejected_signals": 1701,
     "api_failures": 0,
@@ -710,7 +712,7 @@
     "13:30",
     "14:30"
   ],
-  "last_run_at": "2026-11-04T15:25:40+05:30",
+  "last_run_at": "2026-11-04T16:41:04+05:30",
   "micro_last_minute": [
     "2026-11-04",
     925
@@ -986,7 +988,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
+      "status": "ACTIVE",
       "final_status": null,
       "actual_entry_time": "2026-11-04T09:49:00+05:30",
       "tracked_entry_price": 8.65,
@@ -999,8 +1001,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:24:00+05:30",
+      "eod_last_price": 8.4,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
@@ -1012,7 +1014,8 @@
       "time_to_target_1_minutes": 49,
       "trail_sl": 9.78,
       "trail_exit_price": 9.78,
-      "be_touch_price": 8.65
+      "be_touch_price": 8.65,
+      "timeout_extension_days_used": 1
     },
     "SHADOW-4-094046": {
       "trade_id": "SHADOW-4-094046",
@@ -1085,7 +1088,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
+      "status": "ACTIVE",
       "final_status": null,
       "actual_entry_time": "2026-11-04T09:41:00+05:30",
       "tracked_entry_price": 11.8,
@@ -1098,8 +1101,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:24:00+05:30",
+      "eod_last_price": 10.9,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -1111,7 +1114,8 @@
       "trail_sl": 12.51,
       "time_to_target_1_minutes": 156,
       "trail_exit_price": 12.51,
-      "be_touch_price": 11.8
+      "be_touch_price": 11.8,
+      "timeout_extension_days_used": 1
     },
     "SHADOW-5-094046": {
       "trade_id": "SHADOW-5-094046",
@@ -1283,7 +1287,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
+      "status": "ACTIVE",
       "final_status": null,
       "actual_entry_time": "2026-11-04T09:51:00+05:30",
       "tracked_entry_price": 101.95,
@@ -1296,8 +1300,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:24:00+05:30",
+      "eod_last_price": 99.65,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -1308,7 +1312,8 @@
       "be_tracked": true,
       "time_to_target_1_minutes": 10,
       "be_touch_price": 101.95,
-      "trail_exit_price": 101.95
+      "trail_exit_price": 101.95,
+      "timeout_extension_days_used": 1
     },
     "SHADOW-7-095044": {
       "trade_id": "SHADOW-7-095044",
@@ -1379,7 +1384,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
+      "status": "ACTIVE",
       "final_status": null,
       "actual_entry_time": "2026-11-04T09:51:00+05:30",
       "tracked_entry_price": 79.2,
@@ -1392,8 +1397,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:24:00+05:30",
+      "eod_last_price": 76.85,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -1404,7 +1409,8 @@
       "be_tracked": true,
       "time_to_target_1_minutes": 10,
       "be_touch_price": 79.2,
-      "trail_exit_price": 79.2
+      "trail_exit_price": 79.2,
+      "timeout_extension_days_used": 1
     },
     "SHADOW-8-095044": {
       "trade_id": "SHADOW-8-095044",
@@ -1955,23 +1961,24 @@
       "actual_entry_time": "2026-11-04T13:26:00+05:30",
       "tracked_entry_price": 110.8,
       "highest_since_entry": 120.7,
-      "lowest_since_entry": 103.05,
+      "lowest_since_entry": 98.2,
       "max_favorable_pct": 8.94,
-      "max_adverse_pct": -6.99,
+      "max_adverse_pct": -11.37,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:24:00+05:30",
+      "eod_last_price": 98.3,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
       "probability_status": "UNAVAILABLE",
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
-      "candidate_id": "BRITANNIA:PE:4900.0:2026-11-23:CHASE"
+      "candidate_id": "BRITANNIA:PE:4900.0:2026-11-23:CHASE",
+      "timeout_extension_days_used": 1
     },
     "SHADOW-14-110535": {
       "trade_id": "SHADOW-14-110535",
@@ -2707,28 +2714,29 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-11-04T13:46:00+05:30",
       "tracked_entry_price": 106.95,
       "highest_since_entry": 112.2,
-      "lowest_since_entry": 100.0,
+      "lowest_since_entry": 98.95,
       "max_favorable_pct": 4.91,
-      "max_adverse_pct": -6.5,
+      "max_adverse_pct": -7.48,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-11-04T15:29:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:24:00+05:30",
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
       "probability_status": "UNAVAILABLE",
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
-      "candidate_id": "MCX:PE:3300.0:2026-11-23:CHASE"
+      "candidate_id": "MCX:PE:3300.0:2026-11-23:CHASE",
+      "time_to_stop_minutes": 103
     },
     "SHADOW-22-134554": {
       "trade_id": "SHADOW-22-134554",
@@ -2801,7 +2809,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
+      "status": "ACTIVE",
       "final_status": null,
       "actual_entry_time": "2026-11-04T13:46:00+05:30",
       "tracked_entry_price": 8.4,
@@ -2814,8 +2822,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:24:00+05:30",
+      "eod_last_price": 8.65,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -2826,7 +2834,8 @@
       "be_tracked": true,
       "trail_sl": 8.825,
       "time_to_target_1_minutes": 80,
-      "trail_exit_price": 8.825
+      "trail_exit_price": 8.825,
+      "timeout_extension_days_used": 1
     },
     "SHADOW-23-134554": {
       "trade_id": "SHADOW-23-134554",
@@ -3006,15 +3015,16 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:24:00+05:30",
+      "eod_last_price": 364.25,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
       "probability_status": "UNAVAILABLE",
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
-      "candidate_id": "SENSEX:CE:77200.0:2026-11-05"
+      "candidate_id": "SENSEX:CE:77200.0:2026-11-05",
+      "timeout_extension_days_used": 1
     },
     "SHADOW-25-135046": {
       "trade_id": "SHADOW-25-135046",
@@ -3098,15 +3108,16 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:24:00+05:30",
+      "eod_last_price": 314.7,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
       "probability_status": "UNAVAILABLE",
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
-      "candidate_id": "SENSEX:CE:77300.0:2026-11-05"
+      "candidate_id": "SENSEX:CE:77300.0:2026-11-05",
+      "timeout_extension_days_used": 1
     },
     "SHADOW-26-135537": {
       "trade_id": "SHADOW-26-135537",
@@ -3178,7 +3189,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
+      "status": "ACTIVE",
       "final_status": null,
       "actual_entry_time": "2026-11-04T13:56:00+05:30",
       "tracked_entry_price": 6.8,
@@ -3191,8 +3202,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:24:00+05:30",
+      "eod_last_price": 7.2,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -3203,7 +3214,8 @@
       "be_tracked": true,
       "trail_sl": 7.36,
       "time_to_target_1_minutes": 67,
-      "trail_exit_price": 7.36
+      "trail_exit_price": 7.36,
+      "timeout_extension_days_used": 1
     },
     "SHADOW-27-140104": {
       "trade_id": "SHADOW-27-140104",
@@ -3275,7 +3287,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
+      "status": "ACTIVE",
       "final_status": null,
       "actual_entry_time": "2026-11-04T14:16:00+05:30",
       "tracked_entry_price": 333.25,
@@ -3288,8 +3300,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:24:00+05:30",
+      "eod_last_price": 364.25,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
@@ -3300,7 +3312,8 @@
       "be_tracked": true,
       "trail_sl": 364.685,
       "time_to_target_1_minutes": 39,
-      "trail_exit_price": 364.685
+      "trail_exit_price": 364.685,
+      "timeout_extension_days_used": 1
     },
     "SHADOW-28-140536": {
       "trade_id": "SHADOW-28-140536",
@@ -3371,7 +3384,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
+      "status": "ACTIVE",
       "final_status": null,
       "actual_entry_time": "2026-11-04T14:06:00+05:30",
       "tracked_entry_price": 324.85,
@@ -3384,8 +3397,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:24:00+05:30",
+      "eod_last_price": 419.25,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -3396,7 +3409,8 @@
       "time_to_target_1_minutes": 19,
       "be_tracked": true,
       "trail_sl": 380.87,
-      "trail_exit_price": 380.87
+      "trail_exit_price": 380.87,
+      "timeout_extension_days_used": 1
     },
     "SHADOW-29-141043": {
       "trade_id": "SHADOW-29-141043",
@@ -3566,7 +3580,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
+      "status": "ACTIVE",
       "final_status": null,
       "actual_entry_time": "2026-11-04T14:11:00+05:30",
       "tracked_entry_price": 388.8,
@@ -3579,8 +3593,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:25:00+05:30",
+      "eod_last_price": 479.75,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -3591,7 +3605,8 @@
       "be_tracked": true,
       "trail_sl": 466.505,
       "time_to_target_1_minutes": 38,
-      "trail_exit_price": 466.505
+      "trail_exit_price": 466.505,
+      "timeout_extension_days_used": 1
     },
     "SHADOW-31-142534": {
       "trade_id": "SHADOW-31-142534",
@@ -3676,15 +3691,16 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:25:00+05:30",
+      "eod_last_price": 6.05,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
       "probability_status": "UNAVAILABLE",
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
-      "candidate_id": "PETRONET:CE:312.5:2026-11-23"
+      "candidate_id": "PETRONET:CE:312.5:2026-11-23",
+      "timeout_extension_days_used": 1
     },
     "SHADOW-32-142534": {
       "trade_id": "SHADOW-32-142534",
@@ -3756,7 +3772,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
+      "status": "ACTIVE",
       "final_status": null,
       "actual_entry_time": "2026-11-04T14:26:00+05:30",
       "tracked_entry_price": 9.35,
@@ -3769,8 +3785,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:25:00+05:30",
+      "eod_last_price": 10.05,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
@@ -3780,7 +3796,9 @@
       "candidate_id": "DABUR:CE:395.0:2026-11-23:CHASE",
       "be_tracked": true,
       "trail_sl": 9.73,
-      "time_to_target_1_minutes": 58
+      "time_to_target_1_minutes": 58,
+      "trail_exit_price": 9.73,
+      "timeout_extension_days_used": 1
     }
   },
   "fib_pivot_shadow_trades": {
@@ -4991,8 +5009,8 @@
         "\u2713 Passing the hard filter"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-11-04T14:32:00+05:30",
       "tracked_entry_price": 330.5,
       "highest_since_entry": 393.75,
@@ -5004,8 +5022,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:24:00+05:30",
+      "eod_last_price": 364.25,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -5152,21 +5170,21 @@
         "\u2713 Passing the hard filter"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-11-04T14:46:00+05:30",
       "tracked_entry_price": 4.4,
       "highest_since_entry": 4.65,
-      "lowest_since_entry": 4.3,
+      "lowest_since_entry": 4.15,
       "max_favorable_pct": 5.68,
-      "max_adverse_pct": -2.27,
+      "max_adverse_pct": -5.68,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:25:00+05:30",
+      "eod_last_price": 4.63,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -5232,21 +5250,21 @@
         "\u2713 Passing the hard filter"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-11-04T14:51:00+05:30",
       "tracked_entry_price": 179.45,
       "highest_since_entry": 184.95,
-      "lowest_since_entry": 171.65,
+      "lowest_since_entry": 171.15,
       "max_favorable_pct": 3.06,
-      "max_adverse_pct": -4.35,
+      "max_adverse_pct": -4.63,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:25:00+05:30",
+      "eod_last_price": 179.85,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -5312,21 +5330,21 @@
         "\u2713 Passing the hard filter"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-11-04T15:06:00+05:30",
       "tracked_entry_price": 5.05,
       "highest_since_entry": 5.2,
-      "lowest_since_entry": 4.95,
+      "lowest_since_entry": 4.8,
       "max_favorable_pct": 2.97,
-      "max_adverse_pct": -1.98,
+      "max_adverse_pct": -4.95,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:25:00+05:30",
+      "eod_last_price": 4.8,
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -6199,7 +6217,7 @@
         "\u2713 Passing the hard filter"
       ],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "NOT_ENTERED",
       "final_status": null,
       "actual_entry_time": null,
       "tracked_entry_price": null,
@@ -6213,7 +6231,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T15:25:00+05:30",
+      "last_processed_ts": "2026-11-04T15:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -6574,5 +6592,6 @@
   },
   "run_gaps": 4,
   "eod_report_sent": true,
-  "shadow_summary_sent": true
+  "shadow_summary_sent": true,
+  "signal_lab_done": true
 }
