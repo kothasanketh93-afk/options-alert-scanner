@@ -249,3 +249,51 @@ def detect_oi_flow(snapshots: list, atr: float):
     return {"direction": direction, "level_name": "OI_FLOW", "level_value": round(now["spot"], 2),
             "signal_index": -1, "extreme": round(now["spot"] - sign * atr, 2), "signal_close": now["spot"],
             "d_spot": round(d_spot, 2), "d_call_oi": d_call, "d_put_oi": d_put}
+
+
+# ---------------------------------------------------------------------------------------------------------
+# Standalone FVG ("fvg"), added 2026-11-04 so the gap can be judged on its own, separately from sweeps. Fixed rules:
+#   Displacement candle k: body >= 50% of its range, range >= FVG_MIN_RANGE_ATR x ATR, closing in the trade direction.
+#   Gap: bullish high[k-1] < low[k+1] (bearish: mirror). Retest: first candle m (k+1 < m <= k+1+FVG_RETEST_WINDOW) that touches
+#   the gap (low <= low[k+1]), closes above the gap bottom and closes bullish. A close below the gap bottom cancels that gap.
+#   Entry at the retest close; stop = low of the displacement candle (floor 0.5 ATR). First event of the day, fresh only.
+# ---------------------------------------------------------------------------------------------------------
+FVG_MIN_RANGE_ATR = 1.0
+FVG_FIRST_CANDLE = 3          # no signals from the opening noise (09:15-09:30)
+
+
+def detect_fvg(candles, atr):
+    n = len(candles)
+    if n < FVG_FIRST_CANDLE + 3 or not atr or atr <= 0:
+        return None
+    found = []
+    for direction, bullish in (("CE", True), ("PE", False)):
+        cs = candles if bullish else _mirror(candles)
+        for k in range(FVG_FIRST_CANDLE, n - 2):
+            a, b, c = cs[k - 1], cs[k], cs[k + 1]
+            rng = max(b["high"] - b["low"], 1e-9)
+            if not (b["close"] > b["open"] and (b["close"] - b["open"]) >= DISPLACEMENT_BODY_FRAC * rng
+                    and rng >= FVG_MIN_RANGE_ATR * atr and a["high"] < c["low"]):
+                continue
+            gap_lo, gap_hi = a["high"], c["low"]
+            m_hit = None
+            for m in range(k + 2, min(n, k + 2 + FVG_RETEST_WINDOW)):
+                cm = cs[m]
+                if cm["close"] < gap_lo:
+                    break
+                if cm["low"] <= gap_hi and cm["close"] > gap_lo and cm["close"] > cm["open"]:
+                    m_hit = m
+                    break
+            if m_hit is None or _mins(candles[m_hit]) > LAST_SIGNAL_MINS:
+                continue
+            sign = 1 if bullish else -1
+            g1, g2 = sign * gap_lo, sign * gap_hi
+            found.append((m_hit, {"direction": direction, "level_name": "FVG",
+                                  "level_value": round(g1, 2), "signal_index": m_hit,
+                                  "extreme": round(sign * b["low"], 2), "signal_close": candles[m_hit]["close"],
+                                  "fvg": (round(min(g1, g2), 2), round(max(g1, g2), 2))}))
+            break
+    if not found:
+        return None
+    idx, sig = min(found, key=lambda t: t[0])
+    return sig if idx >= n - FRESH_WINDOW else None

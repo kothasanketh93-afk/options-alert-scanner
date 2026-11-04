@@ -86,8 +86,8 @@ def _scan_symbol(symbol, session, state=None, now_mins=None):
         except Exception as exc:
             _logger.error("OIFLOW_FAILED %s: %s: %s", symbol, type(exc).__name__, exc)
     for name, fn in (("sweep", signals.detect_sweep), ("sweep_fvg", signals.detect_sweep_fvg),
-                     ("amd", signals.detect_amd)):
-        sig = fn(today, prev["high"], prev["low"])
+                     ("amd", signals.detect_amd), ("fvg", None)):
+        sig = signals.detect_fvg(today, atr) if fn is None else fn(today, prev["high"], prev["low"])
         if sig:
             s = _build_setup(name, symbol, sig, atr, session)
             if s:

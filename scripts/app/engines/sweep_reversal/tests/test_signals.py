@@ -70,3 +70,16 @@ def test_oi_flow_rules():
     assert S.detect_oi_flow([base, now_bear], 5.0)["direction"] == "PE"
     assert S.detect_oi_flow([base, {"t": 620, "spot": 103.0, "call_oi": 1100, "put_oi": 1100}], 5.0) is None
     assert S.detect_oi_flow([base, {"t": 605, "spot": 103.0, "call_oi": 1000, "put_oi": 1100}], 5.0) is None  # too recent
+
+
+def test_standalone_fvg_bull_and_bear():
+    # k=3: big bullish candle 100->108 (range 9 >= ATR 5), gap: c2.high=101 < c4.low=106; retest candle 5 touches 106 and closes bullish
+    cs = [c(0, 100, 101, 99, 100), c(1, 100, 101, 99.5, 100.5), c(2, 100.5, 101, 99.8, 100.8),
+          c(3, 100.8, 109, 100, 108.5), c(4, 108.5, 110, 106, 109), c(5, 107, 108, 105.8, 107.8)]
+    sig = S.detect_fvg(cs, atr=5.0)
+    assert sig and sig["direction"] == "CE" and sig["fvg"] == (101.0, 106.0) and sig["extreme"] == 100
+    mir = [{"timestamp": x["timestamp"], "open": 200 - x["open"], "high": 200 - x["low"], "low": 200 - x["high"],
+            "close": 200 - x["close"]} for x in cs]
+    sb = S.detect_fvg(mir, atr=5.0)
+    assert sb and sb["direction"] == "PE" and sb["extreme"] == 100
+    assert S.detect_fvg(cs, atr=20.0) is None      # displacement not big enough vs ATR

@@ -20,7 +20,7 @@ def _fmt(x):
     return "-" if x is None else (f"{x:.2f}" if isinstance(x, (int, float)) else str(x))
 
 
-_SWEEP_LABELS = {"sweep_fvg": "Sweep+FVG", "amd": "AMD", "oi_flow": "OI flow"}
+_SWEEP_LABELS = {"sweep_fvg": "Sweep+FVG", "amd": "AMD", "oi_flow": "OI flow", "fvg": "FVG"}
 
 
 def lot_sizes_from_rows(master_rows: list) -> dict:
