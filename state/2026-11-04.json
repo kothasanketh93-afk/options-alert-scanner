@@ -545,7 +545,7 @@
     "FIBPIVOT-ITC-CE": 1
   },
   "next_display_num": 5,
-  "summary_sent": false,
+  "summary_sent": true,
   "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
@@ -6572,5 +6572,7 @@
       "shadow_notified": true
     }
   },
-  "run_gaps": 4
+  "run_gaps": 4,
+  "eod_report_sent": true,
+  "shadow_summary_sent": true
 }
