@@ -20,6 +20,9 @@ def _fmt(x):
     return "-" if x is None else (f"{x:.2f}" if isinstance(x, (int, float)) else str(x))
 
 
+_SWEEP_LABELS = {"sweep_fvg": "Sweep+FVG", "amd": "AMD", "oi_flow": "OI flow"}
+
+
 def lot_sizes_from_rows(master_rows: list) -> dict:
     """{underlying_symbol: lot_size} from the instrument master's option rows."""
     out = {}
@@ -74,8 +77,8 @@ def collect(state: dict, lot_sizes: dict = None) -> list:
                 gross = round((exit_ - entry) * lot)
                 net = round(gross - entry * lot * outcomes_ledger.config.LEDGER_ROUND_TRIP_COST_PCT / 100)
             twin = key == "shadow_trades" and (t.get("symbol"), t.get("direction"), t.get("strike"), t.get("alert_time")) in live_keys
-            if key == "sweep_shadow_trades" and t.get("strategy") == "sweep_fvg":
-                label_row = "Sweep+FVG"
+            if key == "sweep_shadow_trades" and t.get("strategy") in _SWEEP_LABELS:
+                label_row = _SWEEP_LABELS[t["strategy"]]
             else:
                 label_row = label
             rows.append({"engine": label_row, "t": t, "status": status, "net": outcomes_ledger.net_result_pct(res),

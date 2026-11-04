@@ -61,7 +61,7 @@ def _build_setup(strategy, symbol, signal, atr, session, wide_prev_day=None):
     }
 
 
-def _scan_symbol(symbol, session):
+def _scan_symbol(symbol, session, state=None, now_mins=None):
     underlying_key = resolve_underlying_key(symbol)
     if not underlying_key:
         return []
@@ -78,7 +78,15 @@ def _scan_symbol(symbol, session):
     if atr is None or atr <= 0:
         return []
     out = []
-    for name, fn in (("sweep", signals.detect_sweep), ("sweep_fvg", signals.detect_sweep_fvg)):
+    if state is not None and now_mins is not None:
+        try:
+            fs = _flow_setup(symbol, session, state, now_mins, atr)
+            if fs:
+                out.append(fs)
+        except Exception as exc:
+            _logger.error("OIFLOW_FAILED %s: %s: %s", symbol, type(exc).__name__, exc)
+    for name, fn in (("sweep", signals.detect_sweep), ("sweep_fvg", signals.detect_sweep_fvg),
+                     ("amd", signals.detect_amd)):
         sig = fn(today, prev["high"], prev["low"])
         if sig:
             s = _build_setup(name, symbol, sig, atr, session)
@@ -87,14 +95,43 @@ def _scan_symbol(symbol, session):
     return out
 
 
-def detect_all_sweep_setups() -> list:
+def _flow_snapshot(symbol, underlying_key, atr):
+    """ATM +/- 3 strikes call/put OI total + spot, for the order-flow proxy. None if the chain is unavailable."""
+    atm_strike, spot = get_atm_strike(symbol)
+    chain = market_data.get_option_chain(underlying_key, current_expiry(symbol))
+    strikes = sorted({r["strike_price"] for r in chain if r.get("strike_price") is not None})
+    if atm_strike not in strikes:
+        return None
+    i = strikes.index(atm_strike)
+    near = set(strikes[max(0, i - 3): i + 4])
+    c = sum((r.get("call_oi") or 0) for r in chain if r.get("strike_price") in near)
+    p = sum((r.get("put_oi") or 0) for r in chain if r.get("strike_price") in near)
+    if not (c or p):
+        return None
+    return {"spot": spot, "call_oi": c, "put_oi": p}
+
+
+def _flow_setup(symbol, session, state, now_mins, atr):
+    underlying_key = resolve_underlying_key(symbol)
+    snap = _flow_snapshot(symbol, underlying_key, atr)
+    if snap is None:
+        return None
+    snap["t"] = now_mins
+    hist = state.setdefault("flow_snap", {}).setdefault(symbol, [])
+    hist.append(snap)
+    del hist[:-8]
+    sig = signals.detect_oi_flow(hist, atr)
+    return _build_setup("oi_flow", symbol, sig, atr, session) if sig else None
+
+
+def detect_all_sweep_setups(state: dict = None, now_mins: int = None) -> list:
     session = current_session()
     if session is None:
         return []
     found = []
     for symbol in config.SWEEP_SYMBOLS:
         try:
-            found.extend(_scan_symbol(symbol, session))
+            found.extend(_scan_symbol(symbol, session, state, now_mins))
         except Exception as exc:
             _logger.error("SWEEP_SYMBOL_FAILED %s: %s: %s", symbol, type(exc).__name__, exc, exc_info=True)
     return found

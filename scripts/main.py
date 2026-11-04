@@ -1319,7 +1319,7 @@ def create_sweep_shadow_candidates(state: dict, now: datetime):
     """Liquidity-sweep / sweep+FVG shadow engine (app/engines/sweep_reversal/). One trade per strategy+symbol per day."""
     if not config.SWEEP_SHADOW_ENABLED:
         return
-    candidates = sweep_engine.detect_all_sweep_setups()
+    candidates = sweep_engine.detect_all_sweep_setups(state, now.hour * 60 + now.minute)
     if not candidates:
         return
     trades = state.setdefault("sweep_shadow_trades", {})

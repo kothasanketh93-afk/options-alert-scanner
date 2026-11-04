@@ -49,3 +49,24 @@ def test_fvg_entry_on_retest():
 def test_option_levels_floor_and_cap():
     lv = S.option_levels(100.0, 0.5, 103.0, 102.9, 10.0, "CE")   # risk floored to 0.5*ATR=5 -> d=2.5
     assert lv["stop_loss"] == 97.5 and lv["target_1"] == 103.75 and lv["target_2"] == 106.25
+
+
+def test_amd_bullish():
+    # accumulation 6 candles in a tight 100..104 box (prev-day range 40 -> 4 <= 0.35*40)
+    acc = [c(0, 102, 103, 101, 102), c(1, 102, 104, 101.5, 103), c(2, 103, 103.5, 100.5, 101), c(3, 101, 102.5, 100, 102),
+           c(4, 102, 103, 100.5, 101.5), c(5, 101.5, 102.5, 100.2, 102)]
+    manip = [c(6, 101.8, 102, 98.5, 99.5), c(7, 99.5, 101.5, 99, 101), c(8, 101, 103.5, 100.8, 103)]  # sweeps 100, reclaims, closes > mid 102
+    sig = S.detect_amd(acc + manip, prev_high=120, prev_low=80)
+    assert sig and sig["direction"] == "CE" and sig["extreme"] == 98.5 and sig["signal_index"] == 8
+    assert S.detect_amd(acc + manip, prev_high=104, prev_low=96) is None   # range not compressed vs prev day
+
+
+def test_oi_flow_rules():
+    base = {"t": 600, "spot": 100.0, "call_oi": 1000, "put_oi": 1000}
+    now = {"t": 620, "spot": 103.0, "call_oi": 1000, "put_oi": 1100}
+    sig = S.detect_oi_flow([base, now], atr=5.0)
+    assert sig and sig["direction"] == "CE" and sig["d_put_oi"] == 100
+    now_bear = {"t": 620, "spot": 97.0, "call_oi": 1100, "put_oi": 1000}
+    assert S.detect_oi_flow([base, now_bear], 5.0)["direction"] == "PE"
+    assert S.detect_oi_flow([base, {"t": 620, "spot": 103.0, "call_oi": 1100, "put_oi": 1100}], 5.0) is None
+    assert S.detect_oi_flow([base, {"t": 605, "spot": 103.0, "call_oi": 1000, "put_oi": 1100}], 5.0) is None  # too recent
