@@ -26,7 +26,7 @@ COLUMNS = ["trade_id", "date", "engine", "strategy", "symbol", "direction", "str
            "stop_loss", "target_1", "target_2", "final_status", "t1_hit", "result_pct",
            "mfe_pct", "mae_pct", "grade", "trade_score", "wide_prev_day",
            "expiry_day", "entry_oi", "entry_volume", "spread_pct", "cost_pct_assumed", "net_result_pct",
-           "be_after_t1_pct", "half_t1_plus_be_pct", "entry_bucket"]
+           "be_after_t1_pct", "half_t1_plus_be_pct", "entry_bucket", "trail_after_t1_pct"]
 
 
 def result_pct(trade: dict):
@@ -63,6 +63,22 @@ def t1_variants(trade: dict, res):
     else:
         return None, None
     return round(rest, 2), round(0.5 * t1pct + 0.5 * rest, 2)
+
+
+def trail_variant(trade: dict, res):
+    """What-if: stop = entry after T1, then trailing half the entry->T1 distance below the running high (tracker.py). Price % move.
+
+    Never reached T1 -> unchanged. A recorded trail exit -> that exit; trail tracked but never hit -> the actual outcome;
+    records from before 2026-11-04 (no trail data) -> None.
+    """
+    entry = trade.get("tracked_entry_price")
+    if res is None or not entry:
+        return None
+    if not trade.get("t1_hit"):
+        return res
+    if trade.get("trail_exit_price") is not None:
+        return round((trade["trail_exit_price"] - entry) / entry * 100, 2)
+    return res if "trail_sl" in trade else None
 
 
 def net_result_pct(res):
@@ -110,6 +126,7 @@ def _row(trade: dict, engine: str, date_str: str) -> dict:
         "net_result_pct": net_result_pct(res),
         "be_after_t1_pct": be, "half_t1_plus_be_pct": half,
         "entry_bucket": entry_bucket(trade.get("alert_time")),
+        "trail_after_t1_pct": trail_variant(trade, res),
     }
 
 

@@ -239,6 +239,17 @@ def process_trade_candles(trade: dict, candles: list) -> list:
             if "be_touch_price" not in trade and l <= entry_price:
                 trade["be_touch_price"] = entry_price
 
+            # What-if running trail (2026-11-04), never affects live behaviour: after T1 the stop starts at entry and then
+            # follows the running high at a distance of half the entry->T1 move. A candle is checked against the stop as it
+            # stood BEFORE that candle's own high lifted it (same conservative posture as above).
+            _dist = 0.5 * (trade["target_1"] - entry_price)
+            _trail = trade.get("trail_sl", entry_price)
+            if "trail_exit_price" not in trade:
+                if l <= _trail:
+                    trade["trail_exit_price"] = _trail
+                else:
+                    trade["trail_sl"] = round(max(_trail, trade["highest_since_entry"] - _dist), 4)
+
             if hit_sl and hit_t2:
                 trade["status"] = "AMBIGUOUS"
                 trade["final_status"] = "T1_HIT_THEN_AMBIGUOUS"
