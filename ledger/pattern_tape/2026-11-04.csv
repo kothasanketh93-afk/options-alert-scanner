@@ -1,3 +1,5 @@
 date,symbol,bar_time,open,high,low,close,volume,atr14,trend15,gap_dir,patterns,pattern_net_bias,signals_new,signals_today,prev_high,prev_low,prev_close
 2026-11-04,NIFTY,09:30,23940.2,23946.35,23911.5,23929.6,0.0,36.55,1,-1,,0,,,23810.85,23482.8,23810.85
 2026-11-04,BANKNIFTY,09:30,55787.25,55855.35,55787.25,55824.55,0.0,96.14,1,-1,,0,pivot_break:CE,pivot_break@09:30:CE,55739.0,55174.1,55540.05
+2026-11-04,NIFTY,09:35,23930.1,23930.1,23897.6,23909.6,0.0,36.26,1,-1,Evening Star(b),-1,bollinger_fade:PE,bollinger_fade@09:35:PE,23810.85,23482.8,23810.85
+2026-11-04,BANKNIFTY,09:35,55822.0,55836.6,55707.1,55713.05,0.0,98.52,1,-1,,0,bollinger_fade:PE;rsi_reversion:PE,pivot_break@09:30:CE;rsi_reversion@09:35:PE;bollinger_fade@09:35:PE,55739.0,55174.1,55540.05
