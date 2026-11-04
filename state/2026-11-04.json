@@ -196,7 +196,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T09:55:00+05:30",
+      "last_processed_ts": "2026-11-04T09:57:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -206,7 +206,8 @@
       "strategy": "trade_score",
       "probability_history": [],
       "probability_trend": "Stable",
-      "time_to_target_1_minutes": 19
+      "time_to_target_1_minutes": 19,
+      "be_tracked": true
     },
     "CDSL-PE-OTM-20261104-0955-02": {
       "trade_id": "CDSL-PE-OTM-20261104-0955-02",
@@ -277,13 +278,13 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
-      "max_favorable_pct": 0.0,
+      "actual_entry_time": "2026-11-04T09:56:00+05:30",
+      "tracked_entry_price": 24.2,
+      "highest_since_entry": 25.2,
+      "lowest_since_entry": 24.2,
+      "max_favorable_pct": 4.13,
       "max_adverse_pct": 0.0,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -291,9 +292,10 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-04T09:55:38.027675+05:30",
+      "last_processed_ts": "2026-11-04T09:57:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
       ],
       "streak_counted": false,
       "strategy": "trade_score",
