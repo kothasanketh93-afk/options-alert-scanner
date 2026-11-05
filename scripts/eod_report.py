@@ -61,11 +61,11 @@ def _exit_price(t, status):
             "EOD_CLOSED": t.get("eod_last_price"), "T1_HIT_THEN_EOD": t.get("eod_last_price")}.get(status)
 
 
-def collect(state: dict, lot_sizes: dict = None) -> list:
+def collect(state: dict, lot_sizes: dict = None, engines=None) -> list:
     """One dict per tracked trade. pnl_gross/pnl_net = rupees for ONE lot (net = minus the assumed round-trip cost)."""
     rows = []
     seen_keys = set()   # same contract + same alert time already counted under an earlier engine (LIVE first)
-    for key, label in _ENGINES:
+    for key, label in (engines or _ENGINES):
         for t in (state.get(key) or {}).values():
             status = t.get("final_status") or t.get("status")
             res = outcomes_ledger.result_pct(t)
@@ -154,11 +154,13 @@ def _closed_rows(rows: list) -> list:
     return [r for r in rows if r["pnl_gross"] is not None and not r["twin_of_live"]]
 
 
-def engine_summary(rows: list) -> list:
-    """Per engine/strategy label: closed trades, T2 wins, losses (SL or T1-then-SL), one-lot gross and after-cost totals."""
+def engine_summary(rows: list, keyfn=None) -> list:
+    """Per engine/strategy label (or per keyfn(row), e.g. commodity): closed trades, T2 wins, losses (SL or T1-then-SL),
+    one-lot gross and after-cost totals."""
+    keyfn = keyfn or (lambda r: r["engine"])
     out = []
-    for label in dict.fromkeys(r["engine"] for r in rows):
-        sel = [r for r in _closed_rows(rows) if r["engine"] == label]
+    for label in dict.fromkeys(keyfn(r) for r in rows):
+        sel = [r for r in _closed_rows(rows) if keyfn(r) == label]
         if not sel:
             continue
         out.append({"engine": label, "n": len(sel),

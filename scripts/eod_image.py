@@ -59,8 +59,10 @@ def _row_cells(r):
             _num(t.get("target_1")), _num(t.get("target_2")), str(r["status"]).replace("_", " "), net, pnl]
 
 
-def render(state: dict, date_str: str, path: str, lot_sizes: dict = None) -> bool:
-    rows = eod_report.collect(state, lot_sizes)
+def render(state: dict, date_str: str, path: str, lot_sizes: dict = None, title: str = "End-of-day trade report",
+           subtitle: str = "live alerts + shadow engines (data collection)", engines=None, split=None) -> bool:
+    """split = (heading, keyfn): optional second one-lot table grouped by keyfn(row) (MCX: by commodity)."""
+    rows = eod_report.collect(state, lot_sizes, engines)
     if not rows:
         return False
     by = {g[0]: [r for r in rows if eod_report._group_of(r["status"]) == g[0]] for g in eod_report._GROUPS}
@@ -68,20 +70,21 @@ def render(state: dict, date_str: str, path: str, lot_sizes: dict = None) -> boo
     tot = eod_report.totals(rows)["all"]
     rules = eod_report.exit_rule_totals(rows)
     has_pnl = tot["n"] > 0
+    summ2 = eod_report.engine_summary(rows, split[1]) if split else []
 
     f_title, f_big, f_kpi, f_head = _font(34, True), _font(54, True), _font(34, True), _font(19, True)
     f_body, f_small = _font(18), _font(15)
 
     table_h = sum(36 + 22 + RH * len(by[g]) + 16 for g in by if by[g])
-    summary_h = (60 + 130 + 34 + RH * (len(summ) + 1) + 24 + (110 if rules else 0) + 20) if has_pnl else 0
+    summary_h = (60 + 130 + 34 + RH * (len(summ) + 1) + 24 + ((34 + RH * (len(summ2) + 1) + 24) if summ2 else 0) + (110 if rules else 0) + 20) if has_pnl else 0
     height = 100 + 120 + table_h + summary_h + 110
     img = Image.new("RGB", (W, height), (255, 255, 255))
     d = ImageDraw.Draw(img)
 
     # ---- header banner
     d.rectangle((0, 0, W, 96), fill=NAVY)
-    d.text((PAD, 14), "End-of-day trade report", font=f_title, fill=(255, 255, 255))
-    d.text((PAD, 58), f"{date_str}   |   live alerts + shadow engines (data collection)", font=f_body, fill=(176, 188, 214))
+    d.text((PAD, 14), title, font=f_title, fill=(255, 255, 255))
+    d.text((PAD, 58), f"{date_str}   |   {subtitle}", font=f_body, fill=(176, 188, 214))
     badge = "ONE LOT PER TRADE"
     bw = d.textlength(badge, font=f_head) + 36
     d.rounded_rectangle((W - PAD - bw, 30, W - PAD, 68), 10, outline=(176, 188, 214), width=2)
@@ -157,45 +160,46 @@ def render(state: dict, date_str: str, path: str, lot_sizes: dict = None) -> boo
         y += 116 + 18
 
         # per-engine table with P&L bars
-        heads = (("Engine", 250, "l"), ("Trades", 90, "r"), ("T2", 70, "r"), ("Losses", 90, "r"), ("Before costs Rs", 190, "r"),
-                 ("After costs Rs", 190, "r"))
-        cx = PAD + 12
-        for name, wd, al in heads:
-            tx = cx if al == "l" else cx + wd - 14 - d.textlength(name, font=f_small)
-            d.text((tx, y), name, font=f_small, fill=MUTED)
-            cx += wd
-        bar_x0, bar_x1 = PAD + 12 + sum(h[1] for h in heads) + 40, W - PAD - 20
-        d.text((bar_x0, y), "P&L before costs", font=f_small, fill=MUTED)
-        y += 24
-        mx = max([abs(s["gross"]) for s in summ] + [1])
-        mid = (bar_x0 + bar_x1) / 2
-        half = (bar_x1 - bar_x0) / 2 - 6
-        for i, s in enumerate(list(summ) + [{"engine": "TOTAL", "n": tot["n"], "wins": wins,
-                                              "losses": sum(x["losses"] for x in summ), "gross": tot["gross"], "net": tot["net"]}]):
-            is_tot = s["engine"] == "TOTAL"
-            if is_tot:
-                d.line((PAD, y, W - PAD, y), fill=LINE, width=2)
-            elif i % 2:
-                d.rectangle((PAD, y, W - PAD, y + RH), fill=(248, 249, 251))
-            f = _font(18, True) if is_tot else f_body
-            vals = (s["engine"], f"{s['n']}", f"{s['wins']}", f"{s['losses']}", f"{s['gross']:+,}", f"{s['net']:+,}")
+        for first, items in ((("Engine", summ),) + (((split[0], summ2),) if summ2 else ())):
+            heads = ((first, 250, "l"), ("Trades", 90, "r"), ("T2", 70, "r"), ("Losses", 90, "r"), ("Before costs Rs", 190, "r"),
+                     ("After costs Rs", 190, "r"))
             cx = PAD + 12
-            for (name, wd, al), val in zip(heads, vals):
-                c = INK
-                if name.endswith("Rs"):
-                    c = _signed_col(int(val.replace(",", "").replace("+", "")))
-                tx = cx if al == "l" else cx + wd - 14 - d.textlength(val, font=f)
-                d.text((tx, y + 9), val, font=f, fill=c)
+            for name, wd, al in heads:
+                tx = cx if al == "l" else cx + wd - 14 - d.textlength(name, font=f_small)
+                d.text((tx, y), name, font=f_small, fill=MUTED)
                 cx += wd
-            if not is_tot:
-                bw2 = abs(s["gross"]) / mx * half
-                if s["gross"] >= 0:
-                    d.rectangle((mid, y + 9, mid + bw2, y + RH - 9), fill=GREEN)
-                else:
-                    d.rectangle((mid - bw2, y + 9, mid, y + RH - 9), fill=RED)
-                d.line((mid, y + 4, mid, y + RH - 4), fill=(160, 165, 175), width=1)
-            y += RH
-        y += 20
+            bar_x0, bar_x1 = PAD + 12 + sum(h[1] for h in heads) + 40, W - PAD - 20
+            d.text((bar_x0, y), "P&L before costs", font=f_small, fill=MUTED)
+            y += 24
+            mx = max([abs(s["gross"]) for s in items] + [1])
+            mid = (bar_x0 + bar_x1) / 2
+            half = (bar_x1 - bar_x0) / 2 - 6
+            for i, s in enumerate(list(items) + [{"engine": "TOTAL", "n": tot["n"], "wins": wins,
+                                                  "losses": sum(x["losses"] for x in items), "gross": tot["gross"], "net": tot["net"]}]):
+                is_tot = s["engine"] == "TOTAL"
+                if is_tot:
+                    d.line((PAD, y, W - PAD, y), fill=LINE, width=2)
+                elif i % 2:
+                    d.rectangle((PAD, y, W - PAD, y + RH), fill=(248, 249, 251))
+                f = _font(18, True) if is_tot else f_body
+                vals = (s["engine"], f"{s['n']}", f"{s['wins']}", f"{s['losses']}", f"{s['gross']:+,}", f"{s['net']:+,}")
+                cx = PAD + 12
+                for (name, wd, al), val in zip(heads, vals):
+                    c = INK
+                    if name.endswith("Rs"):
+                        c = _signed_col(int(val.replace(",", "").replace("+", "")))
+                    tx = cx if al == "l" else cx + wd - 14 - d.textlength(val, font=f)
+                    d.text((tx, y + 9), val, font=f, fill=c)
+                    cx += wd
+                if not is_tot:
+                    bw2 = abs(s["gross"]) / mx * half
+                    if s["gross"] >= 0:
+                        d.rectangle((mid, y + 9, mid + bw2, y + RH - 9), fill=GREEN)
+                    else:
+                        d.rectangle((mid - bw2, y + 9, mid, y + RH - 9), fill=RED)
+                    d.line((mid, y + 4, mid, y + RH - 4), fill=(160, 165, 175), width=1)
+                y += RH
+            y += 20
 
         if rules:
             d.text((PAD + 12, y), "What if every closed trade used a different exit rule? (one lot, before costs)", font=f_head, fill=INK)

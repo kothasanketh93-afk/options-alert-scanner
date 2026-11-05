@@ -60,19 +60,19 @@ def _table(d, y, heads, rows, f_small, f_body, bars=None, total=None):
 
 
 def render(data: dict, path: str) -> bool:
-    s = weekly_report.summarize(data)
+    s = data.get("summary") or weekly_report.summarize(data)
     a = s["all"]
     if not a["n"]:
         return False
     f_title, f_big, f_kpi, f_head = _font(34, True), _font(54, True), _font(34, True), _font(19, True)
     f_body, f_small = _font(18), _font(15)
-    n_rows = len(s["days"]) + len(s["engines"]) + len(s["buckets"]) + 2
+    n_rows = len(s["days"]) + len(s["engines"]) + len(s["buckets"]) + max(2, len(s.get("split") or ()))
     height = 118 + 110 + 140 + 60 * 4 + RH * (n_rows + 4) + 24 * 4 + 200 + 150 + 120
     img = Image.new("RGB", (W, height), (255, 255, 255))
     d = ImageDraw.Draw(img)
     d.rectangle((0, 0, W, 96), fill=NAVY)
-    d.text((PAD, 14), "Weekly trade report", font=f_title, fill=(255, 255, 255))
-    d.text((PAD, 58), f"{data['start']}  to  {(date.fromisoformat(data['start']) + __import__('datetime').timedelta(days=4)).isoformat()}   |   {len(s['days'])} trading day(s) so far   |   live alerts + shadow engines",
+    d.text((PAD, 14), data.get("title", "Weekly trade report"), font=f_title, fill=(255, 255, 255))
+    d.text((PAD, 58), f"{data['start']}  to  {(date.fromisoformat(data['start']) + __import__('datetime').timedelta(days=4)).isoformat()}   |   {len(s['days'])} trading day(s) so far   |   " + data.get("subtitle", "live alerts + shadow engines"),
            font=f_body, fill=(176, 188, 214))
     badge = "ONE LOT PER TRADE"
     bw = d.textlength(badge, font=f_head) + 36
@@ -113,11 +113,11 @@ def render(data: dict, path: str) -> bool:
     rows = [(r["label"], str(r["n"]), str(r["wins"]), str(r["losses"]), f"{r['gross']:+,}", f"{r['net']:+,}") for r in s["engines"]]
     y = _table(d, y, heads_e, rows, f_small, f_body, [r["gross"] for r in s["engines"]]) + 22
 
-    y = section("BY ENTRY TIME  |  INDEX vs STOCK", y)
+    y = section("BY ENTRY TIME  |  " + s.get("split_title", "INDEX vs STOCK"), y)
     heads_t = (("Group", 250, "l"),) + heads[1:]
     rows = [(f"Entry {r['label']}", str(r["n"]), str(r["wins"]), str(r["losses"]), f"{r['gross']:+,}", f"{r['net']:+,}") for r in s["buckets"]]
     rows += [(nm, str(g["n"]), str(g["wins"]), str(g["losses"]), f"{g['gross']:+,}", f"{g['net']:+,}")
-             for nm, g in (("Index options", s["index"]), ("Stock options", s["stock"])) if g["n"]]
+             for nm, g in (s.get("split") or (("Index options", s["index"]), ("Stock options", s["stock"]))) if g["n"]]
     y = _table(d, y, heads_t, rows, f_small, f_body, [int(r[4].replace(",", "").replace("+", "")) for r in rows]) + 22
 
     if s["rules"]["Original SL"][1]:

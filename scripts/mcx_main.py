@@ -19,6 +19,8 @@ import state as state_mod
 import tracker
 import outcomes_ledger
 import telegram_notify as tg
+import mcx_report
+import shadow_notify
 from angelone import AngelOneBroker
 from app.engines.sweep_reversal import signals
 from indicators import compute_atr
@@ -30,12 +32,10 @@ log = get_logger("mcx_main")
 IST = state_mod.IST
 
 # --- MCX settings (fixed rules; a change = a new strategy name, not a tweak) -----------------------------------
-COMMODITIES = ("CRUDEOIL", "NATURALGAS", "GOLDM", "GOLD")
-# Rupee value of a 1.0 move in the quoted premium for ONE lot. Crude: 100 bbl/lot; NatGas: 1250 mmBtu/lot;
-# Gold is quoted per 10 g: GOLDM lot = 100 g (x10), GOLD lot = 1 kg (x100).
-LOT_MULTIPLIER = {"CRUDEOIL": 100, "NATURALGAS": 1250, "GOLDM": 10, "GOLD": 100}
+from mcx_config import COMMODITIES, LOT_MULTIPLIER, NAMES, STRATEGY_LABELS
 SESSION_OPEN = (9, 0)
-SESSION_CLOSE = (23, 30)
+SESSION_CLOSE = (23, 59)             # market closes 23:30; the extra window lets a late-dispatched 23:30 run still close trades and report
+REPORT_AT = (23, 28)                   # daily report (and Friday weekly report) go out once, at/after this time
 TRADE_CLOSE_HHMM = (23, 25)            # tracker closes open trades at/after this (last full 5-min bar)
 LAST_SIGNAL_MINS = 22 * 60 + 30        # no new setups in the last hour
 MIN_EXPIRY_DAYS = 1                    # skip the option expiry day itself
@@ -213,7 +213,41 @@ def create_trade(broker, st, name, c, strategy, sig, atr, ph, pl, qs, now):
               "sweep_extreme": sig.get("extreme"), "fvg": sig.get("fvg"),
               "entry_oi": qf["oi"], "entry_volume": qf["volume"]})
     st["mcx_shadow_trades"][trade_id] = t
+    notify_created(t)
     log.info("MCX_SHADOW_CANDIDATE_CREATED %s %s %s strike=%s prem=%s sl=%s t1=%s", strategy, name, direction, atm, prem, lv["stop_loss"], lv["target_1"])
+
+
+def _inr(x) -> str:
+    return f"{x:+,.0f}"
+
+
+def notify_created(t: dict):
+    try:
+        mult = t.get("lot_multiplier") or LOT_MULTIPLIER.get(t["symbol"], 1)
+        e, sl, t1, t2 = t["alert_premium"], t["stop_loss"], t["target_1"], t["target_2"]
+        tg.send(f"🧪 <b>MCX SHADOW</b> – data collection, NOT a trade signal\n"
+                f"<b>{NAMES.get(t['symbol'], t['symbol'])} {t['direction']} {t['strike']:g}</b> ({STRATEGY_LABELS.get(t['strategy'], t['strategy'])})\n"
+                f"Premium {e} | SL {sl} | T1 {t1} | T2 {t2}\n"
+                f"One lot: risk to SL Rs {abs((sl - e) * mult):,.0f}, T1 +Rs {(t1 - e) * mult:,.0f}, T2 +Rs {(t2 - e) * mult:,.0f}"
+                + (f"\nSpread {t['spread_pct']}%" if t.get("spread_pct") is not None else ""))
+    except Exception as exc:
+        log.error("MCX created notice failed (%s: %s)", type(exc).__name__, exc)
+
+
+def notify_events(t: dict, events: list):
+    mult = t.get("lot_multiplier") or LOT_MULTIPLIER.get(t["symbol"], 1)
+    for ev in events:
+        et = ev.get("type")
+        if et not in shadow_notify.OUTCOME_LABEL:
+            continue
+        try:
+            entry = t.get("tracked_entry_price")
+            res = outcomes_ledger.result_pct(t) if et in ("SL_HIT", "T2_HIT", "EOD_CLOSED") else None
+            pnl = f"\nOne lot result: Rs {_inr(entry * mult * res / 100.0)} before costs" if res is not None and entry else ""
+            tg.send(f"🧪 MCX SHADOW\n{shadow_notify.OUTCOME_LABEL[et]}: <b>{NAMES.get(t['symbol'], t['symbol'])} {t['direction']} {t['strike']:g}</b> "
+                    f"({STRATEGY_LABELS.get(t['strategy'], t['strategy'])})\nEntry {entry} | SL {t['stop_loss']} | T1 {t['target_1']} | T2 {t['target_2']}{pnl}")
+        except Exception as exc:
+            log.error("MCX outcome notice failed (%s: %s)", type(exc).__name__, exc)
 
 
 def track_open(broker, st: dict):
@@ -223,7 +257,7 @@ def track_open(broker, st: dict):
         try:
             candles = broker.get_candles(t["instrument_key"], "1minute", since_iso=t["last_processed_ts"])
             if candles:
-                tracker.process_trade_candles(t, candles)
+                notify_events(t, tracker.process_trade_candles(t, candles))
         except BrokerAPIError as exc:
             log.error("MCX tracker %s failed (%s) -- retry next run.", tid, exc)
 
@@ -260,6 +294,27 @@ def summary_text(st: dict) -> str:
     return "\n".join(out)
 
 
+def send_reports(st: dict, now: datetime):
+    """Once a day at/after REPORT_AT: daily one-lot image (text fallback); Fridays also the weekly image."""
+    if (now.hour, now.minute) < REPORT_AT:
+        return
+    import tempfile
+    ledger = state_mod.STATE_CLONE_DIR / MCX_DIR / "ledger" / "outcomes.csv"
+    if not st.get("summary_sent"):
+        png = os.path.join(tempfile.mkdtemp(), f"mcx_daily_{st['date']}.png")
+        if mcx_report.render_daily(st, png):
+            tg.send_photo(png, caption=f"MCX daily trade report {st['date']} (one lot per trade, shadow data)")
+        else:
+            tg.send(f"MCX shadow report {st['date']}: no trades today.")
+        st["summary_sent"] = True
+    if now.weekday() == 4 and not st.get("weekly_sent"):
+        png = os.path.join(tempfile.mkdtemp(), f"mcx_weekly_{st['date']}.png")
+        data = mcx_report.render_weekly(ledger, st["date"], png)
+        if data:
+            tg.send_photo(png, caption=f"MCX weekly trade report {data['start']} to {data['end']} (one lot per trade, shadow data)")
+        st["weekly_sent"] = True
+
+
 def main():
     now = state_mod.ist_now()
     if os.environ.get("MCX_FORCE") != "1" and not in_session(now):
@@ -284,12 +339,6 @@ def main():
             except BrokerAPIError as exc:
                 log.error("MCX %s scan failed (%s: %s) -- continuing.", name, type(exc).__name__, exc)
         track_open(broker, st)
-        if (now.hour, now.minute) >= TRADE_CLOSE_HHMM and not st.get("summary_sent"):
-            try:
-                tg.send(summary_text(st))
-                st["summary_sent"] = True
-            except TelegramFailure as exc:
-                log.error("MCX summary send failed: %s", exc)
     except Exception as exc:       # save progress, then re-raise
         err = exc
         log.error("MCX run error (%s: %s)", type(exc).__name__, exc, exc_info=True)
@@ -300,6 +349,10 @@ def main():
             log.info("MCX ledger appended %d trade(s)", added)
     except Exception as exc:
         log.error("MCX ledger append failed (%s: %s) -- continuing.", type(exc).__name__, exc)
+    try:
+        send_reports(st, now)
+    except Exception as exc:
+        log.error("MCX report failed (%s: %s) -- continuing.", type(exc).__name__, exc)
     save_state(st, f"MCX shadow state {date_str} {now.strftime('%H:%M')}")
     if err:
         raise err

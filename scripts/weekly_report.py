@@ -46,6 +46,30 @@ def _label(r) -> str:
     return _LABEL.get(eng, eng)
 
 
+def exit_variants(r: dict, res: float, entry: float):
+    """What-if exit-rule results (percent) for one ledger row. Returns (variants, assumed_flag)."""
+    t1 = r.get("t1_hit") in ("True", "true", "1")
+    variants, filled = {}, False
+    t1pct = ((_f(r.get("target_1")) - entry) / entry * 100) if _f(r.get("target_1")) else None
+    status = r["final_status"]
+    for name, col in (("SL to entry after T1", "be_after_t1_pct"), ("Half at T1, rest at entry-stop", "half_t1_plus_be_pct"),
+                      ("Running trail after T1", "trail_after_t1_pct")):
+        v = _f(r.get(col))
+        if v is None and not t1:
+            v = res
+        elif v is None and t1 and t1pct is not None:
+            # records without pullback markers: T2 hits assumed to have had no pullback to entry; T1-then-SL trades
+            # necessarily fell back through entry (exit at entry, or better for the trail -- taken as entry).
+            filled = True
+            if status == "T2_HIT":
+                v = {"SL to entry after T1": res, "Running trail after T1": res}.get(name, 0.5 * t1pct + 0.5 * res)
+            elif status in ("T1_THEN_SL", "T1_THEN_TRAILING_SL", "TRAILING_SL_HIT"):
+                v = {"SL to entry after T1": 0.0, "Running trail after T1": 0.0}.get(name, 0.5 * t1pct)
+        variants[name] = v
+    variants["Original SL"] = res
+    return variants, filled
+
+
 def collect(ledger_path, master_dir, any_date_in_week: str) -> dict:
     d0, d1 = week_bounds(date.fromisoformat(any_date_in_week))
     rows = [r for r in csv.DictReader(open(ledger_path)) if d0.isoformat() <= r["date"] <= d1.isoformat()]
@@ -64,25 +88,7 @@ def collect(ledger_path, master_dir, any_date_in_week: str) -> dict:
             continue
         gross = entry * lot * res / 100.0
         net = gross - entry * lot * config.LEDGER_ROUND_TRIP_COST_PCT / 100.0
-        t1 = r.get("t1_hit") in ("True", "true", "1")
-        variants, filled = {}, False
-        t1pct = ((_f(r.get("target_1")) - entry) / entry * 100) if _f(r.get("target_1")) else None
-        status = r["final_status"]
-        for name, col in (("SL to entry after T1", "be_after_t1_pct"), ("Half at T1, rest at entry-stop", "half_t1_plus_be_pct"),
-                          ("Running trail after T1", "trail_after_t1_pct")):
-            v = _f(r.get(col))
-            if v is None and not t1:
-                v = res
-            elif v is None and t1 and t1pct is not None:
-                # records without pullback markers: T2 hits assumed to have had no pullback to entry; T1-then-SL trades
-                # necessarily fell back through entry (exit at entry, or better for the trail -- taken as entry).
-                filled = True
-                if status == "T2_HIT":
-                    v = {"SL to entry after T1": res, "Running trail after T1": res}.get(name, 0.5 * t1pct + 0.5 * res)
-                elif status in ("T1_THEN_SL", "T1_THEN_TRAILING_SL", "TRAILING_SL_HIT"):
-                    v = {"SL to entry after T1": 0.0, "Running trail after T1": 0.0}.get(name, 0.5 * t1pct)
-            variants[name] = v
-        variants["Original SL"] = res
+        variants, filled = exit_variants(r, res, entry)
         trades.append({"date": r["date"], "label": _label(r), "symbol": r["symbol"], "dir": r["direction"],
                        "strike": r["strike"], "status": r["final_status"], "lot": lot, "entry": entry, "res": res,
                        "gross": gross, "net": net, "bucket": r.get("entry_bucket") or "",

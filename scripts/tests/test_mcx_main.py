@@ -20,7 +20,7 @@ def test_resolve_contracts_skips_expiry_day_and_picks_nearest():
 
 def test_session_window():
     assert mcx_main.in_session(datetime(2026, 11, 5, 21, 0)) and not mcx_main.in_session(datetime(2026, 11, 7, 12, 0))
-    assert not mcx_main.in_session(datetime(2026, 11, 5, 23, 45)) and not mcx_main.in_session(datetime(2026, 11, 5, 8, 30))
+    assert mcx_main.in_session(datetime(2026, 11, 5, 23, 45)) and not mcx_main.in_session(datetime(2026, 11, 5, 8, 30))
 
 
 def test_tracker_uses_trade_specific_close():
@@ -34,3 +34,20 @@ def test_tracker_uses_trade_specific_close():
 
 def test_summary_text_without_trades():
     assert "no closed trades" in mcx_main.summary_text({"date": "2026-11-05", "mcx_shadow_trades": {}, "rejects": {}})
+
+
+def test_mcx_report_week_and_empty_day():
+    import csv, tempfile
+    import mcx_report
+    from outcomes_ledger import COLUMNS
+    with tempfile.TemporaryDirectory() as tmp:
+        p = os.path.join(tmp, "o.csv")
+        with open(p, "w", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=COLUMNS)
+            w.writeheader()
+            w.writerow(dict(trade_id="1", date="2026-11-05", engine="mcx", strategy="fvg", symbol="GOLDM", direction="PE", strike="144000",
+                            alert_time="2026-11-05T18:10:00", entry_price="2000", final_status="T2_HIT", t1_hit="True", result_pct="10", target_1="2100"))
+        data = mcx_report.collect_week(p, "2026-11-05")
+        assert len(data["trades"]) == 1 and round(data["trades"][0]["gross"]) == 2000 and data["trades"][0]["bucket"] == "1700-2100"
+        assert mcx_report.render_weekly(p, "2026-11-05", os.path.join(tmp, "w.png"))
+        assert not mcx_report.render_daily({"date": "2026-11-05", "mcx_shadow_trades": {}}, os.path.join(tmp, "d.png"))
