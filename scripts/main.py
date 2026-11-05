@@ -799,6 +799,21 @@ def maybe_send_eod_report(state: dict, now: datetime):
 
 
 
+def maybe_send_weekly_report(state: dict, now: datetime):
+    """Friday at/after SUMMARY_HHMM: one-lot weekly report image from the outcomes ledger (after today's rows were appended)."""
+    if now.weekday() != 4 or (now.hour, now.minute) < SUMMARY_HHMM or state.get("weekly_report_sent"):
+        return
+    import tempfile
+    import weekly_image
+    import weekly_report
+    root = state_mod.STATE_CLONE_DIR
+    data = weekly_report.collect(root / "ledger" / "outcomes.csv", root / "instrument_master", state["date"])
+    png = os.path.join(tempfile.mkdtemp(), f"weekly_{state['date']}.png")
+    if weekly_image.render(data, png):
+        tg.send_photo(png, caption=f"Weekly trade report {data['start']} to {data['end']} (one lot per trade, educational, not advice)")
+    state["weekly_report_sent"] = True
+
+
 def maybe_send_shadow_summary(state: dict, now: datetime):
     """
     Phase-2 Shadow/Validation Mode (2026-08-23) daily dataset summary,
@@ -1085,6 +1100,10 @@ def main():
             log.info("OUTCOMES_LEDGER appended %d resolved shadow trade(s)", added)
     except Exception as exc:
         log.error("Outcomes ledger append failed (%s: %s) -- continuing.", type(exc).__name__, exc)
+    try:
+        maybe_send_weekly_report(state, now)
+    except Exception as exc:
+        log.error("Weekly report failed (%s: %s) -- continuing.", type(exc).__name__, exc)
     try:
         signal_lab_runner.collect_once(
             state, now, state_mod.STATE_CLONE_DIR / "ledger" / "signal_lab.csv")
