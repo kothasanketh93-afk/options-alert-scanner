@@ -38,7 +38,7 @@ def _row_cells(r):
     strike = int(strike) if isinstance(strike, float) and strike == int(strike) else strike
     net = f"{r['net']:+.1f}%" if r["net"] is not None else "-"
     pnl = f"{r['pnl_gross']:+,}" if r.get("pnl_gross") is not None else "-"
-    eng = r["engine"] + (" (= live)" if r.get("twin_of_live") else "")
+    eng = r["engine"] + (" (dup)" if r.get("twin_of_live") else "")
     return [f"{t.get('symbol')} {t.get('direction')} {strike}", eng, (t.get("alert_time") or "")[11:16],
             f"{r['lot']:,}" if r.get("lot") else "-",
             _num(t.get("tracked_entry_price") or t.get("alert_premium")), _num(t.get("stop_loss")),
@@ -104,7 +104,7 @@ def render(state: dict, date_str: str, path: str, lot_sizes: dict = None) -> boo
                 cx += wd
             y += RH
         y += 12
-    d.text((PAD, y + 8), "Net % and after-cost totals use an assumed round-trip cost. Gross P&L = (exit - entry) x lot, before brokerage/taxes. Shadow = data collection, not signals.",
+    d.text((PAD, y + 8), "Net % and after-cost totals use an assumed round-trip cost. Gross P&L = (exit - entry) x lot, before brokerage/taxes. (dup) = same contract and time as an earlier row, counted once. Shadow = data collection, not signals.",
            font=f_small, fill=(110, 115, 125))
     d.text((PAD, y + 30), "Educational only; not a SEBI-registered advisor.", font=f_small, fill=(110, 115, 125))
     img.crop((0, 0, W, y + 62)).save(path)

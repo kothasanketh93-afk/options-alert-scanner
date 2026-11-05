@@ -789,7 +789,8 @@ PROBABILITY_SHADOW_MODE_ENABLED = True
 # tracker.py's own live-trade EOD_CLOSED transition, and everything
 # about LIVE alert eligibility/probability/threshold, is completely
 # untouched by this flag in either position.
-SHADOW_TIMEOUT_EXTENSION_ENABLED = True
+SHADOW_TIMEOUT_EXTENSION_ENABLED = False   # 2026-11-05: OFF -- state files are per-day and pruned, so extended shadows were never
+                                            # tracked again nor written to the ledger (silent data loss); they now close at EOD
 SHADOW_TIMEOUT_EXTENSION_MAX_DAYS = 2   # up to 2 additional trading days beyond the entry day (3 total)
 
 # --- Liquidity engine (scanner.py) ---
@@ -1624,7 +1625,7 @@ RISK_RR_GATE_ENABLED = False
 
 # Run-gap notice (2026-11-04): tell the user when the external trigger skipped runs in market hours.
 RUN_GAP_ALERT_ENABLED = True
-RUN_GAP_ALERT_MIN = 15
+RUN_GAP_ALERT_MIN = 20   # raised from 15: a 15-minute external schedule must not trigger the notice
 
 # --- Liquidity-sweep (+FVG) SHADOW engine (app/engines/sweep_reversal/, added 2026-11-04) ---
 # Index options only; rules fixed in signals.py (do not tune on results). Shadow only, never live.

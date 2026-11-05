@@ -30,7 +30,7 @@ import os
 import sys
 
 _here = os.path.dirname(os.path.abspath(__file__))
-_scripts_dir = os.path.dirname(_here)
+_scripts_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(_here))))   # scripts/ (the package moved under app/engines/)
 sys.path.insert(0, _scripts_dir)
 sys.path.insert(0, _here)
 
@@ -45,13 +45,13 @@ import trade_score
 # ---------------------------------------------------------------------------
 
 def test_a_valid_bid_ask_correct_spread():
-    ltp, bid, ask = 100.0, 99.0, 101.0
+    ltp, bid, ask = 100.0, 99.8, 100.2   # 0.4% spread: inside the current INDEX_MAX_SPREAD_PCT cap (1%)
     spread = ask - bid
     midpoint = (bid + ask) / 2
     spread_pct = spread / midpoint * 100
-    assert spread == 2.0
+    assert round(spread, 4) == 0.4
     assert midpoint == 100.0
-    assert round(spread_pct, 4) == 2.0
+    assert round(spread_pct, 4) == 0.4
     # Sanity: liquidity_ok() itself still passes with valid data (unchanged path)
     assert filters.liquidity_ok(oi=100000, volume=50000, bid=bid, ask=ask, premium=ltp) is True
     print("test_a_valid_bid_ask_correct_spread passed")

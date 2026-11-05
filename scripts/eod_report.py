@@ -64,8 +64,7 @@ def _exit_price(t, status):
 def collect(state: dict, lot_sizes: dict = None) -> list:
     """One dict per tracked trade. pnl_gross/pnl_net = rupees for ONE lot (net = minus the assumed round-trip cost)."""
     rows = []
-    live_keys = {(t.get("symbol"), t.get("direction"), t.get("strike"), t.get("alert_time"))
-                 for t in (state.get("trades") or {}).values()}
+    seen_keys = set()   # same contract + same alert time already counted under an earlier engine (LIVE first)
     for key, label in _ENGINES:
         for t in (state.get(key) or {}).values():
             status = t.get("final_status") or t.get("status")
@@ -76,7 +75,9 @@ def collect(state: dict, lot_sizes: dict = None) -> list:
             if lot and entry and exit_ is not None:
                 gross = round((exit_ - entry) * lot)
                 net = round(gross - entry * lot * outcomes_ledger.config.LEDGER_ROUND_TRIP_COST_PCT / 100)
-            twin = key == "shadow_trades" and (t.get("symbol"), t.get("direction"), t.get("strike"), t.get("alert_time")) in live_keys
+            _k = (t.get("symbol"), t.get("direction"), t.get("strike"), t.get("alert_time"))
+            twin = _k in seen_keys
+            seen_keys.add(_k)
             if key == "sweep_shadow_trades" and t.get("strategy") in _SWEEP_LABELS:
                 label_row = _SWEEP_LABELS[t["strategy"]]
             else:

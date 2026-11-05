@@ -18,6 +18,7 @@ Design notes:
 """
 
 import json
+import time
 import logging
 import subprocess
 from datetime import datetime, timezone, timedelta
@@ -301,7 +302,7 @@ def record_scan_stats(state: dict, scan_stats: dict, broker_errors: int = 0):
     totals["broker_errors"] = totals.get("broker_errors", 0) + broker_errors
 
 
-def save_state(state: dict, commit_message: str, max_retries: int = 3):
+def save_state(state: dict, commit_message: str, max_retries: int = 6):
     date_str = state["date"]
     path = _state_file_path(date_str)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -347,8 +348,18 @@ def save_state(state: dict, commit_message: str, max_retries: int = 3):
         if push_result.returncode == 0:
             return
         # Push rejected -> someone else wrote concurrently (shouldn't happen
-        # given the workflow concurrency group, but handle it defensively).
+        # given the workflow concurrency group, but handle it defensively) OR GitHub returned a transient 5xx
+        # (2026-11-04 15:31: three quick retries all hit "Internal Server Error" and the final state was lost).
+        # Back off between attempts so a short GitHub incident can clear.
+        if attempt < max_retries - 1:
+            time.sleep(min(5 * (2 ** attempt), 30))
 
+    try:   # tell the user the day's final state did not persist (best effort)
+        import telegram_notify
+        telegram_notify.send(f"⚠️ <b>State save failed</b>\nCould not push {date_str} state after {max_retries} attempts "
+                             f"(GitHub error?). Latest outcomes may be missing from the ledger; check the run log.")
+    except Exception:
+        pass
     raise RuntimeError(
         f"Failed to push state after {max_retries} attempts. "
         f"Check for a stuck/duplicate workflow run."
