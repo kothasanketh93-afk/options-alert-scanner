@@ -48,12 +48,13 @@ on:
       timezone: 'Asia/Kolkata'
     - cron: '0,5,10,15,20,25,30 11 * * 1-5'
       timezone: 'Asia/Kolkata'
-    # --- Phase 2: 11:35-13:35 IST -- every 15 min (lunch gap) ---
-    - cron: '35,50 11 * * 1-5'
+    # --- Phase 2: 11:35-13:40 IST -- every 5 min (was every 15 min "lunch gap" to save Actions minutes; the repo is
+    #     public so minutes are free, and 15-min gaps made the scanner miss fresh 5-minute-candle signals; changed 2026-11-05) ---
+    - cron: '35,40,45,50,55 11 * * 1-5'
       timezone: 'Asia/Kolkata'
-    - cron: '5,20,35,50 12 * * 1-5'
+    - cron: '*/5 12 * * 1-5'
       timezone: 'Asia/Kolkata'
-    - cron: '5,20,35 13 * * 1-5'
+    - cron: '0,5,10,15,20,25,30,35,40 13 * * 1-5'
       timezone: 'Asia/Kolkata'
     # --- Phase 3: 13:45-15:30 IST -- every 5 min (15:30 run also writes end-of-day data) ---
     - cron: '45,50,55 13 * * 1-5'
