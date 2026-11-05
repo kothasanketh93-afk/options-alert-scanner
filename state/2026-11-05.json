@@ -71,8 +71,8 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "T1_HIT_THEN_EOD",
       "actual_entry_time": "2026-11-05T09:41:00+05:30",
       "tracked_entry_price": 5.41,
       "highest_since_entry": 6.3,
@@ -84,14 +84,15 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-05T15:24:00+05:30",
+      "eod_last_price": 5.83,
+      "last_processed_ts": "2026-11-05T15:30:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
-        "T1_HIT"
+        "T1_HIT",
+        "EOD_CLOSED"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [],
       "probability_trend": "Stable",
@@ -170,7 +171,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "NOT_ENTERED",
       "final_status": null,
       "actual_entry_time": null,
       "tracked_entry_price": null,
@@ -184,11 +185,12 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-05T15:24:00+05:30",
+      "last_processed_ts": "2026-11-05T15:30:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "NOT_ENTERED"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "probability_history": [],
       "probability_trend": "Stable"
@@ -213,7 +215,7 @@
     "ORBPIVOT-orb15-BANKNIFTY": 1
   },
   "next_display_num": 2,
-  "summary_sent": false,
+  "summary_sent": true,
   "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
@@ -382,7 +384,7 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 812,
+    "scanned_symbols": 826,
     "valid_signals": 17,
     "rejected_signals": 1709,
     "api_failures": 0,
@@ -393,7 +395,7 @@
     "13:30",
     "14:30"
   ],
-  "last_run_at": "2026-11-05T15:25:37+05:30",
+  "last_run_at": "2026-11-05T15:31:24+05:30",
   "micro_last_minute": [
     "2026-11-05",
     925
@@ -401,11 +403,11 @@
   "tape_seen": {
     "NIFTY": [
       "2026-11-05",
-      "15:20"
+      "15:25"
     ],
     "BANKNIFTY": [
       "2026-11-05",
-      "15:20"
+      "15:25"
     ]
   },
   "shadow_trades": {
@@ -577,7 +579,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
+      "status": "ACTIVE",
       "final_status": null,
       "actual_entry_time": "2026-11-05T09:41:00+05:30",
       "tracked_entry_price": 5.41,
@@ -590,8 +592,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-05T15:24:00+05:30",
+      "eod_last_price": 5.83,
+      "last_processed_ts": "2026-11-05T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -603,7 +605,8 @@
       "trail_sl": 5.895,
       "time_to_target_1_minutes": 38,
       "trail_exit_price": 5.895,
-      "be_touch_price": 5.41
+      "be_touch_price": 5.41,
+      "timeout_extension_days_used": 1
     },
     "SHADOW-3-101045": {
       "trade_id": "SHADOW-3-101045",
@@ -674,7 +677,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "NOT_ENTERED",
       "final_status": null,
       "actual_entry_time": null,
       "tracked_entry_price": null,
@@ -688,7 +691,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-05T15:24:00+05:30",
+      "last_processed_ts": "2026-11-05T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -973,15 +976,16 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-05T15:24:00+05:30",
+      "eod_last_price": 39.8,
+      "last_processed_ts": "2026-11-05T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
       "probability_status": "UNAVAILABLE",
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
-      "candidate_id": "BDL:CE:1080.0:2026-11-23:CHASE"
+      "candidate_id": "BDL:CE:1080.0:2026-11-23:CHASE",
+      "timeout_extension_days_used": 1
     },
     "SHADOW-7-104046": {
       "trade_id": "SHADOW-7-104046",
@@ -1334,7 +1338,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
+      "status": "ACTIVE",
       "final_status": null,
       "actual_entry_time": "2026-11-05T11:06:00+05:30",
       "tracked_entry_price": 9.15,
@@ -1347,8 +1351,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-05T15:24:00+05:30",
+      "eod_last_price": 10.1,
+      "last_processed_ts": "2026-11-05T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
@@ -1359,7 +1363,8 @@
       "be_tracked": true,
       "trail_sl": 10.31,
       "time_to_target_1_minutes": 194,
-      "trail_exit_price": 10.31
+      "trail_exit_price": 10.31,
+      "timeout_extension_days_used": 1
     },
     "SHADOW-11-111045": {
       "trade_id": "SHADOW-11-111045",
@@ -1529,23 +1534,24 @@
       "actual_entry_time": "2026-11-05T13:46:00+05:30",
       "tracked_entry_price": 6.25,
       "highest_since_entry": 7.25,
-      "lowest_since_entry": 5.85,
+      "lowest_since_entry": 5.8,
       "max_favorable_pct": 16.0,
-      "max_adverse_pct": -6.4,
+      "max_adverse_pct": -7.2,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-05T15:24:00+05:30",
+      "eod_last_price": 5.85,
+      "last_processed_ts": "2026-11-05T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
       "probability_status": "UNAVAILABLE",
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
-      "candidate_id": "DABUR:CE:390.0:2026-11-23:CHASE"
+      "candidate_id": "DABUR:CE:390.0:2026-11-23:CHASE",
+      "timeout_extension_days_used": 1
     },
     "SHADOW-13-135536": {
       "trade_id": "SHADOW-13-135536",
@@ -1630,15 +1636,16 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-05T15:24:00+05:30",
+      "eod_last_price": 104.4,
+      "last_processed_ts": "2026-11-05T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
       "probability_status": "UNAVAILABLE",
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
-      "candidate_id": "MUTHOOTFIN:CE:2800.0:2026-11-23"
+      "candidate_id": "MUTHOOTFIN:CE:2800.0:2026-11-23",
+      "timeout_extension_days_used": 1
     },
     "SHADOW-14-140103": {
       "trade_id": "SHADOW-14-140103",
@@ -1710,7 +1717,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
+      "status": "ACTIVE",
       "final_status": null,
       "actual_entry_time": "2026-11-05T14:02:00+05:30",
       "tracked_entry_price": 73.9,
@@ -1723,8 +1730,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-05T15:24:00+05:30",
+      "eod_last_price": 77.5,
+      "last_processed_ts": "2026-11-05T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -1735,7 +1742,8 @@
       "be_tracked": true,
       "trail_sl": 77.19,
       "time_to_target_1_minutes": 77,
-      "trail_exit_price": 77.19
+      "trail_exit_price": 77.19,
+      "timeout_extension_days_used": 1
     },
     "SHADOW-15-142542": {
       "trade_id": "SHADOW-15-142542",
@@ -1907,7 +1915,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
+      "status": "ACTIVE",
       "final_status": null,
       "actual_entry_time": "2026-11-05T14:32:00+05:30",
       "tracked_entry_price": 150.4,
@@ -1920,8 +1928,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-05T15:24:00+05:30",
+      "eod_last_price": 152.1,
+      "last_processed_ts": "2026-11-05T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
@@ -1933,7 +1941,8 @@
       "trail_sl": 159.28,
       "trail_exit_price": 159.28,
       "time_to_target_1_minutes": 1,
-      "be_touch_price": 150.4
+      "be_touch_price": 150.4,
+      "timeout_extension_days_used": 1
     },
     "SHADOW-17-150325": {
       "trade_id": "SHADOW-17-150325",
@@ -2105,23 +2114,24 @@
       "actual_entry_time": "2026-11-05T15:08:00+05:30",
       "tracked_entry_price": 8.25,
       "highest_since_entry": 8.25,
-      "lowest_since_entry": 7.8,
+      "lowest_since_entry": 7.7,
       "max_favorable_pct": 0.0,
-      "max_adverse_pct": -5.45,
+      "max_adverse_pct": -6.67,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-05T15:24:00+05:30",
+      "eod_last_price": 7.9,
+      "last_processed_ts": "2026-11-05T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
       "probability_status": "UNAVAILABLE",
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
-      "candidate_id": "DABUR:CE:385.0:2026-11-23:CHASE"
+      "candidate_id": "DABUR:CE:385.0:2026-11-23:CHASE",
+      "timeout_extension_days_used": 1
     }
   },
   "fib_pivot_shadow_trades": {
@@ -3527,5 +3537,8 @@
       "be_touch_price": 237.95
     }
   },
-  "run_gaps": 4
+  "run_gaps": 4,
+  "eod_report_sent": true,
+  "shadow_summary_sent": true,
+  "signal_lab_done": true
 }
