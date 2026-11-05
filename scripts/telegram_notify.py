@@ -104,7 +104,8 @@ def send_document(file_path: str, caption: str = None):
     """
     bot_token, chat_id = get_telegram_credentials()
     url = DOCUMENT_API_URL.format(token=bot_token)
-    with open(file_path, "rb") as f:
+    with open(file_path, "rb") as fh:
+        f = fh.read()  # bytes, so a retry re-sends the full file (an open handle would be at EOF on retry)
         try:
             resp = request_with_retry(
                 "POST", url, error_cls=TelegramFailure, timeout=60,
@@ -122,7 +123,8 @@ def send_photo(file_path: str, caption: str = None):
     """Send an image (PNG) inline via sendPhoto -- same credentials/retry policy as send()/send_document()."""
     bot_token, chat_id = get_telegram_credentials()
     url = PHOTO_API_URL.format(token=bot_token)
-    with open(file_path, "rb") as f:
+    with open(file_path, "rb") as fh:
+        f = fh.read()  # bytes, so a retry re-sends the full file (an open handle would be at EOF on retry)
         try:
             resp = request_with_retry(
                 "POST", url, error_cls=TelegramFailure, timeout=60,
