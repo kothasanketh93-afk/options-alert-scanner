@@ -148,3 +148,42 @@ def build_messages(state: dict, date_str: str, limit: int = 3800) -> list:
     if cur:
         msgs.append(cur)
     return msgs
+
+
+def _closed_rows(rows: list) -> list:
+    return [r for r in rows if r["pnl_gross"] is not None and not r["twin_of_live"]]
+
+
+def engine_summary(rows: list) -> list:
+    """Per engine/strategy label: closed trades, T2 wins, losses (SL or T1-then-SL), one-lot gross and after-cost totals."""
+    out = []
+    for label in dict.fromkeys(r["engine"] for r in rows):
+        sel = [r for r in _closed_rows(rows) if r["engine"] == label]
+        if not sel:
+            continue
+        out.append({"engine": label, "n": len(sel),
+                    "wins": sum(1 for r in sel if r["status"] == "T2_HIT"),
+                    "losses": sum(1 for r in sel if _group_of(r["status"]) in ("loss", "partial") and (r["pnl_gross"] or 0) < 0),
+                    "gross": sum(r["pnl_gross"] for r in sel), "net": sum(r["pnl_net"] for r in sel)})
+    return out
+
+
+def exit_rule_totals(rows: list) -> dict:
+    """One-lot gross totals if every closed trade had used each exit rule (price % move x entry x lot). None where unknown."""
+    rules = {"Original SL": lambda t, res: res,
+             "SL to entry after T1": lambda t, res: outcomes_ledger.t1_variants(t, res)[0],
+             "Half at T1, rest at entry-stop": lambda t, res: outcomes_ledger.t1_variants(t, res)[1],
+             "Running trail after T1": lambda t, res: outcomes_ledger.trail_variant(t, res)}
+    out = {}
+    for name, fn in rules.items():
+        total, known = 0.0, 0
+        for r in _closed_rows(rows):
+            t = r["t"]
+            res = outcomes_ledger.result_pct(t)
+            pct = fn(t, res) if res is not None else None
+            if pct is None or not t.get("tracked_entry_price") or not r["lot"]:
+                continue
+            total += t["tracked_entry_price"] * r["lot"] * pct / 100.0
+            known += 1
+        out[name] = (round(total), known)
+    return out
