@@ -46,17 +46,17 @@
       "final_status": null,
       "actual_entry_time": "2026-11-05T22:00:00+05:30",
       "tracked_entry_price": 393.9,
-      "highest_since_entry": 393.9,
-      "lowest_since_entry": 393.9,
-      "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "highest_since_entry": 394.4,
+      "lowest_since_entry": 381.1,
+      "max_favorable_pct": 0.13,
+      "max_adverse_pct": -3.25,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-05T22:00:00+05:30",
+      "last_processed_ts": "2026-11-05T22:04:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -131,7 +131,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-05T22:00:00+05:30",
+      "last_processed_ts": "2026-11-05T22:04:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -190,6 +190,12 @@
         "spot": 8539.0,
         "call_oi": 2258300.0,
         "put_oi": 1900000.0
+      },
+      {
+        "t": 1325,
+        "spot": 8578.0,
+        "call_oi": 1833600.0,
+        "put_oi": 1340300.0
       }
     ],
     "NATURALGAS": [
@@ -222,6 +228,12 @@
         "spot": 281.9,
         "call_oi": 40343750.0,
         "put_oi": 44237500.0
+      },
+      {
+        "t": 1325,
+        "spot": 282.8,
+        "call_oi": 53011250.0,
+        "put_oi": 50476250.0
       }
     ],
     "GOLDM": [
@@ -254,6 +266,12 @@
         "spot": 142204.0,
         "call_oi": 351000.0,
         "put_oi": 594500.0
+      },
+      {
+        "t": 1325,
+        "spot": 142901.0,
+        "call_oi": 550400.0,
+        "put_oi": 650600.0
       }
     ],
     "GOLD": [
@@ -286,6 +304,12 @@
         "spot": 144477.0,
         "call_oi": 754.0,
         "put_oi": 306.0
+      },
+      {
+        "t": 1325,
+        "spot": 144200.0,
+        "call_oi": 692.0,
+        "put_oi": 295.0
       }
     ]
   },
