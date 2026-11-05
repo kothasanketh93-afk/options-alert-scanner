@@ -25,8 +25,8 @@ from angelone import AngelOneBroker
 from app.engines.sweep_reversal import signals
 from indicators import compute_atr
 from logging_setup import get_logger
-from main import new_trade_record, TERMINAL_STATUSES
-from exceptions import BrokerAPIError, TelegramFailure
+from trade_record import new_trade_record, TERMINAL_STATUSES
+from exceptions import BrokerAPIError
 
 log = get_logger("mcx_main")
 IST = state_mod.IST

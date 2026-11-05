@@ -4,7 +4,7 @@ from datetime import date
 from PIL import Image, ImageDraw
 
 import weekly_report
-from eod_image import (NAVY, INK, MUTED, LINE, GREEN, RED, AMBER, GREY, GREEN_BG, RED_BG, W, PAD, _font, _money, _signed_col)
+from eod_image import (NAVY, INK, MUTED, LINE, GREEN, RED, GREEN_BG, RED_BG, W, PAD, _font, _money, _signed_col)
 
 RH = 38
 
@@ -110,7 +110,7 @@ def render(data: dict, path: str) -> bool:
 
     y = section("BY ENGINE / STRATEGY", y)
     heads_e = (("Engine", 250, "l"),) + heads[1:]
-    rows = [(r["label"], str(r["n"]), str(r["wins"]), str(r["losses"]), f"{r['gross']:+,}", f"{r['net']:+,}") for r in s["engines"]]
+    rows = [(r["label"] + ("*" if r["n"] < 30 else ""), str(r["n"]), str(r["wins"]), str(r["losses"]), f"{r['gross']:+,}", f"{r['net']:+,}") for r in s["engines"]]
     y = _table(d, y, heads_e, rows, f_small, f_body, [r["gross"] for r in s["engines"]]) + 22
 
     y = section("BY ENTRY TIME  |  " + s.get("split_title", "INDEX vs STOCK"), y)
@@ -149,7 +149,7 @@ def render(data: dict, path: str) -> bool:
     d.line((PAD, y + 4, W - PAD, y + 4), fill=LINE, width=2)
     d.text((PAD, y + 14), "P&L = entry x lot size x result %, before brokerage/taxes; after-cost totals use an assumed round-trip cost. "
            "Same contract and time under several engines counted once.", font=f_small, fill=MUTED)
-    d.text((PAD, y + 36), "Trades still open at the end of a day (older shadow carry-overs) are not included. Shadow rows are data collection, "
+    d.text((PAD, y + 36), "* = fewer than 30 closed trades: too few to judge an engine. Open trades are not included. Shadow rows are data collection, "
            "not signals. Educational only; not a SEBI-registered advisor.", font=f_small, fill=MUTED)
     img.crop((0, 0, W, y + 66)).save(path)
     return True

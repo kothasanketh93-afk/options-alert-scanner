@@ -51,3 +51,69 @@ def test_mcx_report_week_and_empty_day():
         assert len(data["trades"]) == 1 and round(data["trades"][0]["gross"]) == 2000 and data["trades"][0]["bucket"] == "1700-2100"
         assert mcx_report.render_weekly(p, "2026-11-05", os.path.join(tmp, "w.png"))
         assert not mcx_report.render_daily({"date": "2026-11-05", "mcx_shadow_trades": {}}, os.path.join(tmp, "d.png"))
+
+
+class _FakeBroker:
+    def __init__(self, quote, candles):
+        self.quote, self.candles = quote, candles
+
+    def _batch_quotes(self, exchange, tokens):
+        return {t: self.quote for t in tokens}
+
+    def get_candles(self, key, interval, since_iso=None):
+        return [c for c in self.candles if c["timestamp"] > (since_iso or "")]
+
+
+def test_mcx_create_track_and_ledger(monkeypatch, tmp_path):
+    import outcomes_ledger
+    sent = []
+    monkeypatch.setattr(mcx_main.tg, "send", lambda text: sent.append(text))
+    now = datetime(2026, 11, 5, 21, 44, tzinfo=mcx_main.IST)
+    chain = [_row("CRUDEOIL", k, 8500, tok=f"t{k}") for k in ("CE", "PE")]
+    for x in chain:
+        x["_strike"] = 8500.0
+    c = {"fut": {"token": "f"}, "chain": chain, "expiry": "2026-11-17", "lot": 100}
+    quote = {"ltp": 400.0, "depth": {"buy": [{"price": 399.5}], "sell": [{"price": 400.5}]}, "opnInterest": 1000, "tradeVolume": 500}
+    st = {"date": "2026-11-05", "mcx_shadow_trades": {}, "next_seq": {}, "flow_snap": {}, "rejects": {}}
+    broker = _FakeBroker(quote, [])
+    sig = {"direction": "CE", "level_name": "PDL", "signal_close": 8500.0, "extreme": 8450.0, "level_value": 8460.0}
+    mcx_main.create_trade(broker, st, "CRUDEOIL", c, "sweep", sig, 40.0, None, None, {"tCE": quote}, now)
+    assert len(st["mcx_shadow_trades"]) == 1 and sent and "MCX SHADOW" in sent[0]
+    t = next(iter(st["mcx_shadow_trades"].values()))
+    assert t["market_close_hhmm"] == [23, 25] and t["lot_multiplier"] == 100 and t["stop_loss"] < t["alert_premium"] < t["target_1"]
+    # price falls through the stop on the next minute candles -> SL_HIT, one-lot loss reported
+    sl = t["stop_loss"]
+    candles = [{"timestamp": "2026-11-05T21:45:00+05:30", "open": 400, "high": 401, "low": 399, "close": 400, "volume": 1},
+               {"timestamp": "2026-11-05T21:46:00+05:30", "open": 400, "high": 400, "low": sl - 5, "close": sl - 4, "volume": 1}]
+    broker.candles = candles
+    mcx_main.track_open(broker, st)
+    assert t["status"] == "SL_HIT"
+    assert any("Stop-loss hit" in s for s in sent)
+    ledger = tmp_path / "o.csv"
+    monkeypatch.setattr(outcomes_ledger, "STATE_KEYS", outcomes_ledger.STATE_KEYS + (("mcx_shadow_trades", "mcx"),))
+    assert outcomes_ledger.append_resolved(st, ledger) == 1
+
+
+def test_mcx_rejects_wide_spread(monkeypatch):
+    monkeypatch.setattr(mcx_main.tg, "send", lambda text: None)
+    now = datetime(2026, 11, 5, 21, 44, tzinfo=mcx_main.IST)
+    chain = [_row("GOLD", k, 144000, tok=f"t{k}") for k in ("CE", "PE")]
+    for x in chain:
+        x["_strike"] = 144000.0
+    c = {"fut": {"token": "f"}, "chain": chain, "expiry": "2026-11-27", "lot": 1}
+    wide = {"ltp": 3000.0, "depth": {"buy": [{"price": 2800.0}], "sell": [{"price": 3200.0}]}, "opnInterest": 5, "tradeVolume": 100}
+    st = {"date": "2026-11-05", "mcx_shadow_trades": {}, "next_seq": {}, "flow_snap": {}, "rejects": {}}
+    sig = {"direction": "CE", "level_name": "PDL", "signal_close": 144000.0, "extreme": 143500.0, "level_value": 143600.0}
+    mcx_main.create_trade(_FakeBroker(wide, []), st, "GOLD", c, "sweep", sig, 300.0, None, None, {"tCE": wide}, now)
+    assert not st["mcx_shadow_trades"] and any(k.startswith("GOLD:spread_") for k in st["rejects"])
+
+
+def test_prune_dated_files(tmp_path, monkeypatch):
+    import state as state_mod
+    monkeypatch.setattr(state_mod, "STATE_CLONE_DIR", tmp_path)
+    d = tmp_path / "instrument_master"
+    d.mkdir()
+    for name in ("2026-10-01.json.gz", "2026-10-25.json.gz", "2026-11-05.json.gz", "notes.txt"):
+        (d / name).write_text("x")
+    assert state_mod.prune_dated_files("instrument_master", 14, today="2026-11-05") == 1
+    assert sorted(p.name for p in d.iterdir()) == ["2026-10-25.json.gz", "2026-11-05.json.gz", "notes.txt"]

@@ -20,6 +20,7 @@ Design notes:
 import json
 import time
 import logging
+import shutil
 import subprocess
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -134,11 +135,19 @@ def ensure_state_branch_checked_out(repo_url: str, github_token: str, allow_crea
             return
 
     # Fresh clone attempt of just the state branch
+    # --depth 1 (2026-11-05): the branch holds months of history (hundreds of MB, growing daily) and every run only needs the
+    # tip; falls back to a full single-branch clone if the shallow one fails.
     result = _run(
-        ["git", "clone", "--branch", STATE_BRANCH, "--single-branch",
+        ["git", "clone", "--depth", "1", "--branch", STATE_BRANCH, "--single-branch",
          auth_url, str(STATE_CLONE_DIR)],
         check=False,
     )
+    if result.returncode != 0:
+        shutil.rmtree(STATE_CLONE_DIR, ignore_errors=True)
+        result = _run(
+            ["git", "clone", "--branch", STATE_BRANCH, "--single-branch", auth_url, str(STATE_CLONE_DIR)],
+            check=False,
+        )
     if result.returncode != 0:
         # Branch doesn't exist yet -> check out a local orphan branch
         # with no content, whether or not we're allowed to push it.
@@ -364,6 +373,24 @@ def save_state(state: dict, commit_message: str, max_retries: int = 6):
         f"Failed to push state after {max_retries} attempts. "
         f"Check for a stuck/duplicate workflow run."
     )
+
+
+def prune_dated_files(subdir: str, keep_days: int, today: str = None) -> int:
+    """Delete <subdir>/YYYY-MM-DD.* files older than keep_days (the next save_state commit records the deletions).
+    Used for the daily instrument-master snapshots (~5 MB each; only the current week's lot sizes are ever read)."""
+    d = STATE_CLONE_DIR / subdir
+    if not d.is_dir():
+        return 0
+    cutoff = (datetime.fromisoformat(today) if today else datetime.now(IST).replace(tzinfo=None)) - timedelta(days=keep_days)
+    removed = 0
+    for f in d.iterdir():
+        try:
+            if datetime.fromisoformat(f.name[:10]) < cutoff:
+                f.unlink()
+                removed += 1
+        except ValueError:
+            continue
+    return removed
 
 
 def cleanup_old_state_files(keep_today: str, max_files_to_scan: int = 30):

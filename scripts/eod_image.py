@@ -92,7 +92,6 @@ def render(state: dict, date_str: str, path: str, lot_sizes: dict = None, title:
 
     # ---- KPI cards
     y = 118
-    closed = len(eod_report._closed_rows(rows))
     cards = [("Tracked", str(len(rows)), NAVY), ("T2 hit", str(len(by["win"])), GREEN),
              ("T1 then SL", str(len(by["partial"])), AMBER), ("SL hit", str(len(by["loss"])), RED),
              ("Open / EOD", str(len(by["other"])), GREY)]

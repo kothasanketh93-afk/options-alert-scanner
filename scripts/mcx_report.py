@@ -5,7 +5,6 @@ from datetime import date
 
 import config
 import eod_image
-import eod_report
 import mcx_config as mc
 import weekly_image
 import weekly_report

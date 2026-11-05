@@ -4,8 +4,6 @@ P&L per closed trade = entry price x lot size x result% (lot size from that day'
 alert time seen under several engines is counted once (LIVE first). 'After costs' uses config.LEDGER_ROUND_TRIP_COST_PCT.
 """
 import csv
-import gzip
-import json
 from datetime import date, timedelta
 from pathlib import Path
 
