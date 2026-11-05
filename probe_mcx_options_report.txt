@@ -1,0 +1,132 @@
+login ok
+MCX instrument types: {'AMXIDX': 17, 'COMDTY': 400, 'OPTFUT': 15572, 'FUTCOM': 170, 'FUTIDX': 6, 'OPTIDX': 654}
+
+== GOLD: live futures=6 live option rows=3582
+  FUT GOLD04DEC26FUT tok=495213 lot=1 tick=100.000000 exp=04DEC2026
+  FUT GOLD05FEB27FUT tok=559933 lot=1 tick=100.000000 exp=05FEB2027
+  FUT GOLD05APR27FUT tok=569424 lot=1 tick=100.000000 exp=05APR2027
+  option expiries: ['27Nov2026', '31Dec2026', '29Jan2027', '26Feb2027', '29Mar2027', '30Apr2027']
+  nearest expiry 27Nov2026: 374 rows, strikes 113500.0..206500.0 (n=187), lot=1, tick=50.000000
+  sample symbols: ['GOLD27NOV26165500CE', 'GOLD27NOV26165000CE', 'GOLD27NOV26160000CE'] raw strike field=16550000.000000
+  FUT ltp=144144.0 depth(best)=[{'price': 144120.0, 'quantity': 2, 'orders': 1}] / [{'price': 144136.0, 'quantity': 1, 'orders': 1}]
+    GOLD27NOV26143000CE          ltp=3559.0 bid=3557.0 ask=3685.5 oi=27 vol=68
+    GOLD27NOV26143000PE          ltp=2291.0 bid=2481.0 ask=2548.5 oi=38 vol=100
+    GOLD27NOV26143500CE          ltp=1114.0 bid=2849.5 ask=4452.5 oi=0 vol=0
+    GOLD27NOV26143500PE          ltp=5145.0 bid=1875.0 ask=3258.5 oi=0 vol=0
+    GOLD27NOV26144000CE          ltp=3139.0 bid=3085.5 ask=3138.5 oi=46 vol=26
+    GOLD27NOV26144000PE          ltp=2955.0 bid=2947.0 ask=2998.0 oi=36 vol=132
+    GOLD27NOV26144500CE          ltp=2985.0 bid=2800.0 ask=3030.0 oi=7 vol=9
+    GOLD27NOV26144500PE          ltp=5900.5 bid=3087.5 ask=3286.0 oi=0 vol=0
+    GOLD27NOV26145000CE          ltp=2689.0 bid=2672.5 ask=2694.5 oi=610 vol=2248
+    GOLD27NOV26145000PE          ltp=3518.5 bid=3502.5 ask=3526.0 oi=224 vol=1863
+  option 5m candles (3d) for GOLD27NOV26144500CE: HTTP 200 status=True n=15 2026-11-04T21:30:00+05:30..2026-11-05T19:00:00+05:30
+
+== GOLDM: live futures=5 live option rows=524
+  FUT GOLDM04DEC26FUT tok=575011 lot=100 tick=100.000000 exp=04DEC2026
+  FUT GOLDM05JAN27FUT tok=578779 lot=100 tick=100.000000 exp=05JAN2027
+  FUT GOLDM05FEB27FUT tok=581880 lot=100 tick=100.000000 exp=05FEB2027
+  option expiries: ['27Nov2026', '29Dec2026']
+  nearest expiry 27Nov2026: 272 rows, strikes 113500.0..181000.0 (n=136), lot=100, tick=50.000000
+  sample symbols: ['GOLDM27NOV26146500CE', 'GOLDM27NOV26146000CE', 'GOLDM27NOV26138500CE'] raw strike field=14650000.000000
+  FUT ltp=144106.0 depth(best)=[{'price': 144093.0, 'quantity': 100, 'orders': 1}] / [{'price': 144110.0, 'quantity': 100, 'orders': 1}]
+    GOLDM27NOV26143000CE         ltp=3656.0 bid=3657.5 ask=3674.5 oi=123000 vol=9105
+    GOLDM27NOV26143000PE         ltp=2530.0 bid=2518.0 ask=2525.5 oi=191200 vol=21435
+    GOLDM27NOV26143500CE         ltp=3398.0 bid=3386.5 ask=3405.5 oi=34400 vol=3813
+    GOLDM27NOV26143500PE         ltp=2757.0 bid=2747.0 ask=2756.0 oi=44600 vol=7362
+    GOLDM27NOV26144000CE         ltp=3151.0 bid=3135.5 ask=3144.5 oi=151500 vol=16405
+    GOLDM27NOV26144000PE         ltp=3001.0 bid=2986.5 ask=2998.5 oi=163000 vol=24671
+    GOLDM27NOV26144500CE         ltp=2880.0 bid=2889.0 ask=2900.5 oi=96300 vol=13967
+    GOLDM27NOV26144500PE         ltp=3244.5 bid=3236.5 ask=3248.0 oi=64600 vol=16633
+    GOLDM27NOV26145000CE         ltp=2655.0 bid=2654.5 ask=2663.0 oi=634000 vol=65459
+    GOLDM27NOV26145000PE         ltp=3493.5 bid=3483.0 ask=3494.5 oi=416000 vol=43886
+  option 5m candles (3d) for GOLDM27NOV26144500PE: HTTP 200 status=True n=239 2026-11-02T09:10:00+05:30..2026-11-05T21:15:00+05:30
+
+== CRUDEOIL: live futures=10 live option rows=1118
+  FUT CRUDEOIL19NOV26FUT tok=573422 lot=100 tick=100.000000 exp=19NOV2026
+  FUT CRUDEOIL18DEC26FUT tok=576264 lot=100 tick=100.000000 exp=18DEC2026
+  FUT CRUDEOIL19JAN27FUT tok=580377 lot=100 tick=100.000000 exp=19JAN2027
+  option expiries: ['17Nov2026', '16Dec2026', '15Jan2027']
+  nearest expiry 17Nov2026: 396 rows, strikes 3850.0..13700.0 (n=198), lot=100, tick=10.000000
+  sample symbols: ['CRUDEOIL17NOV267750CE', 'CRUDEOIL17NOV266900CE', 'CRUDEOIL17NOV266850CE'] raw strike field=775000.000000
+  FUT ltp=8535.0 depth(best)=[{'price': 8534.0, 'quantity': 1400, 'orders': 7}] / [{'price': 8535.0, 'quantity': 100, 'orders': 1}]
+    CRUDEOIL17NOV268450CE        ltp=419.3 bid=418.0 ask=419.1 oi=149400 vol=33747
+    CRUDEOIL17NOV268450PE        ltp=331.3 bid=331.4 ask=332.1 oi=196300 vol=22263
+    CRUDEOIL17NOV268500CE        ltp=392.5 bid=392.3 ask=393.2 oi=635600 vol=105760
+    CRUDEOIL17NOV268500PE        ltp=356.4 bid=356.5 ask=357.2 oi=733700 vol=60782
+    CRUDEOIL17NOV268550CE        ltp=369.8 bid=369.4 ask=369.8 oi=220900 vol=25975
+    CRUDEOIL17NOV268550PE        ltp=381.3 bid=381.3 ask=382.2 oi=75500 vol=8500
+    CRUDEOIL17NOV268600CE        ltp=346.1 bid=346.5 ask=347.1 oi=283000 vol=42883
+    CRUDEOIL17NOV268600PE        ltp=408.9 bid=408.1 ask=409.2 oi=132500 vol=10726
+    CRUDEOIL17NOV268650CE        ltp=325.6 bid=324.5 ask=325.6 oi=85300 vol=11978
+    CRUDEOIL17NOV268650PE        ltp=441.5 bid=436.1 ask=437.6 oi=23400 vol=1803
+  option 5m candles (3d) for CRUDEOIL17NOV268500PE: HTTP 200 status=True n=685 2026-11-02T09:00:00+05:30..2026-11-05T21:15:00+05:30
+
+== NATURALGAS: live futures=6 live option rows=552
+  FUT NATURALGAS24NOV26FUT tok=574319 lot=1250 tick=10.000000 exp=24NOV2026
+  FUT NATURALGAS28DEC26FUT tok=578249 lot=1250 tick=10.000000 exp=28DEC2026
+  FUT NATURALGAS25JAN27FUT tok=581135 lot=1250 tick=10.000000 exp=25JAN2027
+  option expiries: ['20Nov2026', '23Dec2026', '21Jan2027']
+  nearest expiry 20Nov2026: 194 rows, strikes 75.0..555.0 (n=97), lot=1250, tick=5.000000
+  sample symbols: ['NATURALGAS20NOV26205CE', 'NATURALGAS20NOV26160CE', 'NATURALGAS20NOV26140CE'] raw strike field=20500.000000
+  FUT ltp=281.7 depth(best)=[{'price': 281.6, 'quantity': 62500, 'orders': 12}] / [{'price': 281.7, 'quantity': 7500, 'orders': 3}]
+    NATURALGAS20NOV26270CE       ltp=21.2 bid=21.2 ask=21.25 oi=3156250 vol=14212
+    NATURALGAS20NOV26270PE       ltp=9.55 bid=9.55 ask=9.6 oi=10172500 vol=27304
+    NATURALGAS20NOV26275CE       ltp=18.5 bid=18.45 ask=18.55 oi=5030000 vol=27437
+    NATURALGAS20NOV26275PE       ltp=11.8 bid=11.8 ask=11.9 oi=6537500 vol=34599
+    NATURALGAS20NOV26280CE       ltp=16.1 bid=16.1 ask=16.15 oi=15240000 vol=68811
+    NATURALGAS20NOV26280PE       ltp=14.4 bid=14.35 ask=14.45 oi=14523750 vol=50978
+    NATURALGAS20NOV26285CE       ltp=14.0 bid=13.95 ask=14.05 oi=4746250 vol=28624
+    NATURALGAS20NOV26285PE       ltp=17.3 bid=17.25 ask=17.3 oi=2247500 vol=12104
+    NATURALGAS20NOV26290CE       ltp=12.1 bid=12.05 ask=12.15 oi=10091250 vol=35851
+    NATURALGAS20NOV26290PE       ltp=20.35 bid=20.35 ask=20.45 oi=8418750 vol=8019
+  option 5m candles (3d) for NATURALGAS20NOV26290PE: HTTP 200 status=True n=653 2026-11-02T09:00:00+05:30..2026-11-05T21:15:00+05:30
+
+== CRUDEOILM: live futures=10 live option rows=1120
+  FUT CRUDEOILM19NOV26FUT tok=573423 lot=10 tick=100.000000 exp=19NOV2026
+  FUT CRUDEOILM18DEC26FUT tok=576265 lot=10 tick=100.000000 exp=18DEC2026
+  FUT CRUDEOILM19JAN27FUT tok=580378 lot=10 tick=100.000000 exp=19JAN2027
+  option expiries: ['17Nov2026', '16Dec2026', '15Jan2027']
+  nearest expiry 17Nov2026: 396 rows, strikes 3850.0..13700.0 (n=198), lot=10, tick=5.000000
+  sample symbols: ['CRUDEOILM17NOV267600CE', 'CRUDEOILM17NOV267350CE', 'CRUDEOILM17NOV267250CE'] raw strike field=760000.000000
+  FUT ltp=8535.0 depth(best)=[{'price': 8533.0, 'quantity': 280, 'orders': 5}] / [{'price': 8536.0, 'quantity': 210, 'orders': 9}]
+    CRUDEOILM17NOV268450CE       ltp=425.0 bid=424.35 ask=425.35 oi=95330 vol=261115
+    CRUDEOILM17NOV268450PE       ltp=338.4 bid=338.1 ask=338.85 oi=115210 vol=188114
+    CRUDEOILM17NOV268500CE       ltp=400.55 bid=399.5 ask=400.35 oi=255600 vol=469848
+    CRUDEOILM17NOV268500PE       ltp=363.2 bid=363.0 ask=363.65 oi=283360 vol=254835
+    CRUDEOILM17NOV268550CE       ltp=377.15 bid=376.25 ask=377.0 oi=157610 vol=174124
+    CRUDEOILM17NOV268550PE       ltp=388.8 bid=388.75 ask=389.6 oi=52560 vol=58191
+    CRUDEOILM17NOV268600CE       ltp=354.2 bid=353.35 ask=354.25 oi=79780 vol=136864
+    CRUDEOILM17NOV268600PE       ltp=415.3 bid=415.55 ask=416.3 oi=31730 vol=31909
+    CRUDEOILM17NOV268650CE       ltp=333.1 bid=331.7 ask=332.5 oi=40710 vol=49388
+    CRUDEOILM17NOV268650PE       ltp=444.0 bid=443.45 ask=444.65 oi=8770 vol=9798
+  option 5m candles (3d) for CRUDEOILM17NOV268450CE: HTTP 200 status=True n=170 2026-11-04T22:05:00+05:30..2026-11-05T21:15:00+05:30
+
+== NATGASMINI: live futures=6 live option rows=552
+  FUT NATGASMINI24NOV26FUT tok=574320 lot=250 tick=10.000000 exp=24NOV2026
+  FUT NATGASMINI28DEC26FUT tok=578250 lot=250 tick=10.000000 exp=28DEC2026
+  FUT NATGASMINI25JAN27FUT tok=581136 lot=250 tick=10.000000 exp=25JAN2027
+  option expiries: ['20Nov2026', '23Dec2026', '21Jan2027']
+  nearest expiry 20Nov2026: 194 rows, strikes 75.0..555.0 (n=97), lot=250, tick=5.000000
+  sample symbols: ['NATGASMINI20NOV26335CE', 'NATGASMINI20NOV26310CE', 'NATGASMINI20NOV26280CE'] raw strike field=33500.000000
+  FUT ltp=281.6 depth(best)=[{'price': 281.6, 'quantity': 5750, 'orders': 9}] / [{'price': 281.7, 'quantity': 43750, 'orders': 13}]
+    NATGASMINI20NOV26270CE       ltp=21.3 bid=21.3 ask=21.4 oi=603000 vol=18176
+    NATGASMINI20NOV26270PE       ltp=9.6 bid=9.5 ask=9.6 oi=1500250 vol=32781
+    NATGASMINI20NOV26275CE       ltp=18.55 bid=18.55 ask=18.65 oi=1297250 vol=45800
+    NATGASMINI20NOV26275PE       ltp=11.8 bid=11.8 ask=11.9 oi=2101750 vol=67490
+    NATGASMINI20NOV26280CE       ltp=16.15 bid=16.15 ask=16.2 oi=3353000 vol=99323
+    NATGASMINI20NOV26280PE       ltp=14.4 bid=14.35 ask=14.4 oi=1947750 vol=67399
+    NATGASMINI20NOV26285CE       ltp=14.05 bid=14.0 ask=14.05 oi=1675500 vol=42818
+    NATGASMINI20NOV26285PE       ltp=17.2 bid=17.15 ask=17.25 oi=599750 vol=18063
+    NATGASMINI20NOV26290CE       ltp=12.1 bid=12.1 ask=12.15 oi=1786000 vol=37102
+    NATGASMINI20NOV26290PE       ltp=20.3 bid=20.2 ask=20.3 oi=881000 vol=12345
+  option 5m candles (3d) for NATGASMINI20NOV26280CE: HTTP 200 status=True n=685 2026-11-02T09:00:00+05:30..2026-11-05T21:15:00+05:30
+
+== GOLDPETAL: live futures=6 live option rows=0
+  FUT GOLDPETAL30NOV26FUT tok=574841 lot=1 tick=100.000000 exp=30NOV2026
+  FUT GOLDPETAL31DEC26FUT tok=578631 lot=1 tick=100.000000 exp=31DEC2026
+  FUT GOLDPETAL29JAN27FUT tok=581706 lot=1 tick=100.000000 exp=29JAN2027
+
+== GOLDGUINEA: live futures=6 live option rows=0
+  FUT GOLDGUINEA30NOV26FUT tok=574840 lot=8 tick=100.000000 exp=30NOV2026
+  FUT GOLDGUINEA31DEC26FUT tok=578630 lot=8 tick=100.000000 exp=31DEC2026
+  FUT GOLDGUINEA29JAN27FUT tok=581705 lot=8 tick=100.000000 exp=29JAN2027
