@@ -122,16 +122,16 @@
       "actual_entry_time": "2026-11-05T21:46:00+05:30",
       "tracked_entry_price": 2361.0,
       "highest_since_entry": 2364.5,
-      "lowest_since_entry": 1952.5,
+      "lowest_since_entry": 1911.0,
       "max_favorable_pct": 0.15,
-      "max_adverse_pct": -17.3,
+      "max_adverse_pct": -19.06,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-05T22:15:00+05:30",
+      "last_processed_ts": "2026-11-05T22:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -208,6 +208,12 @@
         "spot": 8511.0,
         "call_oi": 1910700.0,
         "put_oi": 1963900.0
+      },
+      {
+        "t": 1340,
+        "spot": 8516.0,
+        "call_oi": 1839700.0,
+        "put_oi": 1863300.0
       }
     ],
     "NATURALGAS": [
@@ -258,6 +264,12 @@
         "spot": 283.0,
         "call_oi": 53333750.0,
         "put_oi": 50432500.0
+      },
+      {
+        "t": 1340,
+        "spot": 282.7,
+        "call_oi": 52990000.0,
+        "put_oi": 50381250.0
       }
     ],
     "GOLDM": [
@@ -308,6 +320,12 @@
         "spot": 143100.0,
         "call_oi": 546100.0,
         "put_oi": 659300.0
+      },
+      {
+        "t": 1340,
+        "spot": 143100.0,
+        "call_oi": 553400.0,
+        "put_oi": 638500.0
       }
     ],
     "GOLD": [
@@ -358,6 +376,12 @@
         "spot": 144510.0,
         "call_oi": 756.0,
         "put_oi": 311.0
+      },
+      {
+        "t": 1340,
+        "spot": 144695.0,
+        "call_oi": 763.0,
+        "put_oi": 315.0
       }
     ]
   },
