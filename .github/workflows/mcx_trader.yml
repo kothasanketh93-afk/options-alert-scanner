@@ -1,0 +1,61 @@
+# MCX shadow runner (Crude Oil, Natural Gas, Gold, Gold Mini options) -- SHADOW ONLY, no live alerts.
+# Triggered by its OWN cron-job.org job (every 5 min, 09:00-23:30 IST = 03:30-18:00 UTC, Mon-Fri) via workflow_dispatch.
+# Separate concurrency group from the NSE `trader` workflow; state/ledger live under mcx/ on the `state` branch.
+name: MCX Trader
+
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Run even outside the MCX session (testing)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: mcx_trader
+  cancel-in-progress: false
+
+jobs:
+  mcx:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Guard against duplicate trigger in the same slot
+        id: guard
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          since=$(date -u -d '120 seconds ago' +%Y-%m-%dT%H:%M:%SZ)
+          n=$(gh api "repos/${{ github.repository }}/actions/workflows/mcx_trader.yml/runs?per_page=10" \
+              --jq "[.workflow_runs[] | select(.id < ($RUN_ID|tonumber)) | select(.created_at > \"$since\")] | length" || echo 0)
+          if [ "${n:-0}" -gt 0 ] && [ "${{ github.event.inputs.force }}" != "true" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"; echo "Duplicate trigger -- skipping."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.guard.outputs.skip != 'true'
+      - uses: actions/setup-python@v5
+        if: steps.guard.outputs.skip != 'true'
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+        if: steps.guard.outputs.skip != 'true'
+      - name: Run MCX shadow step
+        if: steps.guard.outputs.skip != 'true'
+        env:
+          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+          ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
+          UPSTOX_ACCESS_TOKEN: ${{ secrets.UPSTOX_ACCESS_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_URL: https://github.com/${{ github.repository }}.git
+          MCX_FORCE: ${{ github.event.inputs.force == 'true' && '1' || '0' }}
+        run: python scripts/mcx_main.py

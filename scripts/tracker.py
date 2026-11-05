@@ -43,8 +43,9 @@ def _pct_move(entry_price: float, price: float) -> float:
     return round((price - entry_price) / entry_price * 100, 2)
 
 
-def _is_after_market_close(dt: datetime) -> bool:
-    return (dt.hour, dt.minute) >= MARKET_CLOSE_HHMM
+def _is_after_market_close(dt: datetime, close_hhmm=None) -> bool:
+    """close_hhmm: per-trade override (MCX trades carry market_close_hhmm); default = NSE close."""
+    return (dt.hour, dt.minute) >= tuple(close_hhmm or MARKET_CLOSE_HHMM)
 
 
 def _maybe_apply_trailing_stop(trade: dict, ts: datetime) -> dict:
@@ -126,7 +127,7 @@ def process_trade_candles(trade: dict, candles: list) -> list:
                 trade["last_processed_ts"] = candle["timestamp"]
                 continue
 
-            elif _is_after_market_close(ts):
+            elif _is_after_market_close(ts, trade.get("market_close_hhmm")):
                 trade["status"] = "NOT_ENTERED"
                 events.append({"type": "NOT_ENTERED", "trade": trade})
 
@@ -202,7 +203,7 @@ def process_trade_candles(trade: dict, candles: list) -> list:
                 trade["last_processed_ts"] = candle["timestamp"]
                 continue
 
-            if _is_after_market_close(ts):
+            if _is_after_market_close(ts, trade.get("market_close_hhmm")):
                 trade["status"] = "EOD_CLOSED"
                 trade["final_status"] = "EOD_CLOSED"
                 trade["eod_last_price"] = c
@@ -281,7 +282,7 @@ def process_trade_candles(trade: dict, candles: list) -> list:
                 trade["last_processed_ts"] = candle["timestamp"]
                 continue
 
-            if _is_after_market_close(ts):
+            if _is_after_market_close(ts, trade.get("market_close_hhmm")):
                 trade["status"] = "EOD_CLOSED"
                 trade["final_status"] = "T1_HIT_THEN_EOD"
                 trade["eod_last_price"] = c
