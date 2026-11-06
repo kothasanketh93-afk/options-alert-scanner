@@ -9,6 +9,7 @@ It is BEFORE brokerage/STT/slippage. NOT_ENTERED/AMBIGUOUS rows have no result_p
 Trailing-stop moves update stop_loss in place, so SL_HIT after a trail is approximate.
 """
 import csv
+from datetime import date, datetime
 import io
 from pathlib import Path
 
@@ -26,7 +27,8 @@ COLUMNS = ["trade_id", "date", "engine", "strategy", "symbol", "direction", "str
            "stop_loss", "target_1", "target_2", "final_status", "t1_hit", "result_pct",
            "mfe_pct", "mae_pct", "grade", "trade_score", "wide_prev_day",
            "expiry_day", "entry_oi", "entry_volume", "spread_pct", "cost_pct_assumed", "net_result_pct",
-           "be_after_t1_pct", "half_t1_plus_be_pct", "entry_bucket", "trail_after_t1_pct"]
+           "be_after_t1_pct", "half_t1_plus_be_pct", "entry_bucket", "trail_after_t1_pct",
+           "weekday", "signal_delay_min", "hold_min", "exit_time", "risk_pct", "reward_t1_pct", "rr_t1", "spot_at_alert", "day_tags"]
 
 
 def result_pct(trade: dict):
@@ -103,11 +105,71 @@ def entry_bucket(alert_time) -> str:
     return "1400+"
 
 
+EVENTS_FILE = Path(__file__).resolve().parent / "data" / "events.csv"     # optional, user-maintained: date,scope,note (scope NSE|MCX|ALL|<SYMBOL>)
+_MCX = {"CRUDEOIL", "NATURALGAS", "GOLDM", "GOLD"}
+
+
+def _flt(x):
+    try:
+        return None if x in ("", None) else float(x)
+    except (TypeError, ValueError):
+        return None
+
+
+def _dt(x):
+    try:
+        return datetime.fromisoformat(str(x))
+    except (TypeError, ValueError):
+        return None
+
+
+def day_tags(date_str, symbol) -> str:
+    """Context tags for the trading day (rule-based plus optional data/events.csv), ';'-joined. Used to slice results later."""
+    tags = []
+    try:
+        d = date.fromisoformat(str(date_str))
+        if symbol in _MCX:
+            if d.weekday() == 4 and d.day <= 7:
+                tags.append("US_PAYROLLS")
+            if d.weekday() == 2 and symbol == "CRUDEOIL":
+                tags.append("EIA_CRUDE")
+            if d.weekday() == 3 and symbol == "NATURALGAS":
+                tags.append("EIA_GAS_STORAGE")
+        if EVENTS_FILE.exists():
+            with open(EVENTS_FILE, newline="") as f:
+                for r in csv.DictReader(r for r in f if not r.lstrip().startswith("#")):
+                    if r.get("date") == str(date_str) and r.get("scope", "ALL").upper() in (
+                            "ALL", "MCX" if symbol in _MCX else "NSE", str(symbol).upper()):
+                        tags.append((r.get("note") or "EVENT").strip().replace(";", ","))
+    except Exception:
+        pass
+    return ";".join(tags)
+
+
+def derive_context(row: dict, date_str=None) -> dict:
+    """Fields computable from a ledger row alone (also used to backfill older rows when the schema grows)."""
+    out = {}
+    a, e = _dt(row.get("alert_time")), _dt(row.get("actual_entry_time"))
+    if a:
+        out["weekday"] = a.strftime("%a")
+    if a and e:
+        out["signal_delay_min"] = round((e - a).total_seconds() / 60.0, 1)
+    entry, sl, t1 = _flt(row.get("entry_price")), _flt(row.get("stop_loss")), _flt(row.get("target_1"))
+    if entry and sl is not None and entry > 0:
+        out["risk_pct"] = round((entry - sl) / entry * 100, 2)
+        if t1 is not None:
+            out["reward_t1_pct"] = round((t1 - entry) / entry * 100, 2)
+            if entry > sl:
+                out["rr_t1"] = round((t1 - entry) / (entry - sl), 2)
+    out["day_tags"] = day_tags(date_str or row.get("date"), row.get("symbol"))
+    return out
+
+
 def _row(trade: dict, engine: str, date_str: str) -> dict:
     status = trade.get("final_status") or trade.get("status")
     res = result_pct(trade)
     be, half = t1_variants(trade, res)
-    return {
+    row = {
         "trade_id": trade["trade_id"], "date": date_str, "engine": engine,
         "strategy": trade.get("strategy"), "symbol": trade.get("symbol"),
         "direction": trade.get("direction"), "strike": trade.get("strike"),
@@ -128,6 +190,15 @@ def _row(trade: dict, engine: str, date_str: str) -> dict:
         "entry_bucket": entry_bucket(trade.get("alert_time")),
         "trail_after_t1_pct": trail_variant(trade, res),
     }
+    row.update(derive_context(dict(row, entry_price=trade.get("tracked_entry_price"),
+                                   stop_loss=trade.get("initial_stop_loss", row["stop_loss"])), date_str))
+    exit_ts = trade.get("sl_hit_time") or trade.get("t2_hit_time") or trade.get("last_processed_ts")
+    x_dt, e_dt = _dt(exit_ts), _dt(trade.get("actual_entry_time"))
+    row["exit_time"] = exit_ts
+    if x_dt and e_dt:
+        row["hold_min"] = round((x_dt - e_dt).total_seconds() / 60.0, 1)
+    row["spot_at_alert"] = trade.get("spot_price")
+    return row
 
 
 def append_resolved(state: dict, ledger_path: Path) -> int:
@@ -146,6 +217,9 @@ def append_resolved(state: dict, ledger_path: Path) -> int:
                 w0.writeheader()
                 for r0 in old_rows:
                     r0.setdefault("entry_bucket", entry_bucket(r0.get("alert_time")))
+                    for k0, v0 in derive_context(r0).items():
+                        if r0.get(k0) in (None, ""):
+                            r0[k0] = v0
                 w0.writerows(old_rows)
     new_rows = []
     for key, engine in STATE_KEYS:

@@ -20,6 +20,7 @@ def new_trade_record(setup: dict, trade_id: str, alert_dt: datetime, display_lab
         "entry_low": setup["entry_low"],
         "entry_high": setup["entry_high"],
         "stop_loss": setup["stop_loss"],
+        "initial_stop_loss": setup["stop_loss"],   # stop_loss is raised in place by the trailing logic; this keeps the original risk
         "target_1": setup["target_1"],
         "target_2": setup["target_2"],
         "session": setup["session"],

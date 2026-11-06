@@ -1,0 +1,6 @@
+# Market-moving event days, used only to TAG ledger rows (day_tags column) so results can be sliced later. Never filters trades.
+# scope: NSE | MCX | ALL | a symbol (NIFTY, CRUDEOIL ...). Add rows as dates are confirmed; do not guess dates.
+# Rule-based tags (US payrolls first Friday, EIA crude Wednesday, EIA gas storage Thursday) are generated in code.
+date,scope,note
+2026-12-04,NSE,RBI MPC decision (last day of Dec 2-4 meeting)
+2027-02-05,NSE,RBI MPC decision (last day of Feb 3-5 meeting)
