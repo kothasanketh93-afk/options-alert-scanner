@@ -57,7 +57,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T11:45:00+05:30",
+      "last_processed_ts": "2026-11-06T11:50:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -778,6 +778,12 @@
         "spot": 141707.0,
         "call_oi": 470.0,
         "put_oi": 660.0
+      },
+      {
+        "t": 710,
+        "spot": 141700.0,
+        "call_oi": 128.0,
+        "put_oi": 116.0
       }
     ],
     "NATURALGAS": [
@@ -894,6 +900,12 @@
         "spot": 281.8,
         "call_oi": 35846250.0,
         "put_oi": 37277500.0
+      },
+      {
+        "t": 710,
+        "spot": 282.8,
+        "call_oi": 47955000.0,
+        "put_oi": 44528750.0
       }
     ]
   },
