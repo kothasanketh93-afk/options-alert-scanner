@@ -101,7 +101,33 @@ def resolve_contracts(master: list, name: str, today: datetime):
     chain = [x for x in opts if _exp(x) == oexp]
     for x in chain:
         x["_strike"] = float(x["strike"]) / 100.0
-    return {"fut": futs[0], "chain": chain, "expiry": oexp.strftime("%Y-%m-%d"), "lot": int(float(chain[0].get("lotsize") or 1))}
+    # opt_fut = the future the options settle against (first expiry on/after the option expiry): its live price decides ATM.
+    opt_fut = next((f for f in futs if _exp(f) >= oexp), futs[0])
+    return {"fut": futs[0], "futs": futs[:3], "opt_fut": opt_fut, "chain": chain, "expiry": oexp.strftime("%Y-%m-%d"),
+            "lot": int(float(chain[0].get("lotsize") or 1))}
+
+
+def pick_signal_future(broker, st: dict, name: str, c: dict) -> dict:
+    """Candles for pattern detection come from the MOST LIQUID of the first three futures (highest open interest), fixed for
+    the day once chosen. The nearest contract is not always the liquid one (2026-11-05: GOLDM Dec traded in thin, flat bars
+    while GOLDM Jan was the real market, which produced a false FVG signal)."""
+    chosen = st.setdefault("sig_fut", {})
+    tok = chosen.get(name)
+    futs = c.get("futs") or [c["fut"]]
+    if tok:
+        hit = next((f for f in futs if f["token"] == tok), None)
+        if hit:
+            return hit
+    try:
+        qs = broker._batch_quotes("MCX", [f["token"] for f in futs])
+        best = max(futs, key=lambda f: float((qs.get(f["token"]) or {}).get("opnInterest") or 0))
+        if float((qs.get(best["token"]) or {}).get("opnInterest") or 0) <= 0:
+            best = c["opt_fut"]
+    except BrokerAPIError:
+        best = c["opt_fut"]
+    chosen[name] = best["token"]
+    log.info("MCX %s signal future = %s (opt future %s)", name, best["symbol"], c["opt_fut"]["symbol"])
+    return best
 
 
 def _leg(chain, strike, direction):
@@ -122,11 +148,18 @@ def _quote_fields(q: dict) -> dict:
 # --- detection -------------------------------------------------------------------------------------------------
 def scan_commodity(broker, st: dict, name: str, c: dict, now: datetime):
     today_str = st["date"]
-    fut_key = f"MCX|{c['fut']['token']}"
+    sig_fut = pick_signal_future(broker, st, name, c)
+    fut_key = f"MCX|{sig_fut['token']}"
     since = (now - timedelta(days=3)).replace(hour=9, minute=0, second=0, microsecond=0).isoformat()
     allc = broker.get_candles(fut_key, "5minute", since_iso=since)
     today = [x for x in allc if x["timestamp"][:10] == today_str]
     if len(today) < 4:
+        return
+    elapsed = (now.hour * 60 + now.minute) - (SESSION_OPEN[0] * 60 + SESSION_OPEN[1])
+    if elapsed >= 30 and len(today) < 0.6 * (elapsed // 5):          # thin / gappy series: patterns on it are not trustworthy
+        key = f"{name}:sparse_candles"
+        st["rejects"][key] = st["rejects"].get(key, 0) + 1
+        log.warning("MCX %s: only %d of ~%d 5m candles on %s -- skipping scan.", name, len(today), elapsed // 5, sig_fut["symbol"])
         return
     atr = compute_atr(allc[-60:])
     if not atr or atr <= 0:
@@ -140,7 +173,9 @@ def scan_commodity(broker, st: dict, name: str, c: dict, now: datetime):
     # OI-flow snapshot (ATM +- FLOW_RING strikes) every run
     spot = today[-1]["close"]
     strikes = sorted({x["_strike"] for x in c["chain"]})
-    atm = min(strikes, key=lambda s: abs(s - spot))
+    opt_q = broker._batch_quotes("MCX", [c["opt_fut"]["token"]]).get(c["opt_fut"]["token"], {})
+    spot_opt = opt_q.get("ltp") or spot
+    atm = min(strikes, key=lambda s: abs(s - spot_opt))
     i = strikes.index(atm)
     ring = strikes[max(0, i - FLOW_RING): i + FLOW_RING + 1]
     toks = [x["token"] for x in c["chain"] if x["_strike"] in ring]
@@ -157,12 +192,12 @@ def scan_commodity(broker, st: dict, name: str, c: dict, now: datetime):
             continue
         if any(t["strategy"] == strategy and t["symbol"] == name for t in st["mcx_shadow_trades"].values()):
             continue
-        create_trade(broker, st, name, c, strategy, sig, atr, ph, pl, qs, now)
+        create_trade(broker, st, name, c, strategy, sig, atr, ph, pl, qs, now, spot_opt)
 
 
-def create_trade(broker, st, name, c, strategy, sig, atr, ph, pl, qs, now):
+def create_trade(broker, st, name, c, strategy, sig, atr, ph, pl, qs, now, spot_opt=None):
     direction = sig["direction"]
-    spot = sig["signal_close"]
+    spot = spot_opt or sig["signal_close"]      # ATM comes from the options' own underlying, never from the signal series
     strikes = sorted({x["_strike"] for x in c["chain"]})
     atm = min(strikes, key=lambda s: abs(s - spot))
     leg = _leg(c["chain"], atm, direction)
@@ -211,7 +246,7 @@ def create_trade(broker, st, name, c, strategy, sig, atr, ph, pl, qs, now):
               "engine": "mcx", "market_close_hhmm": list(TRADE_CLOSE_HHMM), "delta_proxy": ATM_DELTA_PROXY,
               "lot_multiplier": LOT_MULTIPLIER[name], "level_name": sig.get("level_name"),
               "sweep_extreme": sig.get("extreme"), "fvg": sig.get("fvg"),
-              "entry_oi": qf["oi"], "entry_volume": qf["volume"]})
+              "entry_oi": qf["oi"], "entry_volume": qf["volume"], "signal_future_token": (st.get("sig_fut") or {}).get(name)})
     st["mcx_shadow_trades"][trade_id] = t
     notify_created(t)
     log.info("MCX_SHADOW_CANDIDATE_CREATED %s %s %s strike=%s prem=%s sl=%s t1=%s", strategy, name, direction, atm, prem, lv["stop_loss"], lv["target_1"])

@@ -117,3 +117,26 @@ def test_prune_dated_files(tmp_path, monkeypatch):
         (d / name).write_text("x")
     assert state_mod.prune_dated_files("instrument_master", 14, today="2026-11-05") == 1
     assert sorted(p.name for p in d.iterdir()) == ["2026-10-25.json.gz", "2026-11-05.json.gz", "notes.txt"]
+
+
+def test_pick_signal_future_uses_open_interest_and_sticks(monkeypatch):
+    futs = [{"token": "a", "symbol": "GOLDM04DEC26FUT"}, {"token": "b", "symbol": "GOLDM05JAN27FUT"}, {"token": "c", "symbol": "GOLDM05FEB27FUT"}]
+    c = {"fut": futs[0], "futs": futs, "opt_fut": futs[0]}
+
+    class B:
+        calls = 0
+
+        def _batch_quotes(self, ex, toks):
+            B.calls += 1
+            return {"a": {"opnInterest": 120}, "b": {"opnInterest": 90000}, "c": {"opnInterest": 3000}}
+
+    st = {}
+    assert mcx_main.pick_signal_future(B(), st, "GOLDM", c)["token"] == "b"
+    assert mcx_main.pick_signal_future(B(), st, "GOLDM", c)["token"] == "b" and B.calls == 1     # chosen once per day
+
+
+def test_resolve_contracts_option_underlying_is_first_future_on_or_after_option_expiry():
+    m = [_row("GOLDM", "CE", 144000, "27Nov2026", tok="o"), _row("GOLDM", "", 0, "05Nov2026", "FUTCOM", "f0"),
+         _row("GOLDM", "", 0, "04Dec2026", "FUTCOM", "f1"), _row("GOLDM", "", 0, "05Jan2027", "FUTCOM", "f2")]
+    c = mcx_main.resolve_contracts(m, "GOLDM", datetime(2026, 11, 6, 10, 0))
+    assert c["opt_fut"]["token"] == "f1" and [f["token"] for f in c["futs"]] == ["f1", "f2"]
