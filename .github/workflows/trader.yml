@@ -41,28 +41,11 @@ on:
   # twice. Once the native schedule has proven reliable, the Trader-1..8 jobs on cron-job.org can be disabled.
   # main.py's session-window and holiday_guard checks still apply to every run.
   schedule:
-    # --- Phase 1: 09:15-11:30 IST -- every 5 min ---
-    - cron: '15,20,25,30,35,40,45,50,55 9 * * 1-5'
-      timezone: 'Asia/Kolkata'
-    - cron: '*/5 10 * * 1-5'
-      timezone: 'Asia/Kolkata'
-    - cron: '0,5,10,15,20,25,30 11 * * 1-5'
-      timezone: 'Asia/Kolkata'
-    # --- Phase 2: 11:35-13:40 IST -- every 5 min (was every 15 min "lunch gap" to save Actions minutes; the repo is
-    #     public so minutes are free, and 15-min gaps made the scanner miss fresh 5-minute-candle signals; changed 2026-11-05) ---
-    - cron: '35,40,45,50,55 11 * * 1-5'
-      timezone: 'Asia/Kolkata'
-    - cron: '*/5 12 * * 1-5'
-      timezone: 'Asia/Kolkata'
-    - cron: '0,5,10,15,20,25,30,35,40 13 * * 1-5'
-      timezone: 'Asia/Kolkata'
-    # --- Phase 3: 13:45-15:30 IST -- every 5 min (15:30 run also writes end-of-day data) ---
-    - cron: '45,50,55 13 * * 1-5'
-      timezone: 'Asia/Kolkata'
-    - cron: '*/5 14 * * 1-5'
-      timezone: 'Asia/Kolkata'
-    - cron: '0,5,10,15,20,25,30 15 * * 1-5'
-      timezone: 'Asia/Kolkata'
+    # 2026-11-06: crons are evaluated in UTC (the `timezone: Asia/Kolkata` key did NOT take effect -- native runs fired
+    # 14:45-22:00 IST, after the market). Market window 09:15-15:30 IST = 03:45-10:00 UTC, every 5 min.
+    - cron: '45,50,55 3 * * 1-5'
+    - cron: '*/5 4-9 * * 1-5'
+    - cron: '0 10 * * 1-5'
   workflow_dispatch: {}
 
 # One run at a time: README.md's "concurrency-protected" -- prevents
