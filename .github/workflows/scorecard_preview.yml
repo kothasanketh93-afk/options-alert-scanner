@@ -1,0 +1,31 @@
+name: Scorecard Preview
+
+# Manual dispatch only: sends the weekly strategy scorecard image (from the state branch) to Telegram once.
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Trading date (YYYY-MM-DD)'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: state
+          path: statebranch
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - name: Send scorecard
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/send_scorecard_preview.py statebranch "${{ github.event.inputs.date }}"

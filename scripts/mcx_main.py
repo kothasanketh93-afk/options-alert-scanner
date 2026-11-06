@@ -368,6 +368,18 @@ def send_reports(st: dict, now: datetime):
         if data:
             tg.send_photo(png, caption=f"MCX weekly trade report {data['start']} to {data['end']} (one lot per trade, shadow data)")
         st["weekly_sent"] = True
+    if now.weekday() == 4 and not st.get("scorecard_sent"):
+        st["scorecard_sent"] = True                       # set first: a render problem must not repeat every run
+        try:
+            import strategy_scorecard
+            png = os.path.join(tempfile.mkdtemp(), f"scorecard_{st['date']}.png")
+            clone = state_mod.STATE_CLONE_DIR
+            wk = strategy_scorecard.render_week(clone / "ledger" / "outcomes.csv", clone / MCX_DIR / "ledger" / "outcomes.csv",
+                                                st["date"], png)
+            if wk:
+                tg.send_photo(png, caption=f"Weekly strategy scorecard {wk[0]} to {wk[1]} (shadow data, provisional)")
+        except Exception as exc:
+            log.error("Strategy scorecard failed (%s: %s) -- continuing.", type(exc).__name__, exc)
 
 
 def main():
