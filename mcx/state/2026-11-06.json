@@ -57,7 +57,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T11:20:00+05:30",
+      "last_processed_ts": "2026-11-06T11:25:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -137,7 +137,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T11:19:00+05:30",
+      "last_processed_ts": "2026-11-06T11:25:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -508,6 +508,12 @@
         "spot": 8620.0,
         "call_oi": 1174600.0,
         "put_oi": 1339400.0
+      },
+      {
+        "t": 685,
+        "spot": 8633.0,
+        "call_oi": 1195100.0,
+        "put_oi": 1352900.0
       }
     ],
     "GOLDM": [
@@ -630,6 +636,12 @@
         "spot": 143146.0,
         "call_oi": 629900.0,
         "put_oi": 824700.0
+      },
+      {
+        "t": 685,
+        "spot": 143288.0,
+        "call_oi": 631400.0,
+        "put_oi": 827300.0
       }
     ],
     "GOLD": [
@@ -734,6 +746,12 @@
         "spot": 141637.0,
         "call_oi": 473.0,
         "put_oi": 653.0
+      },
+      {
+        "t": 685,
+        "spot": 141709.0,
+        "call_oi": 473.0,
+        "put_oi": 660.0
       }
     ],
     "NATURALGAS": [
@@ -832,6 +850,12 @@
         "spot": 281.8,
         "call_oi": 35778750.0,
         "put_oi": 37327500.0
+      },
+      {
+        "t": 685,
+        "spot": 281.5,
+        "call_oi": 35680000.0,
+        "put_oi": 37338750.0
       }
     ]
   },
