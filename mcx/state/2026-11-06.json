@@ -57,7 +57,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T11:15:00+05:30",
+      "last_processed_ts": "2026-11-06T11:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -78,7 +78,8 @@
       "entry_volume": 3552,
       "signal_future_token": "575011",
       "be_tracked": true,
-      "trail_sl": 3350.19
+      "trail_sl": 3350.19,
+      "trail_exit_price": 3350.19
     },
     "MCX-oi_flow-GOLD-PE-20261106-0945-01": {
       "trade_id": "MCX-oi_flow-GOLD-PE-20261106-0945-01",
@@ -136,7 +137,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T11:06:00+05:30",
+      "last_processed_ts": "2026-11-06T11:19:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -501,6 +502,12 @@
         "spot": 8622.0,
         "call_oi": 924800.0,
         "put_oi": 1198100.0
+      },
+      {
+        "t": 680,
+        "spot": 8620.0,
+        "call_oi": 1174600.0,
+        "put_oi": 1339400.0
       }
     ],
     "GOLDM": [
@@ -819,6 +826,12 @@
         "spot": 281.9,
         "call_oi": 35761250.0,
         "put_oi": 37287500.0
+      },
+      {
+        "t": 680,
+        "spot": 281.8,
+        "call_oi": 35778750.0,
+        "put_oi": 37327500.0
       }
     ]
   },
