@@ -42,12 +42,12 @@ on:
   # main.py's session-window and holiday_guard checks still apply to every run.
   schedule:
     # Crons are evaluated in UTC (the `timezone: Asia/Kolkata` key did NOT take effect). Market window 09:15-15:30 IST
-    # = 03:45-10:00 UTC. cron-job.org already fires on every 5th minute (:00, :05 ...); these native runs are
-    # deliberately OFFSET by +3 min (:03, :08 ...), i.e. a second pass between the external ones, so fills / stops /
-    # targets are noticed ~3 min sooner and a missed external trigger is covered. Offset is 3 (not 2.5: GitHub cron has
-    # 1-min granularity) so it clears the 150 s duplicate guard below. GitHub cron can be delayed -- best-effort only.
-    - cron: '48,53,58 3 * * 1-5'
-    - cron: '3,8,13,18,23,28,33,38,43,48,53,58 4-9 * * 1-5'
+    # = 03:45-10:00 UTC. cron-job.org fires on every 5th minute (:00, :05 ...). These native runs fire at :02, :07 ...
+    # and the "Align" step below waits until exactly :02:30 / :07:30 ... before scanning, so the scanner passes
+    # at xx:00 (external) and xx:02:30 (native), every 5 min. GitHub cron has 1-min granularity and can be delayed:
+    # alignment is best-effort (no wait if the runner starts late). Window 09:17-15:27 IST.
+    - cron: '47,52,57 3 * * 1-5'
+    - cron: '2,7,12,17,22,27,32,37,42,47,52,57 4-9 * * 1-5'
   workflow_dispatch: {}
 
 # One run at a time: README.md's "concurrency-protected" -- prevents
@@ -80,9 +80,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RUN_ID: ${{ github.run_id }}
         run: |
-          # An EARLIER-created Trader run in the last 150 s means this slot was already triggered
+          # An EARLIER-created Trader run in the last 90 s means this slot was already triggered
           # (e.g. cron-job.org + native schedule). Only the later one skips, so both can never skip.
-          since=$(date -u -d '150 seconds ago' +%Y-%m-%dT%H:%M:%SZ)
+          since=$(date -u -d '90 seconds ago' +%Y-%m-%dT%H:%M:%SZ)
           n=$(gh api "repos/${{ github.repository }}/actions/workflows/trader.yml/runs?per_page=10" \
               --jq "[.workflow_runs[] | select(.id < ($RUN_ID|tonumber)) | select(.created_at > \"$since\")] | length" || echo 0)
           if [ "${n:-0}" -gt 0 ]; then
@@ -104,6 +104,14 @@ jobs:
       - name: Install dependencies
         if: steps.guard.outputs.skip != 'true'
         run: pip install -r requirements.txt
+
+      - name: Align scan start to :02:30 / :07:30 ... (native schedule only)
+        if: steps.guard.outputs.skip != 'true' && github.event_name == 'schedule'
+        run: |
+          now=$(date +%s); base=$(( now / 300 * 300 )); target=$(( base + 150 ))
+          # wait only if we are inside [:02:00, :02:30) of the 5-min block; a late runner just goes
+          if [ "$now" -ge $(( base + 120 )) ] && [ "$now" -lt "$target" ]; then sleep $(( target - now )); fi
+          date -u +"scan starts %H:%M:%S UTC"
 
       - name: Run trader
         if: steps.guard.outputs.skip != 'true'
