@@ -383,7 +383,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T13:39:00+05:30",
+      "last_processed_ts": "2026-11-06T13:40:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -484,7 +484,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T13:39:00+05:30",
+      "last_processed_ts": "2026-11-06T13:40:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -638,7 +638,7 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 770,
+    "scanned_symbols": 784,
     "valid_signals": 31,
     "rejected_signals": 1037,
     "api_failures": 0,
@@ -648,19 +648,19 @@
     "11:30",
     "13:30"
   ],
-  "last_run_at": "2026-11-06T13:38:27+05:30",
+  "last_run_at": "2026-11-06T13:41:13+05:30",
   "micro_last_minute": [
     "2026-11-06",
-    815
+    821
   ],
   "tape_seen": {
     "NIFTY": [
       "2026-11-06",
-      "13:30"
+      "13:35"
     ],
     "BANKNIFTY": [
       "2026-11-06",
-      "13:30"
+      "13:35"
     ]
   },
   "fib_pivot_shadow_trades": {
@@ -735,7 +735,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T13:37:00+05:30",
+      "last_processed_ts": "2026-11-06T13:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -1410,7 +1410,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T13:37:00+05:30",
+      "last_processed_ts": "2026-11-06T13:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -1574,7 +1574,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T13:37:00+05:30",
+      "last_processed_ts": "2026-11-06T13:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -2622,7 +2622,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T13:37:00+05:30",
+      "last_processed_ts": "2026-11-06T13:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
@@ -2910,7 +2910,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T13:37:00+05:30",
+      "last_processed_ts": "2026-11-06T13:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
@@ -3493,7 +3493,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T13:37:00+05:30",
+      "last_processed_ts": "2026-11-06T13:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
@@ -3685,7 +3685,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T13:37:00+05:30",
+      "last_processed_ts": "2026-11-06T13:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -3778,7 +3778,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T13:37:00+05:30",
+      "last_processed_ts": "2026-11-06T13:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -4200,7 +4200,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T13:37:00+05:30",
+      "last_processed_ts": "2026-11-06T13:39:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -4279,9 +4279,9 @@
       "final_status": null,
       "actual_entry_time": "2026-11-06T10:13:00+05:30",
       "tracked_entry_price": 682.75,
-      "highest_since_entry": 924.3,
+      "highest_since_entry": 927.8,
       "lowest_since_entry": 605.2,
-      "max_favorable_pct": 35.38,
+      "max_favorable_pct": 35.89,
       "max_adverse_pct": -11.36,
       "t1_hit": true,
       "t1_hit_time": "2026-11-06T13:16:00+05:30",
@@ -4289,7 +4289,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T13:37:00+05:30",
+      "last_processed_ts": "2026-11-06T13:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -4307,7 +4307,7 @@
       "entry_volume": 2263080,
       "shadow_notified": true,
       "be_tracked": true,
-      "trail_sl": 827.525
+      "trail_sl": 831.025
     },
     "SWEEP-fvg-MIDCPNIFTY-CE-20261106-1020-01": {
       "trade_id": "SWEEP-fvg-MIDCPNIFTY-CE-20261106-1020-01",
