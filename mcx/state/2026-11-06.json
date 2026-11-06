@@ -57,7 +57,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T13:40:00+05:30",
+      "last_processed_ts": "2026-11-06T13:45:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -674,6 +674,12 @@
         "spot": 8535.0,
         "call_oi": 1100000.0,
         "put_oi": 1649000.0
+      },
+      {
+        "t": 825,
+        "spot": 8495.0,
+        "call_oi": 741100.0,
+        "put_oi": 1574100.0
       }
     ],
     "GOLDM": [
@@ -910,6 +916,12 @@
         "spot": 143530.0,
         "call_oi": 514000.0,
         "put_oi": 387000.0
+      },
+      {
+        "t": 825,
+        "spot": 143518.0,
+        "call_oi": 509100.0,
+        "put_oi": 384000.0
       }
     ],
     "GOLD": [
@@ -1096,6 +1108,12 @@
       {
         "t": 820,
         "spot": 142000.0,
+        "call_oi": 131.0,
+        "put_oi": 114.0
+      },
+      {
+        "t": 825,
+        "spot": 141861.0,
         "call_oi": 131.0,
         "put_oi": 114.0
       }
