@@ -689,7 +689,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T18:52:00+05:30",
+      "last_processed_ts": "2026-11-06T19:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "ema_pb",
@@ -724,12 +724,6 @@
   },
   "flow_snap": {
     "CRUDEOIL": [
-      {
-        "t": 615,
-        "spot": 8666.0,
-        "call_oi": 1124100.0,
-        "put_oi": 1327900.0
-      },
       {
         "t": 620,
         "spot": 8660.0,
@@ -1203,15 +1197,15 @@
         "spot": 8535.0,
         "call_oi": 2442500.0,
         "put_oi": 2724400.0
+      },
+      {
+        "t": 1141,
+        "spot": 8547.0,
+        "call_oi": 2445700.0,
+        "put_oi": 2752100.0
       }
     ],
     "GOLDM": [
-      {
-        "t": 675,
-        "spot": 143146.0,
-        "call_oi": 629900.0,
-        "put_oi": 824700.0
-      },
       {
         "t": 685,
         "spot": 143288.0,
@@ -1685,15 +1679,15 @@
         "spot": 143693.0,
         "call_oi": 834300.0,
         "put_oi": 657600.0
+      },
+      {
+        "t": 1141,
+        "spot": 143667.0,
+        "call_oi": 1010800.0,
+        "put_oi": 1164500.0
       }
     ],
     "GOLD": [
-      {
-        "t": 615,
-        "spot": 142061.0,
-        "call_oi": 119.0,
-        "put_oi": 120.0
-      },
       {
         "t": 620,
         "spot": 142099.0,
@@ -2167,15 +2161,15 @@
         "spot": 142148.0,
         "call_oi": 205.0,
         "put_oi": 150.0
+      },
+      {
+        "t": 1141,
+        "spot": 142090.0,
+        "call_oi": 473.0,
+        "put_oi": 640.0
       }
     ],
     "NATURALGAS": [
-      {
-        "t": 670,
-        "spot": 281.6,
-        "call_oi": 35843750.0,
-        "put_oi": 37207500.0
-      },
       {
         "t": 675,
         "spot": 281.9,
@@ -2649,6 +2643,12 @@
         "spot": 283.4,
         "call_oi": 56180000.0,
         "put_oi": 53821250.0
+      },
+      {
+        "t": 1141,
+        "spot": 283.0,
+        "call_oi": 55988750.0,
+        "put_oi": 53900000.0
       }
     ]
   },
@@ -2660,10 +2660,10 @@
     "GOLD:spread_9.7pct": 1,
     "GOLD:spread_5.3pct": 1,
     "GOLD:spread_8.9pct": 1,
-    "CRUDEOIL:news_blackout": 1,
-    "NATURALGAS:news_blackout": 1,
-    "GOLDM:news_blackout": 1,
-    "GOLD:news_blackout": 1
+    "CRUDEOIL:news_blackout": 2,
+    "NATURALGAS:news_blackout": 2,
+    "GOLDM:news_blackout": 2,
+    "GOLD:news_blackout": 2
   },
   "summary_sent": false,
   "sig_fut": {
