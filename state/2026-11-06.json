@@ -383,7 +383,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T11:10:00+05:30",
+      "last_processed_ts": "2026-11-06T11:12:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -470,23 +470,24 @@
           "trade_score": 49
         }
       ],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
+      "actual_entry_time": "2026-11-06T11:11:00+05:30",
+      "tracked_entry_price": 5.6,
+      "highest_since_entry": 5.6,
+      "lowest_since_entry": 5.5,
       "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "max_adverse_pct": -1.79,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T11:10:46.906084+05:30",
+      "last_processed_ts": "2026-11-06T11:12:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
       ],
       "streak_counted": false,
       "strategy": "trade_score",
