@@ -119,20 +119,44 @@ def test_prune_dated_files(tmp_path, monkeypatch):
     assert sorted(p.name for p in d.iterdir()) == ["2026-10-25.json.gz", "2026-11-05.json.gz", "notes.txt"]
 
 
-def test_pick_signal_future_uses_open_interest_and_sticks(monkeypatch):
+def test_pick_signal_future_uses_volume_not_open_interest_and_sticks():
     futs = [{"token": "a", "symbol": "GOLDM04DEC26FUT"}, {"token": "b", "symbol": "GOLDM05JAN27FUT"}, {"token": "c", "symbol": "GOLDM05FEB27FUT"}]
     c = {"fut": futs[0], "futs": futs, "opt_fut": futs[0]}
 
     class B:
         calls = 0
 
-        def _batch_quotes(self, ex, toks):
+        def get_daily_candles(self, key, n):
             B.calls += 1
-            return {"a": {"opnInterest": 120}, "b": {"opnInterest": 90000}, "c": {"opnInterest": 3000}}
+            return [{"volume": {"MCX|a": 120, "MCX|b": 90000, "MCX|c": 3000}[key]}]
+
+        def _batch_quotes(self, ex, toks):
+            return {"a": {"opnInterest": 999999}, "b": {"opnInterest": 5}, "c": {"opnInterest": 1}}   # OI would wrongly pick "a"
 
     st = {}
     assert mcx_main.pick_signal_future(B(), st, "GOLDM", c)["token"] == "b"
-    assert mcx_main.pick_signal_future(B(), st, "GOLDM", c)["token"] == "b" and B.calls == 1     # chosen once per day
+    n = B.calls
+    assert mcx_main.pick_signal_future(B(), st, "GOLDM", c)["token"] == "b" and B.calls == n     # chosen once per day
+
+
+def test_pick_signal_future_falls_back_to_open_interest_then_option_future():
+    futs = [{"token": "a", "symbol": "X1"}, {"token": "b", "symbol": "X2"}]
+    c = {"fut": futs[0], "futs": futs, "opt_fut": futs[0]}
+
+    class NoVol:
+        def get_daily_candles(self, key, n):
+            return [{"volume": 0}]
+
+        def _batch_quotes(self, ex, toks):
+            return {"a": {"opnInterest": 10}, "b": {"opnInterest": 50}}
+
+    assert mcx_main.pick_signal_future(NoVol(), {}, "X", c)["token"] == "b"
+
+    class Nothing(NoVol):
+        def _batch_quotes(self, ex, toks):
+            return {}
+
+    assert mcx_main.pick_signal_future(Nothing(), {}, "X", c)["token"] == "a"
 
 
 def test_resolve_contracts_option_underlying_is_first_future_on_or_after_option_expiry():

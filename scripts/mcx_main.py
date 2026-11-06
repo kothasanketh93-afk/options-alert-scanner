@@ -109,25 +109,37 @@ def resolve_contracts(master: list, name: str, today: datetime):
 
 
 def pick_signal_future(broker, st: dict, name: str, c: dict) -> dict:
-    """Candles for pattern detection come from the MOST LIQUID of the first three futures (highest open interest), fixed for
-    the day once chosen. The nearest contract is not always the liquid one (2026-11-05: GOLDM Dec traded in thin, flat bars
-    while GOLDM Jan was the real market, which produced a false FVG signal)."""
-    chosen = st.setdefault("sig_fut", {})
+    """Candles for pattern detection come from the future that actually TRADES: highest previous-session volume among the
+    first three expiries (open interest is a stock of old positions, not activity -- 2026-11-06: GOLDM Dec had the larger OI
+    but flat, gappy bars; the Jan contract carried the volume). Chosen once per day. Falls back to OI, then the option-underlying future."""
+    chosen = st.setdefault("sig_fut2", {})
     tok = chosen.get(name)
     futs = c.get("futs") or [c["fut"]]
     if tok:
         hit = next((f for f in futs if f["token"] == tok), None)
         if hit:
             return hit
+    best, how = None, "fallback"
     try:
-        qs = broker._batch_quotes("MCX", [f["token"] for f in futs])
-        best = max(futs, key=lambda f: float((qs.get(f["token"]) or {}).get("opnInterest") or 0))
-        if float((qs.get(best["token"]) or {}).get("opnInterest") or 0) <= 0:
-            best = c["opt_fut"]
+        vols = {}
+        for f in futs:
+            d = broker.get_daily_candles(f"MCX|{f['token']}", 2)
+            vols[f["token"]] = float(d[-1].get("volume") or 0) if d else 0.0
+        if max(vols.values() or [0]) > 0:
+            best, how = max(futs, key=lambda f: vols[f["token"]]), "volume"
     except BrokerAPIError:
-        best = c["opt_fut"]
+        pass
+    if best is None:
+        try:
+            qs = broker._batch_quotes("MCX", [f["token"] for f in futs])
+            cand = max(futs, key=lambda f: float((qs.get(f["token"]) or {}).get("opnInterest") or 0))
+            if float((qs.get(cand["token"]) or {}).get("opnInterest") or 0) > 0:
+                best, how = cand, "open_interest"
+        except BrokerAPIError:
+            pass
+    best = best or c["opt_fut"]
     chosen[name] = best["token"]
-    log.info("MCX %s signal future = %s (opt future %s)", name, best["symbol"], c["opt_fut"]["symbol"])
+    log.info("MCX %s signal future = %s by %s (option-underlying future %s)", name, best["symbol"], how, c["opt_fut"]["symbol"])
     return best
 
 
