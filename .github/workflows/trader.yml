@@ -41,11 +41,13 @@ on:
   # twice. Once the native schedule has proven reliable, the Trader-1..8 jobs on cron-job.org can be disabled.
   # main.py's session-window and holiday_guard checks still apply to every run.
   schedule:
-    # 2026-11-06: crons are evaluated in UTC (the `timezone: Asia/Kolkata` key did NOT take effect -- native runs fired
-    # 14:45-22:00 IST, after the market). Market window 09:15-15:30 IST = 03:45-10:00 UTC, every 5 min.
-    - cron: '45,50,55 3 * * 1-5'
-    - cron: '*/5 4-9 * * 1-5'
-    - cron: '0 10 * * 1-5'
+    # Crons are evaluated in UTC (the `timezone: Asia/Kolkata` key did NOT take effect). Market window 09:15-15:30 IST
+    # = 03:45-10:00 UTC. cron-job.org already fires on every 5th minute (:00, :05 ...); these native runs are
+    # deliberately OFFSET by +3 min (:03, :08 ...), i.e. a second pass between the external ones, so fills / stops /
+    # targets are noticed ~3 min sooner and a missed external trigger is covered. Offset is 3 (not 2.5: GitHub cron has
+    # 1-min granularity) so it clears the 150 s duplicate guard below. GitHub cron can be delayed -- best-effort only.
+    - cron: '48,53,58 3 * * 1-5'
+    - cron: '3,8,13,18,23,28,33,38,43,48,53,58 4-9 * * 1-5'
   workflow_dispatch: {}
 
 # One run at a time: README.md's "concurrency-protected" -- prevents
