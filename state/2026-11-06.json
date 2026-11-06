@@ -383,7 +383,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T12:22:00+05:30",
+      "last_processed_ts": "2026-11-06T12:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -484,7 +484,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T12:22:00+05:30",
+      "last_processed_ts": "2026-11-06T12:24:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -638,7 +638,7 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 546,
+    "scanned_symbols": 560,
     "valid_signals": 31,
     "rejected_signals": 1037,
     "api_failures": 0,
@@ -647,19 +647,19 @@
   "rerank_slots_done": [
     "11:30"
   ],
-  "last_run_at": "2026-11-06T12:20:47+05:30",
+  "last_run_at": "2026-11-06T12:25:42+05:30",
   "micro_last_minute": [
     "2026-11-06",
-    740
+    745
   ],
   "tape_seen": {
     "NIFTY": [
       "2026-11-06",
-      "12:15"
+      "12:20"
     ],
     "BANKNIFTY": [
       "2026-11-06",
-      "12:15"
+      "12:20"
     ]
   },
   "fib_pivot_shadow_trades": {
@@ -734,7 +734,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T12:19:00+05:30",
+      "last_processed_ts": "2026-11-06T12:24:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -1152,7 +1152,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T12:19:00+05:30",
+      "last_processed_ts": "2026-11-06T12:24:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -1239,7 +1239,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T12:19:00+05:30",
+      "last_processed_ts": "2026-11-06T12:24:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -1407,7 +1407,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T12:19:00+05:30",
+      "last_processed_ts": "2026-11-06T12:24:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -1488,7 +1488,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T12:19:00+05:30",
+      "last_processed_ts": "2026-11-06T12:24:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -1570,7 +1570,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T12:19:00+05:30",
+      "last_processed_ts": "2026-11-06T12:24:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -2618,7 +2618,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T12:19:00+05:30",
+      "last_processed_ts": "2026-11-06T12:24:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
@@ -2906,7 +2906,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T12:19:00+05:30",
+      "last_processed_ts": "2026-11-06T12:24:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
@@ -3489,7 +3489,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T12:19:00+05:30",
+      "last_processed_ts": "2026-11-06T12:24:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
@@ -3570,21 +3570,21 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "T2_HIT",
+      "final_status": "T2_HIT",
       "actual_entry_time": "2026-11-06T11:02:00+05:30",
       "tracked_entry_price": 163.7,
-      "highest_since_entry": 200.0,
+      "highest_since_entry": 207.8,
       "lowest_since_entry": 148.4,
-      "max_favorable_pct": 22.17,
+      "max_favorable_pct": 26.94,
       "max_adverse_pct": -9.35,
       "t1_hit": true,
       "t1_hit_time": "2026-11-06T12:14:00+05:30",
-      "t2_hit": false,
-      "t2_hit_time": null,
+      "t2_hit": true,
+      "t2_hit_time": "2026-11-06T12:21:00+05:30",
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T12:19:00+05:30",
+      "last_processed_ts": "2026-11-06T12:24:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
@@ -3594,7 +3594,8 @@
       "candidate_id": "NIFTY:CE:24600.0:2026-11-09:CHASE",
       "time_to_target_1_minutes": 72,
       "be_tracked": true,
-      "trail_sl": 186.11
+      "trail_sl": 193.91,
+      "time_to_target_2_minutes": 79
     },
     "SHADOW-17-110104": {
       "trade_id": "SHADOW-17-110104",
@@ -3680,7 +3681,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T12:19:00+05:30",
+      "last_processed_ts": "2026-11-06T12:24:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -3773,7 +3774,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T12:19:00+05:30",
+      "last_processed_ts": "2026-11-06T12:24:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -4195,7 +4196,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T12:19:00+05:30",
+      "last_processed_ts": "2026-11-06T12:24:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -4281,7 +4282,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T12:19:00+05:30",
+      "last_processed_ts": "2026-11-06T12:24:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
