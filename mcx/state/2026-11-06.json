@@ -689,7 +689,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T19:54:00+05:30",
+      "last_processed_ts": "2026-11-06T19:59:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "ema_pb",
@@ -834,16 +834,16 @@
       "actual_entry_time": "2026-11-06T19:41:00+05:30",
       "tracked_entry_price": 14.0,
       "highest_since_entry": 14.35,
-      "lowest_since_entry": 13.45,
+      "lowest_since_entry": 13.1,
       "max_favorable_pct": 2.5,
-      "max_adverse_pct": -3.93,
+      "max_adverse_pct": -6.43,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T19:55:00+05:30",
+      "last_processed_ts": "2026-11-06T20:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sess_orb",
@@ -911,16 +911,16 @@
       "actual_entry_time": "2026-11-06T19:46:00+05:30",
       "tracked_entry_price": 3205.0,
       "highest_since_entry": 3320.5,
-      "lowest_since_entry": 3204.0,
+      "lowest_since_entry": 3180.0,
       "max_favorable_pct": 3.6,
-      "max_adverse_pct": -0.03,
+      "max_adverse_pct": -0.78,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T19:55:00+05:30",
+      "last_processed_ts": "2026-11-06T20:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sess_sweep",
@@ -958,12 +958,6 @@
   },
   "flow_snap": {
     "CRUDEOIL": [
-      {
-        "t": 685,
-        "spot": 8633.0,
-        "call_oi": 1195100.0,
-        "put_oi": 1352900.0
-      },
       {
         "t": 700,
         "spot": 8635.0,
@@ -1437,15 +1431,15 @@
         "spot": 8521.0,
         "call_oi": 2537400.0,
         "put_oi": 2793200.0
+      },
+      {
+        "t": 1201,
+        "spot": 8536.0,
+        "call_oi": 2219700.0,
+        "put_oi": 2838200.0
       }
     ],
     "GOLDM": [
-      {
-        "t": 775,
-        "spot": 143448.0,
-        "call_oi": 690000.0,
-        "put_oi": 822000.0
-      },
       {
         "t": 781,
         "spot": 143287.0,
@@ -1919,15 +1913,15 @@
         "spot": 143107.0,
         "call_oi": 1113400.0,
         "put_oi": 1253200.0
+      },
+      {
+        "t": 1201,
+        "spot": 142842.0,
+        "call_oi": 1113800.0,
+        "put_oi": 1232300.0
       }
     ],
     "GOLD": [
-      {
-        "t": 710,
-        "spot": 141700.0,
-        "call_oi": 128.0,
-        "put_oi": 116.0
-      },
       {
         "t": 735,
         "spot": 142004.0,
@@ -2401,15 +2395,15 @@
         "spot": 141524.0,
         "call_oi": 482.0,
         "put_oi": 672.0
+      },
+      {
+        "t": 1201,
+        "spot": 141250.0,
+        "call_oi": 480.0,
+        "put_oi": 667.0
       }
     ],
     "NATURALGAS": [
-      {
-        "t": 745,
-        "spot": 283.2,
-        "call_oi": 47302500.0,
-        "put_oi": 44413750.0
-      },
       {
         "t": 751,
         "spot": 282.8,
@@ -2883,6 +2877,12 @@
         "spot": 281.0,
         "call_oi": 45003750.0,
         "put_oi": 48111250.0
+      },
+      {
+        "t": 1201,
+        "spot": 282.7,
+        "call_oi": 44637500.0,
+        "put_oi": 48048750.0
       }
     ]
   },
@@ -2897,7 +2897,8 @@
     "CRUDEOIL:news_blackout": 9,
     "NATURALGAS:news_blackout": 9,
     "GOLDM:news_blackout": 9,
-    "GOLD:news_blackout": 9
+    "GOLD:news_blackout": 9,
+    "GOLD:spread_17.2pct": 1
   },
   "summary_sent": false,
   "sig_fut": {
