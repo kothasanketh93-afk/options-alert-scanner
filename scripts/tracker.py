@@ -6,7 +6,8 @@ trade's rules, per the required lifecycle:
 
   WAITING_ENTRY -> ACTIVE -> T1_HIT -> T2_HIT
   WAITING_ENTRY -> ACTIVE -> SL_HIT
-  WAITING_ENTRY -> NOT_ENTERED   (entry zone never touched by close)
+  WAITING_ENTRY -> NOT_ENTERED   (entry zone never touched; or setup cancelled: stop level
+                                   traded first, T1 already reached, or entry window expired)
   ACTIVE -> EOD_CLOSED           (neither SL nor target reached by close)
   * -> AMBIGUOUS                 (SL and target both touched in one
                                    candle with no way to order them)
@@ -25,7 +26,7 @@ Candle dict shape expected:
 
 from datetime import datetime, timezone, timedelta
 
-from config import MARKET_CLOSE_HHMM, TRAILING_STOP_ENABLED, TRAILING_STOP_TRIGGER_PCT, TRAILING_STOP_LOCK_PCT
+from config import ENTRY_VALID_MIN, ENTRY_CANCEL_ON_SL_BREACH, ENTRY_CANCEL_ON_T1_MISSED, MARKET_CLOSE_HHMM, TRAILING_STOP_ENABLED, TRAILING_STOP_TRIGGER_PCT, TRAILING_STOP_LOCK_PCT
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -82,6 +83,27 @@ def _maybe_apply_trailing_stop(trade: dict, ts: datetime) -> dict:
     return {"type": "TRAILING_SL_ADJUSTED", "trade": trade, "new_sl": new_sl}
 
 
+def _pending_cancel_reason(trade: dict, ts: datetime, high: float, low: float):
+    """Why a still-unfilled setup must be cancelled on this candle, else None.
+
+    A real limit order is not left working all day: once the stop level has traded
+    the thesis is broken, once T1 has traded the move is gone, and after the entry
+    window the setup is stale. Only called for candles that did NOT touch the zone.
+    """
+    if ENTRY_CANCEL_ON_SL_BREACH and trade.get("stop_loss") is not None and low <= trade["stop_loss"]:
+        return "SL_BREACHED_BEFORE_ENTRY"
+    if ENTRY_CANCEL_ON_T1_MISSED and trade.get("target_1") is not None and high >= trade["target_1"]:
+        return "T1_REACHED_BEFORE_ENTRY"
+    valid_min = trade.get("entry_valid_min", ENTRY_VALID_MIN)
+    if valid_min and trade.get("alert_time"):
+        try:
+            if ts >= _parse_ts(trade["alert_time"]) + timedelta(minutes=valid_min):
+                return "ENTRY_WINDOW_EXPIRED"
+        except ValueError:
+            pass
+    return None
+
+
 def process_trade_candles(trade: dict, candles: list) -> list:
     """
     Mutates `trade` in place, advancing it through candles in
@@ -127,9 +149,14 @@ def process_trade_candles(trade: dict, candles: list) -> list:
                 trade["last_processed_ts"] = candle["timestamp"]
                 continue
 
-            elif _is_after_market_close(ts, trade.get("market_close_hhmm")):
-                trade["status"] = "NOT_ENTERED"
-                events.append({"type": "NOT_ENTERED", "trade": trade})
+            else:
+                reason = _pending_cancel_reason(trade, ts, h, l)
+                if reason is None and _is_after_market_close(ts, trade.get("market_close_hhmm")):
+                    reason = "NEVER_TOUCHED"
+                if reason:
+                    trade["status"] = "NOT_ENTERED"
+                    trade["not_entered_reason"] = reason
+                    events.append({"type": "NOT_ENTERED", "trade": trade})
 
             trade["last_processed_ts"] = candle["timestamp"]
             continue

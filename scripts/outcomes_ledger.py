@@ -28,7 +28,7 @@ COLUMNS = ["trade_id", "date", "engine", "strategy", "symbol", "direction", "str
            "mfe_pct", "mae_pct", "grade", "trade_score", "wide_prev_day",
            "expiry_day", "entry_oi", "entry_volume", "spread_pct", "cost_pct_assumed", "net_result_pct",
            "be_after_t1_pct", "half_t1_plus_be_pct", "entry_bucket", "trail_after_t1_pct",
-           "weekday", "signal_delay_min", "hold_min", "exit_time", "risk_pct", "reward_t1_pct", "rr_t1", "spot_at_alert", "day_tags"]
+           "weekday", "signal_delay_min", "hold_min", "exit_time", "risk_pct", "reward_t1_pct", "rr_t1", "spot_at_alert", "day_tags", "not_entered_reason"]
 
 
 def result_pct(trade: dict):
@@ -198,6 +198,7 @@ def _row(trade: dict, engine: str, date_str: str) -> dict:
     if x_dt and e_dt:
         row["hold_min"] = round((x_dt - e_dt).total_seconds() / 60.0, 1)
     row["spot_at_alert"] = trade.get("spot_price")
+    row["not_entered_reason"] = trade.get("not_entered_reason")
     return row
 
 

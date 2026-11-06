@@ -55,6 +55,13 @@ STOP_AFTER_CONSECUTIVE_SL = False  # set False 2026-07-31: testing/validation mo
 # posture tracker.py's entry-vs-T1/SL logic already follows. The SL is
 # only ever RAISED, never lowered, and only adjusts once per trade.
 # =============================================================================
+# Pending-entry hygiene (limit-order discipline): a setup that has not filled within
+# ENTRY_VALID_MIN minutes of the alert, or whose stop level traded (or T1 was already
+# reached) before the fill, is cancelled as NOT_ENTERED and is never entered late.
+# Chosen from alert->entry delay data (95% of fills <= 8 min), not from P&L.
+ENTRY_VALID_MIN = 20
+ENTRY_CANCEL_ON_SL_BREACH = True
+ENTRY_CANCEL_ON_T1_MISSED = True
 TRAILING_STOP_ENABLED = False       # master flag -- off until validated against a few real
                                      # sessions via Replay Analytics; see main.py's tracker.py
                                      # call site for how this wires in

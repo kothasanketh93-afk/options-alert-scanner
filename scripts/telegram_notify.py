@@ -416,12 +416,20 @@ def fmt_sl_hit(trade: dict, time_taken_min: int) -> str:
     )
 
 
+_NOT_ENTERED_WHY = {
+    "SL_BREACHED_BEFORE_ENTRY": "Setup cancelled: stop level traded before entry.",
+    "T1_REACHED_BEFORE_ENTRY": "Setup cancelled: Target 1 was reached before entry (move missed).",
+    "ENTRY_WINDOW_EXPIRED": "Setup cancelled: entry window expired without a fill.",
+}
+
+
 def fmt_not_entered(trade: dict) -> str:
+    why = _NOT_ENTERED_WHY.get(trade.get("not_entered_reason"), "Never touched during market hours.")
     return (
-        f"NOT ENTERED (EOD) — {trade['display_label']}\n\n"
+        f"NOT ENTERED — {trade['display_label']}\n\n"
         f"{_trade_header(trade)}\n"
         f"Entry Zone: ₹{trade['entry_low']} - ₹{trade['entry_high']}\n"
-        f"Never touched during market hours.\n\n"
+        f"{why}\n\n"
         f"Status: NOT_ENTERED"
     )
 
