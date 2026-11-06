@@ -57,7 +57,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T11:00:00+05:30",
+      "last_processed_ts": "2026-11-06T11:05:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -281,21 +281,21 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-11-06T10:41:00+05:30",
       "tracked_entry_price": 15.05,
       "highest_since_entry": 15.1,
-      "lowest_since_entry": 14.5,
+      "lowest_since_entry": 14.25,
       "max_favorable_pct": 0.33,
-      "max_adverse_pct": -3.65,
+      "max_adverse_pct": -5.32,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-11-06T11:05:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T11:01:00+05:30",
+      "last_processed_ts": "2026-11-06T11:05:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -593,6 +593,12 @@
         "spot": 143060.0,
         "call_oi": 617400.0,
         "put_oi": 814000.0
+      },
+      {
+        "t": 665,
+        "spot": 143175.0,
+        "call_oi": 626200.0,
+        "put_oi": 814500.0
       }
     ],
     "GOLD": [
@@ -759,6 +765,12 @@
         "spot": 280.8,
         "call_oi": 35762500.0,
         "put_oi": 36928750.0
+      },
+      {
+        "t": 665,
+        "spot": 280.8,
+        "call_oi": 35736250.0,
+        "put_oi": 36898750.0
       }
     ]
   },
