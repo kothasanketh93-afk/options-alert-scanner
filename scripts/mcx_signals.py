@@ -37,15 +37,6 @@ def _mins(c) -> int:
     return base._mins(c)
 
 
-def ema(values: list, period: int) -> list:
-    k = 2.0 / (period + 1)
-    out, prev = [], None
-    for v in values:
-        prev = v if prev is None else v * k + prev * (1 - k)
-        out.append(prev)
-    return out
-
-
 def in_news_blackout(symbol: str, weekday: int, day_of_month: int, now_mins: int) -> bool:
     """True if a US data release makes new entries unreliable. weekday: Mon=0. Winter (EST) clock: 8:30 ET = 19:00 IST, 10:30 ET = 21:00 IST."""
     if weekday == 4 and day_of_month <= 7 and 18 * 60 + 55 <= now_mins <= 19 * 60 + 35:      # first-Friday payrolls (all)
@@ -111,25 +102,4 @@ def detect_session_sweep(candles: list):
 
 
 def detect_ema_pullback(candles: list):
-    n = len(candles)
-    if n < 60:
-        return None
-    last = candles[-1]
-    if not EMA_WINDOW[0] <= _mins(last) <= EMA_WINDOW[1]:
-        return None
-    for direction, bullish in (("CE", True), ("PE", False)):
-        cs = candles if bullish else base._mirror(candles)
-        closes = [c["close"] for c in cs]
-        e20, e50 = ema(closes, 20), ema(closes, 50)
-        trig, prev = cs[-1], cs[-2]
-        if not (e20[-1] > e50[-1] and e20[-1] > e20[-4]):
-            continue
-        if not any(cs[-1 - j]["low"] <= e20[-1 - j] for j in (1, 2, 3)):
-            continue
-        if not (trig["close"] > trig["open"] and trig["close"] > e20[-1] and trig["close"] > prev["high"]):
-            continue
-        sign = 1 if bullish else -1
-        extreme = sign * min(c["low"] for c in cs[-4:])
-        return {"direction": direction, "level_name": "EMA20", "level_value": round(sign * e20[-1], 2), "signal_index": n - 1,
-                "extreme": round(extreme, 2), "signal_close": last["close"]}
-    return None
+    return base.detect_ema_pullback(candles, EMA_WINDOW, fast=20, slow=50, min_n=60)

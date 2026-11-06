@@ -297,3 +297,80 @@ def detect_fvg(candles, atr):
         return None
     idx, sig = min(found, key=lambda t: t[0])
     return sig if idx >= n - FRESH_WINDOW else None
+
+
+# ---------------------------------------------------------------------------------------------------------
+# EMA pullback with the trend ("ema_pb") and gap-and-go ("gap_orb"), added 2026-11-06. Fixed rules, shadow only.
+#   ema_pb : trend = EMA(fast) > EMA(slow) and EMA(fast) rising over 3 candles (mirror for PE); pullback = within the three candles
+#            before the trigger one low touched EMA(fast); trigger = last completed candle bullish, closes above EMA(fast) and above
+#            the previous candle's high. Stop reference = lowest low of the last four candles. Only inside `window` (minutes of day).
+#            NSE index: EMA 9/21, 10:30-14:15, >= 24 candles. MCX: EMA 20/50, 17:00-22:30, >= 60 candles (mcx_signals.py).
+#   gap_orb: gap = first open vs previous close, |gap| >= GAP_MIN_PCT. The gap must hold through the first OR_CANDLES candles (a gap-up
+#            never trades back to the previous close; mirror for gap-down). Signal = first 5m close beyond the opening-range extreme in
+#            the gap direction before GAP_LAST_MINS, bullish/bearish body >= 50% of range. Stop reference = opposite OR extreme.
+# ---------------------------------------------------------------------------------------------------------
+NSE_EMA_WINDOW = (10 * 60 + 30, 14 * 60 + 15)
+GAP_MIN_PCT = 0.30
+GAP_LAST_MINS = 11 * 60
+
+
+def ema(values: list, period: int) -> list:
+    k = 2.0 / (period + 1)
+    out, prev = [], None
+    for v in values:
+        prev = v if prev is None else v * k + prev * (1 - k)
+        out.append(prev)
+    return out
+
+
+def detect_ema_pullback(candles: list, window: tuple, fast: int = 9, slow: int = 21, min_n: int = 24):
+    n = len(candles)
+    if n < max(min_n, slow + 4):
+        return None
+    last = candles[-1]
+    if not window[0] <= _mins(last) <= window[1]:
+        return None
+    for direction, bullish in (("CE", True), ("PE", False)):
+        cs = candles if bullish else _mirror(candles)
+        closes = [c["close"] for c in cs]
+        ef, es = ema(closes, fast), ema(closes, slow)
+        trig, prev = cs[-1], cs[-2]
+        if not (ef[-1] > es[-1] and ef[-1] > ef[-4]):
+            continue
+        if not any(cs[-1 - j]["low"] <= ef[-1 - j] for j in (1, 2, 3)):
+            continue
+        if not (trig["close"] > trig["open"] and trig["close"] > ef[-1] and trig["close"] > prev["high"]):
+            continue
+        sign = 1 if bullish else -1
+        return {"direction": direction, "level_name": f"EMA{fast}", "level_value": round(sign * ef[-1], 2), "signal_index": n - 1,
+                "extreme": round(sign * min(c["low"] for c in cs[-4:]), 2), "signal_close": last["close"]}
+    return None
+
+
+def detect_gap_orb(candles: list, prev_close):
+    n = len(candles)
+    if n < OR_CANDLES + 2 or not prev_close:
+        return None
+    gap_pct = (candles[0]["open"] - prev_close) / prev_close * 100
+    if abs(gap_pct) < GAP_MIN_PCT:
+        return None
+    up = gap_pct > 0
+    orc = candles[:OR_CANDLES]
+    or_hi, or_lo = max(c["high"] for c in orc), min(c["low"] for c in orc)
+    if (up and or_lo <= prev_close) or (not up and or_hi >= prev_close):
+        return None                                   # the gap was (partly) filled during the opening range
+    for i in range(OR_CANDLES, n):
+        c = candles[i]
+        if _mins(c) > GAP_LAST_MINS:
+            return None
+        beyond = c["close"] > or_hi if up else c["close"] < or_lo
+        if not beyond:
+            continue
+        rng = max(c["high"] - c["low"], 1e-9)
+        ok = abs(c["close"] - c["open"]) >= DISPLACEMENT_BODY_FRAC * rng and ((c["close"] > c["open"]) if up else (c["close"] < c["open"]))
+        if not ok or i < n - FRESH_WINDOW:
+            return None
+        return {"direction": "CE" if up else "PE", "level_name": "GAP_OR_HIGH" if up else "GAP_OR_LOW",
+                "level_value": round(or_hi if up else or_lo, 2), "signal_index": i,
+                "extreme": round(or_lo if up else or_hi, 2), "signal_close": c["close"], "gap_pct": round(gap_pct, 2)}
+    return None
