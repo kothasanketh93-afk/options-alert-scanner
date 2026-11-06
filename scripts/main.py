@@ -44,6 +44,7 @@ from app.engines import early_breakout as early_breakout_engine
 from app.engines import fib_pivot as fib_pivot_engine
 from app.engines.orb_pivot import engine as orb_pivot_engine
 from app.engines.sweep_reversal import engine as sweep_engine
+import market_context
 import outcomes_ledger
 import signal_lab_runner
 import microstructure_runner
@@ -1010,6 +1011,10 @@ def main():
     try:
         # Outcomes ledger (2026-10-31): appended before save_state() so the same git commit
         # carries it. Isolated: a ledger problem must never block saving state.
+        try:
+            market_context.stamp_trades(state, india_vix, market_context.nifty_change_pct(market_data, date_str))
+        except Exception as exc:
+            log.warning("Market context stamp failed (%s: %s) -- continuing.", type(exc).__name__, exc)
         added = outcomes_ledger.append_resolved(
             state, state_mod.STATE_CLONE_DIR / "ledger" / "outcomes.csv")
         if added:
