@@ -57,7 +57,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T10:31:00+05:30",
+      "last_processed_ts": "2026-11-06T10:35:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -124,9 +124,9 @@
       "final_status": null,
       "actual_entry_time": "2026-11-06T10:01:00+05:30",
       "tracked_entry_price": 3170.0,
-      "highest_since_entry": 3180.0,
+      "highest_since_entry": 3346.0,
       "lowest_since_entry": 3070.0,
-      "max_favorable_pct": 0.32,
+      "max_favorable_pct": 5.55,
       "max_adverse_pct": -3.15,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -134,7 +134,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T10:25:00+05:30",
+      "last_processed_ts": "2026-11-06T10:32:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -211,7 +211,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-06T10:31:00+05:30",
+      "last_processed_ts": "2026-11-06T10:35:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -298,6 +298,12 @@
         "spot": 8603.0,
         "call_oi": 874100.0,
         "put_oi": 1169500.0
+      },
+      {
+        "t": 635,
+        "spot": 8621.0,
+        "call_oi": 877600.0,
+        "put_oi": 1174400.0
       }
     ],
     "GOLDM": [
@@ -366,6 +372,12 @@
         "spot": 143505.0,
         "call_oi": 431800.0,
         "put_oi": 381800.0
+      },
+      {
+        "t": 635,
+        "spot": 143409.0,
+        "call_oi": 446900.0,
+        "put_oi": 387900.0
       }
     ],
     "GOLD": [
@@ -440,6 +452,12 @@
         "spot": 141765.0,
         "call_oi": 463.0,
         "put_oi": 650.0
+      },
+      {
+        "t": 635,
+        "spot": 141841.0,
+        "call_oi": 128.0,
+        "put_oi": 117.0
       }
     ],
     "NATURALGAS": [
