@@ -3,7 +3,8 @@ COMMODITIES = ("CRUDEOIL", "NATURALGAS", "GOLDM", "GOLD")
 # Rupee value of a 1.0 move in the quoted premium for ONE lot. Crude: 100 bbl/lot; NatGas: 1250 mmBtu/lot;
 # Gold is quoted per 10 g: GOLDM lot = 100 g (x10), GOLD lot = 1 kg (x100).
 LOT_MULTIPLIER = {"CRUDEOIL": 100, "NATURALGAS": 1250, "GOLDM": 10, "GOLD": 100}
-STRATEGY_LABELS = {"sweep": "Sweep", "sweep_fvg": "Sweep+FVG", "amd": "AMD", "fvg": "FVG", "oi_flow": "OI flow"}
+STRATEGY_LABELS = {"sweep": "Sweep", "sweep_fvg": "Sweep+FVG", "amd": "AMD", "fvg": "FVG", "oi_flow": "OI flow",
+                   "sess_orb": "Session ORB", "sess_sweep": "Session sweep", "ema_pb": "EMA pullback"}
 NAMES = {"CRUDEOIL": "Crude Oil", "NATURALGAS": "Natural Gas", "GOLDM": "Gold Mini", "GOLD": "Gold"}
 BUCKETS = ("0900-1200", "1200-1700", "1700-2100", "2100-2330")   # IST entry time: morning / midday / US-open run-up / US session
 

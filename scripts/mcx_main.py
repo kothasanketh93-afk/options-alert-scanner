@@ -20,6 +20,7 @@ import tracker
 import outcomes_ledger
 import telegram_notify as tg
 import mcx_report
+import mcx_signals
 import shadow_notify
 from angelone import AngelOneBroker
 from app.engines.sweep_reversal import signals
@@ -43,7 +44,7 @@ MAX_SPREAD_PCT = 4.0
 MIN_PREMIUM_VOLUME = 20
 ATM_DELTA_PROXY = 0.5                  # no greeks feed for MCX; ATM delta ~0.5 (recorded in each trade)
 FLOW_RING = 3
-STRATEGIES = ("sweep", "sweep_fvg", "amd", "fvg", "oi_flow")
+STRATEGIES = tuple(STRATEGY_LABELS)
 
 # The NSE-hour constants inside signals are patched for this process only (the MCX day is 09:00-23:30).
 signals.LAST_SIGNAL_MINS = LAST_SIGNAL_MINS
@@ -170,6 +171,13 @@ def scan_commodity(broker, st: dict, name: str, c: dict, now: datetime):
 
     found = {"sweep": signals.detect_sweep(today, ph, pl), "sweep_fvg": signals.detect_sweep_fvg(today, ph, pl),
              "amd": signals.detect_amd(today, ph, pl), "fvg": signals.detect_fvg(today, atr)}
+    if not mcx_signals.in_news_blackout(name, now.weekday(), now.day, now.hour * 60 + now.minute):
+        found["sess_orb"] = mcx_signals.detect_session_orb(today, atr)
+        found["sess_sweep"] = mcx_signals.detect_session_sweep(today)
+        found["ema_pb"] = mcx_signals.detect_ema_pullback(today)
+    else:
+        key = f"{name}:news_blackout"
+        st["rejects"][key] = st["rejects"].get(key, 0) + 1
     # OI-flow snapshot (ATM +- FLOW_RING strikes) every run
     spot = today[-1]["close"]
     strikes = sorted({x["_strike"] for x in c["chain"]})
