@@ -181,14 +181,23 @@ def scan_commodity(broker, st: dict, name: str, c: dict, now: datetime):
     prev = daily[-1] if daily else None
     ph, pl = (prev["high"], prev["low"]) if prev else (None, None)
 
-    found = {"sweep": signals.detect_sweep(today, ph, pl), "sweep_fvg": signals.detect_sweep_fvg(today, ph, pl),
-             "amd": signals.detect_amd(today, ph, pl), "fvg": signals.detect_fvg(today, atr)}
+    def safe(strategy, fn, *args):
+        """Strategies are independent: a detector that raises is logged and skipped, never aborting the others."""
+        try:
+            return fn(*args)
+        except Exception as exc:
+            log.error("MCX_DETECTOR_FAILED %s %s: %s: %s", strategy, name, type(exc).__name__, exc)
+            return None
+
+    found = {"sweep": safe("sweep", signals.detect_sweep, today, ph, pl),
+             "sweep_fvg": safe("sweep_fvg", signals.detect_sweep_fvg, today, ph, pl),
+             "amd": safe("amd", signals.detect_amd, today, ph, pl), "fvg": safe("fvg", signals.detect_fvg, today, atr)}
     if not mcx_signals.in_news_blackout(name, now.weekday(), now.day, now.hour * 60 + now.minute):
-        found["sess_orb"] = mcx_signals.detect_session_orb(today, atr)
-        found["sess_sweep"] = mcx_signals.detect_session_sweep(today)
-        found["ema_pb"] = mcx_signals.detect_ema_pullback(today)
-        found["bos"] = mcx_signals.detect_bos(today, atr)
-        found["order_block"] = mcx_signals.detect_order_block(today, atr)
+        found["sess_orb"] = safe("sess_orb", mcx_signals.detect_session_orb, today, atr)
+        found["sess_sweep"] = safe("sess_sweep", mcx_signals.detect_session_sweep, today)
+        found["ema_pb"] = safe("ema_pb", mcx_signals.detect_ema_pullback, today)
+        found["bos"] = safe("bos", mcx_signals.detect_bos, today, atr)
+        found["order_block"] = safe("order_block", mcx_signals.detect_order_block, today, atr)
     else:
         key = f"{name}:news_blackout"
         st["rejects"][key] = st["rejects"].get(key, 0) + 1
@@ -207,14 +216,17 @@ def scan_commodity(broker, st: dict, name: str, c: dict, now: datetime):
     snaps = st["flow_snap"].setdefault(name, [])
     snaps.append({"t": now.hour * 60 + now.minute, "spot": spot, "call_oi": call_oi, "put_oi": put_oi})
     del snaps[:-80]
-    found["oi_flow"] = signals.detect_oi_flow(snaps, atr)
+    found["oi_flow"] = safe("oi_flow", signals.detect_oi_flow, snaps, atr)
 
     for strategy, sig in found.items():
         if not sig:
             continue
         if any(t["strategy"] == strategy and t["symbol"] == name for t in st["mcx_shadow_trades"].values()):
             continue
-        create_trade(broker, st, name, c, strategy, sig, atr, ph, pl, qs, now, spot_opt)
+        try:
+            create_trade(broker, st, name, c, strategy, sig, atr, ph, pl, qs, now, spot_opt)
+        except Exception as exc:                      # one strategy's trade must never block the other strategies
+            log.error("MCX_TRADE_CREATE_FAILED %s %s: %s: %s", strategy, name, type(exc).__name__, exc)
 
 
 def create_trade(broker, st, name, c, strategy, sig, atr, ph, pl, qs, now, spot_opt=None):

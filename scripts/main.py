@@ -1270,29 +1270,37 @@ def create_sweep_shadow_candidates(state: dict, now: datetime):
         return
     trades = state.setdefault("sweep_shadow_trades", {})
     for candidate in candidates:
-        if any(t.get("strategy") == candidate["strategy"] and t["symbol"] == candidate["symbol"]
-               for t in trades.values()):
-            continue
-        key = f"SWEEP-{candidate['strategy']}-{candidate['symbol']}"
-        seq = state["next_seq"].get(key, 0) + 1
-        state["next_seq"][key] = seq
-        trade_id = f"{key}-{candidate['direction']}-{now.strftime('%Y%m%d-%H%M')}-{seq:02d}"
-        trade = new_trade_record(candidate, trade_id, now, f"SweepShadow {len(trades) + 1}")
-        trade["probability_status"] = "shadow_only"
-        trade["execution_mode"] = "shadow"
-        trade["live_alert_sent"] = False
-        trade["candidate_id"] = (f"{candidate['strategy']}:{candidate['symbol']}:{candidate['direction']}:"
-                                 f"{candidate['strike']}:{candidate['expiry']}")
-        trade["engine"] = "sweep_reversal"
-        trade["sweep_extreme"] = candidate.get("sweep_extreme")
-        trade["fvg"] = candidate.get("fvg")
-        for _k in ("entry_oi", "entry_volume", "spread_pct"):
-            trade[_k] = candidate.get(_k)
-        trades[trade_id] = trade
-        log.info("SWEEP_SHADOW_CANDIDATE_CREATED trade_id=%s strategy=%s %s %s strike=%s level=%s extreme=%s fvg=%s",
-                 trade_id, trade["strategy"], trade["symbol"], trade["direction"], trade["strike"],
-                 candidate.get("pivot_level_name"), candidate.get("sweep_extreme"), candidate.get("fvg"))
-        shadow_notify.notify_created(state, trade, now)
+        try:
+            _create_one_sweep_shadow(state, now, trades, candidate)
+        except Exception as exc:         # strategies are independent: one failing candidate never blocks the rest
+            log.error("SWEEP_SHADOW_CREATE_FAILED %s %s: %s: %s", candidate.get("strategy"), candidate.get("symbol"),
+                      type(exc).__name__, exc)
+
+
+def _create_one_sweep_shadow(state: dict, now: datetime, trades: dict, candidate: dict):
+    if any(t.get("strategy") == candidate["strategy"] and t["symbol"] == candidate["symbol"]
+           for t in trades.values()):
+        return
+    key = f"SWEEP-{candidate['strategy']}-{candidate['symbol']}"
+    seq = state["next_seq"].get(key, 0) + 1
+    state["next_seq"][key] = seq
+    trade_id = f"{key}-{candidate['direction']}-{now.strftime('%Y%m%d-%H%M')}-{seq:02d}"
+    trade = new_trade_record(candidate, trade_id, now, f"SweepShadow {len(trades) + 1}")
+    trade["probability_status"] = "shadow_only"
+    trade["execution_mode"] = "shadow"
+    trade["live_alert_sent"] = False
+    trade["candidate_id"] = (f"{candidate['strategy']}:{candidate['symbol']}:{candidate['direction']}:"
+                             f"{candidate['strike']}:{candidate['expiry']}")
+    trade["engine"] = "sweep_reversal"
+    trade["sweep_extreme"] = candidate.get("sweep_extreme")
+    trade["fvg"] = candidate.get("fvg")
+    for _k in ("entry_oi", "entry_volume", "spread_pct"):
+        trade[_k] = candidate.get(_k)
+    trades[trade_id] = trade
+    log.info("SWEEP_SHADOW_CANDIDATE_CREATED trade_id=%s strategy=%s %s %s strike=%s level=%s extreme=%s fvg=%s",
+             trade_id, trade["strategy"], trade["symbol"], trade["direction"], trade["strike"],
+             candidate.get("pivot_level_name"), candidate.get("sweep_extreme"), candidate.get("fvg"))
+    shadow_notify.notify_created(state, trade, now)
 
 
 def run_sweep_shadow_step(state: dict, now: datetime):
