@@ -88,7 +88,9 @@ def _scan_symbol(symbol, session, state=None, now_mins=None):
     for name, fn in (("sweep", signals.detect_sweep), ("sweep_fvg", signals.detect_sweep_fvg),
                      ("amd", signals.detect_amd), ("fvg", None),
                      ("ema_pb", lambda c, ph, pl: signals.detect_ema_pullback(c, signals.NSE_EMA_WINDOW)),
-                     ("gap_orb", lambda c, ph, pl: signals.detect_gap_orb(c, prev.get("close")))):
+                     ("gap_orb", lambda c, ph, pl: signals.detect_gap_orb(c, prev.get("close"))),
+                     ("bos", lambda c, ph, pl: signals.detect_bos(c, atr)),
+                     ("order_block", lambda c, ph, pl: signals.detect_order_block(c, atr))):
         try:
             sig = signals.detect_fvg(today, atr) if fn is None else fn(today, prev["high"], prev["low"])
             if sig:

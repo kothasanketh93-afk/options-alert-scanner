@@ -17,7 +17,7 @@ LABELS = {"fib_pivot": "Fib pivot", "trade_score": "Main scanner (scored)", "cha
           "live_scored": "Live alerts (scored)", "orb15": "ORB 15-min", "pivot_break": "Pivot break",
           "sweep": "Liquidity sweep", "sweep_fvg": "Sweep + FVG", "amd": "AMD", "oi_flow": "OI flow",
           "fvg": "Fair value gap", "ema_pb": "EMA pullback", "gap_orb": "Gap and go", "sess_orb": "Session ORB",
-          "sess_sweep": "Session sweep"}
+          "sess_sweep": "Session sweep", "bos": "Break of structure", "order_block": "Order block"}
 SKIP = {"NOT_ENTERED", "AMBIGUOUS"}
 
 

@@ -187,6 +187,8 @@ def scan_commodity(broker, st: dict, name: str, c: dict, now: datetime):
         found["sess_orb"] = mcx_signals.detect_session_orb(today, atr)
         found["sess_sweep"] = mcx_signals.detect_session_sweep(today)
         found["ema_pb"] = mcx_signals.detect_ema_pullback(today)
+        found["bos"] = mcx_signals.detect_bos(today, atr)
+        found["order_block"] = mcx_signals.detect_order_block(today, atr)
     else:
         key = f"{name}:news_blackout"
         st["rejects"][key] = st["rejects"].get(key, 0) + 1

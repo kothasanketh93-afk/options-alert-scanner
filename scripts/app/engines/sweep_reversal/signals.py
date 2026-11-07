@@ -374,3 +374,100 @@ def detect_gap_orb(candles: list, prev_close):
                 "level_value": round(or_hi if up else or_lo, 2), "signal_index": i,
                 "extreme": round(or_lo if up else or_hi, 2), "signal_close": c["close"], "gap_pct": round(gap_pct, 2)}
     return None
+
+
+# ---------------------------------------------------------------------------------------------------------
+# Smart-money structure strategies, added 2026-11-07. Fixed rules, shadow only, same on NSE index and MCX (5m candles).
+#   Swing high/low : fractal with SWING_L candles each side; confirmed only once SWING_L later candles exist (no look-ahead).
+#   BOS (bullish)  : continuation break of structure. Candle k closes above the most recent confirmed, still-unbroken swing high;
+#                    the structure was already making higher lows (last confirmed swing low > the one before it); k is a displacement
+#                    candle (bullish, body >= 50% of range, range >= BOS_MIN_RANGE_ATR x ATR). A break that goes against the prior
+#                    structure (CHoCH) is NOT traded. Signal on k (fresh: one of the last FRESH_WINDOW candles).
+#                    Stop reference = the higher low (last confirmed swing low before k).
+#   Order block    : after a bullish BOS at k, the OB is the last bearish candle in the OB_LOOKBACK candles before k (its full
+#                    high-low range). Signal on the FIRST return into the zone within OB_RETEST_WINDOW candles of k, when that candle
+#                    touches the zone (low <= OB high), closes back above the OB high and closes bullish. A close below the OB low,
+#                    or a touch without that reaction, kills the setup. Stop reference = OB low.
+#   Bearish versions are exact mirrors. CE = bullish, PE = bearish.
+# ---------------------------------------------------------------------------------------------------------
+SWING_L = 2
+BOS_MIN_RANGE_ATR = 0.8
+OB_LOOKBACK = 5
+OB_RETEST_WINDOW = 12
+SMC_MIN_CANDLES = 14
+NSE_SMC_WINDOW = (9 * 60 + 45, 14 * 60 + 15)
+
+
+def _swing_points(cs: list, upto: int):
+    """Confirmed swing highs/lows among candles[0..upto-1]: a swing at i needs i + SWING_L <= upto - 1."""
+    highs, lows = [], []
+    for i in range(SWING_L, upto - SWING_L):
+        if all(cs[i]["high"] > cs[i - j]["high"] and cs[i]["high"] >= cs[i + j]["high"] for j in range(1, SWING_L + 1)):
+            highs.append(i)
+        if all(cs[i]["low"] < cs[i - j]["low"] and cs[i]["low"] <= cs[i + j]["low"] for j in range(1, SWING_L + 1)):
+            lows.append(i)
+    return highs, lows
+
+
+def _bos_events(cs: list, atr: float) -> list:
+    """Bullish continuation BOS events in `cs` (mirror the candles for bearish). [(k, broken_level, higher_low_price)]"""
+    out = []
+    for k in range(2 * SWING_L + 2, len(cs)):
+        highs, lows = _swing_points(cs, k)            # only structure confirmed before candle k
+        if not highs or len(lows) < 2:
+            continue
+        s = highs[-1]
+        if any(cs[j]["close"] > cs[s]["high"] for j in range(s + 1, k)):
+            continue                                  # that high was already broken: not a fresh break
+        if cs[lows[-1]]["low"] <= cs[lows[-2]]["low"]:
+            continue                                  # no higher low: a reversal (CHoCH), not a continuation
+        c = cs[k]
+        rng = max(c["high"] - c["low"], 1e-9)
+        if (c["close"] > cs[s]["high"] and c["close"] > c["open"] and (c["close"] - c["open"]) >= DISPLACEMENT_BODY_FRAC * rng
+                and rng >= BOS_MIN_RANGE_ATR * atr):
+            out.append((k, cs[s]["high"], cs[lows[-1]]["low"]))
+    return out
+
+
+def detect_bos(candles: list, atr: float, window: tuple = NSE_SMC_WINDOW):
+    n = len(candles)
+    if n < SMC_MIN_CANDLES or not atr or atr <= 0 or not window[0] <= _mins(candles[-1]) <= window[1]:
+        return None
+    for direction, bullish in (("CE", True), ("PE", False)):
+        cs = candles if bullish else _mirror(candles)
+        ev = [e for e in _bos_events(cs, atr) if e[0] >= n - FRESH_WINDOW]
+        if not ev:
+            continue
+        k, level, hl = ev[-1]
+        sign = 1 if bullish else -1
+        return {"direction": direction, "level_name": "BOS", "level_value": round(sign * level, 2), "signal_index": k,
+                "extreme": round(sign * hl, 2), "signal_close": candles[k]["close"]}
+    return None
+
+
+def detect_order_block(candles: list, atr: float, window: tuple = NSE_SMC_WINDOW):
+    n = len(candles)
+    if n < SMC_MIN_CANDLES or not atr or atr <= 0 or not window[0] <= _mins(candles[-1]) <= window[1]:
+        return None
+    for direction, bullish in (("CE", True), ("PE", False)):
+        cs = candles if bullish else _mirror(candles)
+        for k, _level, _hl in reversed(_bos_events(cs, atr)):
+            if k > n - 2 or n - 1 - k > OB_RETEST_WINDOW:
+                continue
+            ob = next((o for o in range(k - 1, max(-1, k - 1 - OB_LOOKBACK), -1) if cs[o]["close"] < cs[o]["open"]), None)
+            if ob is None:
+                continue
+            lo, hi = cs[ob]["low"], cs[ob]["high"]
+            for m in range(k + 1, n):
+                c = cs[m]
+                if c["close"] < lo:
+                    break
+                if c["low"] <= hi:                    # first return into the zone decides the setup
+                    if c["close"] > hi and c["close"] > c["open"] and m >= n - FRESH_WINDOW:
+                        sign = 1 if bullish else -1
+                        a, b = sign * lo, sign * hi
+                        return {"direction": direction, "level_name": "OB", "level_value": round(b, 2), "signal_index": m,
+                                "extreme": round(a, 2), "signal_close": candles[m]["close"],
+                                "ob": (round(min(a, b), 2), round(max(a, b), 2))}
+                    break
+    return None

@@ -103,3 +103,16 @@ def detect_session_sweep(candles: list):
 
 def detect_ema_pullback(candles: list):
     return base.detect_ema_pullback(candles, EMA_WINDOW, fast=20, slow=50, min_n=60)
+
+
+# Smart-money structure (BOS / order block): shared fixed rules from the NSE engine, run on the MCX signal future's 5m candles
+# between 09:45 and 22:30 (not inside news blackouts, handled by the caller).
+SMC_WINDOW = (9 * 60 + 45, 22 * 60 + 30)
+
+
+def detect_bos(candles: list, atr: float):
+    return base.detect_bos(candles, atr, SMC_WINDOW)
+
+
+def detect_order_block(candles: list, atr: float):
+    return base.detect_order_block(candles, atr, SMC_WINDOW)
