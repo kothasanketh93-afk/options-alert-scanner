@@ -692,6 +692,17 @@ def maybe_send_daily_summary(state: dict, now: datetime):
         log.error("Daily summary could not be sent (Telegram failure) -- will retry next run.")
 
 
+def maybe_send_pnl_snapshot(state: dict, now: datetime):
+    """Every 2 hours inside market time (pnl_snapshot.NSE_SLOTS): closed + open P&L, one lot per trade, as a short text."""
+    import pnl_snapshot
+    sent = state.setdefault("pnl_snaps", [])
+    slot = pnl_snapshot.due_slot(now, pnl_snapshot.NSE_SLOTS, sent)
+    if not slot:
+        return
+    pnl_snapshot.mark_sent(now, pnl_snapshot.NSE_SLOTS, sent)          # one message per run, never a burst
+    tg.send(pnl_snapshot.nse_message(state, slot))
+
+
 def maybe_send_eod_report(state: dict, now: datetime):
     """One end-of-day report listing every tracked trade by outcome (see eod_report.py). Sent once, at/after SUMMARY_HHMM."""
     if (now.hour, now.minute) < SUMMARY_HHMM or state.get("eod_report_sent"):
@@ -991,6 +1002,10 @@ def main():
 
         maybe_send_daily_summary(state, now)
         maybe_send_eod_report(state, now)
+        try:
+            maybe_send_pnl_snapshot(state, now)
+        except Exception as exc:       # a snapshot problem must never disturb the run
+            log.error("P&L snapshot failed (%s: %s) -- continuing.", type(exc).__name__, exc)
         # BUGFIX (2026-09-10, live-log finding): maybe_send_shadow_summary()
         # was DEFINED (see its own docstring) but never actually CALLED
         # anywhere in main() -- confirmed live: with

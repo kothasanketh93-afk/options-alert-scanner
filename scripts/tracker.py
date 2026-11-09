@@ -120,6 +120,7 @@ def process_trade_candles(trade: dict, candles: list) -> list:
     for candle in candles:
         ts = _parse_ts(candle["timestamp"])
         o, h, l, c = candle["open"], candle["high"], candle["low"], candle["close"]
+        trade["last_price"] = c        # latest traded close: lets the intraday P&L snapshot mark open trades to market
 
         if trade["status"] == "WAITING_ENTRY":
             entry_low, entry_high = trade["entry_low"], trade["entry_high"]

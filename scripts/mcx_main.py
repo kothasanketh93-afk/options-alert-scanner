@@ -420,6 +420,14 @@ def main():
             except BrokerAPIError as exc:
                 log.error("MCX %s scan failed (%s: %s) -- continuing.", name, type(exc).__name__, exc)
         track_open(broker, st)
+        try:
+            import pnl_snapshot
+            slot = pnl_snapshot.due_slot(now, pnl_snapshot.MCX_SLOTS, st.setdefault("pnl_snaps", []))
+            if slot:
+                pnl_snapshot.mark_sent(now, pnl_snapshot.MCX_SLOTS, st["pnl_snaps"])
+                tg.send(pnl_snapshot.mcx_message(st, slot))
+        except Exception as exc:
+            log.error("MCX P&L snapshot failed (%s: %s) -- continuing.", type(exc).__name__, exc)
     except Exception as exc:       # save progress, then re-raise
         err = exc
         log.error("MCX run error (%s: %s)", type(exc).__name__, exc, exc_info=True)
