@@ -448,7 +448,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T12:30:00+05:30",
+      "last_processed_ts": "2026-11-09T12:35:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -468,7 +468,7 @@
       "entry_oi": 83300,
       "entry_volume": 1063,
       "signal_future_token": null,
-      "last_price": 314.6
+      "last_price": 306.2
     },
     "MCX-fvg-NATURALGAS-CE-20261109-1131-01": {
       "trade_id": "MCX-fvg-NATURALGAS-CE-20261109-1131-01",
@@ -597,9 +597,9 @@
       "final_status": null,
       "actual_entry_time": "2026-11-09T11:41:00+05:30",
       "tracked_entry_price": 2878.5,
-      "highest_since_entry": 3048.5,
+      "highest_since_entry": 3060.0,
       "lowest_since_entry": 2869.0,
-      "max_favorable_pct": 5.91,
+      "max_favorable_pct": 6.31,
       "max_adverse_pct": -0.33,
       "t1_hit": true,
       "t1_hit_time": "2026-11-09T12:27:00+05:30",
@@ -607,7 +607,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T12:31:00+05:30",
+      "last_processed_ts": "2026-11-09T12:35:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -627,9 +627,9 @@
       "entry_oi": 90200,
       "entry_volume": 2434,
       "signal_future_token": null,
-      "last_price": 3021.5,
+      "last_price": 3027.5,
       "be_tracked": true,
-      "trail_sl": 2971.125
+      "trail_sl": 2982.625
     },
     "MCX-fvg-CRUDEOIL-PE-20261109-1145-01": {
       "trade_id": "MCX-fvg-CRUDEOIL-PE-20261109-1145-01",
@@ -963,6 +963,12 @@
         "spot": 143687.0,
         "call_oi": 1080000.0,
         "put_oi": 711200.0
+      },
+      {
+        "t": 755,
+        "spot": 143610.0,
+        "call_oi": 1076800.0,
+        "put_oi": 714600.0
       }
     ],
     "GOLD": [
@@ -1101,6 +1107,12 @@
       {
         "t": 751,
         "spot": 143691.0,
+        "call_oi": 793.0,
+        "put_oi": 339.0
+      },
+      {
+        "t": 755,
+        "spot": 143639.0,
         "call_oi": 793.0,
         "put_oi": 339.0
       }
@@ -1243,6 +1255,12 @@
         "spot": 8453.0,
         "call_oi": 1364400.0,
         "put_oi": 1964600.0
+      },
+      {
+        "t": 755,
+        "spot": 8479.0,
+        "call_oi": 1364800.0,
+        "put_oi": 1967400.0
       }
     ],
     "NATURALGAS": [
