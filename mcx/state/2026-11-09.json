@@ -57,7 +57,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T10:45:00+05:30",
+      "last_processed_ts": "2026-11-09T10:50:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -358,16 +358,16 @@
       "actual_entry_time": "2026-11-09T10:36:00+05:30",
       "tracked_entry_price": 2887.5,
       "highest_since_entry": 2930.0,
-      "lowest_since_entry": 2869.5,
+      "lowest_since_entry": 2850.0,
       "max_favorable_pct": 1.47,
-      "max_adverse_pct": -0.62,
+      "max_adverse_pct": -1.3,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T10:45:00+05:30",
+      "last_processed_ts": "2026-11-09T10:50:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -466,6 +466,12 @@
         "spot": 144000.0,
         "call_oi": 1010900.0,
         "put_oi": 567300.0
+      },
+      {
+        "t": 650,
+        "spot": 144040.0,
+        "call_oi": 1010600.0,
+        "put_oi": 567100.0
       }
     ],
     "GOLD": [
@@ -540,6 +546,12 @@
         "spot": 144028.0,
         "call_oi": 783.0,
         "put_oi": 294.0
+      },
+      {
+        "t": 650,
+        "spot": 144107.0,
+        "call_oi": 781.0,
+        "put_oi": 294.0
       }
     ],
     "CRUDEOIL": [
@@ -596,6 +608,12 @@
         "spot": 8529.0,
         "call_oi": 1564300.0,
         "put_oi": 1644000.0
+      },
+      {
+        "t": 650,
+        "spot": 8490.0,
+        "call_oi": 1317300.0,
+        "put_oi": 1648100.0
       }
     ],
     "NATURALGAS": [
@@ -646,6 +664,12 @@
         "spot": 284.5,
         "call_oi": 43871250.0,
         "put_oi": 44807500.0
+      },
+      {
+        "t": 650,
+        "spot": 284.9,
+        "call_oi": 43828750.0,
+        "put_oi": 44802500.0
       }
     ]
   },
