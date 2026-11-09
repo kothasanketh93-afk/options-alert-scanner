@@ -693,14 +693,14 @@ def maybe_send_daily_summary(state: dict, now: datetime):
 
 
 def maybe_send_pnl_snapshot(state: dict, now: datetime):
-    """Every 2 hours inside market time (pnl_snapshot.NSE_SLOTS): closed + open P&L, one lot per trade, as a short text."""
+    """Hourly inside market time (pnl_snapshot.NSE_SLOTS): closed + open P&L, one lot per trade, as an image (text fallback)."""
     import pnl_snapshot
     sent = state.setdefault("pnl_snaps", [])
     slot = pnl_snapshot.due_slot(now, pnl_snapshot.NSE_SLOTS, sent)
     if not slot:
         return
     pnl_snapshot.mark_sent(now, pnl_snapshot.NSE_SLOTS, sent)          # one message per run, never a burst
-    tg.send(pnl_snapshot.nse_message(state, slot))
+    pnl_snapshot.send_snapshot("NSE", state, slot, lambda p, caption: tg.send_photo(p, caption=caption), tg.send)
 
 
 def maybe_send_eod_report(state: dict, now: datetime):

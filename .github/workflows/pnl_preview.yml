@@ -1,0 +1,35 @@
+name: P&L Preview
+
+# Manual dispatch only: sends the intraday P&L snapshot image (from the state branch) to Telegram once.
+on:
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Trading date (YYYY-MM-DD)'
+        required: true
+      market:
+        description: 'NSE or MCX'
+        required: true
+        default: 'NSE'
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: state
+          path: statebranch
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - name: Send snapshot
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/send_pnl_preview.py statebranch "${{ github.event.inputs.date }}" "${{ github.event.inputs.market }}"

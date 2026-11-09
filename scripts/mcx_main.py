@@ -425,7 +425,7 @@ def main():
             slot = pnl_snapshot.due_slot(now, pnl_snapshot.MCX_SLOTS, st.setdefault("pnl_snaps", []))
             if slot:
                 pnl_snapshot.mark_sent(now, pnl_snapshot.MCX_SLOTS, st["pnl_snaps"])
-                tg.send(pnl_snapshot.mcx_message(st, slot))
+                pnl_snapshot.send_snapshot("MCX", st, slot, lambda p, caption: tg.send_photo(p, caption=caption), tg.send)
         except Exception as exc:
             log.error("MCX P&L snapshot failed (%s: %s) -- continuing.", type(exc).__name__, exc)
     except Exception as exc:       # save progress, then re-raise
