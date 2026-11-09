@@ -439,16 +439,16 @@
       "actual_entry_time": "2026-11-09T11:26:00+05:30",
       "tracked_entry_price": 303.9,
       "highest_since_entry": 341.3,
-      "lowest_since_entry": 296.1,
+      "lowest_since_entry": 293.2,
       "max_favorable_pct": 12.31,
-      "max_adverse_pct": -2.57,
+      "max_adverse_pct": -3.52,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T12:45:00+05:30",
+      "last_processed_ts": "2026-11-09T12:50:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -468,7 +468,7 @@
       "entry_oi": 83300,
       "entry_volume": 1063,
       "signal_future_token": null,
-      "last_price": 302.5
+      "last_price": 307.8
     },
     "MCX-fvg-NATURALGAS-CE-20261109-1131-01": {
       "trade_id": "MCX-fvg-NATURALGAS-CE-20261109-1131-01",
@@ -597,9 +597,9 @@
       "final_status": null,
       "actual_entry_time": "2026-11-09T11:41:00+05:30",
       "tracked_entry_price": 2878.5,
-      "highest_since_entry": 3091.0,
+      "highest_since_entry": 3125.0,
       "lowest_since_entry": 2869.0,
-      "max_favorable_pct": 7.38,
+      "max_favorable_pct": 8.56,
       "max_adverse_pct": -0.33,
       "t1_hit": true,
       "t1_hit_time": "2026-11-09T12:27:00+05:30",
@@ -607,7 +607,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T12:40:00+05:30",
+      "last_processed_ts": "2026-11-09T12:50:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -627,9 +627,10 @@
       "entry_oi": 90200,
       "entry_volume": 2434,
       "signal_future_token": null,
-      "last_price": 3065.0,
+      "last_price": 3079.0,
       "be_tracked": true,
-      "trail_sl": 3013.625
+      "trail_sl": 3047.625,
+      "trail_exit_price": 3047.625
     },
     "MCX-fvg-CRUDEOIL-PE-20261109-1145-01": {
       "trade_id": "MCX-fvg-CRUDEOIL-PE-20261109-1145-01",
@@ -981,6 +982,12 @@
         "spot": 143540.0,
         "call_oi": 1078700.0,
         "put_oi": 713400.0
+      },
+      {
+        "t": 770,
+        "spot": 143609.0,
+        "call_oi": 1072900.0,
+        "put_oi": 716900.0
       }
     ],
     "GOLD": [
@@ -1133,6 +1140,12 @@
         "spot": 143641.0,
         "call_oi": 794.0,
         "put_oi": 340.0
+      },
+      {
+        "t": 770,
+        "spot": 143631.0,
+        "call_oi": 790.0,
+        "put_oi": 339.0
       }
     ],
     "CRUDEOIL": [
@@ -1291,6 +1304,12 @@
         "spot": 8474.0,
         "call_oi": 1446300.0,
         "put_oi": 1683400.0
+      },
+      {
+        "t": 770,
+        "spot": 8475.0,
+        "call_oi": 1350700.0,
+        "put_oi": 1970000.0
       }
     ],
     "NATURALGAS": [
@@ -1441,7 +1460,8 @@
     ]
   },
   "rejects": {
-    "GOLD:low_volume": 1
+    "GOLD:low_volume": 1,
+    "GOLD:spread_15.4pct": 1
   },
   "summary_sent": false,
   "sig_fut2": {
