@@ -607,7 +607,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T12:55:00+05:30",
+      "last_processed_ts": "2026-11-09T13:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -627,7 +627,7 @@
       "entry_oi": 90200,
       "entry_volume": 2434,
       "signal_future_token": null,
-      "last_price": 3045.0,
+      "last_price": 3051.0,
       "be_tracked": true,
       "trail_sl": 3047.625,
       "trail_exit_price": 3047.625
@@ -994,6 +994,12 @@
         "spot": 143600.0,
         "call_oi": 1074900.0,
         "put_oi": 718400.0
+      },
+      {
+        "t": 781,
+        "spot": 143700.0,
+        "call_oi": 1078300.0,
+        "put_oi": 716900.0
       }
     ],
     "GOLD": [
@@ -1158,6 +1164,12 @@
         "spot": 143646.0,
         "call_oi": 788.0,
         "put_oi": 338.0
+      },
+      {
+        "t": 781,
+        "spot": 143638.0,
+        "call_oi": 788.0,
+        "put_oi": 337.0
       }
     ],
     "CRUDEOIL": [
@@ -1328,6 +1340,12 @@
         "spot": 8468.0,
         "call_oi": 1436400.0,
         "put_oi": 1697400.0
+      },
+      {
+        "t": 781,
+        "spot": 8457.0,
+        "call_oi": 1344600.0,
+        "put_oi": 2006700.0
       }
     ],
     "NATURALGAS": [
@@ -1480,6 +1498,12 @@
         "spot": 282.9,
         "call_oi": 43870000.0,
         "put_oi": 44625000.0
+      },
+      {
+        "t": 781,
+        "spot": 283.0,
+        "call_oi": 43963750.0,
+        "put_oi": 44643750.0
       }
     ]
   },
@@ -1495,6 +1519,7 @@
     "GOLD": "495213"
   },
   "pnl_snaps": [
-    "1100"
+    "1100",
+    "1300"
   ]
 }
