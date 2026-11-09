@@ -439,16 +439,16 @@
       "actual_entry_time": "2026-11-09T11:26:00+05:30",
       "tracked_entry_price": 303.9,
       "highest_since_entry": 341.3,
-      "lowest_since_entry": 272.0,
+      "lowest_since_entry": 267.2,
       "max_favorable_pct": 12.31,
-      "max_adverse_pct": -10.5,
+      "max_adverse_pct": -12.08,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T15:40:00+05:30",
+      "last_processed_ts": "2026-11-09T15:45:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -468,7 +468,7 @@
       "entry_oi": 83300,
       "entry_volume": 1063,
       "signal_future_token": null,
-      "last_price": 273.3
+      "last_price": 273.6
     },
     "MCX-fvg-NATURALGAS-CE-20261109-1131-01": {
       "trade_id": "MCX-fvg-NATURALGAS-CE-20261109-1131-01",
@@ -929,7 +929,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T15:40:00+05:30",
+      "last_processed_ts": "2026-11-09T15:45:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "order_block",
@@ -949,7 +949,7 @@
       "entry_oi": 78000,
       "entry_volume": 2624,
       "signal_future_token": null,
-      "last_price": 2977.0
+      "last_price": 2965.5
     }
   },
   "next_seq": {
@@ -1285,6 +1285,12 @@
         "spot": 143544.0,
         "call_oi": 1239500.0,
         "put_oi": 734400.0
+      },
+      {
+        "t": 945,
+        "spot": 143570.0,
+        "call_oi": 1311700.0,
+        "put_oi": 770200.0
       }
     ],
     "GOLD": [
@@ -1889,6 +1895,12 @@
         "spot": 8490.0,
         "call_oi": 1915400.0,
         "put_oi": 2204000.0
+      },
+      {
+        "t": 945,
+        "spot": 8517.0,
+        "call_oi": 2022900.0,
+        "put_oi": 2266000.0
       }
     ],
     "NATURALGAS": [
@@ -2173,6 +2185,12 @@
         "spot": 285.8,
         "call_oi": 45911250.0,
         "put_oi": 45936250.0
+      },
+      {
+        "t": 945,
+        "spot": 285.9,
+        "call_oi": 46627500.0,
+        "put_oi": 46481250.0
       }
     ]
   },
