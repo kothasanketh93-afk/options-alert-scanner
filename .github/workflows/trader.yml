@@ -105,8 +105,8 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         run: pip install -r requirements.txt
 
-      - name: Align scan start to :02:30 / :07:30 ... (native schedule only)
-        if: steps.guard.outputs.skip != 'true' && github.event_name == 'schedule'
+      - name: Align scan start to :02:30 / :07:30 ... (only waits when started inside :02:00-:02:30 of a 5-min block)
+        if: steps.guard.outputs.skip != 'true'
         run: |
           now=$(date +%s); base=$(( now / 300 * 300 )); target=$(( base + 150 ))
           # wait only if we are inside [:02:00, :02:30) of the 5-min block; a late runner just goes
