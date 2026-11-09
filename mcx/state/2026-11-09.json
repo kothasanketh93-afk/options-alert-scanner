@@ -448,7 +448,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T13:15:00+05:30",
+      "last_processed_ts": "2026-11-09T13:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -468,7 +468,7 @@
       "entry_oi": 83300,
       "entry_volume": 1063,
       "signal_future_token": null,
-      "last_price": 314.0
+      "last_price": 312.3
     },
     "MCX-fvg-NATURALGAS-CE-20261109-1131-01": {
       "trade_id": "MCX-fvg-NATURALGAS-CE-20261109-1131-01",
@@ -1018,6 +1018,12 @@
         "spot": 143389.0,
         "call_oi": 1095400.0,
         "put_oi": 715200.0
+      },
+      {
+        "t": 800,
+        "spot": 143450.0,
+        "call_oi": 1091400.0,
+        "put_oi": 711700.0
       }
     ],
     "GOLD": [
@@ -1188,6 +1194,12 @@
         "spot": 143638.0,
         "call_oi": 788.0,
         "put_oi": 337.0
+      },
+      {
+        "t": 800,
+        "spot": 143430.0,
+        "call_oi": 805.0,
+        "put_oi": 344.0
       }
     ],
     "CRUDEOIL": [
@@ -1370,6 +1382,12 @@
         "spot": 8443.0,
         "call_oi": 1360500.0,
         "put_oi": 1982800.0
+      },
+      {
+        "t": 800,
+        "spot": 8465.0,
+        "call_oi": 1362000.0,
+        "put_oi": 1958200.0
       }
     ],
     "NATURALGAS": [
@@ -1546,12 +1564,19 @@
         "spot": 284.3,
         "call_oi": 43711250.0,
         "put_oi": 44731250.0
+      },
+      {
+        "t": 800,
+        "spot": 284.3,
+        "call_oi": 43713750.0,
+        "put_oi": 44735000.0
       }
     ]
   },
   "rejects": {
     "GOLD:low_volume": 1,
-    "GOLD:spread_15.4pct": 2
+    "GOLD:spread_15.4pct": 2,
+    "GOLD:spread_11.4pct": 1
   },
   "summary_sent": false,
   "sig_fut2": {
