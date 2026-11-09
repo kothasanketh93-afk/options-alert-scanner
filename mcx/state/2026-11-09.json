@@ -448,7 +448,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T14:20:00+05:30",
+      "last_processed_ts": "2026-11-09T14:25:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -468,7 +468,7 @@
       "entry_oi": 83300,
       "entry_volume": 1063,
       "signal_future_token": null,
-      "last_price": 320.1
+      "last_price": 314.0
     },
     "MCX-fvg-NATURALGAS-CE-20261109-1131-01": {
       "trade_id": "MCX-fvg-NATURALGAS-CE-20261109-1131-01",
@@ -793,6 +793,83 @@
       "entry_volume": 2754,
       "signal_future_token": null,
       "last_price": 15.6
+    },
+    "MCX-bos-NATURALGAS-CE-20261109-1425-01": {
+      "trade_id": "MCX-bos-NATURALGAS-CE-20261109-1425-01",
+      "display_label": "MCX 11",
+      "symbol": "NATURALGAS",
+      "direction": "CE",
+      "moneyness": "ATM",
+      "instrument_key": "MCX|583841",
+      "strike": 285.0,
+      "expiry": "2026-11-20",
+      "spot_price": 285.9,
+      "alert_time": "2026-11-09T14:25:39.072438+05:30",
+      "alert_premium": 14.9,
+      "entry_low": 14.9,
+      "entry_high": 14.9,
+      "stop_loss": 14.2,
+      "initial_stop_loss": 14.2,
+      "target_1": 15.95,
+      "target_2": 16.65,
+      "session": "MCX",
+      "grade": "Shadow",
+      "trade_score": 50,
+      "bid": 14.95,
+      "ask": 15.05,
+      "spread_pct": 0.67,
+      "probability_pct": null,
+      "probability_label": "Shadow",
+      "score_breakdown": [],
+      "confidence_score": 5.0,
+      "risk_score": 4.5,
+      "reward_score": 6.0,
+      "expected_rr": "1:1.5",
+      "factor_checklist": [],
+      "confidence_stars": "",
+      "confidence_label": "Shadow",
+      "risk_rating": "",
+      "risk_label": "Unvalidated",
+      "expected_holding_minutes": [
+        30,
+        180
+      ],
+      "why_reasons": [],
+      "alternatives": [],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-11-09T14:25:39.072438+05:30",
+      "messages_sent": [],
+      "streak_counted": false,
+      "strategy": "bos",
+      "probability_status": "shadow_only",
+      "execution_mode": "shadow",
+      "live_alert_sent": false,
+      "engine": "mcx",
+      "market_close_hhmm": [
+        23,
+        25
+      ],
+      "delta_proxy": 0.5,
+      "lot_multiplier": 1250,
+      "level_name": "BOS",
+      "sweep_extreme": 284.4,
+      "fvg": null,
+      "entry_oi": 4365000,
+      "entry_volume": 6608,
+      "signal_future_token": null
     }
   },
   "next_seq": {
@@ -805,7 +882,8 @@
     "MCX-fvg-NATURALGAS": 1,
     "MCX-bos-GOLDM": 1,
     "MCX-fvg-CRUDEOIL": 1,
-    "MCX-oi_flow-NATURALGAS": 1
+    "MCX-oi_flow-NATURALGAS": 1,
+    "MCX-bos-NATURALGAS": 1
   },
   "flow_snap": {
     "GOLDM": [
@@ -1060,6 +1138,12 @@
         "spot": 143490.0,
         "call_oi": 1122000.0,
         "put_oi": 711600.0
+      },
+      {
+        "t": 865,
+        "spot": 143376.0,
+        "call_oi": 1128400.0,
+        "put_oi": 711500.0
       }
     ],
     "GOLD": [
@@ -1284,6 +1368,12 @@
         "spot": 143320.0,
         "call_oi": 836.0,
         "put_oi": 366.0
+      },
+      {
+        "t": 865,
+        "spot": 143363.0,
+        "call_oi": 839.0,
+        "put_oi": 370.0
       }
     ],
     "CRUDEOIL": [
@@ -1732,6 +1822,12 @@
         "spot": 284.6,
         "call_oi": 43878750.0,
         "put_oi": 45291250.0
+      },
+      {
+        "t": 865,
+        "spot": 285.8,
+        "call_oi": 43981250.0,
+        "put_oi": 45418750.0
       }
     ]
   },
@@ -1739,7 +1835,8 @@
     "GOLD:low_volume": 1,
     "GOLD:spread_15.4pct": 2,
     "GOLD:spread_11.4pct": 1,
-    "GOLD:spread_11.1pct": 1
+    "GOLD:spread_11.1pct": 1,
+    "GOLD:spread_9.8pct": 1
   },
   "summary_sent": false,
   "sig_fut2": {
