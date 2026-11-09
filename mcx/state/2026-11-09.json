@@ -448,7 +448,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T14:25:00+05:30",
+      "last_processed_ts": "2026-11-09T14:31:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -468,7 +468,7 @@
       "entry_oi": 83300,
       "entry_volume": 1063,
       "signal_future_token": null,
-      "last_price": 314.0
+      "last_price": 302.0
     },
     "MCX-fvg-NATURALGAS-CE-20261109-1131-01": {
       "trade_id": "MCX-fvg-NATURALGAS-CE-20261109-1131-01",
@@ -850,7 +850,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T14:25:39.072438+05:30",
+      "last_processed_ts": "2026-11-09T14:31:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -869,7 +869,8 @@
       "fvg": null,
       "entry_oi": 4365000,
       "entry_volume": 6608,
-      "signal_future_token": null
+      "signal_future_token": null,
+      "last_price": 15.4
     }
   },
   "next_seq": {
@@ -1144,6 +1145,12 @@
         "spot": 143376.0,
         "call_oi": 1128400.0,
         "put_oi": 711500.0
+      },
+      {
+        "t": 871,
+        "spot": 143377.0,
+        "call_oi": 1129900.0,
+        "put_oi": 714400.0
       }
     ],
     "GOLD": [
@@ -1374,6 +1381,12 @@
         "spot": 143363.0,
         "call_oi": 839.0,
         "put_oi": 370.0
+      },
+      {
+        "t": 871,
+        "spot": 143330.0,
+        "call_oi": 841.0,
+        "put_oi": 368.0
       }
     ],
     "CRUDEOIL": [
@@ -1598,6 +1611,12 @@
         "spot": 8435.0,
         "call_oi": 1436400.0,
         "put_oi": 1987800.0
+      },
+      {
+        "t": 871,
+        "spot": 8457.0,
+        "call_oi": 1438800.0,
+        "put_oi": 2009600.0
       }
     ],
     "NATURALGAS": [
@@ -1836,7 +1855,8 @@
     "GOLD:spread_15.4pct": 2,
     "GOLD:spread_11.4pct": 1,
     "GOLD:spread_11.1pct": 1,
-    "GOLD:spread_9.8pct": 1
+    "GOLD:spread_9.8pct": 1,
+    "GOLD:spread_7.9pct": 1
   },
   "summary_sent": false,
   "sig_fut2": {
