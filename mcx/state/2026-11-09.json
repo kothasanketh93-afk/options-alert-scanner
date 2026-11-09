@@ -448,7 +448,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T14:55:00+05:30",
+      "last_processed_ts": "2026-11-09T15:01:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -468,7 +468,7 @@
       "entry_oi": 83300,
       "entry_volume": 1063,
       "signal_future_token": null,
-      "last_price": 298.8
+      "last_price": 297.4
     },
     "MCX-fvg-NATURALGAS-CE-20261109-1131-01": {
       "trade_id": "MCX-fvg-NATURALGAS-CE-20261109-1131-01",
@@ -1158,6 +1158,12 @@
         "spot": 143412.0,
         "call_oi": 1128700.0,
         "put_oi": 714600.0
+      },
+      {
+        "t": 901,
+        "spot": 143326.0,
+        "call_oi": 1133100.0,
+        "put_oi": 715800.0
       }
     ],
     "GOLD": [
@@ -1678,6 +1684,12 @@
         "spot": 8471.0,
         "call_oi": 1450900.0,
         "put_oi": 2050700.0
+      },
+      {
+        "t": 901,
+        "spot": 8470.0,
+        "call_oi": 1453000.0,
+        "put_oi": 2051300.0
       }
     ],
     "NATURALGAS": [
@@ -1941,6 +1953,7 @@
   },
   "pnl_snaps": [
     "1100",
-    "1300"
+    "1300",
+    "1500"
   ]
 }
