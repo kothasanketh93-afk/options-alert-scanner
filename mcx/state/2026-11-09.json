@@ -438,9 +438,9 @@
       "final_status": null,
       "actual_entry_time": "2026-11-09T11:26:00+05:30",
       "tracked_entry_price": 303.9,
-      "highest_since_entry": 338.9,
+      "highest_since_entry": 341.3,
       "lowest_since_entry": 296.1,
-      "max_favorable_pct": 11.52,
+      "max_favorable_pct": 12.31,
       "max_adverse_pct": -2.57,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -448,7 +448,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T12:15:00+05:30",
+      "last_processed_ts": "2026-11-09T12:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -468,7 +468,7 @@
       "entry_oi": 83300,
       "entry_volume": 1063,
       "signal_future_token": null,
-      "last_price": 332.4
+      "last_price": 334.6
     },
     "MCX-fvg-NATURALGAS-CE-20261109-1131-01": {
       "trade_id": "MCX-fvg-NATURALGAS-CE-20261109-1131-01",
@@ -607,7 +607,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T12:15:00+05:30",
+      "last_processed_ts": "2026-11-09T12:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -627,7 +627,7 @@
       "entry_oi": 90200,
       "entry_volume": 2434,
       "signal_future_token": null,
-      "last_price": 2923.5
+      "last_price": 2950.0
     },
     "MCX-fvg-CRUDEOIL-PE-20261109-1145-01": {
       "trade_id": "MCX-fvg-CRUDEOIL-PE-20261109-1145-01",
@@ -1004,6 +1004,12 @@
         "spot": 143801.0,
         "call_oi": 750.0,
         "put_oi": 288.0
+      },
+      {
+        "t": 740,
+        "spot": 143900.0,
+        "call_oi": 751.0,
+        "put_oi": 288.0
       }
     ],
     "CRUDEOIL": [
@@ -1254,6 +1260,12 @@
         "spot": 285.0,
         "call_oi": 43623750.0,
         "put_oi": 45026250.0
+      },
+      {
+        "t": 740,
+        "spot": 283.3,
+        "call_oi": 43648750.0,
+        "put_oi": 44805000.0
       }
     ]
   },
