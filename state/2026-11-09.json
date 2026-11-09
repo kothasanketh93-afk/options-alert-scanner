@@ -76,9 +76,9 @@
       "final_status": null,
       "actual_entry_time": "2026-11-09T14:12:00+05:30",
       "tracked_entry_price": 32.95,
-      "highest_since_entry": 33.4,
+      "highest_since_entry": 33.5,
       "lowest_since_entry": 32.95,
-      "max_favorable_pct": 1.37,
+      "max_favorable_pct": 1.67,
       "max_adverse_pct": 0.0,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -86,7 +86,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T14:13:00+05:30",
+      "last_processed_ts": "2026-11-09T14:15:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -97,7 +97,7 @@
       "probability_trend": "Stable",
       "vix_at_alert": 17.42,
       "nifty_chg_pct_at_alert": -0.14,
-      "last_price": 33.4
+      "last_price": 33.5
     },
     "SENSEX-CE-ATM-20261109-1413-01": {
       "trade_id": "SENSEX-CE-ATM-20261109-1413-01",
@@ -178,30 +178,32 @@
           "trade_score": 34
         }
       ],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
-      "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "actual_entry_time": "2026-11-09T14:14:00+05:30",
+      "tracked_entry_price": 561.25,
+      "highest_since_entry": 570.7,
+      "lowest_since_entry": 549.8,
+      "max_favorable_pct": 1.68,
+      "max_adverse_pct": -2.04,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-09T14:13:31.463765+05:30",
+      "last_processed_ts": "2026-11-09T14:15:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "ENTRY_ACTIVATED"
       ],
       "streak_counted": false,
       "strategy": "trade_score",
       "probability_history": [],
       "probability_trend": "Stable",
       "vix_at_alert": 17.37,
-      "nifty_chg_pct_at_alert": 0.02
+      "nifty_chg_pct_at_alert": 0.02,
+      "last_price": 554.35
     }
   },
   "next_seq": {
