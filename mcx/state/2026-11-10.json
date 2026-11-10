@@ -3,7 +3,12 @@
   "mcx_shadow_trades": {},
   "next_seq": {},
   "flow_snap": {},
-  "rejects": {},
+  "rejects": {
+    "CRUDEOIL:sparse_candles": 1,
+    "NATURALGAS:sparse_candles": 1,
+    "GOLDM:sparse_candles": 1,
+    "GOLD:sparse_candles": 1
+  },
   "summary_sent": false,
   "sig_fut2": {
     "CRUDEOIL": "573422",
