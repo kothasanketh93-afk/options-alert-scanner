@@ -685,21 +685,21 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-11-11T12:57:00+05:30",
       "tracked_entry_price": 244.2,
       "highest_since_entry": 265.0,
-      "lowest_since_entry": 230.0,
+      "lowest_since_entry": 210.4,
       "max_favorable_pct": 8.52,
-      "max_adverse_pct": -5.81,
+      "max_adverse_pct": -13.84,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-11-11T14:48:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T14:45:00+05:30",
+      "last_processed_ts": "2026-11-11T14:50:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -719,7 +719,7 @@
       "entry_oi": 547700,
       "entry_volume": 20701,
       "signal_future_token": null,
-      "last_price": 235.1
+      "last_price": 210.0
     },
     "MCX-bos-GOLDM-PE-20261111-1425-01": {
       "trade_id": "MCX-bos-GOLDM-PE-20261111-1425-01",
@@ -767,9 +767,9 @@
       "final_status": null,
       "actual_entry_time": "2026-11-11T14:26:00+05:30",
       "tracked_entry_price": 2535.0,
-      "highest_since_entry": 2721.0,
+      "highest_since_entry": 2726.5,
       "lowest_since_entry": 2508.0,
-      "max_favorable_pct": 7.34,
+      "max_favorable_pct": 7.55,
       "max_adverse_pct": -1.07,
       "t1_hit": true,
       "t1_hit_time": "2026-11-11T14:45:00+05:30",
@@ -777,7 +777,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T14:45:00+05:30",
+      "last_processed_ts": "2026-11-11T14:50:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -797,7 +797,9 @@
       "entry_oi": 59300,
       "entry_volume": 2525,
       "signal_future_token": null,
-      "last_price": 2717.5
+      "last_price": 2720.0,
+      "be_tracked": true,
+      "trail_sl": 2646.125
     }
   },
   "next_seq": {
@@ -1325,6 +1327,12 @@
         "spot": 8072.0,
         "call_oi": 2016800.0,
         "put_oi": 3406000.0
+      },
+      {
+        "t": 890,
+        "spot": 8147.0,
+        "call_oi": 2407900.0,
+        "put_oi": 3434500.0
       }
     ],
     "GOLDM": [
@@ -1857,6 +1865,12 @@
         "spot": 141358.0,
         "call_oi": 610.0,
         "put_oi": 643.0
+      },
+      {
+        "t": 890,
+        "spot": 141339.0,
+        "call_oi": 611.0,
+        "put_oi": 642.0
       }
     ]
   },
