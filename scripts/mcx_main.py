@@ -52,6 +52,8 @@ signals.FLOW_LAST_MINS = LAST_SIGNAL_MINS
 signals.FLOW_FIRST_MINS = 9 * 60 + 30
 
 MCX_DIR = "mcx"
+_CHART_CTX = {}        # commodity -> (today's 5m signal-future candles, prev high, prev low, future symbol) for setup charts
+_BROKER = None         # set in main(): result charts fetch the option's 1-minute candles once per closed trade
 
 
 def _state_path(date_str: str) -> Path:
@@ -180,6 +182,7 @@ def scan_commodity(broker, st: dict, name: str, c: dict, now: datetime):
     daily = broker.get_daily_candles(fut_key, 5)
     prev = daily[-1] if daily else None
     ph, pl = (prev["high"], prev["low"]) if prev else (None, None)
+    _CHART_CTX[name] = (today, ph, pl, sig_fut.get("symbol"))
 
     def safe(strategy, fn, *args):
         """Strategies are independent: a detector that raises is logged and skipped, never aborting the others."""
@@ -279,6 +282,7 @@ def create_trade(broker, st, name, c, strategy, sig, atr, ph, pl, qs, now, spot_
     t.update({"probability_status": "shadow_only", "execution_mode": "shadow", "live_alert_sent": False,
               "engine": "mcx", "market_close_hhmm": list(TRADE_CLOSE_HHMM), "delta_proxy": ATM_DELTA_PROXY,
               "lot_multiplier": LOT_MULTIPLIER[name], "level_name": sig.get("level_name"),
+              "level_value": sig.get("level_value"), "signal_close": sig.get("signal_close"),
               "sweep_extreme": sig.get("extreme"), "fvg": sig.get("fvg"),
               "entry_oi": qf["oi"], "entry_volume": qf["volume"], "signal_future_token": (st.get("sig_fut") or {}).get(name)})
     st["mcx_shadow_trades"][trade_id] = t
@@ -301,6 +305,57 @@ def notify_created(t: dict):
                 + (f"\nSpread {t['spread_pct']}%" if t.get("spread_pct") is not None else ""))
     except Exception as exc:
         log.error("MCX created notice failed (%s: %s)", type(exc).__name__, exc)
+    send_setup_chart(t)
+
+
+def send_setup_chart(t: dict, sender=None) -> bool:
+    """Signal-future 5-minute chart with the setup's levels (best-effort, once per trade)."""
+    import chart_notify
+    import trade_chart
+    if not chart_notify.enabled() or t.get("chart_setup_sent"):
+        return False
+    t["chart_setup_sent"] = True
+    try:
+        candles, ph, pl, fut = _CHART_CTX.get(t["symbol"], ([], None, None, None))
+        view = dict(t, spot_price=t.get("signal_close") or t.get("spot_price"))    # levels live on the signal future's prices
+        path = trade_chart.temp_png(f"mcx_setup_{t['trade_id']}")
+        label = STRATEGY_LABELS.get(t["strategy"], t["strategy"])
+        if not trade_chart.setup_chart(view, candles, path, name=NAMES.get(t["symbol"], t["symbol"]),
+                                       strategy=f"MCX {label}  |  {fut or 'future'}", pdh=ph, pdl=pl,
+                                       lot=t.get("lot_multiplier") or LOT_MULTIPLIER.get(t["symbol"])):
+            return False
+        (sender or (lambda p, c: tg.send_photo(p, caption=c)))(path, f"MCX setup chart: {NAMES.get(t['symbol'], t['symbol'])} "
+                                                                   f"{t['strike']:g} {t['direction']} ({label})")
+        return True
+    except Exception as exc:
+        log.warning("MCX setup chart %s failed (%s: %s)", t.get("trade_id"), type(exc).__name__, exc)
+        return False
+
+
+def send_outcome_chart(t: dict, broker=None, sender=None) -> bool:
+    """Option premium 1-minute chart from the alert to the exit (best-effort, once per closed trade)."""
+    import chart_notify
+    import trade_chart
+    status = t.get("final_status") or t.get("status")
+    broker = broker or _BROKER
+    if (not chart_notify.enabled() or t.get("chart_outcome_sent") or status not in chart_notify.FINAL
+            or not t.get("tracked_entry_price") or broker is None):
+        return False
+    t["chart_outcome_sent"] = True
+    try:
+        since = (trade_chart._ts(t["alert_time"]) - timedelta(minutes=10)).isoformat()
+        candles = broker.get_candles(t["instrument_key"], "1minute", since_iso=since)
+        path = trade_chart.temp_png(f"mcx_result_{t['trade_id']}")
+        label = STRATEGY_LABELS.get(t["strategy"], t["strategy"])
+        if not trade_chart.outcome_chart(t, candles, path, name=NAMES.get(t["symbol"], t["symbol"]), strategy=f"MCX {label}",
+                                         lot=t.get("lot_multiplier") or LOT_MULTIPLIER.get(t["symbol"])):
+            return False
+        (sender or (lambda p, c: tg.send_photo(p, caption=c)))(path, f"MCX result chart: {NAMES.get(t['symbol'], t['symbol'])} "
+                                                                   f"{t['strike']:g} {t['direction']} -> {status.replace('_', ' ')}")
+        return True
+    except Exception as exc:
+        log.warning("MCX result chart %s failed (%s: %s)", t.get("trade_id"), type(exc).__name__, exc)
+        return False
 
 
 def notify_events(t: dict, events: list):
@@ -317,6 +372,8 @@ def notify_events(t: dict, events: list):
                     f"({STRATEGY_LABELS.get(t['strategy'], t['strategy'])})\nEntry {entry} | SL {t['stop_loss']} | T1 {t['target_1']} | T2 {t['target_2']}{pnl}")
         except Exception as exc:
             log.error("MCX outcome notice failed (%s: %s)", type(exc).__name__, exc)
+    if any(ev.get("type") in ("SL_HIT", "T2_HIT", "EOD_CLOSED") for ev in events):
+        send_outcome_chart(t)
 
 
 def track_open(broker, st: dict):
@@ -419,8 +476,10 @@ def main():
     state_mod.ensure_state_branch_checked_out(os.environ["REPO_URL"], auth.get_github_token())
     date_str = now.strftime("%Y-%m-%d")
     st = load_state(date_str)
+    global _BROKER
     broker = AngelOneBroker()
     broker.login()
+    _BROKER = broker
     master = broker._scrip_master()
     err = None
     try:

@@ -1,4 +1,5 @@
 # 2026-11-11
+- Trade charts (scripts/trade_chart.py, chart_notify.py): after every trade notice (live, NSE shadow engines, MCX) a setup chart image -- underlying 5-minute candles with signal price, previous-day high/low, setup level, invalidation level, FVG zone, auto support/resistance and candlestick pattern labels; when the trade closes (SL/T2/EOD) a result chart of the option premium with entry/SL/T1/T2 and the entry/exit points. Best-effort, once per trade; config.TRADE_CHARTS_ENABLED turns it off.
 - Buy vs sell comparison (scripts/sell_view.py, data only): every closed trade also records the OPPOSITE option (same strike/expiry) sold at the buy trade's entry minute and bought back at its exit minute. New ledger columns sell_option/sell_entry/sell_exit/sell_result_pct; NSE and MCX daily and weekly report images show buy vs sell accuracy and after-cost one-lot P&L per engine.
 
 # 2026-11-02

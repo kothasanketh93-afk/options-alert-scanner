@@ -53,12 +53,15 @@ import run_gap
 import eod_report
 import shadow_notify
 import pattern_tape_runner
+import chart_notify
 from app.market import snapshot as market_snapshot
 
 IST = timezone(timedelta(hours=5, minutes=30))
 from trade_record import TERMINAL_STATUSES, new_trade_record  # noqa: F401  (re-exported; also used by tests)
 
 log = get_logger("main")
+shadow_notify.SETUP_CHART = chart_notify.setup            # setup/result charts after shadow notices (best-effort)
+shadow_notify.OUTCOME_CHART = chart_notify.outcome
 
 
 def notify_once(trade: dict, event_key: str, message_fn, *args):
@@ -242,6 +245,7 @@ def run_scanner_step(state: dict, now: datetime):
     # other, which silently dropping just the first message did not.
     try:
         notify_once(trade, "NEW_TRADE_ALERT", tg.fmt_new_alert, trade)
+        chart_notify.setup(trade)
     except TelegramFailure:
         # The trade is already recorded in state -- it will still be
         # tracked normally by run_tracker_step. Only the initial alert
@@ -390,6 +394,8 @@ def run_tracker_step(state: dict, now: datetime):
 
             events = tracker.process_trade_candles(trade, candles)
             _dispatch_tracker_events(trade, events)
+            if any(e["type"] in ("SL_HIT", "T2_HIT", "EOD_CLOSED") for e in events):
+                chart_notify.outcome(trade)
 
             if trade["status"] in TERMINAL_STATUSES and not trade["streak_counted"]:
                 final_status = trade.get("final_status")
@@ -1328,6 +1334,7 @@ def _create_one_sweep_shadow(state: dict, now: datetime, trades: dict, candidate
     trade["engine"] = "sweep_reversal"
     trade["sweep_extreme"] = candidate.get("sweep_extreme")
     trade["fvg"] = candidate.get("fvg")
+    trade["level_name"], trade["level_value"] = candidate.get("pivot_level_name"), candidate.get("pivot_level_value")
     for _k in ("entry_oi", "entry_volume", "spread_pct"):
         trade[_k] = candidate.get(_k)
     trades[trade_id] = trade

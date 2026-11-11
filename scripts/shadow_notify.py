@@ -16,6 +16,9 @@ log = get_logger("shadow_notify")
 OUTCOME_LABEL = {"SL_HIT": "🔴 Stop-loss hit", "T1_HIT": "🟢 Target 1 hit", "T2_HIT": "🟢 Target 2 hit",
                  "EOD_CLOSED": "⚪ Closed at end of day", "NOT_ENTERED": "⚪ Entry never triggered"}
 _DISCLAIMER = "🧪 SHADOW – data collection only, NOT a trade signal."
+# Optional chart hooks (chart_notify.setup / chart_notify.outcome), set by main.py; best-effort, never raise.
+SETUP_CHART = None
+OUTCOME_CHART = None
 
 
 def _fmt(x):
@@ -69,6 +72,8 @@ def notify_created(state: dict, trade: dict, now, sender=None) -> bool:
         (sender or _send)(format_created(trade))
         seen.append(key)
         trade["shadow_notified"] = True
+        if SETUP_CHART and sender is None:
+            SETUP_CHART(trade)
         return True
     except Exception as exc:
         log.error("SHADOW_NOTIFY created failed (%s: %s)", type(exc).__name__, exc)
@@ -88,4 +93,6 @@ def notify_events(trade: dict, events: list, sender=None) -> int:
             sent += 1
         except Exception as exc:
             log.error("SHADOW_NOTIFY outcome failed (%s: %s)", type(exc).__name__, exc)
+    if OUTCOME_CHART and sender is None and any(ev.get("type") in ("SL_HIT", "T2_HIT", "EOD_CLOSED") for ev in events or []):
+        OUTCOME_CHART(trade)
     return sent

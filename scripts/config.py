@@ -1640,3 +1640,8 @@ SWEEP_SHADOW_ENABLED = True
 SWEEP_SYMBOLS = ["NIFTY", "BANKNIFTY", "MIDCPNIFTY", "SENSEX"]
 SWEEP_CANDLE_INTERVAL = "5minute"
 SWEEP_CANDLE_FETCH_COUNT = 80
+
+
+# Trade charts (2026-11-11, trade_chart.py / chart_notify.py): a setup chart after each trade notice and a result chart when
+# the trade closes, sent to Telegram for learning. Best-effort; never blocks an alert. Set False to stop the images.
+TRADE_CHARTS_ENABLED = True
