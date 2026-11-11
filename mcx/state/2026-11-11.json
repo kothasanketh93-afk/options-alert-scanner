@@ -298,7 +298,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T12:10:00+05:30",
+      "last_processed_ts": "2026-11-11T12:15:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -318,7 +318,7 @@
       "entry_oi": 7301250,
       "entry_volume": 6275,
       "signal_future_token": null,
-      "last_price": 16.0
+      "last_price": 16.05
     },
     "MCX-sweep-NATURALGAS-PE-20261111-1210-01": {
       "trade_id": "MCX-sweep-NATURALGAS-PE-20261111-1210-01",
@@ -362,21 +362,21 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
-      "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "actual_entry_time": "2026-11-11T12:11:00+05:30",
+      "tracked_entry_price": 15.15,
+      "highest_since_entry": 15.2,
+      "lowest_since_entry": 15.05,
+      "max_favorable_pct": 0.33,
+      "max_adverse_pct": -0.66,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T12:10:50.005349+05:30",
+      "last_processed_ts": "2026-11-11T12:15:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sweep",
@@ -395,7 +395,8 @@
       "fvg": null,
       "entry_oi": 5618750,
       "entry_volume": 4313,
-      "signal_future_token": null
+      "signal_future_token": null,
+      "last_price": 15.1
     }
   },
   "next_seq": {
@@ -934,6 +935,12 @@
         "spot": 141649.0,
         "call_oi": 613.0,
         "put_oi": 643.0
+      },
+      {
+        "t": 735,
+        "spot": 141606.0,
+        "call_oi": 606.0,
+        "put_oi": 642.0
       }
     ]
   },
