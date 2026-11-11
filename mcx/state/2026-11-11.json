@@ -376,7 +376,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T13:31:00+05:30",
+      "last_processed_ts": "2026-11-11T13:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sweep",
@@ -396,7 +396,7 @@
       "entry_oi": 5618750,
       "entry_volume": 4313,
       "signal_future_token": null,
-      "last_price": 15.3,
+      "last_price": 15.4,
       "be_tracked": true,
       "trail_sl": 15.615,
       "trail_exit_price": 15.615
@@ -616,7 +616,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T13:31:00+05:30",
+      "last_processed_ts": "2026-11-11T13:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -636,7 +636,7 @@
       "entry_oi": 542000,
       "entry_volume": 19087,
       "signal_future_token": null,
-      "last_price": 239.6,
+      "last_price": 236.5,
       "be_tracked": true,
       "trail_sl": 244.195,
       "trail_exit_price": 244.195,
@@ -698,7 +698,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T13:35:00+05:30",
+      "last_processed_ts": "2026-11-11T13:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -718,7 +718,7 @@
       "entry_oi": 547700,
       "entry_volume": 20701,
       "signal_future_token": null,
-      "last_price": 243.4
+      "last_price": 236.5
     }
   },
   "next_seq": {
@@ -1349,6 +1349,12 @@
         "spot": 141651.0,
         "call_oi": 952600.0,
         "put_oi": 1043200.0
+      },
+      {
+        "t": 821,
+        "spot": 141666.0,
+        "call_oi": 952800.0,
+        "put_oi": 1041300.0
       }
     ],
     "GOLD": [
@@ -1537,6 +1543,12 @@
         "spot": 141770.0,
         "call_oi": 606.0,
         "put_oi": 633.0
+      },
+      {
+        "t": 821,
+        "spot": 141651.0,
+        "call_oi": 605.0,
+        "put_oi": 634.0
       }
     ]
   },
