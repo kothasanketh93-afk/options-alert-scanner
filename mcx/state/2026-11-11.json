@@ -220,7 +220,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T11:15:00+05:30",
+      "last_processed_ts": "2026-11-11T11:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -240,7 +240,7 @@
       "entry_oi": 66400,
       "entry_volume": 2323,
       "signal_future_token": null,
-      "last_price": 2675.0
+      "last_price": 2706.5
     }
   },
   "next_seq": {
@@ -425,6 +425,12 @@
         "spot": 8101.0,
         "call_oi": 1860100.0,
         "put_oi": 3362000.0
+      },
+      {
+        "t": 680,
+        "spot": 8117.0,
+        "call_oi": 2227500.0,
+        "put_oi": 3280500.0
       }
     ],
     "GOLDM": [
@@ -529,6 +535,12 @@
         "spot": 141652.0,
         "call_oi": 868700.0,
         "put_oi": 511000.0
+      },
+      {
+        "t": 680,
+        "spot": 141700.0,
+        "call_oi": 984100.0,
+        "put_oi": 972600.0
       }
     ],
     "GOLD": [
@@ -597,6 +609,12 @@
         "spot": 141735.0,
         "call_oi": 220.0,
         "put_oi": 138.0
+      },
+      {
+        "t": 680,
+        "spot": 141793.0,
+        "call_oi": 234.0,
+        "put_oi": 142.0
       }
     ]
   },
