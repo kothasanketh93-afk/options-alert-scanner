@@ -229,6 +229,12 @@
         "spot": 309.2,
         "call_oi": 37030000.0,
         "put_oi": 27082500.0
+      },
+      {
+        "t": 620,
+        "spot": 309.2,
+        "call_oi": 37005000.0,
+        "put_oi": 27060000.0
       }
     ],
     "CRUDEOIL": [
@@ -361,11 +367,18 @@
         "spot": 141195.0,
         "call_oi": 567.0,
         "put_oi": 622.0
+      },
+      {
+        "t": 620,
+        "spot": 141360.0,
+        "call_oi": 613.0,
+        "put_oi": 651.0
       }
     ]
   },
   "rejects": {
-    "GOLD:low_volume": 1
+    "GOLD:low_volume": 1,
+    "GOLD:spread_11.0pct": 1
   },
   "summary_sent": false,
   "sig_fut2": {
