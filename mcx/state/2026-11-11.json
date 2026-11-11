@@ -777,7 +777,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T15:50:00+05:30",
+      "last_processed_ts": "2026-11-11T15:54:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -797,7 +797,7 @@
       "entry_oi": 59300,
       "entry_volume": 2525,
       "signal_future_token": null,
-      "last_price": 2643.5,
+      "last_price": 2636.0,
       "be_tracked": true,
       "trail_sl": 2650.625,
       "trail_exit_price": 2650.625,
@@ -1153,6 +1153,12 @@
         "spot": 311.5,
         "call_oi": 41046250.0,
         "put_oi": 32218750.0
+      },
+      {
+        "t": 955,
+        "spot": 311.1,
+        "call_oi": 41160000.0,
+        "put_oi": 32337500.0
       }
     ],
     "CRUDEOIL": [
@@ -1461,6 +1467,12 @@
         "spot": 8178.0,
         "call_oi": 3085700.0,
         "put_oi": 2574700.0
+      },
+      {
+        "t": 955,
+        "spot": 8182.0,
+        "call_oi": 3187400.0,
+        "put_oi": 2646000.0
       }
     ],
     "GOLDM": [
@@ -2125,6 +2137,12 @@
         "spot": 141372.0,
         "call_oi": 607.0,
         "put_oi": 636.0
+      },
+      {
+        "t": 955,
+        "spot": 141330.0,
+        "call_oi": 607.0,
+        "put_oi": 638.0
       }
     ]
   },
@@ -2134,7 +2152,8 @@
     "GOLD:spread_6.5pct": 1,
     "GOLD:spread_5.7pct": 1,
     "GOLD:spread_10.6pct": 1,
-    "GOLD:spread_7.7pct": 1
+    "GOLD:spread_7.7pct": 1,
+    "GOLD:spread_8.5pct": 1
   },
   "summary_sent": false,
   "sig_fut2": {
