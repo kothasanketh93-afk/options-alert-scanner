@@ -366,9 +366,9 @@
       "final_status": null,
       "actual_entry_time": "2026-11-11T12:11:00+05:30",
       "tracked_entry_price": 15.15,
-      "highest_since_entry": 15.5,
+      "highest_since_entry": 15.6,
       "lowest_since_entry": 15.0,
-      "max_favorable_pct": 2.31,
+      "max_favorable_pct": 2.97,
       "max_adverse_pct": -0.99,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -376,7 +376,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T12:31:00+05:30",
+      "last_processed_ts": "2026-11-11T12:35:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sweep",
@@ -718,6 +718,12 @@
         "spot": 310.2,
         "call_oi": 37520000.0,
         "put_oi": 28353750.0
+      },
+      {
+        "t": 755,
+        "spot": 310.1,
+        "call_oi": 37377500.0,
+        "put_oi": 28326250.0
       }
     ],
     "CRUDEOIL": [
