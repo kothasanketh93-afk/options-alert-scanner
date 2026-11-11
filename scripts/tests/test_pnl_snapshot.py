@@ -43,3 +43,20 @@ def test_image_renders(tmp_path):
     out = tmp_path / "p.png"
     assert I.render("NSE", "2026-11-09", "1115", P.summarize(rows, lambda r: r["engine"]), P.open_positions(rows), str(out), "Engine")
     assert out.stat().st_size > 5000
+
+
+def test_mcx_track_open_one_fetch_per_instrument(monkeypatch):
+    import mcx_main
+    calls = []
+
+    class B:
+        def get_candles(self, key, interval, since_iso=None):
+            calls.append((key, since_iso))
+            return []
+
+    def mk(since):
+        return {"status": "ACTIVE", "instrument_key": "MCX|1", "last_processed_ts": since}
+    st = {"mcx_shadow_trades": {"a": mk("2026-11-11T12:00:00+05:30"), "b": mk("2026-11-11T12:05:00+05:30"),
+                                "c": {**mk("x"), "status": "SL_HIT"}}}
+    mcx_main.track_open(B(), st)
+    assert calls == [("MCX|1", "2026-11-11T12:00:00+05:30")]

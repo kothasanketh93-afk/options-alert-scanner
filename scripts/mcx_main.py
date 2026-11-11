@@ -320,15 +320,30 @@ def notify_events(t: dict, events: list):
 
 
 def track_open(broker, st: dict):
-    for tid, t in st["mcx_shadow_trades"].items():
-        if t["status"] in TERMINAL_STATUSES:
+    """Outcome tracking (T1/T2/SL alerts) runs BEFORE the scans so the shared Angel One rate limit is never spent on new
+    signals while an open trade's target/stop alert waits. One candle fetch per instrument per run (many trades share one
+    option); a failed fetch is retried once after a short pause."""
+    import time
+    open_trades = [(tid, t) for tid, t in st["mcx_shadow_trades"].items() if t["status"] not in TERMINAL_STATUSES]
+    cache = {}
+    for ikey in {t["instrument_key"] for _, t in open_trades}:
+        since = min(t["last_processed_ts"] for _, t in open_trades if t["instrument_key"] == ikey)
+        for attempt in (1, 2):
+            try:
+                cache[ikey] = broker.get_candles(ikey, "1minute", since_iso=since)
+                break
+            except BrokerAPIError as exc:
+                if attempt == 2:
+                    log.error("MCX tracker fetch %s failed (%s) -- retry next run.", ikey, exc)
+                else:
+                    time.sleep(3)
+    for tid, t in open_trades:
+        candles = cache.get(t["instrument_key"])
+        if candles is None:
             continue
-        try:
-            candles = broker.get_candles(t["instrument_key"], "1minute", since_iso=t["last_processed_ts"])
-            if candles:
-                notify_events(t, tracker.process_trade_candles(t, candles))
-        except BrokerAPIError as exc:
-            log.error("MCX tracker %s failed (%s) -- retry next run.", tid, exc)
+        mine = [c for c in candles if c["timestamp"] > t["last_processed_ts"]]
+        if mine:
+            notify_events(t, tracker.process_trade_candles(t, mine))
 
 
 # --- end-of-day summary ----------------------------------------------------------------------------------------
@@ -409,6 +424,7 @@ def main():
     master = broker._scrip_master()
     err = None
     try:
+        track_open(broker, st)
         for name in COMMODITIES:
             try:
                 c = resolve_contracts(master, name, now)
@@ -419,7 +435,6 @@ def main():
                     scan_commodity(broker, st, name, c, now)
             except BrokerAPIError as exc:
                 log.error("MCX %s scan failed (%s: %s) -- continuing.", name, type(exc).__name__, exc)
-        track_open(broker, st)
         try:
             import pnl_snapshot
             slot = pnl_snapshot.due_slot(now, pnl_snapshot.MCX_SLOTS, st.setdefault("pnl_snaps", []))
