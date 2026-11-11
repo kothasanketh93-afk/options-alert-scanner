@@ -617,7 +617,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T14:00:00+05:30",
+      "last_processed_ts": "2026-11-11T14:04:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -637,7 +637,7 @@
       "entry_oi": 542000,
       "entry_volume": 19087,
       "signal_future_token": null,
-      "last_price": 240.6,
+      "last_price": 241.3,
       "be_tracked": true,
       "trail_sl": 244.195,
       "trail_exit_price": 244.195,
@@ -699,7 +699,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T14:00:00+05:30",
+      "last_processed_ts": "2026-11-11T14:04:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -719,7 +719,7 @@
       "entry_oi": 547700,
       "entry_volume": 20701,
       "signal_future_token": null,
-      "last_price": 240.6
+      "last_price": 241.3
     }
   },
   "next_seq": {
@@ -962,6 +962,12 @@
         "spot": 312.2,
         "call_oi": 41130000.0,
         "put_oi": 25663750.0
+      },
+      {
+        "t": 845,
+        "spot": 312.7,
+        "call_oi": 41673750.0,
+        "put_oi": 26283750.0
       }
     ],
     "CRUDEOIL": [
@@ -1410,6 +1416,12 @@
         "spot": 141580.0,
         "call_oi": 967900.0,
         "put_oi": 1039200.0
+      },
+      {
+        "t": 845,
+        "spot": 141675.0,
+        "call_oi": 969800.0,
+        "put_oi": 1038000.0
       }
     ],
     "GOLD": [
@@ -1622,6 +1634,12 @@
         "spot": 141624.0,
         "call_oi": 605.0,
         "put_oi": 636.0
+      },
+      {
+        "t": 845,
+        "spot": 141621.0,
+        "call_oi": 605.0,
+        "put_oi": 634.0
       }
     ]
   },
