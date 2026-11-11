@@ -86,7 +86,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T10:40:00+05:30",
+      "last_processed_ts": "2026-11-11T10:42:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
@@ -98,8 +98,11 @@
       "probability_trend": "Stable",
       "vix_at_alert": 17.66,
       "nifty_chg_pct_at_alert": 1.23,
-      "last_price": 36.35,
-      "time_to_target_1_minutes": 44
+      "last_price": 34.7,
+      "time_to_target_1_minutes": 44,
+      "be_tracked": true,
+      "trail_sl": 35.265,
+      "trail_exit_price": 35.265
     },
     "COCHINSHIP-PE-ITM-20261111-1025-01": {
       "trade_id": "COCHINSHIP-PE-ITM-20261111-1025-01",
@@ -185,7 +188,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T10:40:00+05:30",
+      "last_processed_ts": "2026-11-11T10:42:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
