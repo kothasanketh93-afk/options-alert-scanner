@@ -604,16 +604,16 @@
       "actual_entry_time": "2026-11-11T12:41:00+05:30",
       "tracked_entry_price": 238.7,
       "highest_since_entry": 251.7,
-      "lowest_since_entry": 235.4,
+      "lowest_since_entry": 231.0,
       "max_favorable_pct": 5.45,
-      "max_adverse_pct": -1.38,
+      "max_adverse_pct": -3.23,
       "t1_hit": true,
       "t1_hit_time": "2026-11-11T12:47:00+05:30",
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T13:05:00+05:30",
+      "last_processed_ts": "2026-11-11T13:10:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -633,10 +633,11 @@
       "entry_oi": 542000,
       "entry_volume": 19087,
       "signal_future_token": null,
-      "last_price": 244.7,
+      "last_price": 231.7,
       "be_tracked": true,
       "trail_sl": 244.195,
-      "trail_exit_price": 244.195
+      "trail_exit_price": 244.195,
+      "be_touch_price": 238.7
     },
     "MCX-bos-CRUDEOIL-PE-20261111-1255-01": {
       "trade_id": "MCX-bos-CRUDEOIL-PE-20261111-1255-01",
@@ -684,17 +685,17 @@
       "final_status": null,
       "actual_entry_time": "2026-11-11T12:57:00+05:30",
       "tracked_entry_price": 244.2,
-      "highest_since_entry": 247.4,
-      "lowest_since_entry": 242.5,
-      "max_favorable_pct": 1.31,
-      "max_adverse_pct": -0.7,
+      "highest_since_entry": 248.1,
+      "lowest_since_entry": 231.0,
+      "max_favorable_pct": 1.6,
+      "max_adverse_pct": -5.41,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T13:05:00+05:30",
+      "last_processed_ts": "2026-11-11T13:10:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -714,7 +715,7 @@
       "entry_oi": 547700,
       "entry_volume": 20701,
       "signal_future_token": null,
-      "last_price": 244.7
+      "last_price": 231.7
     }
   },
   "next_seq": {
@@ -915,6 +916,12 @@
         "spot": 310.2,
         "call_oi": 38036250.0,
         "put_oi": 28396250.0
+      },
+      {
+        "t": 790,
+        "spot": 310.1,
+        "call_oi": 38231250.0,
+        "put_oi": 28247500.0
       }
     ],
     "CRUDEOIL": [
@@ -1273,6 +1280,12 @@
         "spot": 141830.0,
         "call_oi": 836900.0,
         "put_oi": 526600.0
+      },
+      {
+        "t": 790,
+        "spot": 141818.0,
+        "call_oi": 836800.0,
+        "put_oi": 529100.0
       }
     ],
     "GOLD": [
@@ -1430,6 +1443,12 @@
         "t": 781,
         "spot": 141921.0,
         "call_oi": 232.0,
+        "put_oi": 142.0
+      },
+      {
+        "t": 790,
+        "spot": 141861.0,
+        "call_oi": 230.0,
         "put_oi": 142.0
       }
     ]
