@@ -56,8 +56,16 @@ def _send(text):
     telegram_notify.send(text)
 
 
+def _focus_ok(trade: dict) -> bool:
+    """FOCUS_ONLY_NOTICES: shadow notices only for the learning-focus strategies (data is still collected for all)."""
+    if not getattr(config, "FOCUS_ONLY_NOTICES", False):
+        return True
+    import chart_notify
+    return chart_notify.is_focus(trade)
+
+
 def notify_created(state: dict, trade: dict, now, sender=None) -> bool:
-    if not getattr(config, "SHADOW_TELEGRAM_ENABLED", False):
+    if not getattr(config, "SHADOW_TELEGRAM_ENABLED", False) or not _focus_ok(trade):
         return False
     if getattr(config, "CONDITIONS_ALERT_MODE", False) and not trade.get("engine"):
         return False   # main-engine setups now alert live; no duplicate shadow message

@@ -294,7 +294,14 @@ def _inr(x) -> str:
     return f"{x:+,.0f}"
 
 
+def _notice_ok(t: dict) -> bool:
+    import chart_notify
+    return not getattr(outcomes_ledger.config, "FOCUS_ONLY_NOTICES", False) or chart_notify.is_focus(t)
+
+
 def notify_created(t: dict):
+    if not _notice_ok(t):
+        return
     try:
         mult = t.get("lot_multiplier") or LOT_MULTIPLIER.get(t["symbol"], 1)
         e, sl, t1, t2 = t["alert_premium"], t["stop_loss"], t["target_1"], t["target_2"]
@@ -312,7 +319,7 @@ def send_setup_chart(t: dict, sender=None) -> bool:
     """Signal-future 5-minute chart with the setup's levels (best-effort, once per trade)."""
     import chart_notify
     import trade_chart
-    if not chart_notify.enabled() or t.get("chart_setup_sent"):
+    if not chart_notify.enabled() or t.get("chart_setup_sent") or not chart_notify.is_focus(t):
         return False
     t["chart_setup_sent"] = True
     try:
@@ -339,7 +346,7 @@ def send_outcome_chart(t: dict, broker=None, sender=None) -> bool:
     status = t.get("final_status") or t.get("status")
     broker = broker or _BROKER
     if (not chart_notify.enabled() or t.get("chart_outcome_sent") or status not in chart_notify.FINAL
-            or not t.get("tracked_entry_price") or broker is None):
+            or not t.get("tracked_entry_price") or broker is None or not chart_notify.is_focus(t)):
         return False
     t["chart_outcome_sent"] = True
     try:
@@ -359,6 +366,8 @@ def send_outcome_chart(t: dict, broker=None, sender=None) -> bool:
 
 
 def notify_events(t: dict, events: list):
+    if not _notice_ok(t):
+        return
     mult = t.get("lot_multiplier") or LOT_MULTIPLIER.get(t["symbol"], 1)
     for ev in events:
         et = ev.get("type")
@@ -448,6 +457,19 @@ def send_reports(st: dict, now: datetime):
         else:
             tg.send(f"MCX shadow report {st['date']}: no trades today.")
         st["summary_sent"] = True
+    if not st.get("lesson_card_sent"):
+        st["lesson_card_sent"] = True
+        import chart_notify
+        import trade_chart
+
+        def _candles(t):
+            since = (trade_chart._ts(t["alert_time"]) - timedelta(minutes=10)).isoformat()
+            return _BROKER.get_candles(t["instrument_key"], "1minute", since_iso=since) if _BROKER else []
+        chart_notify.lesson_card(list(st["mcx_shadow_trades"].values()), st["date"], "MCX", _candles, tg.send,
+                                 lambda p, c: tg.send_photo(p, caption=c),
+                                 lot_fn=lambda t: t.get("lot_multiplier") or LOT_MULTIPLIER.get(t["symbol"]),
+                                 name_fn=lambda t: NAMES.get(t["symbol"], t["symbol"]),
+                                 label_fn=lambda t: f"MCX {STRATEGY_LABELS.get(t['strategy'], t['strategy'])}")
     if now.weekday() == 4 and not st.get("weekly_sent"):
         png = os.path.join(tempfile.mkdtemp(), f"mcx_weekly_{st['date']}.png")
         data = mcx_report.render_weekly(ledger, st["date"], png)

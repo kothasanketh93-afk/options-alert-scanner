@@ -64,3 +64,13 @@ def test_fib_pivot_label_and_dedupe():
     assert sn.notify_created(st, t, now, sender=sent.append)
     assert not sn.notify_created(st, dict(t), now, sender=sent.append)      # same engine/symbol/direction/day
     assert "fib_pivot" in sent[0] and "trade_score" not in sent[0]
+
+
+import pytest as _pytest
+
+
+@_pytest.fixture(autouse=True)
+def _all_strategies_notify(monkeypatch):
+    """These tests cover notice mechanics, not the learning-focus filter (tested in test_trade_chart.py)."""
+    import config as _config
+    monkeypatch.setattr(_config, "FOCUS_ONLY_NOTICES", False, raising=False)

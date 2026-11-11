@@ -164,3 +164,13 @@ def test_resolve_contracts_option_underlying_is_first_future_on_or_after_option_
          _row("GOLDM", "", 0, "04Dec2026", "FUTCOM", "f1"), _row("GOLDM", "", 0, "05Jan2027", "FUTCOM", "f2")]
     c = mcx_main.resolve_contracts(m, "GOLDM", datetime(2026, 11, 6, 10, 0))
     assert c["opt_fut"]["token"] == "f1" and [f["token"] for f in c["futs"]] == ["f1", "f2"]
+
+
+import pytest as _pytest
+
+
+@_pytest.fixture(autouse=True)
+def _all_strategies_notify(monkeypatch):
+    """These tests cover notice mechanics, not the learning-focus filter (tested in test_trade_chart.py)."""
+    import config as _config
+    monkeypatch.setattr(_config, "FOCUS_ONLY_NOTICES", False, raising=False)

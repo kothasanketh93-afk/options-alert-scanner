@@ -65,8 +65,41 @@ def test_shadow_hooks_fire_only_for_real_sends(monkeypatch):
     monkeypatch.setattr(shadow_notify.config, "SHADOW_TELEGRAM_ENABLED", True, raising=False)
     monkeypatch.setattr(shadow_notify, "_send", lambda text: None)
     from datetime import datetime
-    t = _trade(engine="sweep_reversal", strategy="sweep")
+    t = _trade(engine="sweep_reversal", strategy="fvg")
     assert shadow_notify.notify_created({}, t, datetime(2026, 11, 11, 10, 0))
     shadow_notify.notify_events(t, [{"type": "T1_HIT"}])
     shadow_notify.notify_events(t, [{"type": "SL_HIT"}])
     assert calls == ["setup", "outcome"]
+
+
+def test_focus_filter_and_lessons_in_telugu(monkeypatch):
+    import config, lessons
+    monkeypatch.setattr(config, "FOCUS_STRATEGIES", ("trade_score", "sweep_reversal:fvg", "mcx:ema_pb"))
+    assert chart_notify.is_focus({"strategy": "trade_score"}) and chart_notify.is_focus({"engine": "mcx", "strategy": "ema_pb"})
+    assert not chart_notify.is_focus({"engine": "fib_pivot", "strategy": "trade_score"})
+    assert not chart_notify.setup(_trade(engine="orb_pivot", strategy="orb15"), sender=lambda p, c: None)
+    monkeypatch.setattr(config, "FOCUS_ONLY_NOTICES", True)
+    assert not shadow_notify.notify_created({}, _trade(engine="orb_pivot", strategy="orb15"), __import__("datetime").datetime(2026, 11, 11),
+                                            sender=lambda m: None)
+    lines = lessons.setup_lines(_trade(strategy="fvg"), lot=75)
+    assert any("Fair Value Gap" in t for t, _k in lines) and any("1 lot" in t for t, _k in lines)
+    closed = _trade(tracked_entry_price=50.0, status="SL_HIT", final_status="T1_THEN_SL", t1_hit=True,
+                    actual_entry_time="2026-11-11T10:20:00+05:30", sl_hit_time="2026-11-11T10:25:00+05:30",
+                    alert_premium=50.0, spread_pct=3.0, max_favorable_pct=25, max_adverse_pct=-20)
+    ids = lessons.review_lines(closed, ids_only=True)
+    assert {"gave_back", "late_entry", "spread"} <= set(ids)
+    assert lessons.day_lessons([closed, closed])[0][0] == 2
+
+
+def test_lesson_card_sends_text_then_best_and_worst(monkeypatch):
+    import config
+    monkeypatch.setattr(config, "FOCUS_STRATEGIES", ("trade_score",))
+    win = _trade(trade_id="w", strategy="trade_score", tracked_entry_price=50.0, status="T2_HIT", final_status="T2_HIT",
+                 actual_entry_time="2026-11-11T10:01:00+05:30", t2_hit_time="2026-11-11T10:30:00+05:30")
+    loss = _trade(trade_id="l", strategy="trade_score", tracked_entry_price=50.0, status="SL_HIT", final_status="SL_HIT",
+                  actual_entry_time="2026-11-11T10:01:00+05:30", sl_hit_time="2026-11-11T10:20:00+05:30")
+    texts, photos = [], []
+    ok = chart_notify.lesson_card([win, loss], "2026-11-11", "NSE", lambda t: _candles(50, 48.0, 0.6, 1, 9, 55),
+                                  texts.append, lambda p, c: photos.append(c), lot_fn=lambda t: 75)
+    assert ok and "ఈ రోజు పాఠం" in texts[0] and "1 లాభం" in texts[0]
+    assert len(photos) == 2 and "ఉత్తమ" in photos[0] and "చెత్త" in photos[1]

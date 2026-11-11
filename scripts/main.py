@@ -742,6 +742,7 @@ def maybe_send_eod_report(state: dict, now: datetime):
             for m in eod_report.build_messages(state, state["date"]):
                 tg.send(m)
         state["eod_report_sent"] = True
+        chart_notify.nse_lesson_card(state)            # Telugu daily lesson card (best-effort, once)
     except Exception as exc:
         log.error("EOD report failed (%s: %s) -- will retry next run.", type(exc).__name__, exc)
 

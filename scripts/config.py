@@ -1645,3 +1645,11 @@ SWEEP_CANDLE_FETCH_COUNT = 80
 # Trade charts (2026-11-11, trade_chart.py / chart_notify.py): a setup chart after each trade notice and a result chart when
 # the trade closes, sent to Telegram for learning. Best-effort; never blocks an alert. Set False to stop the images.
 TRADE_CHARTS_ENABLED = True
+
+# Learning focus (2026-11-11): charts, Telugu lessons and SHADOW Telegram notices only for these strategies; every other
+# strategy keeps collecting data silently (ledger + daily/weekly reports). Live alerts are never filtered.
+# Key = "<engine>:<strategy>", or just "<strategy>" for the main scanner (no engine tag). Chosen from the ledger on
+# 2026-11-11: main scanner (52 closed, 55% wins, positive after costs), NSE FVG (13, positive), MCX EMA pullback (9, positive).
+# Review weekly with the strategy scorecard: keep a strategy only once it holds up over 30+ trades.
+FOCUS_STRATEGIES = ("trade_score", "sweep_reversal:fvg", "mcx:ema_pb")
+FOCUS_ONLY_NOTICES = True

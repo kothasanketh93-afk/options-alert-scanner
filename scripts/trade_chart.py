@@ -18,6 +18,7 @@ from datetime import datetime, timedelta, timezone
 from PIL import Image, ImageDraw
 
 import candlestick_patterns
+import te_text
 from eod_image import _font
 
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -96,14 +97,22 @@ def render(candles: list, path: str, title: str, subtitle: str = "", levels=(), 
     cs.sort(key=lambda c: _ts(c["timestamp"]))
     if len(cs) < 3:
         return False
-    info = list(info)
-    H = CH + (24 + 28 * len(info) + 16 if info else 0)
+    # info panel lines: str | (str, colour) | (str, colour, "head"); wrapped to the image width
+    probe = ImageDraw.Draw(Image.new("RGB", (10, 10)))
+    wrapped = []
+    for line in info:
+        text, col, kind = (line, TXT, "") if isinstance(line, str) else (tuple(line) + ("",))[:3]
+        size = 21 if kind == "head" else 18
+        for k, part in enumerate(te_text.wrap(probe, text, size, W - 2 * L - 24, kind == "head")):
+            wrapped.append((part, col, kind, k == 0))
+    info_h = sum(40 if kind == "head" and first else 31 for _p, _c, kind, first in wrapped)
+    H = CH + (info_h + 40 if wrapped else 0)
     img = Image.new("RGB", (W, H), BG)
     d = ImageDraw.Draw(img)
-    f_t, f_s, f_b, f_l = _font(30, True), _font(17), _font(16, True), _font(15)
+    f_l = _font(15)
 
-    d.text((L + 6, 14), title, font=f_t, fill=TXT)
-    d.text((L + 6, 56), subtitle, font=f_s, fill=MUTE)
+    te_text.draw(d, (L + 6, 18), title, 30, TXT, bold=True)
+    te_text.draw(d, (L + 6, 60), subtitle, 17, MUTE)
 
     lo = min(c["low"] for c in cs)
     hi = max(c["high"] for c in cs)
@@ -176,7 +185,7 @@ def render(candles: list, path: str, title: str, subtitle: str = "", levels=(), 
             ImageDraw.Draw(ov).rectangle((x0, Y(zhi), x1, Y(zlo)), fill=col + (55,))
             img.paste(Image.alpha_composite(img.convert("RGBA"), ov).convert("RGB"))
             d = ImageDraw.Draw(img)
-            d.text((x0 + 8, Y(zhi) + 3), label, font=f_l, fill=col)
+            te_text.draw(d, (x0 + 8, Y(zhi) + 5), label, 15, col)
 
     # de-duplicate setup levels at the same price (e.g. a swept previous-day low is also the setup level)
     tol = (hi - lo) * 0.004
@@ -234,12 +243,12 @@ def render(candles: list, path: str, title: str, subtitle: str = "", levels=(), 
         names.append([Y(p) - 22, label, col])
         tag(Y(p), _fmt(p, dec), col)
     if off:
-        d.text((x0 + 8, y0 - 26), "Off-chart: " + " | ".join(off), font=f_l, fill=MUTE)
+        te_text.draw(d, (x0 + 8, y0 - 24), "చార్ట్ బయట: " + " | ".join(off), 15, MUTE)
 
-    for y, text, col in _spread(names, 20, y1 - 20):
-        tw = d.textlength(text, font=f_b)
-        d.rectangle((x1 - tw - 14, y - 1, x1 - 4, y + 19), fill=BG)
-        d.text((x1 - tw - 8, y), text, font=f_b, fill=col)
+    for y, text, col in _spread(names, 22, y1 - 22):
+        tw = te_text.width(d, text, 16, True)
+        d.rectangle((x1 - tw - 14, y - 3, x1 - 4, y + 20), fill=BG)
+        te_text.draw(d, (x1 - tw - 8, y), text, 16, col, bold=True)
     for y, text, col in _spread(tags, 24, y1):
         tw = d.textlength(text, font=f_l) + 12
         d.rectangle((x1 + 4, y - 11, x1 + 8 + tw, y + 11), fill=col)
@@ -254,37 +263,35 @@ def render(candles: list, path: str, title: str, subtitle: str = "", levels=(), 
         while y < y1:
             d.line((x, y, x, min(y + 8, y1)), fill=col, width=2)
             y += 14
-        d.text((min(x + 6, x1 - d.textlength(label, font=f_b) - 4), y0 + 4), label, font=f_b, fill=col)
+        lw = te_text.width(d, label, 16, True)
+        te_text.draw(d, (x - lw - 8 if x > (x0 + x1) / 2 else x + 6, y0 + 6), label, 16, col, bold=True)
     for ts, price, label, col in points:
         x = x_of(ts)
         if x is None or price is None:
             continue
         y = Y(price)
         d.ellipse((x - 8, y - 8, x + 8, y + 8), outline=col, width=3)
-        tw = d.textlength(label, font=f_b)
+        tw = te_text.width(d, label, 16, True)
         lx = x - 12 - tw if x > (x0 + x1) / 2 else x + 12
-        d.rectangle((lx - 3, y + 10, lx + tw + 3, y + 30), fill=BG)
-        d.text((lx, y + 11), label, font=f_b, fill=col)
+        d.rectangle((lx - 3, y + 10, lx + tw + 3, y + 32), fill=BG)
+        te_text.draw(d, (lx, y + 12), label, 16, col, bold=True)
 
     # info panel
-    if info:
+    if wrapped:
         y = CH + 8
         d.line((L, y, W - L, y), fill=GRID, width=2)
-        y += 16
-        for line in info:
-            text, col = (line, TXT) if isinstance(line, str) else line
-            d.text((L + 6, y), text, font=f_s, fill=col)
-            y += 28
+        y += 22
+        for text, col, kind, first in wrapped:
+            if kind == "head" and first:
+                y += 6
+            te_text.draw(d, (L + 6 + (0 if first or kind == "head" else 18), y), text, 21 if kind == "head" else 18, col,
+                         bold=kind == "head")
+            y += 34 if kind == "head" and first else 31
     img.save(path)
     return True
 
 
 # --- trade-specific builders --------------------------------------------------------------------------------------
-_LEVEL_NAMES = {"PDH": "Previous-day high", "PDL": "Previous-day low", "ACC_LOW": "Range low", "ACC_HIGH": "Range high",
-                "OI_FLOW": "OI flow spot", "FVG": "Gap edge", "BOS": "Structure level", "GAP_OR_HIGH": "Opening-range high",
-                "GAP_OR_LOW": "Opening-range low"}
-
-
 def _num(x):
     try:
         return None if x in (None, "") else float(x)
@@ -294,43 +301,36 @@ def _num(x):
 
 def setup_chart(trade: dict, candles: list, path: str, name: str = None, strategy: str = None, pdh=None, pdl=None,
                 lot=None, dec: int = 2) -> bool:
-    """Underlying candles with the setup's levels + an info panel about the option trade."""
+    """Underlying candles with the setup's levels + a Telugu panel: what the setup is, where it is wrong, the plan."""
+    import lessons
     sym = name or trade.get("symbol")
     strike = trade.get("strike")
     strike = f"{strike:g}" if isinstance(strike, (int, float)) else strike
     bull = trade.get("direction") == "CE"
-    levels = [(_num(trade.get("spot_price")), "Signal price", BLUE, False),
-              (_num(pdh), "Previous-day high", PURPLE, True), (_num(pdl), "Previous-day low", PURPLE, True)]
+    levels = [(_num(trade.get("spot_price")), "Signal ధర", BLUE, False),
+              (_num(pdh), "నిన్నటి high", PURPLE, True), (_num(pdl), "నిన్నటి low", PURPLE, True)]
     lv_name, lv_val = trade.get("level_name"), _num(trade.get("level_value"))
     if lv_val is not None:
-        levels.append((lv_val, _LEVEL_NAMES.get(lv_name, lv_name or "Level"), YELLOW, True))
+        levels.append((lv_val, lessons.LEVEL_TE.get(lv_name, lv_name or "Level"), YELLOW, True))
     if _num(trade.get("sweep_extreme")) is not None:
-        levels.append((_num(trade["sweep_extreme"]), "Invalidation (idea fails beyond)", RED, True))
+        levels.append((_num(trade["sweep_extreme"]), "ఇది దాటితే idea తప్పు", RED, True))
     zones = []
     fvg = trade.get("fvg")
     if isinstance(fvg, (list, tuple)) and len(fvg) == 2 and None not in fvg:
-        zones.append((float(fvg[0]), float(fvg[1]), "Fair value gap", PURPLE))
-    e, sl, t1, t2 = (_num(trade.get(k)) for k in ("alert_premium", "stop_loss", "target_1", "target_2"))
-    one_lot = ""
-    if lot and e:
-        one_lot = (f"   |   one lot: risk Rs {abs((sl or e) - e) * lot:,.0f}, T1 +Rs {((t1 or e) - e) * lot:,.0f}, "
-                   f"T2 +Rs {((t2 or e) - e) * lot:,.0f}")
-    why = "; ".join((trade.get("why_reasons") or [])[:2])
-    info = [(f"Option: BUY {sym} {strike} {trade.get('direction')}   ({'bullish' if bull else 'bearish'} view; "
-             f"a seller would SELL the {strike} {'PE' if bull else 'CE'})", TXT),
-            (f"Premium  entry {e}  |  SL {sl}  |  T1 {t1}  |  T2 {t2}{one_lot}", YELLOW)]
-    if why:
-        info.append((f"Why: {why}"[:150], MUTE))
-    info.append(("Orange = auto support/resistance from swing points. Labels = candlestick patterns. "
-                 "Shadow data, not advice.", MUTE))
-    return render(candles, path, f"{sym}  {'BULLISH' if bull else 'BEARISH'} setup  ->  {strike} {trade.get('direction')}",
-                  f"{strategy or trade.get('strategy') or ''}   |   underlying 5-minute chart   |   signal at "
+        zones.append((float(fvg[0]), float(fvg[1]), "Fair value gap (ఖాళీ zone)", PURPLE))
+    info = lessons.as_info(lessons.setup_lines(trade, lot)) + [
+        ("చార్ట్ లో: నారింజ గీతలు = swing points నుంచి వచ్చిన support/resistance. రంగు labels = candlestick patterns. "
+         "Shadow data మాత్రమే, ఇది సలహా కాదు.", MUTE)]
+    return render(candles, path, f"{sym}  {'BULLISH (పైకి)' if bull else 'BEARISH (కిందకి)'}  ->  {strike} {trade.get('direction')}",
+                  f"{strategy or trade.get('strategy') or ''}   |   underlying 5-నిమిషాల chart   |   signal "
                   f"{str(trade.get('alert_time') or '')[11:16]}",
                   levels=levels, zones=zones, vlines=[(trade.get("alert_time"), "Signal", BLUE)], info=info, dec=dec)
 
 
 def outcome_chart(trade: dict, candles: list, path: str, name: str = None, strategy: str = None, lot=None) -> bool:
-    """Option premium candles from the alert to the exit with entry/SL/T1/T2 and the entry/exit points."""
+    """Option premium candles from the alert to the exit with entry/SL/T1/T2, plus the Telugu review of the trade."""
+    import lessons
+    import outcomes_ledger
     import sell_view
     sym = name or trade.get("symbol")
     strike = trade.get("strike")
@@ -346,25 +346,21 @@ def outcome_chart(trade: dict, candles: list, path: str, name: str = None, strat
     levels = [(entry, "Entry", BLUE, False), (sl0, "Stop-loss", RED, True),
               (_num(trade.get("target_1")), "Target 1", GREEN, True), (_num(trade.get("target_2")), "Target 2", GREEN, False)]
     if _num(trade.get("stop_loss")) not in (None, sl0):
-        levels.append((_num(trade["stop_loss"]), "Moved stop", ORANGE, True))
-    import outcomes_ledger
+        levels.append((_num(trade["stop_loss"]), "మార్చిన SL", ORANGE, True))
     exit_px = {"T2_HIT": trade.get("target_2"), "EOD_CLOSED": trade.get("eod_last_price"),
                "T1_HIT_THEN_EOD": trade.get("eod_last_price")}.get(status, trade.get("stop_loss"))
     res = outcomes_ledger.result_pct(trade)
-    pnl = f"   |   one lot Rs {(exit_px - entry) * lot:+,.0f} before costs" if lot and entry and exit_px is not None else ""
     good = res is not None and res > 0
-    info = [(f"Result: {str(status).replace('_', ' ')}   {res:+.1f}% on premium{pnl}" if res is not None else f"Result: {status}",
-             GREEN if good else RED),
-            (f"Entry {entry} at {str(trade.get('actual_entry_time') or '')[11:16]}  ->  exit {exit_px} at {str(t_out or '')[11:16]}"
-             f"   |   best move {trade.get('max_favorable_pct')}%, worst {trade.get('max_adverse_pct')}%", TXT)]
-    sv = trade.get("sell_view") or {}
-    if "pct" in sv:
-        info.append((f"Seller view: selling the {sv.get('option')} over the same window would have made {sv['pct']:+.1f}% on premium", MUTE))
-    return render(cs, path, f"{sym} {strike} {trade.get('direction')}  -  trade result",
-                  f"{strategy or trade.get('strategy') or ''}   |   option premium, 1-minute chart",
+    head = []
+    if res is not None and entry and exit_px is not None:
+        head = [(f"Entry {entry:g} ({str(trade.get('actual_entry_time') or '')[11:16]})  ->  Exit {float(exit_px):g} "
+                 f"({str(t_out or '')[11:16]})  =  premium మీద {res:+.1f}%"
+                 + (f",  1 lot Rs {(float(exit_px) - entry) * lot:+,.0f} (costs ముందు)" if lot else ""), GREEN if good else RED)]
+    return render(cs, path, f"{sym} {strike} {trade.get('direction')}  -  trade ఫలితం",
+                  f"{strategy or trade.get('strategy') or ''}   |   option premium, 1-నిమిషం chart",
                   levels=levels, vlines=[(trade.get("alert_time"), "Signal", MUTE)],
                   points=[(trade.get("actual_entry_time"), entry, "Entry", BLUE), (t_out, exit_px, "Exit", GREEN if good else RED)],
-                  info=info, auto_levels=False, patterns=False)
+                  info=head + lessons.as_info(lessons.review_lines(trade, lot)), auto_levels=False, patterns=False)
 
 
 def temp_png(stem: str) -> str:
