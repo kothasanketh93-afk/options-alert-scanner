@@ -1572,7 +1572,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T21:30:00+05:30",
+      "last_processed_ts": "2026-11-11T21:34:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -1592,7 +1592,84 @@
       "entry_oi": 520,
       "entry_volume": 1832,
       "signal_future_token": null,
-      "last_price": 2506.5
+      "last_price": 2524.0
+    },
+    "MCX-sess_sweep-NATURALGAS-PE-20261111-2135-01": {
+      "trade_id": "MCX-sess_sweep-NATURALGAS-PE-20261111-2135-01",
+      "display_label": "MCX 21",
+      "symbol": "NATURALGAS",
+      "direction": "PE",
+      "moneyness": "ATM",
+      "instrument_key": "MCX|583916",
+      "strike": 310.0,
+      "expiry": "2026-11-20",
+      "spot_price": 311.4,
+      "alert_time": "2026-11-11T21:35:40.334273+05:30",
+      "alert_premium": 14.25,
+      "entry_low": 14.25,
+      "entry_high": 14.25,
+      "stop_loss": 12.95,
+      "initial_stop_loss": 12.95,
+      "target_1": 16.2,
+      "target_2": 17.5,
+      "session": "MCX",
+      "grade": "Shadow",
+      "trade_score": 50,
+      "bid": 14.25,
+      "ask": 14.35,
+      "spread_pct": 0.7,
+      "probability_pct": null,
+      "probability_label": "Shadow",
+      "score_breakdown": [],
+      "confidence_score": 5.0,
+      "risk_score": 4.5,
+      "reward_score": 6.0,
+      "expected_rr": "1:1.5",
+      "factor_checklist": [],
+      "confidence_stars": "",
+      "confidence_label": "Shadow",
+      "risk_rating": "",
+      "risk_label": "Unvalidated",
+      "expected_holding_minutes": [
+        30,
+        180
+      ],
+      "why_reasons": [],
+      "alternatives": [],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-11-11T21:35:40.334273+05:30",
+      "messages_sent": [],
+      "streak_counted": false,
+      "strategy": "sess_sweep",
+      "probability_status": "shadow_only",
+      "execution_mode": "shadow",
+      "live_alert_sent": false,
+      "engine": "mcx",
+      "market_close_hhmm": [
+        23,
+        25
+      ],
+      "delta_proxy": 0.5,
+      "lot_multiplier": 1250,
+      "level_name": "DAY_HIGH",
+      "sweep_extreme": 314.5,
+      "fvg": null,
+      "entry_oi": 11671250,
+      "entry_volume": 77610,
+      "signal_future_token": null
     }
   },
   "next_seq": {
@@ -1615,16 +1692,11 @@
     "MCX-oi_flow-GOLD": 1,
     "MCX-sess_orb-GOLDM": 1,
     "MCX-sess_orb-CRUDEOIL": 1,
-    "MCX-bos-GOLD": 1
+    "MCX-bos-GOLD": 1,
+    "MCX-sess_sweep-NATURALGAS": 1
   },
   "flow_snap": {
     "NATURALGAS": [
-      {
-        "t": 875,
-        "spot": 311.4,
-        "call_oi": 37587500.0,
-        "put_oi": 29623750.0
-      },
       {
         "t": 880,
         "spot": 311.6,
@@ -2098,15 +2170,15 @@
         "spot": 313.9,
         "call_oi": 49425000.0,
         "put_oi": 42296250.0
+      },
+      {
+        "t": 1295,
+        "spot": 311.9,
+        "call_oi": 43633750.0,
+        "put_oi": 44906250.0
       }
     ],
     "CRUDEOIL": [
-      {
-        "t": 890,
-        "spot": 8147.0,
-        "call_oi": 2407900.0,
-        "put_oi": 3434500.0
-      },
       {
         "t": 895,
         "spot": 8152.0,
@@ -2580,15 +2652,15 @@
         "spot": 8281.0,
         "call_oi": 3986000.0,
         "put_oi": 4409500.0
+      },
+      {
+        "t": 1295,
+        "spot": 8262.0,
+        "call_oi": 3963400.0,
+        "put_oi": 4404000.0
       }
     ],
     "GOLDM": [
-      {
-        "t": 865,
-        "spot": 141511.0,
-        "call_oi": 975700.0,
-        "put_oi": 1041800.0
-      },
       {
         "t": 875,
         "spot": 141380.0,
@@ -3062,15 +3134,15 @@
         "spot": 140176.0,
         "call_oi": 965100.0,
         "put_oi": 1104300.0
+      },
+      {
+        "t": 1295,
+        "spot": 140150.0,
+        "call_oi": 978800.0,
+        "put_oi": 1102800.0
       }
     ],
     "GOLD": [
-      {
-        "t": 885,
-        "spot": 141358.0,
-        "call_oi": 610.0,
-        "put_oi": 643.0
-      },
       {
         "t": 890,
         "spot": 141339.0,
@@ -3544,6 +3616,12 @@
         "spot": 140179.0,
         "call_oi": 485.0,
         "put_oi": 616.0
+      },
+      {
+        "t": 1295,
+        "spot": 140100.0,
+        "call_oi": 485.0,
+        "put_oi": 623.0
       }
     ]
   },
@@ -3563,7 +3641,7 @@
     "GOLD:spread_4.1pct": 1,
     "GOLD:spread_4.3pct": 1,
     "GOLD:spread_7.9pct": 1,
-    "CRUDEOIL:news_blackout": 8
+    "CRUDEOIL:news_blackout": 9
   },
   "summary_sent": false,
   "sig_fut2": {
