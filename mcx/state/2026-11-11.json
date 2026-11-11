@@ -362,21 +362,21 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "T1_THEN_SL",
       "actual_entry_time": "2026-11-11T12:11:00+05:30",
       "tracked_entry_price": 15.15,
       "highest_since_entry": 16.0,
-      "lowest_since_entry": 14.85,
+      "lowest_since_entry": 14.65,
       "max_favorable_pct": 5.61,
-      "max_adverse_pct": -1.98,
+      "max_adverse_pct": -3.3,
       "t1_hit": true,
       "t1_hit_time": "2026-11-11T13:18:00+05:30",
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-11-11T13:56:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T13:55:00+05:30",
+      "last_processed_ts": "2026-11-11T14:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sweep",
@@ -396,7 +396,7 @@
       "entry_oi": 5618750,
       "entry_volume": 4313,
       "signal_future_token": null,
-      "last_price": 14.95,
+      "last_price": 14.35,
       "be_tracked": true,
       "trail_sl": 15.615,
       "trail_exit_price": 15.615,
@@ -617,7 +617,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T13:55:00+05:30",
+      "last_processed_ts": "2026-11-11T14:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -637,7 +637,7 @@
       "entry_oi": 542000,
       "entry_volume": 19087,
       "signal_future_token": null,
-      "last_price": 241.1,
+      "last_price": 240.6,
       "be_tracked": true,
       "trail_sl": 244.195,
       "trail_exit_price": 244.195,
@@ -699,7 +699,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-11T13:55:00+05:30",
+      "last_processed_ts": "2026-11-11T14:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -719,7 +719,7 @@
       "entry_oi": 547700,
       "entry_volume": 20701,
       "signal_future_token": null,
-      "last_price": 241.1
+      "last_price": 240.6
     }
   },
   "next_seq": {
@@ -956,6 +956,12 @@
         "spot": 311.3,
         "call_oi": 37792500.0,
         "put_oi": 28275000.0
+      },
+      {
+        "t": 841,
+        "spot": 312.2,
+        "call_oi": 41130000.0,
+        "put_oi": 25663750.0
       }
     ],
     "CRUDEOIL": [
@@ -1150,6 +1156,12 @@
         "spot": 8087.0,
         "call_oi": 1950800.0,
         "put_oi": 3416100.0
+      },
+      {
+        "t": 841,
+        "spot": 8091.0,
+        "call_oi": 1957500.0,
+        "put_oi": 3422500.0
       }
     ],
     "GOLDM": [
@@ -1392,6 +1404,12 @@
         "spot": 141631.0,
         "call_oi": 962400.0,
         "put_oi": 1035500.0
+      },
+      {
+        "t": 841,
+        "spot": 141580.0,
+        "call_oi": 967900.0,
+        "put_oi": 1039200.0
       }
     ],
     "GOLD": [
@@ -1598,6 +1616,12 @@
         "spot": 141626.0,
         "call_oi": 605.0,
         "put_oi": 632.0
+      },
+      {
+        "t": 841,
+        "spot": 141624.0,
+        "call_oi": 605.0,
+        "put_oi": 636.0
       }
     ]
   },
