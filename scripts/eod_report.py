@@ -5,6 +5,7 @@ Educational/data tool, not investment advice. Pure formatting from state; sendin
 from html import escape
 
 import outcomes_ledger
+import sell_view
 
 _ENGINES = (("trades", "LIVE"), ("shadow_trades", "Main shadow"), ("fib_pivot_shadow_trades", "Fib pivot"),
             ("orb_pivot_shadow_trades", "ORB"), ("sweep_shadow_trades", "Sweep"))
@@ -82,8 +83,10 @@ def collect(state: dict, lot_sizes: dict = None, engines=None) -> list:
                 label_row = _SWEEP_LABELS[t["strategy"]]
             else:
                 label_row = label
+            s_gross, s_net = sell_view.pnl(t, lot, outcomes_ledger.config.LEDGER_ROUND_TRIP_COST_PCT)
             rows.append({"engine": label_row, "t": t, "status": status, "net": outcomes_ledger.net_result_pct(res),
-                         "lot": lot, "pnl_gross": gross, "pnl_net": net, "twin_of_live": twin})
+                         "lot": lot, "pnl_gross": gross, "pnl_net": net, "twin_of_live": twin,
+                         "sell_gross": s_gross, "sell_net": s_net})
     return rows
 
 
@@ -189,3 +192,25 @@ def exit_rule_totals(rows: list) -> dict:
             known += 1
         out[name] = (round(total), known)
     return out
+
+
+def buy_vs_sell(items: list, keyfn) -> list:
+    """Per group, over closed trades that have BOTH sides known: n, buy wins / after-cost Rs, sell wins / after-cost Rs.
+    items: dicts with buy_net and sell_net (rupees, one lot, after assumed costs); a win = after-cost P&L above zero.
+    Last element is the TOTAL row (label "TOTAL"). Empty list when no trade has a sell result."""
+    both = [x for x in items if x.get("buy_net") is not None and x.get("sell_net") is not None]
+    if not both:
+        return []
+
+    def agg(label, sel):
+        return {"label": label, "n": len(sel),
+                "buy_wins": sum(1 for x in sel if x["buy_net"] > 0), "buy_net": round(sum(x["buy_net"] for x in sel)),
+                "sell_wins": sum(1 for x in sel if x["sell_net"] > 0), "sell_net": round(sum(x["sell_net"] for x in sel))}
+    out = [agg(lb, [x for x in both if keyfn(x) == lb]) for lb in dict.fromkeys(keyfn(x) for x in both)]
+    return out + [agg("TOTAL", both)]
+
+
+def buy_vs_sell_rows(rows: list) -> list:
+    """buy_vs_sell() for the daily report rows (collect()), by engine label."""
+    items = [{"engine": r["engine"], "buy_net": r["pnl_net"], "sell_net": r["sell_net"]} for r in _closed_rows(rows)]
+    return buy_vs_sell(items, lambda x: x["engine"])

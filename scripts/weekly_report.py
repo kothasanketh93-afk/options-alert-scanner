@@ -87,11 +87,21 @@ def collect(ledger_path, master_dir, any_date_in_week: str) -> dict:
         gross = entry * lot * res / 100.0
         net = gross - entry * lot * config.LEDGER_ROUND_TRIP_COST_PCT / 100.0
         variants, filled = exit_variants(r, res, entry)
-        trades.append({"date": r["date"], "label": _label(r), "symbol": r["symbol"], "dir": r["direction"],
+        trades.append({**sell_fields(r, lot), "date": r["date"], "label": _label(r), "symbol": r["symbol"], "dir": r["direction"],
                        "strike": r["strike"], "status": r["final_status"], "lot": lot, "entry": entry, "res": res,
                        "gross": gross, "net": net, "bucket": r.get("entry_bucket") or "",
                        "index": r["symbol"] in INDEX, "variants": variants, "assumed": filled})
     return {"start": d0.isoformat(), "end": d1.isoformat(), "trades": trades}
+
+
+def sell_fields(r: dict, lot) -> dict:
+    """buy_net / sell_net (one lot, after assumed costs) from a ledger row; sell_net None when the row has no sell result."""
+    res, entry = _f(r.get("result_pct")), _f(r.get("entry_price"))
+    cost = config.LEDGER_ROUND_TRIP_COST_PCT / 100.0
+    buy = entry * lot * (res / 100.0 - cost) if res is not None and entry and lot else None
+    s_res, s_entry = _f(r.get("sell_result_pct")), _f(r.get("sell_entry"))
+    sell = s_entry * lot * (s_res / 100.0 - cost) if s_res is not None and s_entry and lot else None
+    return {"buy_net": buy, "sell_net": sell}
 
 
 def _agg(sel):
@@ -113,4 +123,5 @@ def summarize(data: dict) -> dict:
                     for name in ("Original SL", "SL to entry after T1", "Half at T1, rest at entry-stop", "Running trail after T1")}
     ranked = sorted(tr, key=lambda t: t["gross"])
     out["worst"], out["best"] = ranked[:4], list(reversed(ranked[-4:]))
+    out["bvs"] = eod_report.buy_vs_sell(tr, lambda t: t["label"])
     return out

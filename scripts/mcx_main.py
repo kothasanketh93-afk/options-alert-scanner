@@ -436,6 +436,14 @@ def main():
             except BrokerAPIError as exc:
                 log.error("MCX %s scan failed (%s: %s) -- continuing.", name, type(exc).__name__, exc)
         try:
+            import sell_view
+            n = sell_view.attach_all(list(st["mcx_shadow_trades"].values()), sell_view.mcx_opp_key_fn(master),
+                                     lambda k, since: broker.get_candles(k, "1minute", since_iso=since), log)
+            if n:
+                log.info("MCX SELL_VIEW priced %d closed trade(s)", n)
+        except Exception as exc:
+            log.error("MCX sell view failed (%s: %s) -- continuing.", type(exc).__name__, exc)
+        try:
             import pnl_snapshot
             slot = pnl_snapshot.due_slot(now, pnl_snapshot.MCX_SLOTS, st.setdefault("pnl_snaps", []))
             if slot:

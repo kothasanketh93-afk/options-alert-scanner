@@ -29,7 +29,9 @@ COLUMNS = ["trade_id", "date", "engine", "strategy", "symbol", "direction", "str
            "expiry_day", "entry_oi", "entry_volume", "spread_pct", "cost_pct_assumed", "net_result_pct",
            "be_after_t1_pct", "half_t1_plus_be_pct", "entry_bucket", "trail_after_t1_pct",
            "weekday", "signal_delay_min", "hold_min", "exit_time", "risk_pct", "reward_t1_pct", "rr_t1", "spot_at_alert", "day_tags", "not_entered_reason",
-           "vix_at_alert", "nifty_chg_pct_at_alert", "setup_key"]
+           "vix_at_alert", "nifty_chg_pct_at_alert", "setup_key",
+           # Buy vs sell (2026-11-11, sell_view.py): the opposite option sold over the same entry->exit window.
+           "sell_option", "sell_entry", "sell_exit", "sell_result_pct"]
 
 
 def result_pct(trade: dict):
@@ -205,6 +207,10 @@ def _row(trade: dict, engine: str, date_str: str) -> dict:
     # ITM/ATM/OTM variants of one idea share a key: count setups, not variants, when validating.
     row["setup_key"] = "|".join(str(x) for x in (date_str, engine, trade.get("strategy"), trade.get("symbol"),
                                                   trade.get("direction"), str(trade.get("alert_time") or "")[:16]))
+    sv = trade.get("sell_view") or {}
+    if "pct" in sv:
+        row.update({"sell_option": sv.get("option"), "sell_entry": sv.get("entry"), "sell_exit": sv.get("exit"),
+                    "sell_result_pct": sv.get("pct")})
     return row
 
 

@@ -5,6 +5,7 @@ from datetime import date
 
 import config
 import eod_image
+import eod_report
 import mcx_config as mc
 import weekly_image
 import weekly_report
@@ -44,7 +45,7 @@ def collect_week(ledger_path, any_date_in_week: str) -> dict:
         gross = entry * lot * res / 100.0
         net = gross - entry * lot * config.LEDGER_ROUND_TRIP_COST_PCT / 100.0
         variants, filled = weekly_report.exit_variants(r, res, entry)
-        trades.append({"date": r["date"], "label": mc.STRATEGY_LABELS.get(r.get("strategy"), r.get("strategy")),
+        trades.append({**weekly_report.sell_fields(r, lot), "date": r["date"], "label": mc.STRATEGY_LABELS.get(r.get("strategy"), r.get("strategy")),
                        "symbol": r["symbol"], "dir": r["direction"], "strike": r["strike"], "status": r["final_status"],
                        "lot": lot, "entry": entry, "res": res, "gross": gross, "net": net,
                        "bucket": mc.entry_bucket(r.get("alert_time")), "commodity": mc.NAMES.get(r["symbol"], r["symbol"]),
@@ -66,6 +67,7 @@ def summarize_week(data: dict) -> dict:
                     for name in ("Original SL", "SL to entry after T1", "Half at T1, rest at entry-stop", "Running trail after T1")}
     ranked = sorted(tr, key=lambda t: t["gross"])
     out["worst"], out["best"] = ranked[:4], list(reversed(ranked[-4:]))
+    out["bvs"] = eod_report.buy_vs_sell(tr, lambda t: t["label"])
     return out
 
 

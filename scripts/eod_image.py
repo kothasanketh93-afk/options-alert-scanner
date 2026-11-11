@@ -59,6 +59,59 @@ def _row_cells(r):
             _num(t.get("target_1")), _num(t.get("target_2")), str(r["status"]).replace("_", " "), net, pnl]
 
 
+BVS_HEADS = (("Engine", 230, "l"), ("Trades", 90, "r"), ("Buy wins", 110, "r"), ("Buy acc.", 100, "r"),
+             ("Buy after costs Rs", 200, "r"), ("Sell wins", 110, "r"), ("Sell acc.", 100, "r"),
+             ("Sell after costs Rs", 200, "r"), ("Better", 120, "r"))
+BVS_NOTE = ("Buy = the tracked option bought. Sell = the OPPOSITE option (same strike/expiry) sold at the same entry minute and bought back",
+            "at the same exit minute. Accuracy = trades with after-cost P&L above zero. Seller margin (much larger) is not modelled.")
+
+
+def bvs_height(items: list) -> int:
+    return (34 + 24 + RH * len(items) + 52 + 16) if items else 0
+
+
+def draw_buy_vs_sell(d, y: int, items: list, first: str = "Engine", heading: bool = True) -> int:
+    """Buy vs sell table (eod_report.buy_vs_sell output, TOTAL last). Returns the new y."""
+    if not items:
+        return y
+    f_head, f_small, f_body = _font(19, True), _font(15), _font(18)
+    if heading:
+        d.text((PAD + 12, y), "BUY vs SELL on the same signals (one lot each)", font=f_head, fill=INK)
+        y += 34
+    heads = ((first,) + BVS_HEADS[0][1:],) + BVS_HEADS[1:]
+    cx = PAD + 12
+    for name, wd, al in heads:
+        tx = cx if al == "l" else cx + wd - 14 - d.textlength(name, font=f_small)
+        d.text((tx, y), name, font=f_small, fill=MUTED)
+        cx += wd
+    y += 24
+    for i, s in enumerate(items):
+        is_tot = s["label"] == "TOTAL"
+        if is_tot:
+            d.line((PAD, y, W - PAD, y), fill=LINE, width=2)
+        elif i % 2:
+            d.rectangle((PAD, y, W - PAD, y + RH), fill=(248, 249, 251))
+        n = s["n"] or 1
+        better = "Sell" if s["sell_net"] > s["buy_net"] else ("Buy" if s["buy_net"] > s["sell_net"] else "Equal")
+        vals = (s["label"], str(s["n"]), str(s["buy_wins"]), f"{s['buy_wins'] / n * 100:.0f}%", f"{s['buy_net']:+,}",
+                str(s["sell_wins"]), f"{s['sell_wins'] / n * 100:.0f}%", f"{s['sell_net']:+,}", better)
+        f = _font(18, True) if is_tot else f_body
+        cx = PAD + 12
+        for (name, wd, al), val in zip(heads, vals):
+            c = INK
+            if name.endswith("Rs"):
+                c = _signed_col(int(val.replace(",", "").replace("+", "")))
+            elif name == "Better":
+                c = GREEN if val in ("Sell", "Buy") else GREY
+            tx = cx if al == "l" else cx + wd - 14 - d.textlength(val, font=f)
+            d.text((tx, y + 9), val, font=f, fill=c)
+            cx += wd
+        y += RH
+    for i, line in enumerate(BVS_NOTE):
+        d.text((PAD + 12, y + 6 + 22 * i), line, font=f_small, fill=MUTED)
+    return y + 52 + 16
+
+
 def render(state: dict, date_str: str, path: str, lot_sizes: dict = None, title: str = "End-of-day trade report",
            subtitle: str = "live alerts + shadow engines (data collection)", engines=None, split=None) -> bool:
     """split = (heading, keyfn): optional second one-lot table grouped by keyfn(row) (MCX: by commodity)."""
@@ -71,12 +124,13 @@ def render(state: dict, date_str: str, path: str, lot_sizes: dict = None, title:
     rules = eod_report.exit_rule_totals(rows)
     has_pnl = tot["n"] > 0
     summ2 = eod_report.engine_summary(rows, split[1]) if split else []
+    bvs = eod_report.buy_vs_sell_rows(rows)
 
     f_title, f_big, f_kpi, f_head = _font(34, True), _font(54, True), _font(34, True), _font(19, True)
     f_body, f_small = _font(18), _font(15)
 
     table_h = sum(36 + 22 + RH * len(by[g]) + 16 for g in by if by[g])
-    summary_h = (60 + 130 + 34 + RH * (len(summ) + 1) + 24 + ((34 + RH * (len(summ2) + 1) + 24) if summ2 else 0) + (110 if rules else 0) + 20) if has_pnl else 0
+    summary_h = (60 + 130 + 34 + RH * (len(summ) + 1) + 24 + ((34 + RH * (len(summ2) + 1) + 24) if summ2 else 0) + (110 if rules else 0) + bvs_height(bvs) + 20) if has_pnl else 0
     height = 100 + 120 + table_h + summary_h + 110
     img = Image.new("RGB", (W, height), (255, 255, 255))
     d = ImageDraw.Draw(img)
@@ -210,6 +264,8 @@ def render(state: dict, date_str: str, path: str, lot_sizes: dict = None, title:
                 d.text((x0 + 16, y + 7), name, font=f_small, fill=MUTED)
                 d.text((x0 + 16, y + 28), _money(val), font=_font(24, True), fill=_signed_col(val))
             y += 62 + 16
+
+        y = draw_buy_vs_sell(d, y, bvs)
 
     # ---- footer
     d.line((PAD, y + 4, W - PAD, y + 4), fill=LINE, width=2)

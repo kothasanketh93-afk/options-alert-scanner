@@ -703,6 +703,20 @@ def maybe_send_pnl_snapshot(state: dict, now: datetime):
     pnl_snapshot.send_snapshot("NSE", state, slot, lambda p, caption: tg.send_photo(p, caption=caption), tg.send)
 
 
+def run_sell_view_step(state: dict):
+    """Buy vs sell data (sell_view.py): for each newly closed trade of every engine, price the OPPOSITE option sold over the
+    same entry->exit window. One extra candle fetch per newly closed trade; never affects any trade's own outcome."""
+    import instrument_master
+    import sell_view
+    trades = [t for key, _e in outcomes_ledger.STATE_KEYS for t in (state.get(key) or {}).values()]
+    if not any(sell_view.eligible(t) for t in trades):
+        return
+    opp = sell_view.nse_opp_key_fn(instrument_master.load_instrument_master(state["date"]))
+    n = sell_view.attach_all(trades, opp, market_data.get_1min_candles_since, log)
+    if n:
+        log.info("SELL_VIEW priced %d closed trade(s)", n)
+
+
 def maybe_send_eod_report(state: dict, now: datetime):
     """One end-of-day report listing every tracked trade by outcome (see eod_report.py). Sent once, at/after SUMMARY_HHMM."""
     if (now.hour, now.minute) < SUMMARY_HHMM or state.get("eod_report_sent"):
@@ -999,6 +1013,11 @@ def main():
         except Exception as exc:
             log.error("Sweep shadow step failed (%s: %s) -- continuing with the rest of this run.",
                        type(exc).__name__, exc, exc_info=True)
+
+        try:
+            run_sell_view_step(state)
+        except Exception as exc:       # buy-vs-sell data is optional: never disturb the run
+            log.error("Sell view step failed (%s: %s) -- continuing.", type(exc).__name__, exc)
 
         maybe_send_daily_summary(state, now)
         maybe_send_eod_report(state, now)

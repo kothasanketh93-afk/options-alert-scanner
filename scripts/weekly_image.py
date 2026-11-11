@@ -4,7 +4,8 @@ from datetime import date
 from PIL import Image, ImageDraw
 
 import weekly_report
-from eod_image import (NAVY, INK, MUTED, LINE, GREEN, RED, GREEN_BG, RED_BG, W, PAD, _font, _money, _signed_col)
+from eod_image import (NAVY, INK, MUTED, LINE, GREEN, RED, GREEN_BG, RED_BG, W, PAD, _font, _money, _signed_col,
+                       bvs_height, draw_buy_vs_sell)
 
 RH = 38
 
@@ -67,7 +68,8 @@ def render(data: dict, path: str) -> bool:
     f_title, f_big, f_kpi, f_head = _font(34, True), _font(54, True), _font(34, True), _font(19, True)
     f_body, f_small = _font(18), _font(15)
     n_rows = len(s["days"]) + len(s["engines"]) + len(s["buckets"]) + max(2, len(s.get("split") or ()))
-    height = 118 + 110 + 140 + 60 * 4 + RH * (n_rows + 4) + 24 * 4 + 200 + 150 + 120
+    bvs = s.get("bvs") or []
+    height = 118 + 110 + 140 + 60 * 4 + RH * (n_rows + 4) + 24 * 4 + 200 + 150 + 120 + (bvs_height(bvs) + 50 if bvs else 0)
     img = Image.new("RGB", (W, height), (255, 255, 255))
     d = ImageDraw.Draw(img)
     d.rectangle((0, 0, W, 96), fill=NAVY)
@@ -133,6 +135,10 @@ def render(data: dict, path: str) -> bool:
             d.text((PAD + 8, y), f"{s['assumed']} older trades lack pullback data: T2 hits assumed no pullback; T1-then-SL trades assumed to exit at entry.",
                    font=f_small, fill=MUTED)
         y += 24
+
+    if bvs:
+        y = section("BUY vs SELL  |  same signals, opposite option sold over the same window", y)
+        y = draw_buy_vs_sell(d, y, bvs, heading=False)
 
     y = section("BEST AND WORST TRADES OF THE WEEK (one lot, before costs)", y)
     half = (W - 2 * PAD - 20) / 2

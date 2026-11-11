@@ -1,3 +1,6 @@
+# 2026-11-11
+- Buy vs sell comparison (scripts/sell_view.py, data only): every closed trade also records the OPPOSITE option (same strike/expiry) sold at the buy trade's entry minute and bought back at its exit minute. New ledger columns sell_option/sell_entry/sell_exit/sell_result_pct; NSE and MCX daily and weekly report images show buy vs sell accuracy and after-cost one-lot P&L per engine.
+
 # 2026-11-02
 - Conditions-based live alerts (no trade_score floor, no probability requirement); score is log-only. Telegram alert drops score/grade/probability.
 - Fixed ORB/pivot/PDH-PDL shadow wiring (import error since 2026-10-31).
