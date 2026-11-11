@@ -45,7 +45,7 @@ def format_outcome(trade: dict, etype: str) -> str:
     return (f"{_DISCLAIMER}\n{OUTCOME_LABEL[etype]}: <b>{trade['symbol']} {trade['direction']} "
             f"{trade.get('strike')}</b> ({_label(trade)})\n"
             f"Entry: {_fmt(trade.get('tracked_entry_price'))} | SL: {_fmt(trade.get('stop_loss'))} | "
-            f"T2: {_fmt(trade.get('target_2'))}")
+            f"T1: {_fmt(trade.get('target_1'))} | T2: {_fmt(trade.get('target_2'))}")
 
 
 def _send(text):
