@@ -151,6 +151,10 @@ def process_trade_candles(trade: dict, candles: list) -> list:
                 continue
 
             else:
+                # Diagnostic trail (why-not-entered audits): OHLC of the first candles seen while waiting.
+                seen = trade.setdefault("waiting_candles", [])
+                if len(seen) < 25:
+                    seen.append([candle["timestamp"][11:16], o, h, l, c])
                 reason = _pending_cancel_reason(trade, ts, h, l)
                 if reason is None and _is_after_market_close(ts, trade.get("market_close_hhmm")):
                     reason = "NEVER_TOUCHED"
