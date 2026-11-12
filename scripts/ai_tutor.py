@@ -92,7 +92,7 @@ def _gemini(task: str, data: dict, image_path, timeout):
         with open(image_path, "rb") as fh:
             parts.append({"inline_data": {"mime_type": "image/png", "data": base64.b64encode(fh.read()).decode()}})
     parts.append({"text": task + "\n\nDATA:\n" + json.dumps(data, ensure_ascii=False, default=str)})
-    model = getattr(config, "AI_TUTOR_GEMINI_MODEL", "gemini-2.5-flash")
+    model = getattr(config, "AI_TUTOR_GEMINI_MODEL", "gemini-flash-latest")
     resp = requests.post(GEMINI_URL.format(model=model), timeout=timeout, json={
         "system_instruction": {"parts": [{"text": SYSTEM}]},
         "contents": [{"role": "user", "parts": parts}],

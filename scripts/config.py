@@ -1659,5 +1659,5 @@ FOCUS_ONLY_NOTICES = True
 # text is used. Learning only: it never sends, blocks or filters an alert.
 AI_TUTOR_ENABLED = True
 AI_TUTOR_MODEL = "claude-sonnet-5-5"            # used when ANTHROPIC_API_KEY is set (paid)
-AI_TUTOR_GEMINI_MODEL = "gemini-2.5-flash"      # used when only GEMINI_API_KEY is set (Google AI Studio free tier)
+AI_TUTOR_GEMINI_MODEL = "gemini-flash-latest"      # used when only GEMINI_API_KEY is set (Google AI Studio free tier)
 AI_TUTOR_TIMEOUT_S = 60
