@@ -523,7 +523,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T11:24:00+05:30",
+      "last_processed_ts": "2026-11-12T11:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -548,7 +548,7 @@
       "entry_oi": 3743750,
       "entry_volume": 2146,
       "signal_future_token": null,
-      "last_price": 14.6,
+      "last_price": 14.65,
       "waiting_candles": [
         [
           "10:26",
@@ -770,7 +770,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T11:24:00+05:30",
+      "last_processed_ts": "2026-11-12T11:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -792,7 +792,7 @@
       "entry_oi": 3832500,
       "entry_volume": 2949,
       "signal_future_token": null,
-      "last_price": 14.6
+      "last_price": 14.65
     }
   },
   "next_seq": {
@@ -1244,6 +1244,12 @@
         "spot": 138683.0,
         "call_oi": 759200.0,
         "put_oi": 789100.0
+      },
+      {
+        "t": 691,
+        "spot": 138957.0,
+        "call_oi": 768300.0,
+        "put_oi": 787000.0
       }
     ]
   },
