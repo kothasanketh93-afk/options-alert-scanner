@@ -60,8 +60,8 @@ IST = timezone(timedelta(hours=5, minutes=30))
 from trade_record import TERMINAL_STATUSES, new_trade_record  # noqa: F401  (re-exported; also used by tests)
 
 log = get_logger("main")
-shadow_notify.SETUP_CHART = chart_notify.setup            # setup/result charts after shadow notices (best-effort)
-shadow_notify.OUTCOME_CHART = chart_notify.outcome
+shadow_notify.SETUP_CHART = lambda t: chart_notify.later(chart_notify.setup, t)     # setup/result charts (best-effort,
+shadow_notify.OUTCOME_CHART = lambda t: chart_notify.later(chart_notify.outcome, t)  # queued until the run's alerts are out)
 
 
 def notify_once(trade: dict, event_key: str, message_fn, *args):
@@ -245,7 +245,7 @@ def run_scanner_step(state: dict, now: datetime):
     # other, which silently dropping just the first message did not.
     try:
         notify_once(trade, "NEW_TRADE_ALERT", tg.fmt_new_alert, trade)
-        chart_notify.setup(trade)
+        chart_notify.later(chart_notify.setup, trade)
     except TelegramFailure:
         # The trade is already recorded in state -- it will still be
         # tracked normally by run_tracker_step. Only the initial alert
@@ -395,7 +395,7 @@ def run_tracker_step(state: dict, now: datetime):
             events = tracker.process_trade_candles(trade, candles)
             _dispatch_tracker_events(trade, events)
             if any(e["type"] in ("SL_HIT", "T2_HIT", "EOD_CLOSED") for e in events):
-                chart_notify.outcome(trade)
+                chart_notify.later(chart_notify.outcome, trade)
 
             if trade["status"] in TERMINAL_STATUSES and not trade["streak_counted"]:
                 final_status = trade.get("final_status")
@@ -865,6 +865,7 @@ def maybe_fast_tracker_pass(state: dict, run_start: datetime, sleep_fn=None) -> 
 
 
 def main():
+    chart_notify.DEFER = True
     config_validation.validate_startup_config()
 
     # (2026-10-31: the per-run News Intelligence collection cycle that used
@@ -1025,6 +1026,11 @@ def main():
             run_sell_view_step(state)
         except Exception as exc:       # buy-vs-sell data is optional: never disturb the run
             log.error("Sell view step failed (%s: %s) -- continuing.", type(exc).__name__, exc)
+
+        try:
+            chart_notify.flush()                       # every alert of this run is out; now the charts
+        except Exception as exc:
+            log.error("Chart flush failed (%s: %s) -- continuing.", type(exc).__name__, exc)
 
         maybe_send_daily_summary(state, now)
         maybe_send_eod_report(state, now)

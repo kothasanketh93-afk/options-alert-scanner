@@ -16,6 +16,33 @@ _LABELS = {"sweep_fvg": "Sweep + FVG", "amd": "AMD", "oi_flow": "OI flow", "fvg"
            "chase_bypass": "Chase bypass"}
 
 
+# Charts (and the AI tutor call inside them) can take several seconds each. While DEFER is on, runners queue them and
+# call flush() after every alert of the run has gone out, so a chart never delays another trade's alert.
+DEFER = False
+_QUEUE = []
+
+
+def later(fn, *args, **kwargs) -> bool:
+    """Run fn now, or queue it while DEFER is on. Returns fn's result, or True when queued."""
+    if DEFER:
+        _QUEUE.append((fn, args, kwargs))
+        return True
+    return fn(*args, **kwargs)
+
+
+def flush() -> int:
+    """Run queued chart jobs (each best-effort). Returns how many ran."""
+    n = 0
+    while _QUEUE:
+        fn, args, kwargs = _QUEUE.pop(0)
+        try:
+            fn(*args, **kwargs)
+        except Exception as exc:
+            log.warning("CHART job failed (%s: %s)", type(exc).__name__, exc)
+        n += 1
+    return n
+
+
 def enabled() -> bool:
     return bool(getattr(config, "TRADE_CHARTS_ENABLED", True))
 
@@ -100,9 +127,9 @@ def outcome(trade: dict, sender=None) -> bool:
 
 def lesson_card(trades: list, date_str: str, market: str, fetch_candles, send_text, send_photo, lot_fn=None,
                 name_fn=None, label_fn=None) -> bool:
-    """Daily Telugu lesson card: today's focus trades in one message (count, wins, one-lot result), the mistakes that
-    repeated, then the best and the worst trade as result charts. fetch_candles(trade) -> option 1-minute candles.
-    Never raises; returns True when the text part was sent."""
+    """Daily lesson card. Telegram text and captions in English; the teaching itself (Telugu) is inside the images:
+    one lesson-card image (AI tutor when available, else rule-based), then the best and the worst trade as result charts.
+    fetch_candles(trade) -> option 1-minute candles. Never raises; returns True when the summary was sent."""
     import lessons
     import outcomes_ledger
     import trade_chart
@@ -111,31 +138,46 @@ def lesson_card(trades: list, date_str: str, market: str, fetch_candles, send_te
         closed = [t for t in trades if (t.get("final_status") or t.get("status")) in FINAL and t.get("tracked_entry_price")]
         focus = [t for t in closed if is_focus(t)]
         pool = focus or closed
-        if not pool:
-            return False
         res = [(outcomes_ledger.result_pct(t), t) for t in pool]
         res = [(r, t) for r, t in res if r is not None]
         if not res:
             return False
         wins = sum(1 for r, _t in res if r > 0)
-        rupees = 0.0
+        rupees, rows = 0.0, []
         for r, t in res:
             lot = lot_fn(t) if lot_fn else None
-            if lot:
-                rupees += t["tracked_entry_price"] * lot * r / 100.0
-        lines = [f"📚 <b>ఈ రోజు పాఠం – {escape(market)} {escape(date_str)}</b>",
-                 f"{'Focus strategies' if focus else 'అన్ని strategies'}: {len(res)} trades, {wins} లాభం, {len(res) - wins} నష్టం"
-                 + (f", 1 lot చొప్పున మొత్తం Rs {rupees:+,.0f} (costs ముందు)" if rupees else "")]
-        rep = lessons.day_lessons([t for _r, t in res])
-        if rep:
-            lines.append("\n<b>ఈ రోజు మళ్ళీ మళ్ళీ కనిపించినవి</b>")
-            lines += [f"• ({n} trades) {escape(text)}" for n, text in rep]
-        lines.append("\n<b>ఈ రోజు పని (15 నిమిషాలు)</b>\n1. కింద ఉన్న ఉత్తమ trade chart చూడండి: entry కి ముందు ఏం కనిపించింది?"
-                     "\n2. చెత్త trade chart చూడండి: ఏ లైన్ దగ్గర idea తప్పని తెలిసింది?"
-                     "\n3. ఒక వాక్యం రాసుకోండి: రేపు ఏ ఒక్క తప్పు చేయకూడదు?")
-        send_text("\n".join(lines))
+            pnl = t["tracked_entry_price"] * lot * r / 100.0 if lot else None
+            rupees += pnl or 0.0
+            rows.append({"symbol": (name_fn(t) if name_fn else t.get("symbol")), "strike": t.get("strike"),
+                         "direction": t.get("direction"), "strategy": label_fn(t) if label_fn else strategy_label(t),
+                         "alert_time": str(t.get("alert_time") or "")[11:16], "status": t.get("final_status") or t.get("status"),
+                         "result_pct": r, "one_lot_rs": round(pnl) if pnl is not None else None, "ai_verdict": t.get("ai_verdict"),
+                         "observations": [x for x, k in lessons.review_lines(t, lot) if k != "head"][1:]})
+        scope = "focus strategies" if focus else "all strategies"
+        send_text(f"📚 <b>Daily lesson – {escape(market)} {escape(date_str)}</b>\n"
+                  f"{len(res)} closed trades ({scope}): {wins} won, {len(res) - wins} lost"
+                  + (f", one lot each Rs {rupees:+,.0f} before costs" if rupees else "")
+                  + "\nThe lesson card and the best/worst trade charts follow.")
+        import ai_tutor
+        lines = ai_tutor.day_guidance({"market": market, "date": date_str, "trades": rows,
+                                       "wins": wins, "losses": len(res) - wins, "one_lot_total_rs": round(rupees)})
+        if not lines:
+            rep = lessons.day_lessons([t for _r, t in res])
+            lines = [("ఈ రోజు ఒక్క చూపులో", "head"),
+                     (f"{len(res)} trades: {wins} లాభం, {len(res) - wins} నష్టం" + (f", 1 lot చొప్పున Rs {rupees:+,.0f}" if rupees else ""), "plain")]
+            if rep:
+                lines.append(("మళ్ళీ మళ్ళీ కనిపించినవి", "head"))
+                lines += [(f"({n} trades) {text}", "warn") for n, text in rep]
+            lines += [("ఈ రోజు పని (15 నిమిషాలు)", "head"),
+                      ("ఉత్తమ trade chart చూడండి: entry కి ముందు ఏం కనిపించింది?", "plain"),
+                      ("చెత్త trade chart చూడండి: ఏ లైన్ దగ్గర idea తప్పని తెలిసింది?", "plain"),
+                      ("ఒక వాక్యం రాసుకోండి: రేపు ఏ ఒక్క తప్పు చేయకూడదు?", "plain")]
+        card = trade_chart.temp_png(f"lesson_{market}_{date_str}")
+        if trade_chart.text_card(card, f"ఈ రోజు పాఠం – {market} {date_str}",
+                                 ("AI tutor" if ai_tutor.enabled() else "rule-based") + f"  |  {len(res)} trades, {scope}", lines):
+            send_photo(card, f"Lesson card {market} {date_str}")
         res.sort(key=lambda x: x[0])
-        picks = [("ఈ రోజు ఉత్తమ trade 🟢", res[-1][1])] + ([("ఈ రోజు చెత్త trade 🔴", res[0][1])] if len(res) > 1 else [])
+        picks = [("Best trade today", res[-1][1])] + ([("Worst trade today", res[0][1])] if len(res) > 1 else [])
         for title, t in picks:
             try:
                 path = trade_chart.temp_png(f"lesson_{t.get('trade_id', 'x')}")

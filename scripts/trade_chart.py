@@ -318,13 +318,24 @@ def setup_chart(trade: dict, candles: list, path: str, name: str = None, strateg
     fvg = trade.get("fvg")
     if isinstance(fvg, (list, tuple)) and len(fvg) == 2 and None not in fvg:
         zones.append((float(fvg[0]), float(fvg[1]), "Fair value gap (ఖాళీ zone)", PURPLE))
-    info = lessons.as_info(lessons.setup_lines(trade, lot)) + [
-        ("చార్ట్ లో: నారింజ గీతలు = swing points నుంచి వచ్చిన support/resistance. రంగు labels = candlestick patterns. "
-         "Shadow data మాత్రమే, ఇది సలహా కాదు.", MUTE)]
-    return render(candles, path, f"{sym}  {'BULLISH (పైకి)' if bull else 'BEARISH (కిందకి)'}  ->  {strike} {trade.get('direction')}",
-                  f"{strategy or trade.get('strategy') or ''}   |   underlying 5-నిమిషాల chart   |   signal "
-                  f"{str(trade.get('alert_time') or '')[11:16]}",
-                  levels=levels, zones=zones, vlines=[(trade.get("alert_time"), "Signal", BLUE)], info=info, dec=dec)
+    title = f"{sym}  {'BULLISH (పైకి)' if bull else 'BEARISH (కిందకి)'}  ->  {strike} {trade.get('direction')}"
+    sub = (f"{strategy or trade.get('strategy') or ''}   |   underlying 5-నిమిషాల chart   |   signal "
+           f"{str(trade.get('alert_time') or '')[11:16]}")
+    kw = dict(levels=levels, zones=zones, vlines=[(trade.get("alert_time"), "Signal", BLUE)], dec=dec)
+    rule = lessons.setup_lines(trade, lot)
+    ai_lines = None
+    import ai_tutor
+    if ai_tutor.enabled() and render(candles, path, title, sub, **kw):      # chart first, so the tutor can look at it
+        ai_lines = ai_tutor.setup_guidance(trade, path, lot, pdh, pdl)
+    if ai_lines:   # tutor's explanation + the exact numbers from the rule text (never left to the model)
+        plan = [ln for ln in rule if ln[1] in ("plan", "rule")]
+        lines = ai_lines + [("Premium plan (ఖచ్చితమైన numbers)", "head")] + plan
+    else:
+        lines = rule
+    info = lessons.as_info(lines) + [
+        (("AI tutor వివరణ. " if ai_lines else "") + "నారింజ గీతలు = swing points నుంచి support/resistance. రంగు labels = "
+         "candlestick patterns. Shadow data మాత్రమే, ఇది సలహా కాదు.", MUTE)]
+    return render(candles, path, title, sub, info=info, **kw)
 
 
 def outcome_chart(trade: dict, candles: list, path: str, name: str = None, strategy: str = None, lot=None) -> bool:
@@ -356,11 +367,44 @@ def outcome_chart(trade: dict, candles: list, path: str, name: str = None, strat
         head = [(f"Entry {entry:g} ({str(trade.get('actual_entry_time') or '')[11:16]})  ->  Exit {float(exit_px):g} "
                  f"({str(t_out or '')[11:16]})  =  premium మీద {res:+.1f}%"
                  + (f",  1 lot Rs {(float(exit_px) - entry) * lot:+,.0f} (costs ముందు)" if lot else ""), GREEN if good else RED)]
-    return render(cs, path, f"{sym} {strike} {trade.get('direction')}  -  trade ఫలితం",
-                  f"{strategy or trade.get('strategy') or ''}   |   option premium, 1-నిమిషం chart",
-                  levels=levels, vlines=[(trade.get("alert_time"), "Signal", MUTE)],
-                  points=[(trade.get("actual_entry_time"), entry, "Entry", BLUE), (t_out, exit_px, "Exit", GREEN if good else RED)],
-                  info=head + lessons.as_info(lessons.review_lines(trade, lot)), auto_levels=False, patterns=False)
+    title = f"{sym} {strike} {trade.get('direction')}  -  trade ఫలితం"
+    sub = f"{strategy or trade.get('strategy') or ''}   |   option premium, 1-నిమిషం chart"
+    kw = dict(levels=levels, vlines=[(trade.get("alert_time"), "Signal", MUTE)],
+              points=[(trade.get("actual_entry_time"), entry, "Entry", BLUE), (t_out, exit_px, "Exit", GREEN if good else RED)],
+              auto_levels=False, patterns=False)
+    rule = lessons.review_lines(trade, lot)
+    ai_lines = None
+    import ai_tutor
+    if ai_tutor.enabled() and render(cs, path, title, sub, **kw):
+        ai_lines = ai_tutor.review_guidance(trade, path, lot, [t for t, k in rule if k != "head"])
+    lines = ai_lines or rule
+    foot = [("AI tutor review.", MUTE)] if ai_lines else []
+    return render(cs, path, title, sub, info=head + lessons.as_info(lines) + foot, **kw)
+
+
+def text_card(path: str, title: str, subtitle: str, lines: list) -> bool:
+    """A text-only image (same dark style) for the daily lesson card; lines as lessons [(text, kind)]."""
+    probe = ImageDraw.Draw(Image.new("RGB", (10, 10)))
+    import lessons
+    wrapped = []
+    for text, col, kind in lessons.as_info(lines):
+        size = 22 if kind == "head" else 19
+        for k, part in enumerate(te_text.wrap(probe, text, size, W - 2 * L - 40, kind == "head")):
+            wrapped.append((part, col, kind, k == 0))
+    h = 110 + sum(46 if kind == "head" and first else 33 for _p, _c, kind, first in wrapped) + 30
+    img = Image.new("RGB", (W, h), BG)
+    d = ImageDraw.Draw(img)
+    te_text.draw(d, (L + 6, 18), title, 30, TXT, bold=True)
+    te_text.draw(d, (L + 6, 60), subtitle, 17, MUTE)
+    y = 106
+    for text, col, kind, first in wrapped:
+        if kind == "head" and first:
+            y += 10
+        te_text.draw(d, (L + 6 + (0 if kind == "head" else (14 if first else 32)), y), ("• " if kind != "head" and first else "") + text,
+                     22 if kind == "head" else 19, col, bold=kind == "head")
+        y += 36 if kind == "head" and first else 33
+    img.save(path)
+    return True
 
 
 def temp_png(stem: str) -> str:

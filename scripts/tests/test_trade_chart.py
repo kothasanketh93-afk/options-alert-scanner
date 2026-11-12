@@ -101,5 +101,39 @@ def test_lesson_card_sends_text_then_best_and_worst(monkeypatch):
     texts, photos = [], []
     ok = chart_notify.lesson_card([win, loss], "2026-11-11", "NSE", lambda t: _candles(50, 48.0, 0.6, 1, 9, 55),
                                   texts.append, lambda p, c: photos.append(c), lot_fn=lambda t: 75)
-    assert ok and "ఈ రోజు పాఠం" in texts[0] and "1 లాభం" in texts[0]
-    assert len(photos) == 2 and "ఉత్తమ" in photos[0] and "చెత్త" in photos[1]
+    assert ok and "Daily lesson" in texts[0] and "1 won" in texts[0]
+    assert not any("\u0c00" <= ch <= "\u0c7f" for ch in texts[0] + "".join(photos))   # Telugu only inside images
+    assert len(photos) == 3 and photos[0].startswith("Lesson card") and "Best" in photos[1] and "Worst" in photos[2]
+
+
+def test_ai_tutor_used_when_key_present_and_falls_back(monkeypatch, tmp_path):
+    import ai_tutor, json
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test")
+    calls = []
+
+    class R:
+        status_code = 200
+
+        def __init__(self, body):
+            self._b = body
+            self.text = ""
+
+        def json(self):
+            return self._b
+
+    def fake_post(url, timeout, json=None, headers=None):
+        calls.append(json)
+        body = {"sections": [{"title": "ఈ setup ఏమిటి?", "points": ["FVG అంటే ఖాళీ zone."]}], "verdict": "mixed",
+                "verdict_reason": "trend బలహీనం"}
+        return R({"content": [{"type": "text", "text": __import__("json").dumps(body, ensure_ascii=False)}]})
+    import requests
+    monkeypatch.setattr(requests, "post", fake_post)
+    t = _trade(strategy="fvg")
+    assert tc.setup_chart(t, _candles(), str(tmp_path / "s.png"), lot=75)
+    assert t["ai_verdict"] == "mixed" and calls and calls[0]["model"] == "claude-sonnet-5-5"
+    assert calls[0]["messages"][0]["content"][0]["type"] == "image"            # the tutor sees the chart
+    monkeypatch.setattr(requests, "post", lambda *a, **k: (_ for _ in ()).throw(TimeoutError("slow")))
+    t2 = _trade(strategy="fvg")
+    assert tc.setup_chart(t2, _candles(), str(tmp_path / "s2.png"), lot=75) and "ai_verdict" not in t2   # rule fallback
+    monkeypatch.delenv("ANTHROPIC_API_KEY")
+    assert not ai_tutor.enabled()

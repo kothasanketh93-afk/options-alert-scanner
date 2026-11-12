@@ -312,7 +312,8 @@ def notify_created(t: dict):
                 + (f"\nSpread {t['spread_pct']}%" if t.get("spread_pct") is not None else ""))
     except Exception as exc:
         log.error("MCX created notice failed (%s: %s)", type(exc).__name__, exc)
-    send_setup_chart(t)
+    import chart_notify
+    chart_notify.later(send_setup_chart, t)
 
 
 def send_setup_chart(t: dict, sender=None) -> bool:
@@ -382,7 +383,8 @@ def notify_events(t: dict, events: list):
         except Exception as exc:
             log.error("MCX outcome notice failed (%s: %s)", type(exc).__name__, exc)
     if any(ev.get("type") in ("SL_HIT", "T2_HIT", "EOD_CLOSED") for ev in events):
-        send_outcome_chart(t)
+        import chart_notify
+        chart_notify.later(send_outcome_chart, t)
 
 
 def track_open(broker, st: dict):
@@ -491,6 +493,8 @@ def send_reports(st: dict, now: datetime):
 
 
 def main():
+    import chart_notify
+    chart_notify.DEFER = True
     now = state_mod.ist_now()
     if os.environ.get("MCX_FORCE") != "1" and not in_session(now):
         log.info("Outside MCX session (%s) -- nothing to do.", now.strftime("%a %H:%M"))
@@ -524,6 +528,11 @@ def main():
                 log.info("MCX SELL_VIEW priced %d closed trade(s)", n)
         except Exception as exc:
             log.error("MCX sell view failed (%s: %s) -- continuing.", type(exc).__name__, exc)
+        try:
+            import chart_notify
+            chart_notify.flush()          # all of this run's notices are out; now the charts
+        except Exception as exc:
+            log.error("MCX chart flush failed (%s: %s) -- continuing.", type(exc).__name__, exc)
         try:
             import pnl_snapshot
             slot = pnl_snapshot.due_slot(now, pnl_snapshot.MCX_SLOTS, st.setdefault("pnl_snaps", []))

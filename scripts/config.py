@@ -1653,3 +1653,10 @@ TRADE_CHARTS_ENABLED = True
 # Review weekly with the strategy scorecard: keep a strategy only once it holds up over 30+ trades.
 FOCUS_STRATEGIES = ("trade_score", "sweep_reversal:fvg", "mcx:ema_pb")
 FOCUS_ONLY_NOTICES = True
+
+# AI tutor (2026-11-12, ai_tutor.py): Claude writes the Telugu explanation inside setup / result / lesson images, looking
+# at the chart and the trade numbers. Needs the ANTHROPIC_API_KEY repository secret; without it the rule-based Telugu
+# text is used. Learning only: it never sends, blocks or filters an alert.
+AI_TUTOR_ENABLED = True
+AI_TUTOR_MODEL = "claude-sonnet-5-5"
+AI_TUTOR_TIMEOUT_S = 60
