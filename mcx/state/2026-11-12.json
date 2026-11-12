@@ -43,21 +43,21 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
-      "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "actual_entry_time": "2026-11-12T09:36:00+05:30",
+      "tracked_entry_price": 2615.0,
+      "highest_since_entry": 2625.0,
+      "lowest_since_entry": 2560.5,
+      "max_favorable_pct": 0.38,
+      "max_adverse_pct": -2.08,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T09:35:38.538207+05:30",
+      "last_processed_ts": "2026-11-12T09:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -81,7 +81,8 @@
       ],
       "entry_oi": 89500,
       "entry_volume": 1029,
-      "signal_future_token": null
+      "signal_future_token": null,
+      "last_price": 2575.5
     }
   },
   "next_seq": {
@@ -105,6 +106,12 @@
         "t": 575,
         "spot": 139100.0,
         "call_oi": 568.0,
+        "put_oi": 607.0
+      },
+      {
+        "t": 580,
+        "spot": 138993.0,
+        "call_oi": 571.0,
         "put_oi": 607.0
       }
     ],
@@ -160,6 +167,12 @@
         "spot": 139156.0,
         "call_oi": 696700.0,
         "put_oi": 778400.0
+      },
+      {
+        "t": 580,
+        "spot": 139020.0,
+        "call_oi": 700600.0,
+        "put_oi": 780900.0
       }
     ]
   },
