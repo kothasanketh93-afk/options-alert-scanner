@@ -1297,16 +1297,16 @@
       "actual_entry_time": "2026-11-12T16:21:00+05:30",
       "tracked_entry_price": 2526.5,
       "highest_since_entry": 2571.5,
-      "lowest_since_entry": 2520.0,
+      "lowest_since_entry": 2492.5,
       "max_favorable_pct": 1.78,
-      "max_adverse_pct": -0.26,
+      "max_adverse_pct": -1.35,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T16:30:00+05:30",
+      "last_processed_ts": "2026-11-12T16:35:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -1328,7 +1328,7 @@
       "entry_oi": 100900,
       "entry_volume": 5688,
       "signal_future_token": null,
-      "last_price": 2545.5
+      "last_price": 2503.5
     }
   },
   "next_seq": {
@@ -1694,6 +1694,12 @@
         "spot": 138432.0,
         "call_oi": 717.0,
         "put_oi": 623.0
+      },
+      {
+        "t": 995,
+        "spot": 138439.0,
+        "call_oi": 714.0,
+        "put_oi": 619.0
       }
     ],
     "CRUDEOIL": [
@@ -2092,6 +2098,12 @@
         "spot": 8069.0,
         "call_oi": 3886500.0,
         "put_oi": 5656000.0
+      },
+      {
+        "t": 995,
+        "spot": 8063.0,
+        "call_oi": 3942900.0,
+        "put_oi": 5718200.0
       }
     ],
     "NATURALGAS": [
@@ -2448,6 +2460,12 @@
         "spot": 308.8,
         "call_oi": 45311250.0,
         "put_oi": 37365000.0
+      },
+      {
+        "t": 995,
+        "spot": 308.6,
+        "call_oi": 45543750.0,
+        "put_oi": 37446250.0
       }
     ],
     "GOLDM": [
