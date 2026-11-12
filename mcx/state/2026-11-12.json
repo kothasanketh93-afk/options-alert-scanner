@@ -238,7 +238,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T10:04:00+05:30",
+      "last_processed_ts": "2026-11-12T10:10:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -260,7 +260,7 @@
       "entry_oi": 1452600,
       "entry_volume": 17769,
       "signal_future_token": null,
-      "last_price": 183.2
+      "last_price": 184.0
     },
     "MCX-oi_flow-GOLD-PE-20261112-1001-01": {
       "trade_id": "MCX-oi_flow-GOLD-PE-20261112-1001-01",
@@ -318,7 +318,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T10:01:09.324098+05:30",
+      "last_processed_ts": "2026-11-12T10:09:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -339,7 +339,24 @@
       "fvg": null,
       "entry_oi": 55,
       "entry_volume": 41,
-      "signal_future_token": null
+      "signal_future_token": null,
+      "last_price": 2638.0,
+      "waiting_candles": [
+        [
+          "10:08",
+          2627.5,
+          2627.5,
+          2627.5,
+          2627.5
+        ],
+        [
+          "10:09",
+          2638.0,
+          2638.0,
+          2638.0,
+          2638.0
+        ]
+      ]
     }
   },
   "next_seq": {
@@ -397,6 +414,12 @@
         "spot": 138709.0,
         "call_oi": 583.0,
         "put_oi": 626.0
+      },
+      {
+        "t": 610,
+        "spot": 138786.0,
+        "call_oi": 580.0,
+        "put_oi": 623.0
       }
     ],
     "CRUDEOIL": [
@@ -435,6 +458,12 @@
         "spot": 8000.0,
         "call_oi": 1370500.0,
         "put_oi": 3215000.0
+      },
+      {
+        "t": 610,
+        "spot": 8000.0,
+        "call_oi": 1380200.0,
+        "put_oi": 3193000.0
       }
     ],
     "NATURALGAS": [
@@ -517,6 +546,12 @@
         "spot": 138750.0,
         "call_oi": 646700.0,
         "put_oi": 867900.0
+      },
+      {
+        "t": 610,
+        "spot": 138789.0,
+        "call_oi": 643200.0,
+        "put_oi": 879000.0
       }
     ]
   },
