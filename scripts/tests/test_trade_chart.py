@@ -163,3 +163,9 @@ def test_gemini_free_provider_when_only_gemini_key(monkeypatch, tmp_path):
     url, headers, body = seen[0]
     assert "generativelanguage.googleapis.com" in url and headers["x-goog-api-key"] == "g"
     assert body["generationConfig"]["responseMimeType"] == "application/json"
+
+
+def test_emoji_removed_from_image_text():
+    import te_text
+    assert te_text.clean("Tutor అభిప్రాయం: మిశ్రమం ⚖️ – ok ✅ ⛔ 🟢") .strip() == "Tutor అభిప్రాయం: మిశ్రమం – ok"
+    assert "→" in te_text.clean("a → b")

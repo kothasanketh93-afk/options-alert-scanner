@@ -28,8 +28,15 @@ def _te_font(size, bold):
     return _CACHE[key]
 
 
+def clean(text: str) -> str:
+    """Drop emoji / pictographs (neither bundled font has them -- they drew as empty boxes, 2026-11-12)."""
+    return "".join(ch for ch in str(text) if not ("\u2600" <= ch <= "\u27bf" or ch in "\ufe0f\u200b"
+                                                  or ord(ch) >= 0x1F000)).replace("  ", " ")
+
+
 def runs(text: str):
     """[(chunk, is_telugu)] -- spaces stick to the run before them."""
+    text = clean(text)
     out = []
     for ch in text:
         te = _is_te(ch) if ch != " " else (out[-1][1] if out else False)
