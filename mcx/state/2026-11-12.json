@@ -523,7 +523,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T11:45:00+05:30",
+      "last_processed_ts": "2026-11-12T11:50:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -761,16 +761,16 @@
       "actual_entry_time": "2026-11-12T11:02:00+05:30",
       "tracked_entry_price": 14.6,
       "highest_since_entry": 14.85,
-      "lowest_since_entry": 14.15,
+      "lowest_since_entry": 14.05,
       "max_favorable_pct": 1.71,
-      "max_adverse_pct": -3.08,
+      "max_adverse_pct": -3.77,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T11:45:00+05:30",
+      "last_processed_ts": "2026-11-12T11:50:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -850,7 +850,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T11:45:00+05:30",
+      "last_processed_ts": "2026-11-12T11:50:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -872,7 +872,7 @@
       "entry_oi": 406800,
       "entry_volume": 16564,
       "signal_future_token": null,
-      "last_price": 176.8,
+      "last_price": 178.8,
       "waiting_candles": [
         [
           "11:36",
@@ -943,6 +943,41 @@
           178.1,
           175.2,
           176.8
+        ],
+        [
+          "11:46",
+          176.0,
+          178.6,
+          173.2,
+          177.3
+        ],
+        [
+          "11:47",
+          177.8,
+          178.0,
+          176.3,
+          178.0
+        ],
+        [
+          "11:48",
+          177.9,
+          180.5,
+          176.0,
+          176.0
+        ],
+        [
+          "11:49",
+          175.7,
+          178.9,
+          174.2,
+          178.3
+        ],
+        [
+          "11:50",
+          178.4,
+          179.7,
+          177.0,
+          178.8
         ]
       ]
     },
