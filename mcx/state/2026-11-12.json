@@ -523,7 +523,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T11:40:00+05:30",
+      "last_processed_ts": "2026-11-12T11:45:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -548,7 +548,7 @@
       "entry_oi": 3743750,
       "entry_volume": 2146,
       "signal_future_token": null,
-      "last_price": 14.4,
+      "last_price": 14.35,
       "waiting_candles": [
         [
           "10:26",
@@ -770,7 +770,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T11:40:00+05:30",
+      "last_processed_ts": "2026-11-12T11:45:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -792,7 +792,7 @@
       "entry_oi": 3832500,
       "entry_volume": 2949,
       "signal_future_token": null,
-      "last_price": 14.4
+      "last_price": 14.35
     },
     "MCX-bos-CRUDEOIL-CE-20261112-1135-01": {
       "trade_id": "MCX-bos-CRUDEOIL-CE-20261112-1135-01",
@@ -850,7 +850,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T11:40:00+05:30",
+      "last_processed_ts": "2026-11-12T11:45:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -872,7 +872,7 @@
       "entry_oi": 406800,
       "entry_volume": 16564,
       "signal_future_token": null,
-      "last_price": 188.0,
+      "last_price": 176.8,
       "waiting_candles": [
         [
           "11:36",
@@ -908,6 +908,41 @@
           189.6,
           184.1,
           188.0
+        ],
+        [
+          "11:41",
+          186.8,
+          191.4,
+          183.7,
+          190.6
+        ],
+        [
+          "11:42",
+          190.7,
+          191.3,
+          186.1,
+          187.3
+        ],
+        [
+          "11:43",
+          185.8,
+          189.8,
+          185.0,
+          185.0
+        ],
+        [
+          "11:44",
+          185.2,
+          186.3,
+          176.9,
+          177.3
+        ],
+        [
+          "11:45",
+          177.5,
+          178.1,
+          175.2,
+          176.8
         ]
       ]
     },
@@ -967,7 +1002,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T11:40:52.350418+05:30",
+      "last_processed_ts": "2026-11-12T11:45:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -991,7 +1026,24 @@
       ],
       "entry_oi": 47,
       "entry_volume": 52,
-      "signal_future_token": null
+      "signal_future_token": null,
+      "last_price": 2466.0,
+      "waiting_candles": [
+        [
+          "11:44",
+          2480.0,
+          2480.0,
+          2480.0,
+          2480.0
+        ],
+        [
+          "11:45",
+          2466.0,
+          2466.0,
+          2466.0,
+          2466.0
+        ]
+      ]
     }
   },
   "next_seq": {
@@ -1127,6 +1179,12 @@
         "spot": 138900.0,
         "call_oi": 597.0,
         "put_oi": 584.0
+      },
+      {
+        "t": 705,
+        "spot": 138881.0,
+        "call_oi": 601.0,
+        "put_oi": 585.0
       }
     ],
     "CRUDEOIL": [
@@ -1249,6 +1307,12 @@
         "spot": 8102.0,
         "call_oi": 2322000.0,
         "put_oi": 2955100.0
+      },
+      {
+        "t": 705,
+        "spot": 8095.0,
+        "call_oi": 2300400.0,
+        "put_oi": 2974200.0
       }
     ],
     "NATURALGAS": [
@@ -1365,6 +1429,12 @@
         "spot": 305.7,
         "call_oi": 41768750.0,
         "put_oi": 40430000.0
+      },
+      {
+        "t": 705,
+        "spot": 305.9,
+        "call_oi": 41952500.0,
+        "put_oi": 40483750.0
       }
     ],
     "GOLDM": [
@@ -1487,6 +1557,12 @@
         "spot": 138928.0,
         "call_oi": 778800.0,
         "put_oi": 791800.0
+      },
+      {
+        "t": 705,
+        "spot": 138936.0,
+        "call_oi": 785800.0,
+        "put_oi": 797100.0
       }
     ]
   },
