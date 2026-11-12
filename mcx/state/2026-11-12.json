@@ -238,7 +238,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T10:00:00+05:30",
+      "last_processed_ts": "2026-11-12T10:04:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -260,7 +260,7 @@
       "entry_oi": 1452600,
       "entry_volume": 17769,
       "signal_future_token": null,
-      "last_price": 183.6
+      "last_price": 183.2
     },
     "MCX-oi_flow-GOLD-PE-20261112-1001-01": {
       "trade_id": "MCX-oi_flow-GOLD-PE-20261112-1001-01",
@@ -391,6 +391,12 @@
         "spot": 138857.0,
         "call_oi": 583.0,
         "put_oi": 602.0
+      },
+      {
+        "t": 605,
+        "spot": 138709.0,
+        "call_oi": 583.0,
+        "put_oi": 626.0
       }
     ],
     "CRUDEOIL": [
@@ -423,6 +429,12 @@
         "spot": 7995.0,
         "call_oi": 1354900.0,
         "put_oi": 3218400.0
+      },
+      {
+        "t": 605,
+        "spot": 8000.0,
+        "call_oi": 1370500.0,
+        "put_oi": 3215000.0
       }
     ],
     "NATURALGAS": [
@@ -461,6 +473,12 @@
         "spot": 308.5,
         "call_oi": 39725000.0,
         "put_oi": 31058750.0
+      },
+      {
+        "t": 605,
+        "spot": 308.9,
+        "call_oi": 39542500.0,
+        "put_oi": 31067500.0
       }
     ],
     "GOLDM": [
@@ -493,6 +511,12 @@
         "spot": 139080.0,
         "call_oi": 706400.0,
         "put_oi": 783400.0
+      },
+      {
+        "t": 605,
+        "spot": 138750.0,
+        "call_oi": 646700.0,
+        "put_oi": 867900.0
       }
     ]
   },
