@@ -1297,16 +1297,16 @@
       "actual_entry_time": "2026-11-12T16:21:00+05:30",
       "tracked_entry_price": 2526.5,
       "highest_since_entry": 2571.5,
-      "lowest_since_entry": 2403.5,
+      "lowest_since_entry": 2387.0,
       "max_favorable_pct": 1.78,
-      "max_adverse_pct": -4.87,
+      "max_adverse_pct": -5.52,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T16:54:00+05:30",
+      "last_processed_ts": "2026-11-12T17:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -1328,7 +1328,7 @@
       "entry_oi": 100900,
       "entry_volume": 5688,
       "signal_future_token": null,
-      "last_price": 2415.5
+      "last_price": 2422.5
     }
   },
   "next_seq": {
@@ -1724,6 +1724,12 @@
         "spot": 138210.0,
         "call_oi": 145.0,
         "put_oi": 195.0
+      },
+      {
+        "t": 1021,
+        "spot": 138214.0,
+        "call_oi": 149.0,
+        "put_oi": 196.0
       }
     ],
     "CRUDEOIL": [
@@ -2146,6 +2152,12 @@
         "spot": 8071.0,
         "call_oi": 4127200.0,
         "put_oi": 5698600.0
+      },
+      {
+        "t": 1021,
+        "spot": 8087.0,
+        "call_oi": 4659400.0,
+        "put_oi": 5114900.0
       }
     ],
     "NATURALGAS": [
@@ -2532,6 +2544,12 @@
         "spot": 308.5,
         "call_oi": 46776250.0,
         "put_oi": 38526250.0
+      },
+      {
+        "t": 1021,
+        "spot": 308.5,
+        "call_oi": 47082500.0,
+        "put_oi": 38598750.0
       }
     ],
     "GOLDM": [
@@ -2930,6 +2948,12 @@
         "spot": 138241.0,
         "call_oi": 658700.0,
         "put_oi": 736200.0
+      },
+      {
+        "t": 1021,
+        "spot": 138250.0,
+        "call_oi": 1160600.0,
+        "put_oi": 1053400.0
       }
     ]
   },
@@ -2944,6 +2968,7 @@
   "pnl_snaps": [
     "1100",
     "1300",
-    "1500"
+    "1500",
+    "1700"
   ]
 }
