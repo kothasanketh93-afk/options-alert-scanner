@@ -137,3 +137,29 @@ def test_ai_tutor_used_when_key_present_and_falls_back(monkeypatch, tmp_path):
     assert tc.setup_chart(t2, _candles(), str(tmp_path / "s2.png"), lot=75) and "ai_verdict" not in t2   # rule fallback
     monkeypatch.delenv("ANTHROPIC_API_KEY")
     assert not ai_tutor.enabled()
+
+
+def test_gemini_free_provider_when_only_gemini_key(monkeypatch, tmp_path):
+    import ai_tutor, json as _json, requests
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.setenv("GEMINI_API_KEY", "g")
+    assert ai_tutor.provider() == "gemini"
+    seen = []
+
+    class R:
+        status_code = 200
+        text = ""
+
+        def json(self):
+            body = {"sections": [{"title": "ఫలితం", "points": ["SL తగిలింది."]}]}
+            return {"candidates": [{"content": {"parts": [{"text": _json.dumps(body, ensure_ascii=False)}]}}]}
+
+    def fake_post(url, timeout, json=None, headers=None):
+        seen.append((url, headers, json))
+        return R()
+    monkeypatch.setattr(requests, "post", fake_post)
+    out = ai_tutor.review_guidance(_trade(final_status="SL_HIT"), None)
+    assert out and out[0] == ("ఫలితం", "head")
+    url, headers, body = seen[0]
+    assert "generativelanguage.googleapis.com" in url and headers["x-goog-api-key"] == "g"
+    assert body["generationConfig"]["responseMimeType"] == "application/json"

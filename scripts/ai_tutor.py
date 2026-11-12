@@ -1,8 +1,10 @@
 """AI tutor (added 2026-11-12): Claude writes the Telugu explanation inside the setup / result / daily-lesson images, as a
 mentor with 30+ years of options trading and teaching. Data collection and learning only -- never places or gates a trade.
 
-* Needs the ANTHROPIC_API_KEY secret (GitHub -> Settings -> Secrets -> Actions). Without it, or on any API error or
-  timeout, callers fall back to the rule-based Telugu text in lessons.py, so the images always go out.
+* Provider: Claude when the ANTHROPIC_API_KEY secret is set (paid); otherwise Google Gemini when GEMINI_API_KEY is set
+  (Google AI Studio free tier -- free-tier prompts may be used by Google to improve its products; nothing personal is
+  sent, only chart images and trade numbers). Without either key, or on any API error or timeout, callers fall back to
+  the rule-based Telugu text in lessons.py, so the images always go out.
 * The model sees the chart picture (vision) plus the exact numbers; it is told to use only those numbers.
 * It also gives a one-word tutor view of a setup (supportive / mixed / against). That is stored on the trade
   (trade["ai_verdict"]) and in the ledger, so after a few weeks the data shows whether the tutor's view actually
@@ -17,6 +19,7 @@ from logging_setup import get_logger
 
 log = get_logger("ai_tutor")
 API_URL = "https://api.anthropic.com/v1/messages"
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
 SYSTEM = (
     "You are a professional options trader with more than 30 years of experience in Indian index, stock and MCX "
@@ -67,8 +70,39 @@ DAY_TASK = (
 )
 
 
+def provider():
+    """'claude', 'gemini' or None."""
+    if not getattr(config, "AI_TUTOR_ENABLED", True):
+        return None
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        return "claude"
+    if os.environ.get("GEMINI_API_KEY"):
+        return "gemini"
+    return None
+
+
 def enabled() -> bool:
-    return bool(os.environ.get("ANTHROPIC_API_KEY")) and bool(getattr(config, "AI_TUTOR_ENABLED", True))
+    return provider() is not None
+
+
+def _gemini(task: str, data: dict, image_path, timeout):
+    import requests
+    parts = []
+    if image_path and os.path.exists(image_path):
+        with open(image_path, "rb") as fh:
+            parts.append({"inline_data": {"mime_type": "image/png", "data": base64.b64encode(fh.read()).decode()}})
+    parts.append({"text": task + "\n\nDATA:\n" + json.dumps(data, ensure_ascii=False, default=str)})
+    model = getattr(config, "AI_TUTOR_GEMINI_MODEL", "gemini-2.5-flash")
+    resp = requests.post(GEMINI_URL.format(model=model), timeout=timeout, json={
+        "system_instruction": {"parts": [{"text": SYSTEM}]},
+        "contents": [{"role": "user", "parts": parts}],
+        "generationConfig": {"responseMimeType": "application/json", "maxOutputTokens": 4096, "temperature": 0.4}},
+        headers={"x-goog-api-key": os.environ["GEMINI_API_KEY"], "content-type": "application/json"})
+    if resp.status_code != 200:
+        log.warning("AI_TUTOR gemini HTTP %s: %s", resp.status_code, resp.text[:300])
+        return None
+    cands = resp.json().get("candidates") or []
+    return "".join(p.get("text", "") for p in ((cands[0].get("content") or {}).get("parts") or [])) if cands else None
 
 
 def _model(kind: str) -> str:
@@ -77,17 +111,27 @@ def _model(kind: str) -> str:
 
 def _call(task: str, data: dict, image_path: str = None, timeout: float = None):
     """One Messages API call; returns the parsed JSON dict or None (never raises)."""
-    if not enabled():
+    prov = provider()
+    if not prov:
         return None
     try:
         import requests
+        timeout = timeout or getattr(config, "AI_TUTOR_TIMEOUT_S", 60)
+        if prov == "gemini":
+            text = _gemini(task, data, image_path, timeout) or ""
+            start, end = text.find("{"), text.rfind("}")
+            if start < 0 or end <= start:
+                log.warning("AI_TUTOR gemini: no JSON in reply: %s", text[:200])
+                return None
+            out = json.loads(text[start:end + 1])
+            return out if isinstance(out.get("sections"), list) and out["sections"] else None
         content = []
         if image_path and os.path.exists(image_path):
             with open(image_path, "rb") as fh:
                 content.append({"type": "image", "source": {"type": "base64", "media_type": "image/png",
                                                             "data": base64.b64encode(fh.read()).decode()}})
         content.append({"type": "text", "text": task + "\n\nDATA:\n" + json.dumps(data, ensure_ascii=False, default=str)})
-        resp = requests.post(API_URL, timeout=timeout or getattr(config, "AI_TUTOR_TIMEOUT_S", 60), json={
+        resp = requests.post(API_URL, timeout=timeout, json={
             "model": _model(task), "max_tokens": 2500, "system": SYSTEM,
             "messages": [{"role": "user", "content": content}]},
             headers={"x-api-key": os.environ["ANTHROPIC_API_KEY"], "anthropic-version": "2023-06-01",

@@ -1,4 +1,5 @@
 # 2026-11-12
+- AI tutor can run free: with only the GEMINI_API_KEY secret (Google AI Studio free tier, gemini-2.5-flash) it uses Gemini; ANTHROPIC_API_KEY (Claude) takes priority when set.
 - AI tutor (scripts/ai_tutor.py): Claude (claude-sonnet-5-5, vision) looks at each focus trade's chart and numbers and writes the Telugu explanation inside the setup/result images and the daily lesson card, as a 30-year trader and teacher; exact entry/SL/target numbers are always printed from the data, never from the model. Optional ANTHROPIC_API_KEY secret; falls back to the rule-based Telugu text. The tutor's setup view (supportive/mixed/against) is saved as ledger column ai_verdict so its accuracy can be measured before it is ever used.
 - Telugu only inside images: the daily lesson message and all photo captions are English; the Telugu lesson card is an image.
 - Charts and the AI call are queued until all alerts of a run are sent (chart_notify.DEFER), so they never delay an alert.

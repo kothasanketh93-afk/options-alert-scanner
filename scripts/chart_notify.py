@@ -174,7 +174,7 @@ def lesson_card(trades: list, date_str: str, market: str, fetch_candles, send_te
                       ("ఒక వాక్యం రాసుకోండి: రేపు ఏ ఒక్క తప్పు చేయకూడదు?", "plain")]
         card = trade_chart.temp_png(f"lesson_{market}_{date_str}")
         if trade_chart.text_card(card, f"ఈ రోజు పాఠం – {market} {date_str}",
-                                 ("AI tutor" if ai_tutor.enabled() else "rule-based") + f"  |  {len(res)} trades, {scope}", lines):
+                                 (f"AI tutor ({ai_tutor.provider()})" if ai_tutor.enabled() else "rule-based") + f"  |  {len(res)} trades, {scope}", lines):
             send_photo(card, f"Lesson card {market} {date_str}")
         res.sort(key=lambda x: x[0])
         picks = [("Best trade today", res[-1][1])] + ([("Worst trade today", res[0][1])] if len(res) > 1 else [])

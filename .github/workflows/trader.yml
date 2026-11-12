@@ -131,6 +131,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # optional: AI tutor text in charts (ai_tutor.py)
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}         # optional, free: AI tutor via Google Gemini
 
           # The automatic per-run token (Settings -> Actions -> General
           # -> Workflow permissions must be "Read and write" for this

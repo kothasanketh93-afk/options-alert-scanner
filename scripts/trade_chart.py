@@ -333,7 +333,7 @@ def setup_chart(trade: dict, candles: list, path: str, name: str = None, strateg
     else:
         lines = rule
     info = lessons.as_info(lines) + [
-        (("AI tutor వివరణ. " if ai_lines else "") + "నారింజ గీతలు = swing points నుంచి support/resistance. రంగు labels = "
+        ((f"AI tutor ({ai_tutor.provider()}) వివరణ. " if ai_lines else "") + "నారింజ గీతలు = swing points నుంచి support/resistance. రంగు labels = "
          "candlestick patterns. Shadow data మాత్రమే, ఇది సలహా కాదు.", MUTE)]
     return render(candles, path, title, sub, info=info, **kw)
 
@@ -378,7 +378,7 @@ def outcome_chart(trade: dict, candles: list, path: str, name: str = None, strat
     if ai_tutor.enabled() and render(cs, path, title, sub, **kw):
         ai_lines = ai_tutor.review_guidance(trade, path, lot, [t for t, k in rule if k != "head"])
     lines = ai_lines or rule
-    foot = [("AI tutor review.", MUTE)] if ai_lines else []
+    foot = [(f"AI tutor ({ai_tutor.provider()}) review.", MUTE)] if ai_lines else []
     return render(cs, path, title, sub, info=head + lessons.as_info(lines) + foot, **kw)
 
 

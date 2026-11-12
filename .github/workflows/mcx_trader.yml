@@ -56,6 +56,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # optional: AI tutor text in charts (ai_tutor.py)
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}         # optional, free: AI tutor via Google Gemini
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO_URL: https://github.com/${{ github.repository }}.git
           MCX_FORCE: ${{ github.event.inputs.force == 'true' && '1' || '0' }}
