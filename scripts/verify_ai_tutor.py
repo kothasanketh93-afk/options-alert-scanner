@@ -29,12 +29,14 @@ def sample():
 def main():
     prov = ai_tutor.provider()
     print(f"AI tutor provider: {prov or 'NONE (no ANTHROPIC_API_KEY / GEMINI_API_KEY secret visible)'}")
+    import time
+    t0 = time.time()
     t, cs = sample()
     path = trade_chart.temp_png("verify_ai_tutor")
     ok = trade_chart.setup_chart(t, cs, path, strategy="VERIFY / sample data", lot=75)
     status = (f"AI tutor test: provider={prov}, AI text used={'YES' if 'ai_verdict' in t else 'NO (fell back to rule-based)'}"
               if prov else "AI tutor test: no AI key found; the chart below uses rule-based Telugu text")
-    print(status)
+    print(status, f"({time.time() - t0:.0f}s)")
     if ok:
         telegram_notify.send_photo(path, caption=status + " (sample data, not a trade)")
     return 0 if (prov and "ai_verdict" in t) else 1

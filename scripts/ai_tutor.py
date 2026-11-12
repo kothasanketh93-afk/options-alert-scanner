@@ -93,11 +93,16 @@ def _gemini(task: str, data: dict, image_path, timeout):
             parts.append({"inline_data": {"mime_type": "image/png", "data": base64.b64encode(fh.read()).decode()}})
     parts.append({"text": task + "\n\nDATA:\n" + json.dumps(data, ensure_ascii=False, default=str)})
     model = getattr(config, "AI_TUTOR_GEMINI_MODEL", "gemini-flash-latest")
-    resp = requests.post(GEMINI_URL.format(model=model), timeout=timeout, json={
-        "system_instruction": {"parts": [{"text": SYSTEM}]},
-        "contents": [{"role": "user", "parts": parts}],
-        "generationConfig": {"responseMimeType": "application/json", "maxOutputTokens": 4096, "temperature": 0.4}},
-        headers={"x-goog-api-key": os.environ["GEMINI_API_KEY"], "content-type": "application/json"})
+    body = {"system_instruction": {"parts": [{"text": SYSTEM}]},
+            "contents": [{"role": "user", "parts": parts}],
+            "generationConfig": {"responseMimeType": "application/json", "maxOutputTokens": 8192, "temperature": 0.4,
+                                 # long hidden "thinking" made the free model time out (2026-11-12): keep it minimal
+                                 "thinkingConfig": {"thinkingBudget": getattr(config, "AI_TUTOR_GEMINI_THINKING", 512)}}}
+    headers = {"x-goog-api-key": os.environ["GEMINI_API_KEY"], "content-type": "application/json"}
+    resp = requests.post(GEMINI_URL.format(model=model), timeout=timeout, json=body, headers=headers)
+    if resp.status_code == 400 and "thinking" in resp.text.lower():      # model without a thinking budget setting
+        body["generationConfig"].pop("thinkingConfig", None)
+        resp = requests.post(GEMINI_URL.format(model=model), timeout=timeout, json=body, headers=headers)
     if resp.status_code != 200:
         log.warning("AI_TUTOR gemini HTTP %s: %s", resp.status_code, resp.text[:300])
         return None
