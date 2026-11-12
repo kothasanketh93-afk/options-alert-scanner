@@ -2320,7 +2320,7 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "NOT_ENTERED",
       "final_status": null,
       "actual_entry_time": null,
       "tracked_entry_price": null,
@@ -2334,7 +2334,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T22:48:00+05:30",
+      "last_processed_ts": "2026-11-12T23:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -2356,7 +2356,7 @@
       "entry_oi": 12,
       "entry_volume": 89,
       "signal_future_token": null,
-      "last_price": 2772.0,
+      "last_price": 2690.0,
       "waiting_candles": [
         [
           "22:48",
@@ -2364,8 +2364,16 @@
           2772.0,
           2772.0,
           2772.0
+        ],
+        [
+          "22:58",
+          2689.5,
+          2689.5,
+          2689.5,
+          2689.5
         ]
-      ]
+      ],
+      "not_entered_reason": "ENTRY_WINDOW_EXPIRED"
     }
   },
   "next_seq": {
@@ -4340,6 +4348,7 @@
     "1500",
     "1700",
     "1900",
-    "2100"
+    "2100",
+    "2300"
   ]
 }
