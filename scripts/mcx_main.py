@@ -356,7 +356,8 @@ def send_outcome_chart(t: dict, broker=None, sender=None) -> bool:
         path = trade_chart.temp_png(f"mcx_result_{t['trade_id']}")
         label = STRATEGY_LABELS.get(t["strategy"], t["strategy"])
         if not trade_chart.outcome_chart(t, candles, path, name=NAMES.get(t["symbol"], t["symbol"]), strategy=f"MCX {label}",
-                                         lot=t.get("lot_multiplier") or LOT_MULTIPLIER.get(t["symbol"])):
+                                         lot=t.get("lot_multiplier") or LOT_MULTIPLIER.get(t["symbol"]),
+                                         underlying=_CHART_CTX.get(t["symbol"], ([],))[0]):
             return False
         (sender or (lambda p, c: tg.send_photo(p, caption=c)))(path, f"MCX result chart: {NAMES.get(t['symbol'], t['symbol'])} "
                                                                    f"{t['strike']:g} {t['direction']} -> {status.replace('_', ' ')}")
@@ -471,7 +472,8 @@ def send_reports(st: dict, now: datetime):
                                  lambda p, c: tg.send_photo(p, caption=c),
                                  lot_fn=lambda t: t.get("lot_multiplier") or LOT_MULTIPLIER.get(t["symbol"]),
                                  name_fn=lambda t: NAMES.get(t["symbol"], t["symbol"]),
-                                 label_fn=lambda t: f"MCX {STRATEGY_LABELS.get(t['strategy'], t['strategy'])}")
+                                 label_fn=lambda t: f"MCX {STRATEGY_LABELS.get(t['strategy'], t['strategy'])}",
+                                 fetch_underlying=lambda t: _CHART_CTX.get(t["symbol"], ([],))[0])
     if now.weekday() == 4 and not st.get("weekly_sent"):
         png = os.path.join(tempfile.mkdtemp(), f"mcx_weekly_{st['date']}.png")
         data = mcx_report.render_weekly(ledger, st["date"], png)

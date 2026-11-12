@@ -169,3 +169,27 @@ def test_emoji_removed_from_image_text():
     import te_text
     assert te_text.clean("Tutor అభిప్రాయం: మిశ్రమం ⚖️ – ok ✅ ⛔ 🟢") .strip() == "Tutor అభిప్రాయం: మిశ్రమం – ok"
     assert "→" in te_text.clean("a → b")
+
+
+def test_story_and_candle_notes_and_weekly_lesson(tmp_path, monkeypatch):
+    import lessons, weekly_lesson
+    from datetime import date
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    und = _candles(40, 24000.0, 6.0)
+    t = _trade(tracked_entry_price=50.0, status="SL_HIT", final_status="SL_HIT", spot_price=24010.0,
+               actual_entry_time="2026-11-11T10:05:00+05:30", sl_hit_time="2026-11-11T11:00:00+05:30",
+               alert_time="2026-11-11T10:00:00+05:30")
+    notes = lessons.candle_notes(t, und)
+    assert notes and notes[0] == ("ఏ candle ఏం చెప్పింది", "head") and any("Signal candle" in x for x, _k in notes)
+    assert "candle" in lessons.describe_candle({"open": 1, "high": 2, "low": 0.9, "close": 1.95})
+    assert tc.outcome_chart(t, _candles(60, 50.0, -0.3, 1, 10, 0), str(tmp_path / "o.png"), lot=75, underlying=und)
+    from PIL import Image
+    assert Image.open(tmp_path / "o.png").height > 1200          # story chart + premium chart + panel
+    sent = []
+    led = tmp_path / "l.csv"
+    led.write_text("date,setup_key,symbol,direction,strike,strategy,final_status,result_pct\n"
+                   "2026-11-10,a,NIFTY,CE,24000,fvg,SL_HIT,-20\n2026-11-11,b,NIFTY,PE,24000,fvg,T2_HIT,45\n")
+    assert weekly_lesson.week_index(date(2026, 11, 12)) == 0 and weekly_lesson.week_index(date(2026, 11, 16)) == 1
+    assert weekly_lesson.build_and_send([str(led)], date(2026, 11, 12), send_photo=lambda p, c: sent.append(c))
+    assert sent and sent[0].startswith("Weekly lesson 1/12: delta")

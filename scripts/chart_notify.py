@@ -71,6 +71,19 @@ def _lot(trade):
         return None
 
 
+def nse_underlying(trade: dict) -> list:
+    """Today's 5-minute candles of the trade's underlying (cached per run by market_data); [] on any problem."""
+    try:
+        import market_data
+        import option_chain
+        key = option_chain.resolve_underlying_key(trade["symbol"])
+        day = str(trade.get("alert_time") or "")[:10]
+        return [c for c in market_data.get_recent_underlying_candles(key, "5minute", 80) if c["timestamp"][:10] == day]
+    except Exception as exc:
+        log.warning("CHART underlying %s failed (%s: %s)", trade.get("symbol"), type(exc).__name__, exc)
+        return []
+
+
 def _send(path, caption):
     import telegram_notify
     telegram_notify.send_photo(path, caption=caption)
@@ -116,7 +129,8 @@ def outcome(trade: dict, sender=None) -> bool:
         since = (trade_chart._ts(trade["alert_time"]) - timedelta(minutes=10)).isoformat()
         candles = market_data.get_1min_candles_since(trade["instrument_key"], since)
         path = trade_chart.temp_png(f"result_{trade.get('trade_id', 'x')}")
-        if not trade_chart.outcome_chart(trade, candles, path, strategy=strategy_label(trade), lot=_lot(trade)):
+        if not trade_chart.outcome_chart(trade, candles, path, strategy=strategy_label(trade), lot=_lot(trade),
+                                         underlying=nse_underlying(trade)):
             return False
         (sender or _send)(path, f"Result chart: {trade['symbol']} {trade.get('strike')} {trade['direction']} -> {status.replace('_', ' ')}")
         return True
@@ -126,7 +140,7 @@ def outcome(trade: dict, sender=None) -> bool:
 
 
 def lesson_card(trades: list, date_str: str, market: str, fetch_candles, send_text, send_photo, lot_fn=None,
-                name_fn=None, label_fn=None) -> bool:
+                name_fn=None, label_fn=None, fetch_underlying=None) -> bool:
     """Daily lesson card. Telegram text and captions in English; the teaching itself (Telugu) is inside the images:
     one lesson-card image (AI tutor when available, else rule-based), then the best and the worst trade as result charts.
     fetch_candles(trade) -> option 1-minute candles. Never raises; returns True when the summary was sent."""
@@ -184,7 +198,8 @@ def lesson_card(trades: list, date_str: str, market: str, fetch_candles, send_te
                 nm = name_fn(t) if name_fn else None
                 if trade_chart.outcome_chart(t, fetch_candles(t), path, name=nm,
                                              strategy=label_fn(t) if label_fn else strategy_label(t),
-                                             lot=lot_fn(t) if lot_fn else None):
+                                             lot=lot_fn(t) if lot_fn else None,
+                                             underlying=fetch_underlying(t) if fetch_underlying else None):
                     send_photo(path, f"{title}: {nm or t.get('symbol')} {t.get('strike')} {t.get('direction')}")
             except Exception as exc:
                 log.warning("LESSON chart %s failed (%s: %s)", t.get("trade_id"), type(exc).__name__, exc)
@@ -215,4 +230,4 @@ def nse_lesson_card(state: dict) -> bool:
         return market_data.get_1min_candles_since(t["instrument_key"],
                                                   (trade_chart._ts(t["alert_time"]) - timedelta(minutes=10)).isoformat())
     return lesson_card(uniq, state["date"], "NSE", candles, telegram_notify.send,
-                       lambda p, c: telegram_notify.send_photo(p, caption=c), lot_fn=_lot)
+                       lambda p, c: telegram_notify.send_photo(p, caption=c), lot_fn=_lot, fetch_underlying=nse_underlying)

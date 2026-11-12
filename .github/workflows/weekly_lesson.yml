@@ -1,0 +1,37 @@
+name: Weekly lesson
+
+# Sends a weekly Telugu concept lesson (scripts/weekly_lesson.py) to Telegram now. main.py sends one automatically
+# every Monday morning; use this to get a lesson on demand. Also runs once when this file changes.
+on:
+  workflow_dispatch:
+    inputs:
+      week:
+        description: 'Course week 1-12 (empty = this week)'
+        required: false
+  push:
+    branches: [main]
+    paths: [".github/workflows/weekly_lesson.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  lesson:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: state
+          path: statebranch
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r requirements.txt
+      - name: Send lesson (first run)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/weekly_lesson.py statebranch "${{ github.event.inputs.week }}"

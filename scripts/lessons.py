@@ -215,3 +215,95 @@ def day_lessons(trades: list, top: int = 3) -> list:
         except Exception:
             continue
     return [(n, PATTERN_TE[i]) for i, n in cnt.most_common() if i in PATTERN_TE and i not in ("buy_better", "held_drawdown")][:top]
+
+
+# --- candle reading (2026-11-12): what each key candle of a trade said, in Telugu ------------------------------------
+CANDLE_PATTERN_TE = {
+    "Bullish Engulfing": "ముందు ఎరుపు candle ను పూర్తిగా మింగిన ఆకుపచ్చ candle: అమ్మకందారుల నుంచి కొనుగోలుదారులు నియంత్రణ తీసుకున్నారు.",
+    "Bearish Engulfing": "ముందు ఆకుపచ్చ candle ను మింగిన ఎరుపు candle: కొనుగోలుదారుల నుంచి అమ్మకందారులు నియంత్రణ తీసుకున్నారు.",
+    "Hammer": "కింద పొడవాటి తోక, పైన చిన్న body: కింది ధరల్లో కొనుగోళ్ళు వచ్చి ధరను పైకి తోశాయి (downtrend తర్వాత reversal సూచన).",
+    "Shooting Star": "పైన పొడవాటి తోక: పై ధరల్లో అమ్మకాలు వచ్చి ధరను కిందకి తోశాయి (uptrend తర్వాత reversal సూచన).",
+    "Marubozu": "దాదాపు తోకలు లేని పెద్ద body: ఒక వైపు (కొనుగోలుదారులు లేదా అమ్మకందారులు) పూర్తి నియంత్రణ.",
+    "Doji": "Open, close దాదాపు ఒకటే: అనిశ్చితి. తర్వాతి candle దిశ ముఖ్యం.",
+    "Spinning Top": "చిన్న body, రెండు వైపులా తోకలు: ఇరు వర్గాలు సమానం, momentum తగ్గింది.",
+    "Inside Bar": "ముందు candle లోపలే ఉన్న candle: విరామం. దాని high/low ఏది ముందు దాటితే ఆ దిశలో కదలిక.",
+    "Outside Bar": "ముందు candle కంటే పెద్ద range: volatility పెరిగింది, close అయిన దిశ బలమైనది.",
+    "Morning Star": "ఎరుపు, చిన్న candle, తర్వాత బలమైన ఆకుపచ్చ: downtrend ముగిసి పైకి తిరిగే సూచన.",
+    "Evening Star": "ఆకుపచ్చ, చిన్న candle, తర్వాత బలమైన ఎరుపు: uptrend ముగిసి కిందకి తిరిగే సూచన.",
+    "Three White Soldiers": "వరుసగా మూడు బలమైన ఆకుపచ్చ candles: కొనుగోలుదారుల బలమైన ఒత్తిడి.",
+    "Three Black Crows": "వరుసగా మూడు బలమైన ఎరుపు candles: అమ్మకందారుల బలమైన ఒత్తిడి.",
+}
+
+
+def describe_candle(c: dict) -> str:
+    """Plain-Telugu reading of one candle's shape."""
+    o, h, l, cl = (float(c[k]) for k in ("open", "high", "low", "close"))
+    rng = (h - l) or 1e-9
+    body, up, lowr = abs(cl - o) / rng, (h - max(o, cl)) / rng, (min(o, cl) - l) / rng
+    colour = "ఆకుపచ్చ" if cl >= o else "ఎరుపు"
+    if body >= 0.6:
+        side = "కొనుగోలుదారులు" if cl >= o else "అమ్మకందారులు"
+        return f"బలమైన {colour} candle (body {body * 100:.0f}%): {side} నియంత్రణలో ఉన్నారు."
+    if lowr >= 0.5:
+        return f"{colour} candle, కింద పొడవాటి తోక: కింది ధరలను తిరస్కరించారు (కొనుగోళ్ళు వచ్చాయి)."
+    if up >= 0.5:
+        return f"{colour} candle, పైన పొడవాటి తోక: పై ధరలను తిరస్కరించారు (అమ్మకాలు వచ్చాయి)."
+    if body <= 0.2:
+        return f"చిన్న body candle: అనిశ్చితి (indecision), ఇరు వర్గాలు సమానం."
+    return f"సాధారణ {colour} candle: పెద్ద సంకేతం లేదు."
+
+
+def _near(cs, ts):
+    t = _ts(ts)
+    if t is None or not cs:
+        return None
+    from datetime import timezone, timedelta
+    def key(c):
+        x = _ts(c["timestamp"])
+        if x.tzinfo is None:
+            x = x.replace(tzinfo=timezone(timedelta(hours=5, minutes=30)))
+        tt = t if t.tzinfo else t.replace(tzinfo=timezone(timedelta(hours=5, minutes=30)))
+        return abs((x - tt).total_seconds())
+    return min(cs, key=key)
+
+
+def candle_notes(trade: dict, underlying: list) -> list:
+    """[(text, kind)]: the signal, entry, exit and strongest opposing candles on the underlying, plus patterns seen."""
+    import candlestick_patterns
+    import sell_view
+    cs = sorted([c for c in underlying or [] if _ts(c.get("timestamp"))], key=lambda c: c["timestamp"])
+    if len(cs) < 3:
+        return []
+    bull = trade.get("direction") == "CE"
+    out = [("ఏ candle ఏం చెప్పింది", "head")]
+    sig = _near(cs, trade.get("alert_time"))
+    if sig:
+        out.append((f"Signal candle ({sig['timestamp'][11:16]}): {describe_candle(sig)}", "plain"))
+    ent = _near(cs, trade.get("actual_entry_time"))
+    if ent and ent is not sig:
+        out.append((f"Entry candle ({ent['timestamp'][11:16]}): {describe_candle(ent)}", "plain"))
+    ext_ts = sell_view.exit_time(trade)
+    ext = _near(cs, ext_ts)
+    if ent and ext:
+        i0, i1 = cs.index(ent), cs.index(ext)
+        window = cs[i0:i1 + 1]
+        against = [c for c in window if (c["close"] < c["open"]) == bull]
+        if against:
+            worst = max(against, key=lambda c: abs(c["close"] - c["open"]))
+            if abs(worst["close"] - worst["open"]) > 0:
+                out.append((f"మనకు వ్యతిరేకంగా బలమైన candle ({worst['timestamp'][11:16]}): {describe_candle(worst)}", "warn"))
+        out.append((f"Exit candle ({ext['timestamp'][11:16]}): {describe_candle(ext)}", "plain"))
+        seen = []
+        start = max(0, i0 - 6)
+        for i in range(start + 2, i1 + 1):
+            try:
+                det = [x for x in candlestick_patterns.detect(cs[:i + 1]) if x["bias"] in ("bullish", "bearish")]
+            except Exception:
+                det = []
+            for x in det:
+                if x["pattern"] in CANDLE_PATTERN_TE and x["pattern"] not in [p for p, _t in seen]:
+                    seen.append((x["pattern"], cs[i]["timestamp"][11:16]))
+        if seen:
+            out.append(("ఈ trade లో కనిపించిన patterns", "head"))
+            out += [(f"{p} ({t}): {CANDLE_PATTERN_TE[p]}", "plain") for p, t in seen[:4]]
+    return out

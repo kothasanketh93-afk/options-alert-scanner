@@ -436,8 +436,65 @@ def setup_chart(trade: dict, candles: list, path: str, name: str = None, strateg
     return render(candles, path, title, sub, info=info, **kw)
 
 
-def outcome_chart(trade: dict, candles: list, path: str, name: str = None, strategy: str = None, lot=None) -> bool:
-    """Option premium candles from the alert to the exit with entry/SL/T1/T2, plus the Telugu review of the trade."""
+def story_chart(trade: dict, underlying: list, path: str, title: str, dec: int = 2) -> bool:
+    """The trade on the UNDERLYING 5-minute chart: the day's candles up to just after the exit, the signal, BUY and SELL
+    points, setup levels and labelled candlestick patterns -- for learning which candle said what."""
+    import sell_view
+    t_out = _ts(sell_view.exit_time(trade))
+    cs = [c for c in underlying or [] if _ts(c.get("timestamp")) and (t_out is None or _ts(c["timestamp"]) <= t_out + timedelta(minutes=20))]
+    if len(cs) < 3:
+        return False
+
+    def px_at(ts):
+        t = _ts(ts)
+        if t is None:
+            return None
+        best = min(cs, key=lambda c: abs((_ts(c["timestamp"]) - t).total_seconds()))
+        return best["close"]
+    bull = trade.get("direction") == "CE"
+    status = trade.get("final_status") or trade.get("status")
+    import outcomes_ledger
+    res = outcomes_ledger.result_pct(trade)
+    good = res is not None and res > 0
+    levels = [(_num(trade.get("spot_price")), "Signal ధర", BLUE, False)]
+    if _num(trade.get("sweep_extreme")) is not None:
+        levels.append((_num(trade["sweep_extreme"]), "ఇది దాటితే idea తప్పు", RED, True))
+    if _num(trade.get("level_value")) is not None:
+        import lessons
+        levels.append((_num(trade["level_value"]), lessons.LEVEL_TE.get(trade.get("level_name"), "Level"), YELLOW, True))
+    arrows = [(trade.get("actual_entry_time"), px_at(trade.get("actual_entry_time")), f"BUY {trade.get('direction')}",
+               GREEN if bull else RED, "up" if bull else "down"),
+              (sell_view.exit_time(trade), px_at(sell_view.exit_time(trade)), f"SELL ({_EXIT_WHY.get(status, 'exit')})",
+               GREEN if good else RED, "down" if bull else "up")]
+    return render(cs, path, title, "underlying 5-నిమిషాల chart: ఏ candle ఏం చెప్పింది", levels=levels,
+                  vlines=[(trade.get("alert_time"), "Signal", BLUE)], arrows=arrows, dec=dec)
+
+
+def stack(paths: list, out: str, info=None) -> bool:
+    """Stack chart images vertically and add a Telugu info panel at the bottom."""
+    imgs = [Image.open(p) for p in paths if p and os.path.exists(p)]
+    panel = None
+    if info:
+        tmp = temp_png("panel")
+        if text_card(tmp, "", "", info, header=False):
+            panel = Image.open(tmp)
+    parts = imgs + ([panel] if panel else [])
+    if not parts:
+        return False
+    canvas = Image.new("RGB", (W, sum(i.height for i in parts)), BG)
+    y = 0
+    for im in parts:
+        canvas.paste(im, (0, y))
+        y += im.height
+    canvas.save(out)
+    return True
+
+
+def outcome_chart(trade: dict, candles: list, path: str, name: str = None, strategy: str = None, lot=None,
+                  underlying: list = None) -> bool:
+    """Option premium candles from the alert to the exit with entry/SL/T1/T2, plus the Telugu review of the trade.
+    With `underlying` (the day's 5-minute candles) a 'which candle said what' chart is added on top and the key candles
+    are explained."""
     import lessons
     import outcomes_ledger
     import sell_view
@@ -473,16 +530,29 @@ def outcome_chart(trade: dict, candles: list, path: str, name: str = None, strat
                        "down")],
               auto_levels=False, patterns=False)
     rule = lessons.review_lines(trade, lot)
+    notes = lessons.candle_notes(trade, underlying) if underlying else []
+    story = temp_png(f"story_{trade.get('trade_id', 'x')}") if underlying else None
+    if story and not story_chart(trade, underlying, story, f"{sym} - trade కథ (underlying)"):
+        story = None
+    premium = temp_png(f"premium_{trade.get('trade_id', 'x')}")
+    if not render(cs, premium, title, sub, **kw):
+        if not story:
+            return False
+        premium = None
     ai_lines = None
     import ai_tutor
-    if ai_tutor.enabled() and render(cs, path, title, sub, **kw):
-        ai_lines = ai_tutor.review_guidance(trade, path, lot, [t for t, k in rule if k != "head"])
-    lines = ai_lines or rule
-    foot = [(f"AI tutor ({ai_tutor.provider()}) review.", MUTE)] if ai_lines else []
-    return render(cs, path, title, sub, info=head + lessons.as_info(lines) + foot, **kw)
+    if ai_tutor.enabled():
+        ai_lines = ai_tutor.review_guidance(trade, [p for p in (story, premium) if p], lot,
+                                            [t for t, k in rule if k != "head"], [t for t, k in notes if k != "head"])
+    lines = ai_lines or (rule + notes)
+    if ai_lines and notes:             # the exact candle facts stay visible under the tutor's text
+        lines = ai_lines + notes
+    foot = [(f"AI tutor ({ai_tutor.provider()}) review.", "rule")] if ai_lines else []
+    info = [(t, "good" if good else "warn") for t, _c in head] + lines + foot
+    return stack([story, premium], path, info)
 
 
-def text_card(path: str, title: str, subtitle: str, lines: list) -> bool:
+def text_card(path: str, title: str, subtitle: str, lines: list, header: bool = True) -> bool:
     """A text-only image (same dark style) for the daily lesson card; lines as lessons [(text, kind)]."""
     probe = ImageDraw.Draw(Image.new("RGB", (10, 10)))
     import lessons
@@ -491,12 +561,16 @@ def text_card(path: str, title: str, subtitle: str, lines: list) -> bool:
         size = 22 if kind == "head" else 19
         for k, part in enumerate(te_text.wrap(probe, text, size, W - 2 * L - 40, kind == "head")):
             wrapped.append((part, col, kind, k == 0))
-    h = 110 + sum(46 if kind == "head" and first else 33 for _p, _c, kind, first in wrapped) + 30
+    top = 106 if header else 24
+    h = top + sum(46 if kind == "head" and first else 33 for _p, _c, kind, first in wrapped) + 30
     img = Image.new("RGB", (W, h), BG)
     d = ImageDraw.Draw(img)
-    te_text.draw(d, (L + 6, 18), title, 30, TXT, bold=True)
-    te_text.draw(d, (L + 6, 60), subtitle, 17, MUTE)
-    y = 106
+    if header:
+        te_text.draw(d, (L + 6, 18), title, 30, TXT, bold=True)
+        te_text.draw(d, (L + 6, 60), subtitle, 17, MUTE)
+    else:
+        d.line((L, 6, W - L, 6), fill=GRID, width=2)
+    y = top
     for text, col, kind, first in wrapped:
         if kind == "head" and first:
             y += 10

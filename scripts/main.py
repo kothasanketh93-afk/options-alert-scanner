@@ -723,6 +723,19 @@ def run_sell_view_step(state: dict):
         log.info("SELL_VIEW priced %d closed trade(s)", n)
 
 
+def maybe_send_weekly_lesson(state: dict, now: datetime):
+    """Monday, first run from 09:00: this week's Telugu concept lesson (weekly_lesson.py). Best-effort, once."""
+    if now.weekday() != 0 or (now.hour, now.minute) < (9, 0) or state.get("weekly_lesson_sent"):
+        return
+    state["weekly_lesson_sent"] = True
+    try:
+        import weekly_lesson
+        root = state_mod.STATE_CLONE_DIR
+        weekly_lesson.build_and_send([root / "ledger" / "outcomes.csv", root / "mcx" / "ledger" / "outcomes.csv"], now.date())
+    except Exception as exc:
+        log.error("Weekly lesson failed (%s: %s) -- continuing.", type(exc).__name__, exc)
+
+
 def maybe_send_eod_report(state: dict, now: datetime):
     """One end-of-day report listing every tracked trade by outcome (see eod_report.py). Sent once, at/after SUMMARY_HHMM."""
     if (now.hour, now.minute) < SUMMARY_HHMM or state.get("eod_report_sent"):
@@ -1032,6 +1045,7 @@ def main():
         except Exception as exc:
             log.error("Chart flush failed (%s: %s) -- continuing.", type(exc).__name__, exc)
 
+        maybe_send_weekly_lesson(state, now)
         maybe_send_daily_summary(state, now)
         maybe_send_eod_report(state, now)
         try:

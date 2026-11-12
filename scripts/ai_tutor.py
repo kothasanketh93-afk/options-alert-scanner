@@ -54,13 +54,15 @@ SETUP_TASK = (
 )
 
 REVIEW_TASK = (
-    "This trade has CLOSED. The chart shows the option premium's 1-minute candles from the alert to the exit, with "
-    "entry, SL and targets marked. The data includes rule-based observations already computed from the tracked prices. "
-    "Review it like a mentor. Return JSON:\n"
+    "This trade has CLOSED. Images: (1) when present, the UNDERLYING's 5-minute candles for the day with the signal, "
+    "BUY and SELL marked and candlestick patterns labelled; (2) the option premium's 1-minute candles with entry, SL "
+    "and targets. The data includes rule-based observations and descriptions of the key candles (signal, entry, exit, "
+    "the strongest candle against the trade). Review it like a mentor teaching candle reading. Return JSON:\n"
     '{"sections":[{"title":"...","points":["..."]}]}\n'
-    "Sections with Telugu titles: (1) what happened, in order; (2) what went right / what went wrong (use the "
-    "observations, add what the chart shows); (3) the lesson to carry to the next trade, as one clear rule. "
-    "2-3 points per section. Judge the decision, not just the outcome: a well-planned trade can still hit SL."
+    "Sections with Telugu titles: (1) what happened, in order, by time; (2) which candle said what: the signal candle, "
+    "the candle that confirmed or rejected the idea, the exit candle -- what each one showed about buyers vs sellers; "
+    "(3) why it succeeded or why it failed (use the observations); (4) the lesson to carry to the next trade, as one "
+    "clear rule. 2-4 points per section. Judge the decision, not just the outcome: a well-planned trade can still hit SL."
 )
 
 DAY_TASK = (
@@ -92,9 +94,10 @@ def enabled() -> bool:
 def _gemini(task: str, data: dict, image_path, timeout):
     import requests
     parts = []
-    if image_path and os.path.exists(image_path):
-        with open(image_path, "rb") as fh:
-            parts.append({"inline_data": {"mime_type": "image/png", "data": base64.b64encode(fh.read()).decode()}})
+    for ip in ([image_path] if isinstance(image_path, str) else (image_path or [])):
+        if ip and os.path.exists(ip):
+            with open(ip, "rb") as fh:
+                parts.append({"inline_data": {"mime_type": "image/png", "data": base64.b64encode(fh.read()).decode()}})
     parts.append({"text": task + "\n\nDATA:\n" + json.dumps(data, ensure_ascii=False, default=str)})
     body = {"system_instruction": {"parts": [{"text": SYSTEM}]},
             "contents": [{"role": "user", "parts": parts}],
@@ -147,10 +150,11 @@ def _call(task: str, data: dict, image_path: str = None, timeout: float = None):
             out = json.loads(text[start:end + 1])
             return out if isinstance(out.get("sections"), list) and out["sections"] else None
         content = []
-        if image_path and os.path.exists(image_path):
-            with open(image_path, "rb") as fh:
-                content.append({"type": "image", "source": {"type": "base64", "media_type": "image/png",
-                                                            "data": base64.b64encode(fh.read()).decode()}})
+        for ip in ([image_path] if isinstance(image_path, str) else (image_path or [])):
+            if ip and os.path.exists(ip):
+                with open(ip, "rb") as fh:
+                    content.append({"type": "image", "source": {"type": "base64", "media_type": "image/png",
+                                                                "data": base64.b64encode(fh.read()).decode()}})
         content.append({"type": "text", "text": task + "\n\nDATA:\n" + json.dumps(data, ensure_ascii=False, default=str)})
         resp = requests.post(API_URL, timeout=timeout, json={
             "model": _model(task), "max_tokens": 2500, "system": SYSTEM,
@@ -215,14 +219,15 @@ def setup_guidance(trade: dict, chart_png: str, lot=None, pdh=None, pdl=None):
     return lines
 
 
-def review_guidance(trade: dict, chart_png: str, lot=None, observations=None):
+def review_guidance(trade: dict, chart_png, lot=None, observations=None, candle_notes=None):
     import outcomes_ledger
     keys = ("symbol", "direction", "strike", "strategy", "engine", "alert_time", "alert_premium", "tracked_entry_price",
             "actual_entry_time", "stop_loss", "initial_stop_loss", "target_1", "target_2", "final_status", "t1_hit",
             "max_favorable_pct", "max_adverse_pct", "spread_pct", "expiry", "eod_last_price", "ai_verdict")
     d = {k: trade.get(k) for k in keys if trade.get(k) not in (None, "", [])}
     d.update({"result_pct_on_premium": outcomes_ledger.result_pct(trade), "lot_size": lot,
-              "observations": observations or [], "sell_view": trade.get("sell_view")})
+              "observations": observations or [], "sell_view": trade.get("sell_view"),
+              "key_candles": candle_notes or []})
     reply = _call(REVIEW_TASK, d, chart_png)
     return to_lines(reply) if reply else None
 
