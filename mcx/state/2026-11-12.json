@@ -523,7 +523,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T11:54:00+05:30",
+      "last_processed_ts": "2026-11-12T12:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -548,7 +548,7 @@
       "entry_oi": 3743750,
       "entry_volume": 2146,
       "signal_future_token": null,
-      "last_price": 14.4,
+      "last_price": 14.6,
       "waiting_candles": [
         [
           "10:26",
@@ -770,7 +770,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T11:54:00+05:30",
+      "last_processed_ts": "2026-11-12T12:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -792,7 +792,7 @@
       "entry_oi": 3832500,
       "entry_volume": 2949,
       "signal_future_token": null,
-      "last_price": 14.4
+      "last_price": 14.6
     },
     "MCX-bos-CRUDEOIL-CE-20261112-1135-01": {
       "trade_id": "MCX-bos-CRUDEOIL-CE-20261112-1135-01",
@@ -836,7 +836,7 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "NOT_ENTERED",
       "final_status": null,
       "actual_entry_time": null,
       "tracked_entry_price": null,
@@ -850,7 +850,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T11:55:00+05:30",
+      "last_processed_ts": "2026-11-12T12:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -872,7 +872,7 @@
       "entry_oi": 406800,
       "entry_volume": 16564,
       "signal_future_token": null,
-      "last_price": 173.6,
+      "last_price": 176.6,
       "waiting_candles": [
         [
           "11:36",
@@ -1013,8 +1013,16 @@
           174.2,
           170.8,
           173.6
+        ],
+        [
+          "11:56",
+          174.1,
+          175.0,
+          173.5,
+          174.6
         ]
-      ]
+      ],
+      "not_entered_reason": "ENTRY_WINDOW_EXPIRED"
     },
     "MCX-fvg-GOLD-CE-20261112-1140-01": {
       "trade_id": "MCX-fvg-GOLD-CE-20261112-1140-01",
@@ -1072,7 +1080,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T11:45:00+05:30",
+      "last_processed_ts": "2026-11-12T12:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -1097,7 +1105,7 @@
       "entry_oi": 47,
       "entry_volume": 52,
       "signal_future_token": null,
-      "last_price": 2466.0,
+      "last_price": 2426.0,
       "waiting_candles": [
         [
           "11:44",
@@ -1112,6 +1120,13 @@
           2466.0,
           2466.0,
           2466.0
+        ],
+        [
+          "12:00",
+          2426.0,
+          2426.0,
+          2426.0,
+          2426.0
         ]
       ]
     }
@@ -1261,6 +1276,12 @@
         "spot": 138839.0,
         "call_oi": 600.0,
         "put_oi": 586.0
+      },
+      {
+        "t": 721,
+        "spot": 138801.0,
+        "call_oi": 601.0,
+        "put_oi": 588.0
       }
     ],
     "CRUDEOIL": [
@@ -1389,6 +1410,12 @@
         "spot": 8095.0,
         "call_oi": 2300400.0,
         "put_oi": 2974200.0
+      },
+      {
+        "t": 721,
+        "spot": 8084.0,
+        "call_oi": 2292000.0,
+        "put_oi": 3010100.0
       }
     ],
     "NATURALGAS": [
@@ -1651,6 +1678,12 @@
         "spot": 138859.0,
         "call_oi": 792500.0,
         "put_oi": 799600.0
+      },
+      {
+        "t": 721,
+        "spot": 138845.0,
+        "call_oi": 797500.0,
+        "put_oi": 796400.0
       }
     ]
   },
