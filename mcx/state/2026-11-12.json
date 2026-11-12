@@ -1213,7 +1213,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T14:54:00+05:30",
+      "last_processed_ts": "2026-11-12T15:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -1235,7 +1235,7 @@
       "entry_oi": 8537500,
       "entry_volume": 17771,
       "signal_future_token": null,
-      "last_price": 15.6,
+      "last_price": 15.75,
       "be_tracked": true,
       "trail_sl": 15.635,
       "trail_exit_price": 15.635
@@ -1839,6 +1839,12 @@
         "spot": 8120.0,
         "call_oi": 2005500.0,
         "put_oi": 3363600.0
+      },
+      {
+        "t": 901,
+        "spot": 8110.0,
+        "call_oi": 2071300.0,
+        "put_oi": 3365500.0
       }
     ],
     "NATURALGAS": [
@@ -2395,6 +2401,12 @@
         "spot": 137696.0,
         "call_oi": 442000.0,
         "put_oi": 497300.0
+      },
+      {
+        "t": 901,
+        "spot": 137998.0,
+        "call_oi": 455300.0,
+        "put_oi": 492600.0
       }
     ]
   },
@@ -2408,6 +2420,7 @@
   },
   "pnl_snaps": [
     "1100",
-    "1300"
+    "1300",
+    "1500"
   ]
 }
