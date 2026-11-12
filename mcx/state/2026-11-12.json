@@ -1306,7 +1306,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T17:24:00+05:30",
+      "last_processed_ts": "2026-11-12T17:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -1328,7 +1328,87 @@
       "entry_oi": 100900,
       "entry_volume": 5688,
       "signal_future_token": null,
-      "last_price": 2388.0
+      "last_price": 2392.5
+    },
+    "MCX-ema_pb-CRUDEOIL-PE-20261112-1731-01": {
+      "trade_id": "MCX-ema_pb-CRUDEOIL-PE-20261112-1731-01",
+      "display_label": "MCX 13",
+      "symbol": "CRUDEOIL",
+      "direction": "PE",
+      "moneyness": "ATM",
+      "instrument_key": "MCX|583061",
+      "strike": 8050.0,
+      "expiry": "2026-11-17",
+      "spot_price": 8071.0,
+      "alert_time": "2026-11-12T17:31:30.031793+05:30",
+      "alert_premium": 167.7,
+      "entry_low": 167.7,
+      "entry_high": 167.7,
+      "stop_loss": 158.7,
+      "initial_stop_loss": 158.7,
+      "target_1": 181.2,
+      "target_2": 190.2,
+      "session": "MCX",
+      "grade": "Shadow",
+      "trade_score": 50,
+      "bid": 167.2,
+      "ask": 167.6,
+      "spread_pct": 0.24,
+      "probability_pct": null,
+      "probability_label": "Shadow",
+      "score_breakdown": [],
+      "confidence_score": 5.0,
+      "risk_score": 4.5,
+      "reward_score": 6.0,
+      "expected_rr": "1:1.5",
+      "factor_checklist": [],
+      "confidence_stars": "",
+      "confidence_label": "Shadow",
+      "risk_rating": "",
+      "risk_label": "Unvalidated",
+      "expected_holding_minutes": [
+        30,
+        180
+      ],
+      "why_reasons": [],
+      "alternatives": [],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-11-12T17:31:30.031793+05:30",
+      "messages_sent": [],
+      "streak_counted": false,
+      "strategy": "ema_pb",
+      "probability_status": "shadow_only",
+      "execution_mode": "shadow",
+      "live_alert_sent": false,
+      "engine": "mcx",
+      "market_close_hhmm": [
+        23,
+        25
+      ],
+      "delta_proxy": 0.5,
+      "lot_multiplier": 100,
+      "level_name": "EMA20",
+      "level_value": 8082.48,
+      "signal_close": 8076.0,
+      "sweep_extreme": 8094.0,
+      "fvg": null,
+      "entry_oi": 643800,
+      "entry_volume": 56062,
+      "signal_future_token": null,
+      "chart_setup_sent": true
     }
   },
   "next_seq": {
@@ -1343,7 +1423,8 @@
     "MCX-bos-CRUDEOIL": 1,
     "MCX-fvg-GOLD": 1,
     "MCX-oi_flow-NATURALGAS": 1,
-    "MCX-bos-GOLDM": 1
+    "MCX-bos-GOLDM": 1,
+    "MCX-ema_pb-CRUDEOIL": 1
   },
   "flow_snap": {
     "GOLD": [
@@ -1760,6 +1841,12 @@
         "spot": 138100.0,
         "call_oi": 153.0,
         "put_oi": 202.0
+      },
+      {
+        "t": 1051,
+        "spot": 138123.0,
+        "call_oi": 154.0,
+        "put_oi": 203.0
       }
     ],
     "CRUDEOIL": [
@@ -2218,6 +2305,12 @@
         "spot": 8083.0,
         "call_oi": 4727500.0,
         "put_oi": 5324400.0
+      },
+      {
+        "t": 1051,
+        "spot": 8076.0,
+        "call_oi": 4328000.0,
+        "put_oi": 6036900.0
       }
     ],
     "NATURALGAS": [
@@ -3074,6 +3167,12 @@
         "spot": 138078.0,
         "call_oi": 695600.0,
         "put_oi": 816200.0
+      },
+      {
+        "t": 1051,
+        "spot": 138145.0,
+        "call_oi": 700200.0,
+        "put_oi": 826300.0
       }
     ]
   },
