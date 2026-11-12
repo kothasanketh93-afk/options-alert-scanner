@@ -1199,21 +1199,21 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "T1_THEN_SL",
       "actual_entry_time": "2026-11-12T14:41:00+05:30",
       "tracked_entry_price": 15.35,
       "highest_since_entry": 16.0,
-      "lowest_since_entry": 14.8,
+      "lowest_since_entry": 14.7,
       "max_favorable_pct": 4.23,
-      "max_adverse_pct": -3.58,
+      "max_adverse_pct": -4.23,
       "t1_hit": true,
       "t1_hit_time": "2026-11-12T14:52:00+05:30",
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-11-12T15:25:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T15:24:00+05:30",
+      "last_processed_ts": "2026-11-12T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -1235,11 +1235,20 @@
       "entry_oi": 8537500,
       "entry_volume": 17771,
       "signal_future_token": null,
-      "last_price": 15.05,
+      "last_price": 15.15,
       "be_tracked": true,
       "trail_sl": 15.635,
       "trail_exit_price": 15.635,
-      "be_touch_price": 15.35
+      "be_touch_price": 15.35,
+      "sell_view": {
+        "option": "PE 310.0",
+        "key": "MCX|583916",
+        "entry": 14.1,
+        "exit": 14.5,
+        "entry_ts": "2026-11-12T14:41:00+05:30",
+        "exit_ts": "2026-11-12T15:25:00+05:30",
+        "pct": -2.84
+      }
     }
   },
   "next_seq": {
@@ -1532,6 +1541,12 @@
         "spot": 137907.0,
         "call_oi": 141.0,
         "put_oi": 170.0
+      },
+      {
+        "t": 931,
+        "spot": 138060.0,
+        "call_oi": 141.0,
+        "put_oi": 174.0
       }
     ],
     "CRUDEOIL": [
@@ -2160,6 +2175,12 @@
         "spot": 310.8,
         "call_oi": 40900000.0,
         "put_oi": 32510000.0
+      },
+      {
+        "t": 931,
+        "spot": 310.6,
+        "call_oi": 41476250.0,
+        "put_oi": 33328750.0
       }
     ],
     "GOLDM": [
@@ -2474,6 +2495,12 @@
         "spot": 138055.0,
         "call_oi": 493000.0,
         "put_oi": 523900.0
+      },
+      {
+        "t": 931,
+        "spot": 138119.0,
+        "call_oi": 507600.0,
+        "put_oi": 534800.0
       }
     ]
   },
