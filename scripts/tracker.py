@@ -214,6 +214,7 @@ def process_trade_candles(trade: dict, candles: list) -> list:
             if hit_t2:
                 trade["t2_hit"] = True
                 trade["t2_hit_time"] = ts.isoformat()
+                trade["exit_candle_open"] = o       # gap audit: a candle opening beyond the level fills at its open, not the level
                 trade["status"] = "T2_HIT"
                 trade["final_status"] = "T2_HIT"
                 events.append({"type": "T2_HIT", "trade": trade})
@@ -222,6 +223,7 @@ def process_trade_candles(trade: dict, candles: list) -> list:
 
             if hit_sl:
                 trade["sl_hit_time"] = ts.isoformat()
+                trade["exit_candle_open"] = o
                 trade["status"] = "SL_HIT"
                 # 2026-07-31: a trailing-stop exit locked in profit (SL was
                 # raised above entry), not a genuine loss like an untouched
@@ -293,6 +295,7 @@ def process_trade_candles(trade: dict, candles: list) -> list:
             if hit_t2:
                 trade["t2_hit"] = True
                 trade["t2_hit_time"] = ts.isoformat()
+                trade["exit_candle_open"] = o       # gap audit: a candle opening beyond the level fills at its open, not the level
                 trade["status"] = "T2_HIT"
                 trade["final_status"] = "T2_HIT"
                 events.append({"type": "T2_HIT", "trade": trade})
@@ -301,6 +304,7 @@ def process_trade_candles(trade: dict, candles: list) -> list:
 
             if hit_sl:
                 trade["sl_hit_time"] = ts.isoformat()
+                trade["exit_candle_open"] = o
                 trade["status"] = "SL_HIT"
                 # 2026-07-31: same distinction as the ACTIVE block above --
                 # T1 was already hit either way, but if trailing ALSO raised

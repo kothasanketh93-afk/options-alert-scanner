@@ -49,7 +49,11 @@ def load_rows(ledger_path, start: str, end: str, market: str):
             strat = r.get("strategy") or ""
             if market == "NSE" and r.get("engine") == "live":
                 strat = "live_scored"
-            out.append({"strat": strat, "date": r["date"], "res": res, "net": net,
+            real = _f(r.get("realistic_net_pct"))
+            if real is None:        # older rows: derive it the same way the ledger does
+                import outcomes_ledger as _L
+                real = _L.realistic_net_pct(res, _f(r.get("spread_pct")))
+            out.append({"strat": strat, "date": r["date"], "res": res, "net": net, "real": real,
                         "t1": str(r.get("t1_hit")).lower() == "true", "key": r.get("setup_key") or r.get("trade_id")})
     return out
 
@@ -65,6 +69,7 @@ def score_rows(rows):
         gw, gl = sum(v for v in nets if v > 0), -sum(v for v in nets if v < 0)
         pf = gw / gl if gl > 0 else (9.99 if gw > 0 else 0.0)
         exp = sum(nets) / n
+        rexp = sum(x["real"] for x in g) / n
         win = sum(1 for x in g if x["res"] > 0) / n * 100
         days = {}
         for x in g:
@@ -76,7 +81,7 @@ def score_rows(rows):
                 + 15 * clip(cons / 100) + 10 * clip(t1 / 0.6))
         score = base * min(1.0, math.sqrt(n / 30))
         out.append({"strat": s, "label": LABELS.get(s, s), "n": n, "setups": len({x["key"] for x in g}), "win": win,
-                    "exp": exp, "pf": min(pf, 9.99), "cons": cons, "score": score,
+                    "exp": exp, "rexp": rexp, "pf": min(pf, 9.99), "cons": cons, "score": score,
                     "sample": "thin" if n < 10 else ("building" if n < 30 else "solid")})
     out.sort(key=lambda r: -r["score"])
     return out
@@ -87,7 +92,7 @@ def _table(d, y, title, rows, note):
     d.text((PAD, y), title, font=f_h, fill=NAVY)
     d.text((PAD + 420, y + 9), note, font=f_s, fill=MUTED)
     y += 50
-    cols = [("#", 40, "l"), ("Strategy", 360, "l"), ("Trades", 100, "r"), ("Win", 100, "r"), ("Net/trade", 140, "r"),
+    cols = [("#", 40, "l"), ("Strategy", 330, "l"), ("Trades", 100, "r"), ("Win", 100, "r"), ("Net/trade", 140, "r"), ("Realistic", 130, "r"),
             ("PF", 90, "r"), ("Win days", 120, "r"), ("Sample", 120, "r")]
     cx = PAD + 12
     for name, wd, al in cols:
@@ -102,13 +107,15 @@ def _table(d, y, title, rows, note):
     for i, r in enumerate(rows):
         if i % 2:
             d.rectangle((PAD, y, W - PAD, y + 40), fill=(248, 249, 251))
-        vals = [str(i + 1), r["label"], str(r["n"]), f"{r['win']:.0f}%", f"{r['exp']:+.2f}%", f"{r['pf']:.2f}",
+        vals = [str(i + 1), r["label"], str(r["n"]), f"{r['win']:.0f}%", f"{r['exp']:+.2f}%", f"{r['rexp']:+.2f}%", f"{r['pf']:.2f}",
                 f"{r['cons']:.0f}%", r["sample"]]
         cx = PAD + 12
         for (name, wd, al), v in zip(cols, vals):
             c = INK
             if name == "Net/trade":
                 c = GREEN if r["exp"] >= 0 else RED
+            if name == "Realistic":
+                c = GREEN if r["rexp"] >= 0 else RED
             if name == "Sample" and v == "thin":
                 c = AMBER
             d.text((cx if al == "l" else cx + wd - 14 - d.textlength(v, font=f_b), y + 8), v, font=f_b, fill=c)
@@ -144,7 +151,7 @@ def render(nse_rows, mcx_rows, start, end, path) -> bool:
     y = _table(d, y, "NSE strategies", nse, "ranked by score")
     y = _table(d, y, "MCX strategies", mcx, "ranked by score; thin sample below 10 trades")
     d.line((PAD, y, W - PAD, y), fill=LINE, width=2)
-    notes = ["Score = net per trade 40 + profit factor 20 + win rate 15 + winning days 15 + first target 10, scaled down below 30 trades.",
+    notes = ["Realistic = same trades if bought at the ask and sold at the bid plus slippage (what a real fill would give).", "Score = net per trade 40 + profit factor 20 + win rate 15 + winning days 15 + first target 10, scaled down below 30 trades.",
              "Shadow trades only (no real orders). Day direction drives much of the spread; judge after 2-3 weeks before retiring or promoting an engine."]
     for i, t in enumerate(notes):
         d.text((PAD, y + 14 + i * 28), t, font=_font(18), fill=MUTED)
