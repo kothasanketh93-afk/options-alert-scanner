@@ -229,16 +229,16 @@
       "actual_entry_time": "2026-11-12T09:56:00+05:30",
       "tracked_entry_price": 183.3,
       "highest_since_entry": 191.0,
-      "lowest_since_entry": 177.3,
+      "lowest_since_entry": 176.0,
       "max_favorable_pct": 4.2,
-      "max_adverse_pct": -3.27,
+      "max_adverse_pct": -3.98,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T10:34:00+05:30",
+      "last_processed_ts": "2026-11-12T10:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -260,7 +260,7 @@
       "entry_oi": 1452600,
       "entry_volume": 17769,
       "signal_future_token": null,
-      "last_price": 178.1
+      "last_price": 180.0
     },
     "MCX-oi_flow-GOLD-PE-20261112-1001-01": {
       "trade_id": "MCX-oi_flow-GOLD-PE-20261112-1001-01",
@@ -500,21 +500,21 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
+      "actual_entry_time": "2026-11-12T10:36:00+05:30",
+      "tracked_entry_price": 13.65,
+      "highest_since_entry": 13.65,
+      "lowest_since_entry": 13.5,
       "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "max_adverse_pct": -1.1,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T10:34:00+05:30",
+      "last_processed_ts": "2026-11-12T10:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -539,7 +539,7 @@
       "entry_oi": 3743750,
       "entry_volume": 2146,
       "signal_future_token": null,
-      "last_price": 13.75,
+      "last_price": 13.5,
       "waiting_candles": [
         [
           "10:26",
@@ -603,6 +603,13 @@
           13.8,
           13.75,
           13.75
+        ],
+        [
+          "10:35",
+          13.75,
+          13.75,
+          13.7,
+          13.7
         ]
       ]
     },
@@ -864,6 +871,12 @@
         "spot": 8013.0,
         "call_oi": 1422100.0,
         "put_oi": 3093200.0
+      },
+      {
+        "t": 640,
+        "spot": 8001.0,
+        "call_oi": 1437900.0,
+        "put_oi": 3081500.0
       }
     ],
     "NATURALGAS": [
@@ -988,6 +1001,12 @@
         "spot": 138759.0,
         "call_oi": 733000.0,
         "put_oi": 793300.0
+      },
+      {
+        "t": 640,
+        "spot": 138770.0,
+        "call_oi": 739100.0,
+        "put_oi": 792800.0
       }
     ]
   },
