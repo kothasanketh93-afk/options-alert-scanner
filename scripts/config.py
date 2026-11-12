@@ -1660,5 +1660,7 @@ FOCUS_ONLY_NOTICES = True
 AI_TUTOR_ENABLED = True
 AI_TUTOR_MODEL = "claude-sonnet-5-5"            # used when ANTHROPIC_API_KEY is set (paid)
 AI_TUTOR_GEMINI_MODEL = "gemini-flash-latest"      # used when only GEMINI_API_KEY is set (Google AI Studio free tier)
+# Tried in order; the free Flash model is often "high demand" (503), the Lite model answered in ~1s (diagnostics 2026-11-12).
+AI_TUTOR_GEMINI_MODELS = ("gemini-flash-latest", "gemini-flash-lite-latest")
 AI_TUTOR_TIMEOUT_S = 120             # charts are sent after the run's alerts, so a slow reply delays nothing important
 AI_TUTOR_GEMINI_THINKING = 512       # Gemini thinking-token budget (0 = off); large budgets timed out on the free tier

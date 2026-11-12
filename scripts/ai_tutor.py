@@ -92,22 +92,34 @@ def _gemini(task: str, data: dict, image_path, timeout):
         with open(image_path, "rb") as fh:
             parts.append({"inline_data": {"mime_type": "image/png", "data": base64.b64encode(fh.read()).decode()}})
     parts.append({"text": task + "\n\nDATA:\n" + json.dumps(data, ensure_ascii=False, default=str)})
-    model = getattr(config, "AI_TUTOR_GEMINI_MODEL", "gemini-flash-latest")
     body = {"system_instruction": {"parts": [{"text": SYSTEM}]},
             "contents": [{"role": "user", "parts": parts}],
             "generationConfig": {"responseMimeType": "application/json", "maxOutputTokens": 8192, "temperature": 0.4,
                                  # long hidden "thinking" made the free model time out (2026-11-12): keep it minimal
                                  "thinkingConfig": {"thinkingBudget": getattr(config, "AI_TUTOR_GEMINI_THINKING", 512)}}}
     headers = {"x-goog-api-key": os.environ["GEMINI_API_KEY"], "content-type": "application/json"}
-    resp = requests.post(GEMINI_URL.format(model=model), timeout=timeout, json=body, headers=headers)
-    if resp.status_code == 400 and "thinking" in resp.text.lower():      # model without a thinking budget setting
-        body["generationConfig"].pop("thinkingConfig", None)
-        resp = requests.post(GEMINI_URL.format(model=model), timeout=timeout, json=body, headers=headers)
-    if resp.status_code != 200:
-        log.warning("AI_TUTOR gemini HTTP %s: %s", resp.status_code, resp.text[:300])
-        return None
-    cands = resp.json().get("candidates") or []
-    return "".join(p.get("text", "") for p in ((cands[0].get("content") or {}).get("parts") or [])) if cands else None
+    # Free-tier models get overloaded (HTTP 503 "high demand", 2026-11-12) or rate-limited (429): try the next one.
+    models = getattr(config, "AI_TUTOR_GEMINI_MODELS", None) or (getattr(config, "AI_TUTOR_GEMINI_MODEL", "gemini-flash-latest"),)
+    per_model = max(20, timeout / max(1, len(models)))
+    for model in models:
+        try:
+            b = json.loads(json.dumps(body))
+            resp = requests.post(GEMINI_URL.format(model=model), timeout=per_model, json=b, headers=headers)
+            if resp.status_code == 400 and "thinking" in resp.text.lower():      # model without a thinking budget setting
+                b["generationConfig"].pop("thinkingConfig", None)
+                resp = requests.post(GEMINI_URL.format(model=model), timeout=per_model, json=b, headers=headers)
+        except requests.RequestException as exc:
+            log.warning("AI_TUTOR gemini %s: %s -- trying the next model", model, type(exc).__name__)
+            continue
+        if resp.status_code != 200:
+            log.warning("AI_TUTOR gemini %s HTTP %s: %s", model, resp.status_code, resp.text[:200].replace("\n", " "))
+            continue
+        cands = resp.json().get("candidates") or []
+        text = "".join(p.get("text", "") for p in ((cands[0].get("content") or {}).get("parts") or [])) if cands else ""
+        if text:
+            log.info("AI_TUTOR gemini answered with %s", model)
+            return text
+    return None
 
 
 def _model(kind: str) -> str:
