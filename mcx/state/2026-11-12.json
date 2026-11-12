@@ -1213,7 +1213,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T15:10:00+05:30",
+      "last_processed_ts": "2026-11-12T15:15:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -1235,7 +1235,7 @@
       "entry_oi": 8537500,
       "entry_volume": 17771,
       "signal_future_token": null,
-      "last_price": 15.45,
+      "last_price": 15.25,
       "be_tracked": true,
       "trail_sl": 15.635,
       "trail_exit_price": 15.635,
@@ -2438,6 +2438,12 @@
         "spot": 137950.0,
         "call_oi": 468300.0,
         "put_oi": 510400.0
+      },
+      {
+        "t": 915,
+        "spot": 138034.0,
+        "call_oi": 483200.0,
+        "put_oi": 514700.0
       }
     ]
   },
