@@ -514,16 +514,16 @@
       "actual_entry_time": "2026-11-12T10:36:00+05:30",
       "tracked_entry_price": 13.65,
       "highest_since_entry": 15.15,
-      "lowest_since_entry": 13.35,
+      "lowest_since_entry": 13.25,
       "max_favorable_pct": 10.99,
-      "max_adverse_pct": -2.2,
+      "max_adverse_pct": -2.93,
       "t1_hit": true,
       "t1_hit_time": "2026-11-12T11:03:00+05:30",
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T13:30:00+05:30",
+      "last_processed_ts": "2026-11-12T13:35:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -548,7 +548,7 @@
       "entry_oi": 3743750,
       "entry_volume": 2146,
       "signal_future_token": null,
-      "last_price": 14.0,
+      "last_price": 13.3,
       "waiting_candles": [
         [
           "10:26",
@@ -623,7 +623,8 @@
       ],
       "be_tracked": true,
       "trail_sl": 14.36,
-      "trail_exit_price": 14.36
+      "trail_exit_price": 14.36,
+      "be_touch_price": 13.65
     },
     "MCX-oi_flow-GOLDM-PE-20261112-1025-01": {
       "trade_id": "MCX-oi_flow-GOLDM-PE-20261112-1025-01",
@@ -756,21 +757,21 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-11-12T11:02:00+05:30",
       "tracked_entry_price": 14.6,
       "highest_since_entry": 15.15,
-      "lowest_since_entry": 13.9,
+      "lowest_since_entry": 13.25,
       "max_favorable_pct": 3.77,
-      "max_adverse_pct": -4.79,
+      "max_adverse_pct": -9.25,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-11-12T13:33:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-12T13:30:00+05:30",
+      "last_processed_ts": "2026-11-12T13:35:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -792,7 +793,16 @@
       "entry_oi": 3832500,
       "entry_volume": 2949,
       "signal_future_token": null,
-      "last_price": 14.0
+      "last_price": 13.3,
+      "sell_view": {
+        "option": "CE 305.0",
+        "key": "MCX|583837",
+        "entry": 15.0,
+        "exit": 15.95,
+        "entry_ts": "2026-11-12T11:02:00+05:30",
+        "exit_ts": "2026-11-12T13:33:00+05:30",
+        "pct": -6.33
+      }
     },
     "MCX-bos-CRUDEOIL-CE-20261112-1135-01": {
       "trade_id": "MCX-bos-CRUDEOIL-CE-20261112-1135-01",
@@ -1562,6 +1572,12 @@
         "spot": 8175.0,
         "call_oi": 2372100.0,
         "put_oi": 1837300.0
+      },
+      {
+        "t": 815,
+        "spot": 8188.0,
+        "call_oi": 2382900.0,
+        "put_oi": 1833300.0
       }
     ],
     "NATURALGAS": [
@@ -1762,6 +1778,12 @@
         "spot": 305.9,
         "call_oi": 41568750.0,
         "put_oi": 40426250.0
+      },
+      {
+        "t": 815,
+        "spot": 307.6,
+        "call_oi": 40438750.0,
+        "put_oi": 30695000.0
       }
     ],
     "GOLDM": [
