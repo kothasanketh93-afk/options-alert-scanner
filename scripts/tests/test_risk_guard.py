@@ -26,18 +26,21 @@ def test_cutoff():
 
 
 def test_max_open_and_same_underlying():
-    st = {"trades": {"a": _t("A", "ACTIVE"), "b": _t("B", "WAITING_ENTRY")}}
-    assert not risk_guard.check(st, "C", _now(10, 0))[0]
+    st = {"trades": {"a": _t("A", "ACTIVE")}}
+    assert not risk_guard.check(st, "C", _now(10, 0))[0]            # max 1 open trade (paper-phase rule)
+    assert not risk_guard.check_global(st, _now(10, 0))[0]
+    st = {"trades": {"a": _t("NIFTY", "SL_HIT")}}
+    assert risk_guard.check_global(st, _now(10, 0))[0]
     st = {"trades": {"a": _t("NIFTY", "ACTIVE")}}
-    assert not risk_guard.check(st, "NIFTY", _now(10, 0))[0]
-    assert risk_guard.check(st, "BANKNIFTY", _now(10, 0))[0]
+    assert not risk_guard.check_symbol(st, "NIFTY")[0]
+    assert risk_guard.check_symbol(st, "BANKNIFTY")[0]
 
 
 def test_daily_sl_stop():
-    st = {"trades": {str(i): _t("X%d" % i, "SL_HIT") for i in range(4)}}
-    assert not risk_guard.check(st, "NIFTY", _now(10, 0))[0]
     st = {"trades": {str(i): _t("X%d" % i, "SL_HIT") for i in range(3)}}
-    assert risk_guard.check(st, "NIFTY", _now(10, 0))[0]
+    assert not risk_guard.check_global(st, _now(10, 0))[0]
+    st = {"trades": {"a": _t("X", "SL_HIT")}}
+    assert risk_guard.check_global(st, _now(10, 0))[0]
 
 
 def test_disabled_flag():
@@ -77,3 +80,31 @@ if __name__ == "__main__":
         if n.startswith("test_"):
             f()
     test_rr_delhivery_case_and_floor(); test_alert_text_shows_rr(); print("ok")
+
+
+def test_trades_per_day_cap_and_kill_switch():
+    st = {"trades": {"a": _t("A", "T2_HIT"), "b": _t("B", "T2_HIT")}}
+    ok, why = risk_guard.check_global(st, _now(10, 0))
+    assert not ok and "live alerts today" in why
+    risk_guard.config.RISK_KILL_SWITCH = True
+    try:
+        assert not risk_guard.check_global({"trades": {}}, _now(10, 0))[0]
+    finally:
+        risk_guard.config.RISK_KILL_SWITCH = False
+
+
+def test_size_trade_budget_and_enforcement():
+    cfg = risk_guard.config
+    setup = {"alert_premium": 100.0, "stop_loss": 90.0}
+    sz = risk_guard.size_trade(setup, 65)           # (100-90)*65 = 650 + slippage 650*0.01=... + cost 1.5% of 6500
+    assert sz["budget_rs"] == 1000 and sz["within_budget"] and sz["lots_allowed"] == 1
+    big = risk_guard.size_trade({"alert_premium": 100.0, "stop_loss": 80.0}, 65)    # 1300 + costs > 1000
+    assert not big["within_budget"] and big["lots_allowed"] == 0
+    assert risk_guard.sizing_check({"alert_premium": 100.0, "stop_loss": 80.0}, 65)[0] is True      # report-only by default
+    cfg.RISK_SIZING_ENFORCE = True
+    try:
+        ok, why, _ = risk_guard.sizing_check({"alert_premium": 100.0, "stop_loss": 80.0}, 65)
+        assert not ok and "budget" in why
+        assert risk_guard.sizing_check({"alert_premium": 100.0}, 65)[0] is True        # cannot compute -> never blocks on missing data
+    finally:
+        cfg.RISK_SIZING_ENFORCE = False

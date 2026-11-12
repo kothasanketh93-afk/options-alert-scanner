@@ -119,8 +119,28 @@ def run_scanner_step(state: dict, now: datetime):
             candidate["probability_pct"], now,
         )
 
+    _ok, _why = risk_guard.check_global(state, now)
+    if not _ok:
+        log.info("RISK_GUARD blocked all candidates: %s", _why)
+        return
+
+    _lots = eod_report.load_lot_sizes(state.get("date"))
     chosen = None
     for candidate in ranked:
+        # Candidate-specific risk rules: a failure moves on to the NEXT candidate instead of ending the whole selection.
+        _ok, _why = risk_guard.check_symbol(state, candidate["symbol"])
+        if not _ok:
+            log.info("RISK_GUARD skipped %s %s: %s", candidate["symbol"], candidate["direction"], _why)
+            continue
+        _ok, _why = risk_guard.rr_check(candidate)
+        if not _ok:
+            log.info("RISK_GUARD skipped %s %s: %s (shadow tracking continues)", candidate["symbol"], candidate["direction"], _why)
+            continue
+        _ok, _why, _sz = risk_guard.sizing_check(candidate, _lots.get(candidate["symbol"]))
+        candidate["risk_sizing"] = _sz
+        if not _ok:
+            log.info("RISK_SIZING skipped %s %s: %s", candidate["symbol"], candidate["direction"], _why)
+            continue
         if state_mod.has_open_trade(state, candidate["symbol"], candidate["direction"]):
             # This candidate's symbol+direction already has a live trade
             # -- skip it and fall through to the next-best candidate
@@ -140,16 +160,6 @@ def run_scanner_step(state: dict, now: datetime):
 
     if chosen is None:
         return  # every passing candidate conflicted with an open trade, or none passed the gate
-
-    _ok, _why = risk_guard.rr_check(chosen)
-    if not _ok:
-        log.info("RISK_GUARD blocked %s %s: %s (shadow tracking continues)", chosen["symbol"], chosen["direction"], _why)
-        return
-
-    _ok, _why = risk_guard.check(state, chosen["symbol"], now)
-    if not _ok:
-        log.info("RISK_GUARD blocked %s %s: %s", chosen["symbol"], chosen["direction"], _why)
-        return
 
     if state_mod.concurrent_limit_reached(state):
         # Cap hit -- skip silently (not worth a Telegram message per
@@ -212,6 +222,7 @@ def run_scanner_step(state: dict, now: datetime):
     )
     display_label = f"Trade {state_mod.next_display_number(state)}"
     trade = new_trade_record(chosen, trade_id, now, display_label)
+    trade["risk_sizing"] = chosen.get("risk_sizing")
 
     # Phase 4: today's probability evolution for this symbol+direction
     # (includes the reading just recorded above) plus the derived

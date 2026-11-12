@@ -215,12 +215,23 @@ def _fmt_new_alert_conditions(trade: dict) -> str:
         f"Entry Zone: ₹{trade['entry_low']} - ₹{trade['entry_high']}\n"
         f"Stop Loss: ₹{trade['stop_loss']}\n"
         f"Target 1: ₹{trade['target_1']}\n"
-        f"Target 2: ₹{trade['target_2']}\n\n"
+        f"Target 2: ₹{trade['target_2']}\n"
+        f"{_risk_line(trade)}\n"
         f"Expected Holding: {low_min}-{high_min} minutes\n\n"
         f"Why Recommended?\n{why}\n"
         f"{alt_block}\n\n"
         f"Status: WAITING_ENTRY"
     )
+
+
+def _risk_line(trade: dict) -> str:
+    """One-lot planned risk vs the per-trade budget (risk_guard.size_trade). Empty when it cannot be computed."""
+    sz = trade.get("risk_sizing")
+    if not sz:
+        return ""
+    flag = "WITHIN budget" if sz["within_budget"] else "OVER budget"
+    return (f"One lot: premium ₹{sz['premium_rs']:,} ({sz['premium_pct_of_capital']}% of capital) | planned loss incl. costs "
+            f"₹{sz['lot_risk_rs']:,} vs budget ₹{sz['budget_rs']:,} -> {flag}\n")
 
 
 def fmt_new_alert(trade: dict) -> str:

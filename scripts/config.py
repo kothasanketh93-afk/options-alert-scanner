@@ -1609,8 +1609,15 @@ MICROSTRUCTURE_STRIKE_WIDTH = 5
 # Applies to live (Tier B/A) alerts only; shadow/data-collection paths are untouched.
 RISK_GUARD_ENABLED = True
 RISK_ENTRY_CUTOFF_HHMM = (14, 45)   # no new live alerts at/after this IST time
-RISK_MAX_OPEN_TRADES = 2            # simultaneous open live trades
-RISK_DAILY_SL_STOP = 4              # stop-losses in a day (~2% of capital at 0.5% risk/trade) -> no more alerts
+RISK_MAX_OPEN_TRADES = 1            # simultaneous open live trades (paper-phase spec, 2026-11-12)
+RISK_DAILY_SL_STOP = 3              # stop-losses in a day (3 x 0.5% = the 1.5% daily loss cap) -> no more alerts
+# Capital-based sizing (2026-11-12). Paper capital drives the per-trade rupee risk budget; one lot must fit inside it.
+PAPER_CAPITAL = 200000
+RISK_PER_TRADE_PCT = 0.5            # % of capital risked per trade (planned loss incl. costs and slippage)
+RISK_MAX_TRADES_PER_DAY = 2         # live alerts per day
+RISK_SIZING_ENFORCE = False         # False: every live alert shows its one-lot risk and a WITHIN/OVER-budget flag, nothing blocked.
+                                    # True: an alert whose one lot exceeds the budget is rejected and the next candidate is tried.
+RISK_KILL_SWITCH = False            # True: no new live alerts at all (emergency stop; shadows and tracking keep running)
 # Stock-option bid/ask logging for the daily shortlist (extends MICROSTRUCTURE_SYMBOLS at runtime)
 MICROSTRUCTURE_INCLUDE_SHORTLIST = True
 MICROSTRUCTURE_STOCK_STRIKE_WIDTH = 2   # ATM+-2 strikes for stock options (spreads are wide; keep rows small)
