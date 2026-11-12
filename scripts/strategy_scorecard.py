@@ -54,7 +54,8 @@ def load_rows(ledger_path, start: str, end: str, market: str):
                 import outcomes_ledger as _L
                 real = _L.realistic_net_pct(res, _f(r.get("spread_pct")))
             out.append({"strat": strat, "date": r["date"], "res": res, "net": net, "real": real,
-                        "t1": str(r.get("t1_hit")).lower() == "true", "key": r.get("setup_key") or r.get("trade_id")})
+                        "t1": str(r.get("t1_hit")).lower() == "true", "key": r.get("setup_key") or r.get("trade_id"),
+                        "sym": r.get("symbol"), "dir": r.get("direction"), "at": r.get("alert_time") or ""})
     return out
 
 
@@ -82,9 +83,98 @@ def score_rows(rows):
         score = base * min(1.0, math.sqrt(n / 30))
         out.append({"strat": s, "label": LABELS.get(s, s), "n": n, "setups": len({x["key"] for x in g}), "win": win,
                     "exp": exp, "rexp": rexp, "pf": min(pf, 9.99), "cons": cons, "score": score,
-                    "sample": "thin" if n < 10 else ("building" if n < 30 else "solid")})
+                    "sample": "thin" if n < 10 else ("building" if n < 30 else "solid"), "ev": evidence(g)})
     out.sort(key=lambda r: -r["score"])
     return out
+
+
+# --- evidence quality (2026-11-12): how much of a strategy's result can be trusted -----------------------------------
+def sample_label(n: int) -> str:
+    return "Very thin" if n < 10 else "Building" if n < 30 else "Preliminary" if n < 100 else "Developing" if n < 200 else "Larger sample"
+
+
+def wilson_ci(wins: int, n: int, z: float = 1.96):
+    """95% Wilson interval for a win rate, in percent."""
+    if n <= 0:
+        return 0.0, 100.0
+    p = wins / n
+    den = 1 + z * z / n
+    centre = (p + z * z / (2 * n)) / den
+    half = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / den
+    return max(0.0, centre - half) * 100, min(1.0, centre + half) * 100
+
+
+def _clusters(g):
+    """Independent opportunities: trades on the same underlying, direction and day within 30 minutes are one market move
+    (ITM/ATM/OTM variants of one signal are not independent evidence). Returns {cluster_id: mean net}, chronological."""
+    order = sorted(g, key=lambda x: (x["date"], x["at"]))
+    out, last = {}, {}
+    for x in order:
+        k = (x["date"], x["sym"], x["dir"])
+        try:
+            t = datetime.fromisoformat(x["at"])
+        except ValueError:
+            t = None
+        prev = last.get(k)
+        if prev is not None and t is not None and prev[1] is not None and (t - prev[1]).total_seconds() <= 1800:
+            cid = prev[0]
+        else:
+            cid = (k, x["at"])
+        last[k] = (cid, t if t is not None else None)
+        out.setdefault(cid, []).append(x)
+    return [(cid, sum(v["real"] for v in xs) / len(xs), xs[0]["date"]) for cid, xs in out.items()]
+
+
+def bootstrap_ci(values, n_boot: int = 2000, seed: int = 7):
+    """95% bootstrap interval of the mean (deterministic seed so a re-run gives the same report)."""
+    import random
+    if len(values) < 2:
+        return None, None
+    rnd = random.Random(seed)
+    means = sorted(sum(rnd.choice(values) for _ in values) / len(values) for _ in range(n_boot))
+    return means[int(0.025 * n_boot)], means[int(0.975 * n_boot) - 1]
+
+
+def max_drawdown_and_streak(g):
+    """Chronological drawdown of cumulative realistic net % (sum of trade results) and the longest losing streak."""
+    peak = cum = dd = 0.0
+    streak = best = 0
+    for x in sorted(g, key=lambda x: (x["date"], x["at"])):
+        cum += x["real"]
+        peak = max(peak, cum)
+        dd = min(dd, cum - peak)
+        streak = streak + 1 if x["real"] <= 0 else 0
+        best = max(best, streak)
+    return dd, best
+
+
+def evidence(g):
+    """Everything the validation status rests on. All returns are realistic net % per trade (ask-in / bid-out + costs)."""
+    n = len(g)
+    wins = sum(1 for x in g if x["res"] > 0)
+    cl = _clusters(g)
+    cvals = [m for _, m, _ in cl]
+    lo, hi = bootstrap_ci(cvals)
+    dd, streak = max_drawdown_and_streak(g)
+    sessions = len({x["date"] for x in g})
+    ordered = sorted(g, key=lambda x: (x["date"], x["at"]))
+    cut = int(len(ordered) * 0.7)
+    oos = ordered[cut:]
+    oos_exp = sum(x["real"] for x in oos) / len(oos) if len(oos) >= 10 else None       # out-of-sample only when it has substance
+    w_lo, w_hi = wilson_ci(wins, n)
+    rexp = sum(x["real"] for x in g) / n
+    # Validation ladder (a weekly report can never reach Paper/Live validated).
+    if n >= 100 and sessions >= 15 and lo is not None and lo > 0 and oos_exp is not None and oos_exp > 0:
+        status = "Shadow validated"
+    elif n >= 30 and sessions >= 5 and len(cl) >= 15 and rexp > 0:
+        status = "Research candidate"
+    elif rexp > 0:
+        status = "Provisional leader" if n >= 5 else "Not enough data"
+    else:
+        status = "Not validated"
+    return {"n": n, "clusters": len(cl), "sessions": sessions, "win_ci": (w_lo, w_hi), "real_exp": rexp,
+            "boot": (lo, hi), "max_dd": dd, "max_streak": streak, "oos_exp": oos_exp, "status": status,
+            "sample": sample_label(n)}
 
 
 def _table(d, y, title, rows, note):
@@ -127,16 +217,43 @@ def _table(d, y, title, rows, note):
     return y + 24
 
 
+def _evidence_block(d, y, name, rows):
+    """Evidence quality for the leaders: independent opportunities, session count, intervals, drawdown, validation status."""
+    f_h, f_b, f_s = _font(24, True), _font(18), _font(16)
+    top = [r for r in rows if r["n"] >= 5][:3]
+    if not top:
+        return y
+    d.text((PAD, y + 6), f"{name} evidence quality (top {len(top)}, realistic net %)", font=f_h, fill=NAVY)
+    y += 44
+    for r in top:
+        e = r["ev"]
+        lo, hi = e["boot"]
+        ci = f"{lo:+.1f} to {hi:+.1f}" if lo is not None else "n/a"
+        oos = f"{e['oos_exp']:+.1f}%" if e["oos_exp"] is not None else "not enough"
+        col = GREEN if e["status"] in ("Research candidate", "Shadow validated") else (AMBER if e["status"] == "Provisional leader" else RED)
+        d.text((PAD + 12, y), f"{r['label']}", font=f_b, fill=INK)
+        d.text((PAD + 330, y), e["status"], font=f_b, fill=col)
+        y += 26
+        d.text((PAD + 12, y), (f"{e['n']} trades = {e['clusters']} independent moves over {e['sessions']} sessions ({e['sample']})  |  "
+                               f"win rate {e['win_ci'][0]:.0f}-{e['win_ci'][1]:.0f}% (95% CI)  |  expectancy {e['real_exp']:+.1f}% (95% CI {ci})"),
+               font=f_s, fill=MUTED)
+        y += 22
+        d.text((PAD + 12, y), (f"peak-to-trough drop {e['max_dd']:.0f} pts (sum of trade %)  |  longest losing run {e['max_streak']}  |  "
+                               f"out-of-sample (last 30%): {oos}"), font=f_s, fill=MUTED)
+        y += 32
+    return y + 10
+
+
 def render(nse_rows, mcx_rows, start, end, path) -> bool:
     nse, mcx = score_rows(nse_rows), score_rows(mcx_rows)
     if not nse and not mcx:
         return False
-    h = 280 + 90 + 60 * 2 + 40 * (max(len(nse), 1) + max(len(mcx), 1)) + 220
+    h = 280 + 90 + 60 * 2 + 40 * (max(len(nse), 1) + max(len(mcx), 1)) + 220 + 2 * (54 + 3 * 80)
     img = Image.new("RGB", (W, h), (255, 255, 255))
     d = ImageDraw.Draw(img)
     d.rectangle((0, 0, W, 120), fill=NAVY)
     d.text((PAD, 22), "Weekly strategy scorecard", font=_font(46, True), fill=(255, 255, 255))
-    d.text((PAD, 80), f"{start} to {(date.fromisoformat(start) + timedelta(days=4)).isoformat()}  |  shadow trades after assumed costs  |  provisional, small samples",
+    d.text((PAD, 80), f"{start} to {(date.fromisoformat(start) + timedelta(days=4)).isoformat()}  |  shadow trades after assumed costs  |  data as of {datetime.now().strftime('%Y-%m-%d %H:%M')} IST  |  provisional",
            font=_font(21), fill=(200, 206, 220))
     y = 150
     for name, rows in (("NSE", nse), ("MCX", mcx)):
@@ -150,12 +267,14 @@ def render(nse_rows, mcx_rows, start, end, path) -> bool:
     y += 10
     y = _table(d, y, "NSE strategies", nse, "ranked by score")
     y = _table(d, y, "MCX strategies", mcx, "ranked by score; thin sample below 10 trades")
+    y = _evidence_block(d, y, "NSE", nse)
+    y = _evidence_block(d, y, "MCX", mcx)
     d.line((PAD, y, W - PAD, y), fill=LINE, width=2)
     notes = ["Realistic = same trades if bought at the ask and sold at the bid plus slippage (what a real fill would give).", "Score = net per trade 40 + profit factor 20 + win rate 15 + winning days 15 + first target 10, scaled down below 30 trades.",
-             "Shadow trades only (no real orders). Day direction drives much of the spread; judge after 2-3 weeks before retiring or promoting an engine."]
+             "Validation: a weekly report can reach at most Shadow validated (needs 100+ trades, 15+ sessions, positive CI and out-of-sample). Not a win probability.", "Shadow trades only (no real orders). Day direction drives much of the spread; judge after 2-3 weeks before retiring or promoting an engine."]
     for i, t in enumerate(notes):
         d.text((PAD, y + 14 + i * 28), t, font=_font(18), fill=MUTED)
-    img.crop((0, 0, W, y + 90)).save(path)
+    img.crop((0, 0, W, y + 130)).save(path)
     return True
 
 
