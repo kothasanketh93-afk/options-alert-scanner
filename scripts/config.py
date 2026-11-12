@@ -1584,6 +1584,10 @@ PDHL_TARGET_ATR_MULT = 1.5   # PDH/PDL breakout+retest (added 2026-10-31, shadow
 # Outcomes ledger cost ASSUMPTION (percent of premium, round trip: brokerage + STT + exchange charges
 # + slippage). Unverified placeholder -- replace with your real contract-note costs. Report-only.
 LEDGER_ROUND_TRIP_COST_PCT = 1.5
+# Realistic-execution what-if (outcomes_ledger.realistic_net_pct): a buyer pays the ask and a seller gets the bid, so each side
+# loses half the quoted spread plus this extra slippage allowance (% of price). Measured next to the legacy net, never replaces it.
+EXEC_SLIPPAGE_PCT = 0.25
+EXEC_DEFAULT_SPREAD_PCT = 1.0       # used when the trade carries no spread record
 
 # Signal Lab (2026-10-31): underlying-level data collection for many published strategies.
 # Observation only -- no trades, no Telegram. Rows -> ledger/signal_lab.csv (state branch).

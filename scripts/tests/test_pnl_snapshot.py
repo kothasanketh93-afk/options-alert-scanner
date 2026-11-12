@@ -60,3 +60,13 @@ def test_mcx_track_open_one_fetch_per_instrument(monkeypatch):
                                 "c": {**mk("x"), "status": "SL_HIT"}}}
     mcx_main.track_open(B(), st)
     assert calls == [("MCX|1", "2026-11-11T12:00:00+05:30")]
+
+
+def test_realistic_net_is_worse_than_legacy_and_uses_spread():
+    import outcomes_ledger as L
+    base = L.net_result_pct(10.0)
+    wide = L.realistic_net_pct(10.0, 4.0)
+    tight = L.realistic_net_pct(10.0, 0.5)
+    assert wide < tight < base
+    assert L.realistic_net_pct(None, 1.0) is None
+    assert L.realistic_net_pct(0.0, None) < L.net_result_pct(0.0)

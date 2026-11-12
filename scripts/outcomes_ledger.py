@@ -33,7 +33,9 @@ COLUMNS = ["trade_id", "date", "engine", "strategy", "symbol", "direction", "str
            # Buy vs sell (2026-11-11, sell_view.py): the opposite option sold over the same entry->exit window.
            "sell_option", "sell_entry", "sell_exit", "sell_result_pct",
            # AI tutor's view of the setup at alert time (ai_tutor.py): supportive / mixed / against -- measured, not used
-           "ai_verdict"]
+           "ai_verdict",
+           # Realistic execution what-if (2026-11-12): ask-in / bid-out + slippage, then costs. Measured beside net_result_pct.
+           "realistic_net_pct"]
 
 
 def result_pct(trade: dict):
@@ -93,6 +95,17 @@ def net_result_pct(res):
     if res is None:
         return None
     return round(res - config.LEDGER_ROUND_TRIP_COST_PCT, 2)
+
+
+def realistic_net_pct(res, spread_pct=None):
+    """What-if net %: entry at the ask and exit at the bid (half the quoted spread + EXEC_SLIPPAGE_PCT each side), then the same
+    assumed round-trip cost. The legacy result assumes fills exactly at the entry/stop/target levels, which no buyer gets."""
+    if res is None:
+        return None
+    sp = spread_pct if isinstance(spread_pct, (int, float)) and spread_pct >= 0 else config.EXEC_DEFAULT_SPREAD_PCT
+    h = (sp / 2.0 + config.EXEC_SLIPPAGE_PCT) / 100.0
+    gross = ((1 + res / 100.0) * (1 - h) / (1 + h) - 1) * 100.0
+    return round(gross - config.LEDGER_ROUND_TRIP_COST_PCT, 2)
 
 
 def entry_bucket(alert_time) -> str:
@@ -210,6 +223,7 @@ def _row(trade: dict, engine: str, date_str: str) -> dict:
     row["setup_key"] = "|".join(str(x) for x in (date_str, engine, trade.get("strategy"), trade.get("symbol"),
                                                   trade.get("direction"), str(trade.get("alert_time") or "")[:16]))
     row["ai_verdict"] = trade.get("ai_verdict")
+    row["realistic_net_pct"] = realistic_net_pct(res, trade.get("spread_pct"))
     sv = trade.get("sell_view") or {}
     if "pct" in sv:
         row.update({"sell_option": sv.get("option"), "sell_entry": sv.get("entry"), "sell_exit": sv.get("exit"),
