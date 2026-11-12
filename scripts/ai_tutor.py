@@ -40,7 +40,9 @@ SYSTEM = (
 
 SETUP_TASK = (
     "This is a NEW intraday option setup from the scanner. The chart shows the underlying's 5-minute candles today; the "
-    "last candle is the signal. Teach the student this setup. Return JSON:\n"
+    "last candle is the signal (green/red BUY arrow). The blue 'BUY పైన/కింద' line is the entry trigger on the "
+    "underlying, the red box is the risk to the stop, the green box the reward to T1/T2 (T1/T2 on the underlying are "
+    "approximations from the option's delta). Refer to these marks when you teach. Teach the student this setup. Return JSON:\n"
     '{"sections":[{"title":"...","points":["..."]}], "verdict":"supportive|mixed|against", "verdict_reason":"..."}\n'
     "Sections, in this order, with Telugu titles: (1) what this setup is, in one or two points; (2) what the chart shows "
     "right now (trend, where price is versus the marked levels, the signal candle); (3) quality check: points FOR the "

@@ -90,9 +90,13 @@ def _fmt(v, dec):
 
 
 def render(candles: list, path: str, title: str, subtitle: str = "", levels=(), zones=(), vlines=(), points=(),
-           info=(), auto_levels: bool = True, patterns: bool = True, dec: int = 2) -> bool:
+           info=(), auto_levels: bool = True, patterns: bool = True, dec: int = 2, arrows=(), plan=None,
+           pad_right: float = 0.0) -> bool:
     """levels: (price, label, colour, dashed); zones: (low, high, label, colour); vlines: (timestamp, label, colour);
-    points: (timestamp, price, label, colour); info: lines (str or (str, colour)) for the bottom panel."""
+    points: (timestamp, price, label, colour); arrows: (timestamp, price, label, colour, "up"|"down") big BUY/SELL marks;
+    plan: {"ts", "entry", "sl", "t1", "t2", "labels": {...}} drawn as risk (red) / reward (green) boxes from ts to the
+    right edge, like a charting app's long/short tool; pad_right: empty space after the last candle (fraction of candles);
+    info: lines (str or (str, colour)) for the bottom panel."""
     cs = [c for c in candles or [] if _ts(c.get("timestamp")) and None not in (c.get("open"), c.get("high"), c.get("low"), c.get("close"))]
     cs.sort(key=lambda c: _ts(c["timestamp"]))
     if len(cs) < 3:
@@ -120,12 +124,14 @@ def render(candles: list, path: str, title: str, subtitle: str = "", levels=(), 
     # trade levels that are near the candles widen the scale; far ones are listed at the edge instead of squashing the chart
     keep = lambda p: p is not None and lo - 1.5 * span <= p <= hi + 1.5 * span
     extra = [p for p, *_ in levels if keep(p)] + [z for zz in zones for z in zz[:2] if keep(z)]
+    if plan:
+        extra += [plan[k] for k in ("entry", "sl", "t1", "t2") if keep(plan.get(k))]
     lo, hi = min([lo] + extra), max([hi] + extra)
     pad = (hi - lo) * 0.06 or 1
     lo, hi = lo - pad, hi + pad
     x0, x1, y0, y1 = L, W - R, T, CH - B
     n = len(cs)
-    step = (x1 - x0) / n
+    step = (x1 - x0) / (n + max(0, int(round(n * pad_right))))
     X = lambda i: x0 + step * (i + 0.5)
     Y = lambda p: y1 - (p - lo) / (hi - lo) * (y1 - y0)
     t_index = {}
@@ -195,6 +201,33 @@ def render(candles: list, path: str, title: str, subtitle: str = "", levels=(), 
             uniq.append(lv)
     levels = uniq
 
+    # trade plan: risk / reward boxes from the signal to the right edge
+    if plan and keep(plan.get("entry")):
+        px = x_of(plan.get("ts")) or X(n - 1)
+        ov = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        od = ImageDraw.Draw(ov)
+        e = plan["entry"]
+        if keep(plan.get("sl")):
+            od.rectangle((px, min(Y(e), Y(plan["sl"])), x1, max(Y(e), Y(plan["sl"]))), fill=RED + (60,))
+        far = plan.get("t2") if keep(plan.get("t2")) else plan.get("t1")
+        if keep(far):
+            od.rectangle((px, min(Y(e), Y(far)), x1, max(Y(e), Y(far))), fill=GREEN + (50,))
+        img.paste(Image.alpha_composite(img.convert("RGBA"), ov).convert("RGB"))
+        d = ImageDraw.Draw(img)
+        lab = plan.get("labels") or {}
+        for k, col in (("entry", BLUE), ("sl", RED), ("t1", GREEN), ("t2", GREEN)):
+            p = plan.get(k)
+            if not keep(p):
+                continue
+            d.line((px, Y(p), x1, Y(p)), fill=col, width=2)
+            if lab.get(k, k.upper()) is None:           # already labelled as a setup level
+                continue
+            text = f"{lab.get(k, k.upper())} {_fmt(p, dec)}"
+            tw = te_text.width(d, text, 15, True)
+            ty = Y(p) - 20 if k != "sl" or p > e else Y(p) + 3
+            d.rectangle((px + 6, ty - 1, px + 12 + tw, ty + 18), fill=BG)
+            te_text.draw(d, (px + 9, ty), text, 15, col, bold=True)
+
     # auto support / resistance (skipped where a setup level already sits)
     if auto_levels:
         for p, touches in swing_levels(cs):
@@ -214,7 +247,10 @@ def render(candles: list, path: str, title: str, subtitle: str = "", levels=(), 
 
     # candlestick patterns
     if patterns:
+        busy = {x_of(a[0]) for a in arrows}          # the BUY arrow owns its candle; no pattern label on top of it
         for i, name, bias in pattern_marks(cs):
+            if X(i) in busy:
+                continue
             c = cs[i]
             col = UP if bias == "bullish" else DN
             tw = d.textlength(name, font=f_l) + 12
@@ -276,6 +312,27 @@ def render(candles: list, path: str, title: str, subtitle: str = "", levels=(), 
         d.rectangle((lx - 3, y + 10, lx + tw + 3, y + 32), fill=BG)
         te_text.draw(d, (lx, y + 12), label, 16, col, bold=True)
 
+    # big BUY / SELL arrows
+    for ts, price, label, col, way in arrows:
+        x = x_of(ts)
+        if x is None or price is None or not keep(price):
+            continue
+        y = Y(price)
+        if way == "up":            # arrow under the price pointing up (kept inside the plot)
+            tip = min(y + 6, y1 - 58)
+            base = tip + 24
+            d.polygon(((x, tip), (x - 13, base), (x + 13, base)), fill=col)
+            ly = base + 4
+        else:                      # arrow above the price pointing down
+            tip = max(y - 6, y0 + 58)
+            base = tip - 24
+            d.polygon(((x, tip), (x - 13, base), (x + 13, base)), fill=col)
+            ly = base - 28
+        tw = te_text.width(d, label, 17, True) + 16
+        bx = min(max(x - tw / 2, x0), x1 - tw)
+        d.rounded_rectangle((bx, ly, bx + tw, ly + 26), 6, fill=col)
+        te_text.draw(d, (bx + 8, ly + 3), label, 17, (255, 255, 255), bold=True)
+
     # info panel
     if wrapped:
         y = CH + 8
@@ -297,6 +354,45 @@ def _num(x):
         return None if x in (None, "") else float(x)
     except (TypeError, ValueError):
         return None
+
+
+_EXIT_WHY = {"T2_HIT": "Target 2", "SL_HIT": "SL", "T1_THEN_SL": "SL", "T1_THEN_TRAILING_SL": "trail SL",
+             "TRAILING_SL_HIT": "trail SL", "EOD_CLOSED": "EOD", "T1_HIT_THEN_EOD": "EOD"}
+_DELTA = {"ATM": 0.5, "ITM": 0.65, "OTM": 0.35}
+
+
+def underlying_plan(trade: dict, candles: list):
+    """Where to buy and where to get out, translated to the UNDERLYING chart:
+    entry = break of the signal candle (above its high for a bullish setup, below its low for bearish);
+    SL = the setup's invalidation level (else the other end of the signal candle);
+    T1/T2 = entry + (option target - premium) / delta  -- an approximation, marked with '≈'.
+    Returns (plan dict or None, arrows list)."""
+    cs = sorted([c for c in candles or [] if _ts(c.get("timestamp"))], key=lambda c: _ts(c["timestamp"]))
+    a = _ts(trade.get("alert_time"))
+    if not cs:
+        return None, []
+    sig = [c for c in cs if a is None or _ts(c["timestamp"]) <= a]
+    sig = sig[-1] if sig else cs[-1]
+    bull = trade.get("direction") == "CE"
+    entry = sig["high"] if bull else sig["low"]
+    sl = _num(trade.get("sweep_extreme"))
+    if sl is None or (bull and sl >= entry) or (not bull and sl <= entry):
+        sl = sig["low"] if bull else sig["high"]
+    delta = _num(trade.get("delta")) or _num(trade.get("delta_proxy")) or _DELTA.get(trade.get("moneyness"), 0.5)
+    prem = _num(trade.get("alert_premium"))
+    sign = 1 if bull else -1
+    t1 = t2 = None
+    if prem and delta:
+        if _num(trade.get("target_1")) is not None:
+            t1 = entry + sign * abs(_num(trade["target_1"]) - prem) / abs(delta)
+        if _num(trade.get("target_2")) is not None:
+            t2 = entry + sign * abs(_num(trade["target_2"]) - prem) / abs(delta)
+    plan = {"ts": sig["timestamp"], "entry": entry, "sl": sl, "t1": t1, "t2": t2,
+            "labels": {"entry": "BUY పైన" if bull else "BUY కింద",
+                       "sl": None if _num(trade.get("sweep_extreme")) == sl else "SL", "t1": "T1 ≈", "t2": "T2 ≈"}}
+    side = trade.get("direction") or ""
+    arrows = [(sig["timestamp"], sig["low"] if bull else sig["high"], f"BUY {side}", GREEN if bull else RED, "up" if bull else "down")]
+    return plan, arrows
 
 
 def setup_chart(trade: dict, candles: list, path: str, name: str = None, strategy: str = None, pdh=None, pdl=None,
@@ -321,7 +417,9 @@ def setup_chart(trade: dict, candles: list, path: str, name: str = None, strateg
     title = f"{sym}  {'BULLISH (పైకి)' if bull else 'BEARISH (కిందకి)'}  ->  {strike} {trade.get('direction')}"
     sub = (f"{strategy or trade.get('strategy') or ''}   |   underlying 5-నిమిషాల chart   |   signal "
            f"{str(trade.get('alert_time') or '')[11:16]}")
-    kw = dict(levels=levels, zones=zones, vlines=[(trade.get("alert_time"), "Signal", BLUE)], dec=dec)
+    plan, arrows = underlying_plan(trade, candles)
+    kw = dict(levels=levels, zones=zones, vlines=[(trade.get("alert_time"), "Signal", BLUE)], dec=dec, plan=plan,
+              arrows=arrows, pad_right=0.25)
     rule = lessons.setup_lines(trade, lot)
     ai_lines = None
     import ai_tutor
@@ -370,7 +468,9 @@ def outcome_chart(trade: dict, candles: list, path: str, name: str = None, strat
     title = f"{sym} {strike} {trade.get('direction')}  -  trade ఫలితం"
     sub = f"{strategy or trade.get('strategy') or ''}   |   option premium, 1-నిమిషం chart"
     kw = dict(levels=levels, vlines=[(trade.get("alert_time"), "Signal", MUTE)],
-              points=[(trade.get("actual_entry_time"), entry, "Entry", BLUE), (t_out, exit_px, "Exit", GREEN if good else RED)],
+              arrows=[(trade.get("actual_entry_time"), entry, f"BUY {entry:g}" if entry else "BUY", GREEN, "up"),
+                      (t_out, _num(exit_px), f"SELL {_num(exit_px) or 0:g} ({_EXIT_WHY.get(status, 'exit')})", GREEN if good else RED,
+                       "down")],
               auto_levels=False, patterns=False)
     rule = lessons.review_lines(trade, lot)
     ai_lines = None

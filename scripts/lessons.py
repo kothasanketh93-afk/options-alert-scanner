@@ -98,6 +98,9 @@ def setup_lines(trade: dict, lot=None) -> list:
             msg = (f"Risk:Reward (T1 వరకు) = 1:{rr:.1f}. "
                    + ("1 కంటే తక్కువ ఉంది, అంటే గెలిచే అవకాశం ఎక్కువగా ఉండాలి." if rr < 1 else "సరిపడా ఉంది."))
             out.append((msg, "warn" if rr < 1 else "plain"))
+    out.append(("చార్ట్ ఎలా చదవాలి: BUY బాణం = signal candle. Underlying 'BUY పైన/కింద' గీత దాటినప్పుడే entry. "
+                "ఎరుపు box = risk (SL వరకు), ఆకుపచ్చ box = reward (target వరకు). T1/T2 ≈ underlying లో సుమారు స్థాయిలు "
+                "(option delta తో లెక్కించినవి); అసలు exit premium numbers ప్రకారం.", "rule"))
     out.append(("నియమం: entry ధర దాటి పోయిన తర్వాత వెంటాడి (chase చేసి) కొనకండి. SL ను ముందే నిర్ణయించుకోండి, "
                 "తర్వాత మార్చకండి.", "rule"))
     return out
