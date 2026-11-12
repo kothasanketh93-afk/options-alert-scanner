@@ -767,6 +767,12 @@ def maybe_send_eod_report(state: dict, now: datetime):
                 tg.send(m)
         state["eod_report_sent"] = True
         chart_notify.nse_lesson_card(state)            # Telugu daily lesson card (best-effort, once)
+        try:                                           # why the scanner did / did not trade today (facts from the scan log)
+            import day_review
+            scan = state_mod.STATE_CLONE_DIR / "scan_logs" / f"{state['date']}.jsonl"
+            tg.send(day_review.build_text(state, day_review.summarize(scan), state["date"]))
+        except Exception as exc:
+            log.error("Day review failed (%s: %s) -- continuing.", type(exc).__name__, exc)
     except Exception as exc:
         log.error("EOD report failed (%s: %s) -- will retry next run.", type(exc).__name__, exc)
 
