@@ -14,11 +14,12 @@ from PIL import Image, ImageDraw
 from eod_image import NAVY, INK, MUTED, LINE, GREEN, RED, AMBER, GREEN_BG, RED_BG, AMBER_BG, W, PAD, _font
 
 LABELS = {"fib_pivot": "Fib pivot", "trade_score": "Main scanner (scored)", "chase_bypass": "Main scanner (chase bypass)",
-          "live_scored": "Live alerts (scored)", "orb15": "ORB 15-min", "pivot_break": "Pivot break",
+          "live_scored": "Live alerts (scored)", "trade_score_late": "Main scanner, 14:00+ slice", "orb15": "ORB 15-min", "pivot_break": "Pivot break",
           "sweep": "Liquidity sweep", "sweep_fvg": "Sweep + FVG", "amd": "AMD", "oi_flow": "OI flow",
           "fvg": "Fair value gap", "ema_pb": "EMA pullback", "gap_orb": "Gap and go", "sess_orb": "Session ORB",
           "sess_sweep": "Session sweep", "bos": "Break of structure", "order_block": "Order block"}
 SKIP = {"NOT_ENTERED", "AMBIGUOUS"}
+LATE_FROM = "14:00"              # IST alert time from which the "late session" slice of the main scanner starts
 
 
 def _label(s):
@@ -61,9 +62,12 @@ def load_rows(ledger_path, start: str, end: str, market: str):
             if real is None:        # older rows: derive it the same way the ledger does
                 import outcomes_ledger as _L
                 real = _L.realistic_net_pct(res, _f(r.get("spread_pct")))
-            out.append({"strat": strat, "date": r["date"], "res": res, "net": net, "real": real,
+            row = {"strat": strat, "date": r["date"], "res": res, "net": net, "real": real,
                         "t1": str(r.get("t1_hit")).lower() == "true", "key": r.get("setup_key") or r.get("trade_id"),
-                        "sym": r.get("symbol"), "dir": r.get("direction"), "at": r.get("alert_time") or ""})
+                        "sym": r.get("symbol"), "dir": r.get("direction"), "at": r.get("alert_time") or ""}
+            out.append(row)
+            if strat == "trade_score" and (row["at"][11:16] >= LATE_FROM):
+                out.append({**row, "strat": "trade_score_late"})     # a SLICE of the parent's own trades (not new trades)
     return out
 
 

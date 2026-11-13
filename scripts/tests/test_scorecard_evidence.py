@@ -47,3 +47,19 @@ def test_status_never_claims_more_than_shadow_validated_and_thin_cannot_validate
 def test_zero_loss_profit_factor_is_capped():
     rows = [{**row("2026-11-09", "2026-11-09T10:00:00+05:30", 4), "res": 6.0}, {**row("2026-11-10", "2026-11-10T10:00:00+05:30", 4), "res": 6.0}]
     assert S.score_rows(rows)[0]["pf"] == 9.99
+
+
+def test_late_session_slice_is_a_subset_of_the_parent(tmp_path):
+    import csv
+    p = tmp_path / "l.csv"
+    cols = ["date", "strategy", "engine", "symbol", "direction", "alert_time", "result_pct", "net_result_pct", "t1_hit",
+            "setup_key", "trade_id", "final_status", "spread_pct", "realistic_net_pct"]
+    rows = [["2026-11-12", "trade_score", "main", "NIFTY", "CE", "2026-11-12T10:00:00+05:30", 5, 3.5, "True", "a", "a", "T2_HIT", 0.3, 2.0],
+            ["2026-11-12", "trade_score", "main", "NIFTY", "PE", "2026-11-12T14:20:00+05:30", -8, -9.5, "False", "b", "b", "SL_HIT", 0.3, -10.5]]
+    with open(p, "w", newline="") as f:
+        w = csv.writer(f)
+        w.writerow(cols)
+        w.writerows(rows)
+    out = S.load_rows(p, "2026-11-01", "2026-11-30", "NSE")
+    assert sorted(x["strat"] for x in out) == ["trade_score", "trade_score", "trade_score_late"]
+    assert S._label("trade_score_late") == "Main scanner, 14:00+ slice"
