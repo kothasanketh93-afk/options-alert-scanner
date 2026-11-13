@@ -238,7 +238,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:15:00+05:30",
+      "last_processed_ts": "2026-11-13T11:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -263,7 +263,7 @@
       "entry_oi": 890300,
       "entry_volume": 15415,
       "signal_future_token": null,
-      "last_price": 189.6
+      "last_price": 189.5
     },
     "MCX-fvg-CRUDEOIL_wsl-CE-20261113-0950-01": {
       "trade_id": "MCX-fvg-CRUDEOIL_wsl-CE-20261113-0950-01",
@@ -321,7 +321,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:15:00+05:30",
+      "last_processed_ts": "2026-11-13T11:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg_wsl",
@@ -347,7 +347,7 @@
       "entry_volume": 15415,
       "signal_future_token": null,
       "variant_of": "MCX-fvg-CRUDEOIL-CE-20261113-0950-01",
-      "last_price": 189.6
+      "last_price": 189.5
     },
     "MCX-oi_flow-CRUDEOIL-CE-20261113-0950-01": {
       "trade_id": "MCX-oi_flow-CRUDEOIL-CE-20261113-0950-01",
@@ -499,7 +499,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:15:00+05:30",
+      "last_processed_ts": "2026-11-13T11:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow_wsl",
@@ -522,7 +522,7 @@
       "entry_volume": 15415,
       "signal_future_token": null,
       "variant_of": "MCX-oi_flow-CRUDEOIL-CE-20261113-0950-01",
-      "last_price": 189.6,
+      "last_price": 189.5,
       "be_tracked": true,
       "trail_sl": 191.56,
       "trail_exit_price": 191.56,
@@ -849,21 +849,21 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-11-13T10:16:00+05:30",
       "tracked_entry_price": 2694.5,
       "highest_since_entry": 2789.0,
-      "lowest_since_entry": 2582.0,
+      "lowest_since_entry": 2444.0,
       "max_favorable_pct": 3.51,
-      "max_adverse_pct": -4.18,
+      "max_adverse_pct": -9.3,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-11-13T11:17:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:15:00+05:30",
+      "last_processed_ts": "2026-11-13T11:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow_wsl",
@@ -886,7 +886,17 @@
       "entry_volume": 3629,
       "signal_future_token": null,
       "variant_of": "MCX-oi_flow-GOLDM-CE-20261113-1015-01",
-      "last_price": 2586.0
+      "last_price": 2432.5,
+      "exit_candle_open": 2523.5,
+      "sell_view": {
+        "option": "PE 137000.0",
+        "key": "MCX|584637",
+        "entry": 2474.5,
+        "exit": 2733.5,
+        "entry_ts": "2026-11-13T10:16:00+05:30",
+        "exit_ts": "2026-11-13T11:17:00+05:30",
+        "pct": -10.47
+      }
     },
     "MCX-fvg-GOLD-PE-20261113-1020-01": {
       "trade_id": "MCX-fvg-GOLD-PE-20261113-1020-01",
@@ -1649,21 +1659,21 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-11-13T11:02:00+05:30",
       "tracked_entry_price": 2445.5,
       "highest_since_entry": 2484.5,
-      "lowest_since_entry": 2335.0,
+      "lowest_since_entry": 2202.0,
       "max_favorable_pct": 1.59,
-      "max_adverse_pct": -4.52,
+      "max_adverse_pct": -9.96,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-11-13T11:17:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:15:00+05:30",
+      "last_processed_ts": "2026-11-13T11:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos_wsl",
@@ -1686,7 +1696,17 @@
       "entry_volume": 3362,
       "signal_future_token": null,
       "variant_of": "MCX-bos-GOLDM-CE-20261113-1101-01",
-      "last_price": 2335.0
+      "last_price": 2194.5,
+      "exit_candle_open": 2290.5,
+      "sell_view": {
+        "option": "PE 137500.0",
+        "key": "MCX|584636",
+        "entry": 2639.0,
+        "exit": 3007.5,
+        "entry_ts": "2026-11-13T11:02:00+05:30",
+        "exit_ts": "2026-11-13T11:17:00+05:30",
+        "pct": -13.96
+      }
     }
   },
   "next_seq": {
@@ -1776,6 +1796,12 @@
         "spot": 137230.0,
         "call_oi": 238.0,
         "put_oi": 219.0
+      },
+      {
+        "t": 680,
+        "spot": 136645.0,
+        "call_oi": 329.0,
+        "put_oi": 818.0
       }
     ],
     "CRUDEOIL": [
@@ -1856,6 +1882,12 @@
         "spot": 8337.0,
         "call_oi": 3614600.0,
         "put_oi": 2508900.0
+      },
+      {
+        "t": 680,
+        "spot": 8330.0,
+        "call_oi": 3628700.0,
+        "put_oi": 2515600.0
       }
     ],
     "GOLDM": [
