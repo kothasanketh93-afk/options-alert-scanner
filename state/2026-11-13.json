@@ -311,7 +311,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T13:12:00+05:30",
+      "last_processed_ts": "2026-11-13T13:14:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -335,7 +335,7 @@
       "ai_verdict": "mixed",
       "vix_at_alert": 16.33,
       "nifty_chg_pct_at_alert": -0.35,
-      "last_price": 22.65
+      "last_price": 22.5
     }
   },
   "next_seq": {
@@ -474,7 +474,7 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 686,
+    "scanned_symbols": 700,
     "valid_signals": 33,
     "rejected_signals": 1035,
     "api_failures": 0,
@@ -483,24 +483,25 @@
   "rerank_slots_done": [
     "11:30"
   ],
-  "last_run_at": "2026-11-13T13:10:49+05:30",
+  "last_run_at": "2026-11-13T13:15:46+05:30",
   "pnl_snaps": [
     "1015",
     "1115",
-    "1215"
+    "1215",
+    "1315"
   ],
   "micro_last_minute": [
     "2026-11-13",
-    790
+    795
   ],
   "tape_seen": {
     "NIFTY": [
       "2026-11-13",
-      "13:05"
+      "13:10"
     ],
     "BANKNIFTY": [
       "2026-11-13",
-      "13:05"
+      "13:10"
     ]
   },
   "fib_pivot_shadow_trades": {
@@ -1393,7 +1394,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T13:09:00+05:30",
+      "last_processed_ts": "2026-11-13T13:14:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -1404,7 +1405,7 @@
       "engine": "fib_pivot",
       "vix_at_alert": 16.4,
       "nifty_chg_pct_at_alert": -0.36,
-      "last_price": 9.3
+      "last_price": 9.0
     },
     "FIBPIVOT-MIDCPNIFTY-CE-20261113-0955-01": {
       "trade_id": "FIBPIVOT-MIDCPNIFTY-CE-20261113-0955-01",
@@ -1572,7 +1573,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T13:09:00+05:30",
+      "last_processed_ts": "2026-11-13T13:14:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -1583,7 +1584,7 @@
       "engine": "fib_pivot",
       "vix_at_alert": 16.27,
       "nifty_chg_pct_at_alert": -0.51,
-      "last_price": 697.75,
+      "last_price": 699.15,
       "waiting_candles": [
         [
           "11:16",
@@ -2768,7 +2769,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T13:09:00+05:30",
+      "last_processed_ts": "2026-11-13T13:14:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -2778,7 +2779,7 @@
       "candidate_id": "KALYANKJIL:PE:690.0:2026-11-23",
       "vix_at_alert": 16.31,
       "nifty_chg_pct_at_alert": -0.33,
-      "last_price": 18.25
+      "last_price": 17.7
     },
     "SHADOW-10-101544": {
       "trade_id": "SHADOW-10-101544",
@@ -3530,7 +3531,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T13:09:00+05:30",
+      "last_processed_ts": "2026-11-13T13:14:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -3540,7 +3541,7 @@
       "candidate_id": "MOTILALOFS:PE:1240.0:2026-11-23",
       "vix_at_alert": 16.27,
       "nifty_chg_pct_at_alert": -0.51,
-      "last_price": 45.0
+      "last_price": 46.8
     },
     "SHADOW-17-111545": {
       "trade_id": "SHADOW-17-111545",
@@ -3626,7 +3627,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T13:09:00+05:30",
+      "last_processed_ts": "2026-11-13T13:14:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -3636,7 +3637,7 @@
       "candidate_id": "MOTILALOFS:PE:1200.0:2026-11-23",
       "vix_at_alert": 16.27,
       "nifty_chg_pct_at_alert": -0.51,
-      "last_price": 26.5,
+      "last_price": 26.0,
       "waiting_candles": [
         [
           "11:16",
