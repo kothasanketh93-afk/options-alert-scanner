@@ -138,16 +138,16 @@
       "actual_entry_time": "2026-11-13T09:26:00+05:30",
       "tracked_entry_price": 167.7,
       "highest_since_entry": 171.0,
-      "lowest_since_entry": 161.8,
+      "lowest_since_entry": 159.8,
       "max_favorable_pct": 1.97,
-      "max_adverse_pct": -3.52,
+      "max_adverse_pct": -4.71,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T09:40:00+05:30",
+      "last_processed_ts": "2026-11-13T09:45:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sweep_wsl",
@@ -170,7 +170,7 @@
       "entry_volume": 9642,
       "signal_future_token": null,
       "variant_of": "MCX-sweep-CRUDEOIL-PE-20261113-0925-01",
-      "last_price": 165.1
+      "last_price": 161.6
     }
   },
   "next_seq": {
@@ -190,6 +190,12 @@
         "spot": 137438.0,
         "call_oi": 276.0,
         "put_oi": 200.0
+      },
+      {
+        "t": 585,
+        "spot": 137237.0,
+        "call_oi": 180.0,
+        "put_oi": 161.0
       }
     ],
     "CRUDEOIL": [
@@ -224,6 +230,12 @@
         "spot": 137446.0,
         "call_oi": 856200.0,
         "put_oi": 556900.0
+      },
+      {
+        "t": 585,
+        "spot": 137259.0,
+        "call_oi": 671900.0,
+        "put_oi": 540300.0
       }
     ],
     "NATURALGAS": [
