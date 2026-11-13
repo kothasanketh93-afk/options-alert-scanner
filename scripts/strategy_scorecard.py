@@ -17,7 +17,7 @@ LABELS = {"fib_pivot": "Fib pivot", "trade_score": "Main scanner (scored)", "cha
           "live_scored": "Live alerts (scored)", "trade_score_late": "Main scanner, 14:00+ slice", "orb15": "ORB 15-min", "pivot_break": "Pivot break",
           "sweep": "Liquidity sweep", "sweep_fvg": "Sweep + FVG", "amd": "AMD", "oi_flow": "OI flow",
           "fvg": "Fair value gap", "ema_pb": "EMA pullback", "gap_orb": "Gap and go", "sess_orb": "Session ORB",
-          "sess_sweep": "Session sweep", "bos": "Break of structure", "order_block": "Order block"}
+          "sess_sweep": "Session sweep", "bos": "Break of structure", "order_block": "Order block", "pdhl_retest": "PDH/PDL retest", "vwap_pb": "VWAP pullback"}
 SKIP = {"NOT_ENTERED", "AMBIGUOUS"}
 LATE_FROM = "14:00"              # IST alert time from which the "late session" slice of the main scanner starts
 

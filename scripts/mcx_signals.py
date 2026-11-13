@@ -116,3 +116,16 @@ def detect_bos(candles: list, atr: float):
 
 def detect_order_block(candles: list, atr: float):
     return base.detect_order_block(candles, atr, SMC_WINDOW)
+
+
+# PDH/PDL break+retest and VWAP pullback (2026-11-13, shadow only): same fixed rules as NSE, MCX windows.
+PDHL_WINDOW = (9 * 60 + 45, 22 * 60 + 30)
+VWAP_WINDOW = (10 * 60 + 15, 22 * 60 + 30)
+
+
+def detect_pdhl_retest(candles: list, prev_high, prev_low, atr: float):
+    return base.detect_pdhl_retest(candles, prev_high, prev_low, atr, PDHL_WINDOW)
+
+
+def detect_vwap_pullback(candles: list):
+    return base.detect_vwap_pullback(candles, VWAP_WINDOW)

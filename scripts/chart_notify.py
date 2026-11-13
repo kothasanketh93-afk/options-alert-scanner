@@ -12,7 +12,7 @@ from logging_setup import get_logger
 log = get_logger("chart_notify")
 FINAL = {"SL_HIT", "T1_THEN_SL", "T1_THEN_TRAILING_SL", "TRAILING_SL_HIT", "T2_HIT", "EOD_CLOSED", "T1_HIT_THEN_EOD"}
 _LABELS = {"sweep_fvg": "Sweep + FVG", "amd": "AMD", "oi_flow": "OI flow", "fvg": "Fair value gap", "ema_pb": "EMA pullback",
-           "gap_orb": "Gap and go", "bos": "Break of structure", "order_block": "Order block", "trade_score": "Main scanner",
+           "gap_orb": "Gap and go", "bos": "Break of structure", "order_block": "Order block", "pdhl_retest": "PDH/PDL retest", "vwap_pb": "VWAP pullback", "trade_score": "Main scanner",
            "chase_bypass": "Chase bypass"}
 
 

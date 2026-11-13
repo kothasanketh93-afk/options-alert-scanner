@@ -471,3 +471,88 @@ def detect_order_block(candles: list, atr: float, window: tuple = NSE_SMC_WINDOW
                                 "ob": (round(min(a, b), 2), round(max(a, b), 2))}
                     break
     return None
+
+
+# ---- PDH/PDL break + retest and VWAP pullback (added 2026-11-13, SHADOW ONLY, rules FIXED -- a change = a new strategy name) ----
+PDHL_WINDOW = (9 * 60 + 45, 14 * 60 + 15)
+PDHL_MIN_BREAK_ATR = 0.10       # break candle must close at least this many ATR beyond the level (no wick-only / 1-tick breaks)
+PDHL_RETEST_WINDOW = 12         # retest must come within this many candles of the break
+VWAP_WINDOW = (10 * 60 + 15, 14 * 60 + 15)
+VWAP_MIN_CANDLES = 20
+VWAP_TREND_LOOKBACK = 12
+VWAP_TREND_MIN_ABOVE = 8
+
+
+def detect_pdhl_retest(candles: list, prev_high, prev_low, atr: float, window: tuple = PDHL_WINDOW):
+    """Bullish: first completed 5m close above previous-day HIGH (by >= 0.10 ATR, previous close at/below it); a later candle
+    retests it (low <= level), holds (close > level) and closes bullish = entry on that close. A close back at/below the level
+    after the break kills the level for the day. Bearish is the exact mirror on previous-day LOW."""
+    n = len(candles)
+    if n < 6 or not atr or atr <= 0 or not window[0] <= _mins(candles[-1]) <= window[1]:
+        return None
+    for direction, bullish in (("CE", True), ("PE", False)):
+        level = prev_high if bullish else (-prev_low if prev_low is not None else None)
+        if level is None:
+            continue
+        cs = candles if bullish else _mirror(candles)
+        k = None
+        for i in range(n):
+            before = cs[i]["open"] if i == 0 else cs[i - 1]["close"]
+            if before <= level and cs[i]["close"] >= level + PDHL_MIN_BREAK_ATR * atr:
+                k = i
+                break
+        if k is None:
+            continue
+        for m in range(k + 1, n):
+            c = cs[m]
+            if c["close"] <= level:
+                break                                           # failed hold: dead for the day
+            if m - k > PDHL_RETEST_WINDOW:
+                break
+            if c["low"] <= level:                               # first retest decides
+                if c["close"] > c["open"] and m >= n - FRESH_WINDOW:
+                    sign = 1 if bullish else -1
+                    return {"direction": direction, "level_name": "PDH" if bullish else "PDL", "level_value": round(sign * level, 2),
+                            "signal_index": m, "extreme": round(sign * min(x["low"] for x in cs[k:m + 1]), 2),
+                            "signal_close": candles[m]["close"]}
+                break
+    return None
+
+
+def _vwap_series(candles: list) -> list:
+    """Session VWAP per candle (typical price, volume-weighted when every candle carries volume, else equal-weighted)."""
+    use_vol = all((c.get("volume") or 0) > 0 for c in candles)
+    out, pv, vv = [], 0.0, 0.0
+    for c in candles:
+        tp = (c["high"] + c["low"] + c["close"]) / 3.0
+        w = float(c["volume"]) if use_vol else 1.0
+        pv += tp * w
+        vv += w
+        out.append(pv / vv)
+    return out
+
+
+def detect_vwap_pullback(candles: list, window: tuple = VWAP_WINDOW):
+    """Bullish: price spent most of the last 12 candles above a rising session VWAP; within the last 3 candles it pulled back to touch
+    VWAP; trigger candle closes bullish, above VWAP and above the previous high. Bearish = mirror."""
+    n = len(candles)
+    if n < VWAP_MIN_CANDLES or not window[0] <= _mins(candles[-1]) <= window[1]:
+        return None
+    vw = _vwap_series(candles)
+    for direction, bullish in (("CE", True), ("PE", False)):
+        sign = 1 if bullish else -1
+        cs = candles if bullish else _mirror(candles)
+        v = [sign * x for x in vw]
+        trig, prev = cs[-1], cs[-2]
+        if not v[-1] > v[-6]:
+            continue
+        base_ = range(n - 1 - VWAP_TREND_LOOKBACK, n - 1)
+        if sum(1 for i in base_ if cs[i]["close"] > v[i]) < VWAP_TREND_MIN_ABOVE:
+            continue
+        if not any(cs[-1 - j]["low"] <= v[-1 - j] for j in (1, 2, 3)):
+            continue
+        if not (trig["close"] > trig["open"] and trig["close"] > v[-1] and trig["close"] > prev["high"]):
+            continue
+        return {"direction": direction, "level_name": "VWAP", "level_value": round(sign * v[-1], 2), "signal_index": n - 1,
+                "extreme": round(sign * min(c["low"] for c in cs[-4:]), 2), "signal_close": candles[-1]["close"]}
+    return None
