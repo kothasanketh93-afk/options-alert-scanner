@@ -311,7 +311,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:42:00+05:30",
+      "last_processed_ts": "2026-11-13T11:44:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -335,7 +335,7 @@
       "ai_verdict": "mixed",
       "vix_at_alert": 16.33,
       "nifty_chg_pct_at_alert": -0.35,
-      "last_price": 21.85
+      "last_price": 21.3
     }
   },
   "next_seq": {
@@ -474,7 +474,7 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 434,
+    "scanned_symbols": 448,
     "valid_signals": 33,
     "rejected_signals": 1035,
     "api_failures": 0,
@@ -483,23 +483,23 @@
   "rerank_slots_done": [
     "11:30"
   ],
-  "last_run_at": "2026-11-13T11:40:45+05:30",
+  "last_run_at": "2026-11-13T11:45:46+05:30",
   "pnl_snaps": [
     "1015",
     "1115"
   ],
   "micro_last_minute": [
     "2026-11-13",
-    700
+    705
   ],
   "tape_seen": {
     "NIFTY": [
       "2026-11-13",
-      "11:35"
+      "11:40"
     ],
     "BANKNIFTY": [
       "2026-11-13",
-      "11:35"
+      "11:40"
     ]
   },
   "fib_pivot_shadow_trades": {
@@ -1392,7 +1392,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:39:00+05:30",
+      "last_processed_ts": "2026-11-13T11:44:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -1403,7 +1403,7 @@
       "engine": "fib_pivot",
       "vix_at_alert": 16.4,
       "nifty_chg_pct_at_alert": -0.36,
-      "last_price": 8.5
+      "last_price": 9.05
     },
     "FIBPIVOT-MIDCPNIFTY-CE-20261113-0955-01": {
       "trade_id": "FIBPIVOT-MIDCPNIFTY-CE-20261113-0955-01",
@@ -1571,7 +1571,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:39:00+05:30",
+      "last_processed_ts": "2026-11-13T11:44:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -1582,7 +1582,7 @@
       "engine": "fib_pivot",
       "vix_at_alert": 16.27,
       "nifty_chg_pct_at_alert": -0.51,
-      "last_price": 657.85,
+      "last_price": 665.4,
       "waiting_candles": [
         [
           "11:16",
@@ -2763,7 +2763,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:39:00+05:30",
+      "last_processed_ts": "2026-11-13T11:44:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -2773,7 +2773,7 @@
       "candidate_id": "KALYANKJIL:PE:690.0:2026-11-23",
       "vix_at_alert": 16.31,
       "nifty_chg_pct_at_alert": -0.33,
-      "last_price": 17.1
+      "last_price": 16.85
     },
     "SHADOW-10-101544": {
       "trade_id": "SHADOW-10-101544",
@@ -3084,7 +3084,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:39:00+05:30",
+      "last_processed_ts": "2026-11-13T11:44:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
@@ -3094,7 +3094,7 @@
       "candidate_id": "NIFTY:PE:25200.0:2026-11-17:CHASE",
       "vix_at_alert": 16.28,
       "nifty_chg_pct_at_alert": -0.35,
-      "last_price": 166.75
+      "last_price": 170.3
     },
     "SHADOW-13-110101": {
       "trade_id": "SHADOW-13-110101",
@@ -3296,7 +3296,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:39:00+05:30",
+      "last_processed_ts": "2026-11-13T11:44:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -3306,7 +3306,7 @@
       "candidate_id": "KALYANKJIL:CE:710.0:2026-11-23",
       "vix_at_alert": 16.24,
       "nifty_chg_pct_at_alert": -0.4,
-      "last_price": 22.55
+      "last_price": 22.25
     },
     "SHADOW-15-111545": {
       "trade_id": "SHADOW-15-111545",
@@ -3384,16 +3384,16 @@
       "actual_entry_time": "2026-11-13T11:16:00+05:30",
       "tracked_entry_price": 33.3,
       "highest_since_entry": 34.35,
-      "lowest_since_entry": 32.65,
+      "lowest_since_entry": 31.55,
       "max_favorable_pct": 3.15,
-      "max_adverse_pct": -1.95,
+      "max_adverse_pct": -5.26,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:39:00+05:30",
+      "last_processed_ts": "2026-11-13T11:44:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -3403,7 +3403,7 @@
       "candidate_id": "KALYANKJIL:CE:690.0:2026-11-23",
       "vix_at_alert": 16.27,
       "nifty_chg_pct_at_alert": -0.51,
-      "last_price": 32.85
+      "last_price": 32.3
     },
     "SHADOW-16-111545": {
       "trade_id": "SHADOW-16-111545",
@@ -3479,9 +3479,9 @@
       "final_status": null,
       "actual_entry_time": "2026-11-13T11:16:00+05:30",
       "tracked_entry_price": 44.55,
-      "highest_since_entry": 47.3,
+      "highest_since_entry": 47.8,
       "lowest_since_entry": 44.0,
-      "max_favorable_pct": 6.17,
+      "max_favorable_pct": 7.3,
       "max_adverse_pct": -1.23,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -3489,7 +3489,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:39:00+05:30",
+      "last_processed_ts": "2026-11-13T11:44:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -3499,7 +3499,7 @@
       "candidate_id": "MOTILALOFS:PE:1240.0:2026-11-23",
       "vix_at_alert": 16.27,
       "nifty_chg_pct_at_alert": -0.51,
-      "last_price": 47.3
+      "last_price": 47.8
     },
     "SHADOW-17-111545": {
       "trade_id": "SHADOW-17-111545",
@@ -3585,7 +3585,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:39:00+05:30",
+      "last_processed_ts": "2026-11-13T11:44:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -3595,7 +3595,7 @@
       "candidate_id": "MOTILALOFS:PE:1200.0:2026-11-23",
       "vix_at_alert": 16.27,
       "nifty_chg_pct_at_alert": -0.51,
-      "last_price": 26.1,
+      "last_price": 26.2,
       "waiting_candles": [
         [
           "11:16",
@@ -3681,16 +3681,16 @@
       "actual_entry_time": "2026-11-13T11:21:00+05:30",
       "tracked_entry_price": 18.9,
       "highest_since_entry": 19.65,
-      "lowest_since_entry": 18.15,
+      "lowest_since_entry": 17.55,
       "max_favorable_pct": 3.97,
-      "max_adverse_pct": -3.97,
+      "max_adverse_pct": -7.14,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:39:00+05:30",
+      "last_processed_ts": "2026-11-13T11:44:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -3698,7 +3698,7 @@
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
       "candidate_id": "KALYANKJIL:CE:720.0:2026-11-23",
-      "last_price": 18.55,
+      "last_price": 18.05,
       "vix_at_alert": 16.27,
       "nifty_chg_pct_at_alert": -0.46
     },
@@ -3777,9 +3777,9 @@
       "final_status": null,
       "actual_entry_time": "2026-11-13T11:33:00+05:30",
       "tracked_entry_price": 26.55,
-      "highest_since_entry": 27.65,
+      "highest_since_entry": 27.75,
       "lowest_since_entry": 26.55,
-      "max_favorable_pct": 4.14,
+      "max_favorable_pct": 4.52,
       "max_adverse_pct": 0.0,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -3787,7 +3787,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:39:00+05:30",
+      "last_processed_ts": "2026-11-13T11:44:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
@@ -3797,7 +3797,7 @@
       "candidate_id": "CDSL:PE:1460.0:2026-11-23:CHASE",
       "vix_at_alert": 16.27,
       "nifty_chg_pct_at_alert": -0.53,
-      "last_price": 27.65,
+      "last_price": 27.5,
       "waiting_candles": [
         [
           "11:32",
@@ -4675,16 +4675,16 @@
       "actual_entry_time": "2026-11-13T11:26:00+05:30",
       "tracked_entry_price": 730.0,
       "highest_since_entry": 740.05,
-      "lowest_since_entry": 702.6,
+      "lowest_since_entry": 688.05,
       "max_favorable_pct": 1.38,
-      "max_adverse_pct": -3.75,
+      "max_adverse_pct": -5.75,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:39:00+05:30",
+      "last_processed_ts": "2026-11-13T11:44:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -4707,7 +4707,7 @@
       "ai_verdict": "mixed",
       "vix_at_alert": 16.27,
       "nifty_chg_pct_at_alert": -0.51,
-      "last_price": 714.25,
+      "last_price": 707.65,
       "waiting_candles": [
         [
           "11:16",
@@ -4849,7 +4849,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T11:39:00+05:30",
+      "last_processed_ts": "2026-11-13T11:44:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -4871,7 +4871,7 @@
       "chart_setup_sent": true,
       "vix_at_alert": 16.27,
       "nifty_chg_pct_at_alert": -0.51,
-      "last_price": 175.05
+      "last_price": 175.2
     },
     "SWEEP-sweep_fvg-SENSEX-PE-20261113-1115-01": {
       "trade_id": "SWEEP-sweep_fvg-SENSEX-PE-20261113-1115-01",
