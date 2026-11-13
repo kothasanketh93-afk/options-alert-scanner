@@ -1979,8 +1979,8 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "T1_HIT_THEN_EOD",
       "actual_entry_time": "2026-11-13T12:26:00+05:30",
       "tracked_entry_price": 13.5,
       "highest_since_entry": 16.7,
@@ -1992,8 +1992,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T23:24:00+05:30",
+      "eod_last_price": 15.15,
+      "last_processed_ts": "2026-11-13T23:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -2015,10 +2015,19 @@
       "entry_oi": 9667500,
       "entry_volume": 7151,
       "signal_future_token": null,
-      "last_price": 15.2,
+      "last_price": 15.3,
       "be_tracked": true,
       "trail_sl": 15.175,
-      "trail_exit_price": 15.175
+      "trail_exit_price": 15.175,
+      "sell_view": {
+        "option": "CE 310.0",
+        "key": "MCX|583836",
+        "entry": 14.8,
+        "exit": 10.75,
+        "entry_ts": "2026-11-13T12:26:00+05:30",
+        "exit_ts": "2026-11-13T23:30:00+05:30",
+        "pct": 27.36
+      }
     },
     "MCX-bos-NATURALGAS_wsl-PE-20261113-1225-01": {
       "trade_id": "MCX-bos-NATURALGAS_wsl-PE-20261113-1225-01",
@@ -2062,8 +2071,8 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "T1_HIT_THEN_EOD",
       "actual_entry_time": "2026-11-13T12:26:00+05:30",
       "tracked_entry_price": 13.5,
       "highest_since_entry": 16.7,
@@ -2075,8 +2084,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T23:24:00+05:30",
+      "eod_last_price": 15.15,
+      "last_processed_ts": "2026-11-13T23:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos_wsl",
@@ -2099,10 +2108,19 @@
       "entry_volume": 7151,
       "signal_future_token": null,
       "variant_of": "MCX-bos-NATURALGAS-PE-20261113-1225-01",
-      "last_price": 15.2,
+      "last_price": 15.3,
       "be_tracked": true,
       "trail_sl": 15.175,
-      "trail_exit_price": 15.175
+      "trail_exit_price": 15.175,
+      "sell_view": {
+        "option": "CE 310.0",
+        "key": "MCX|583836",
+        "entry": 14.8,
+        "exit": 10.75,
+        "entry_ts": "2026-11-13T12:26:00+05:30",
+        "exit_ts": "2026-11-13T23:30:00+05:30",
+        "pct": 27.36
+      }
     },
     "MCX-oi_flow-NATURALGAS-PE-20261113-1320-01": {
       "trade_id": "MCX-oi_flow-NATURALGAS-PE-20261113-1320-01",
@@ -4246,8 +4264,8 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-11-13T19:16:00+05:30",
       "tracked_entry_price": 175.4,
       "highest_since_entry": 209.4,
@@ -4259,8 +4277,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T23:24:00+05:30",
+      "eod_last_price": 147.2,
+      "last_processed_ts": "2026-11-13T23:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "ema_pb_wsl",
@@ -4283,7 +4301,16 @@
       "entry_volume": 131813,
       "signal_future_token": null,
       "variant_of": "MCX-ema_pb-CRUDEOIL-CE-20261113-1915-01",
-      "last_price": 148.0
+      "last_price": 151.1,
+      "sell_view": {
+        "option": "PE 8350.0",
+        "key": "MCX|583067",
+        "entry": 143.4,
+        "exit": 133.5,
+        "entry_ts": "2026-11-13T19:16:00+05:30",
+        "exit_ts": "2026-11-13T23:30:00+05:30",
+        "pct": 6.9
+      }
     },
     "MCX-sess_orb-NATURALGAS-PE-20261113-1935-01": {
       "trade_id": "MCX-sess_orb-NATURALGAS-PE-20261113-1935-01",
@@ -4420,8 +4447,8 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "T1_HIT_THEN_EOD",
       "actual_entry_time": "2026-11-13T19:36:00+05:30",
       "tracked_entry_price": 12.75,
       "highest_since_entry": 13.75,
@@ -4433,8 +4460,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T23:24:00+05:30",
+      "eod_last_price": 12.45,
+      "last_processed_ts": "2026-11-13T23:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sess_orb_wsl",
@@ -4457,10 +4484,19 @@
       "entry_volume": 28422,
       "signal_future_token": null,
       "variant_of": "MCX-sess_orb-NATURALGAS-PE-20261113-1935-01",
-      "last_price": 12.35,
+      "last_price": 12.45,
       "be_tracked": true,
       "be_touch_price": 12.75,
-      "trail_exit_price": 12.75
+      "trail_exit_price": 12.75,
+      "sell_view": {
+        "option": "CE 305.0",
+        "key": "MCX|583837",
+        "entry": 13.0,
+        "exit": 12.9,
+        "entry_ts": "2026-11-13T19:36:00+05:30",
+        "exit_ts": "2026-11-13T23:30:00+05:30",
+        "pct": 0.77
+      }
     },
     "MCX-sess_sweep-CRUDEOIL-PE-20261113-1940-01": {
       "trade_id": "MCX-sess_sweep-CRUDEOIL-PE-20261113-1940-01",
@@ -6823,7 +6859,7 @@
     "GOLD:spread_28.2pct": 1,
     "GOLD:spread_24.9pct": 1
   },
-  "summary_sent": false,
+  "summary_sent": true,
   "sig_fut2": {
     "CRUDEOIL": "573422",
     "NATURALGAS": "574319",
@@ -6838,5 +6874,8 @@
     "1900",
     "2100",
     "2300"
-  ]
+  ],
+  "lesson_card_sent": true,
+  "weekly_sent": true,
+  "scorecard_sent": true
 }
