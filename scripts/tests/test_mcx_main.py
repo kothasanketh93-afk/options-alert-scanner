@@ -78,7 +78,7 @@ def test_mcx_create_track_and_ledger(monkeypatch, tmp_path):
     broker = _FakeBroker(quote, [])
     sig = {"direction": "CE", "level_name": "PDL", "signal_close": 8500.0, "extreme": 8450.0, "level_value": 8460.0}
     mcx_main.create_trade(broker, st, "CRUDEOIL", c, "sweep", sig, 40.0, None, None, {"tCE": quote}, now)
-    assert len(st["mcx_shadow_trades"]) == 1 and sent and "MCX SHADOW" in sent[0]
+    assert len(st["mcx_shadow_trades"]) == 2 and sent and "MCX SHADOW" in sent[0] and len(sent) == 1      # base + silent wide-SL twin
     t = next(iter(st["mcx_shadow_trades"].values()))
     assert t["market_close_hhmm"] == [23, 25] and t["lot_multiplier"] == 100 and t["stop_loss"] < t["alert_premium"] < t["target_1"]
     # price falls through the stop on the next minute candles -> SL_HIT, one-lot loss reported

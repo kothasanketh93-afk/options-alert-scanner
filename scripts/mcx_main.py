@@ -300,8 +300,33 @@ def create_trade(broker, st, name, c, strategy, sig, atr, ph, pl, qs, now, spot_
               "sweep_extreme": sig.get("extreme"), "fvg": sig.get("fvg"),
               "entry_oi": qf["oi"], "entry_volume": qf["volume"], "signal_future_token": (st.get("sig_fut") or {}).get(name)})
     st["mcx_shadow_trades"][trade_id] = t
+    _wide_sl_twin(st, t, setup, key, direction, now)
     notify_created(t)
     log.info("MCX_SHADOW_CANDIDATE_CREATED %s %s %s strike=%s prem=%s sl=%s t1=%s", strategy, name, direction, atm, prem, lv["stop_loss"], lv["target_1"])
+
+
+def _wide_sl_twin(st, base, setup, key, direction, now):
+    """Silent what-if twin of `base` with the stop distance multiplied (mcx_config.MCX_WIDE_SL_VARIANT). Never raises."""
+    import mcx_config as mc
+    try:
+        if not mc.MCX_WIDE_SL_VARIANT:
+            return
+        e, sl = setup["alert_premium"], setup["stop_loss"]
+        wide_sl = round(max(e - mc.MCX_WIDE_SL_MULT * (e - sl), e * 0.10), 2)
+        twin_setup = {**setup, "stop_loss": wide_sl, "strategy": setup["strategy"] + mc.WIDE_SL_SUFFIX}
+        tkey = key + mc.WIDE_SL_SUFFIX
+        seq = st["next_seq"].get(tkey, 0) + 1
+        st["next_seq"][tkey] = seq
+        tid = f"{tkey}-{direction}-{now.strftime('%Y%m%d-%H%M')}-{seq:02d}"
+        tw = new_trade_record(twin_setup, tid, now, f"MCX {len(st['mcx_shadow_trades']) + 1}")
+        for k in ("probability_status", "execution_mode", "live_alert_sent", "engine", "market_close_hhmm", "delta_proxy",
+                  "lot_multiplier", "level_name", "level_value", "signal_close", "sweep_extreme", "fvg", "entry_oi",
+                  "entry_volume", "signal_future_token"):
+            tw[k] = base.get(k)
+        tw["variant_of"] = base["trade_id"]
+        st["mcx_shadow_trades"][tid] = tw
+    except Exception as exc:
+        log.error("MCX wide-SL twin failed (%s: %s) -- continuing.", type(exc).__name__, exc)
 
 
 def _inr(x) -> str:
@@ -387,8 +412,8 @@ def notify_events(t: dict, events: list):
     mult = t.get("lot_multiplier") or LOT_MULTIPLIER.get(t["symbol"], 1)
     for ev in events:
         et = ev.get("type")
-        if et not in shadow_notify.OUTCOME_LABEL:
-            continue
+        if et not in shadow_notify.OUTCOME_LABEL or t.get("variant_of"):
+            continue                    # variant twins are data-only: no Telegram notices
         try:
             entry = t.get("tracked_entry_price")
             res = outcomes_ledger.result_pct(t) if et in ("SL_HIT", "T2_HIT", "EOD_CLOSED") else None
@@ -433,6 +458,8 @@ def track_open(broker, st: dict):
 def pnl_rows(st: dict):
     rows = []
     for t in st["mcx_shadow_trades"].values():
+        if t.get("variant_of"):
+            continue                    # wide-SL twins are measured in the ledger/scorecard, not in the P&L report
         res = outcomes_ledger.result_pct(t)
         if res is None or not t.get("tracked_entry_price"):
             continue
@@ -560,6 +587,11 @@ def main():
     except Exception as exc:       # save progress, then re-raise
         err = exc
         log.error("MCX run error (%s: %s)", type(exc).__name__, exc, exc_info=True)
+    try:
+        import candle_archive
+        candle_archive.flush(state_mod.STATE_CLONE_DIR / MCX_DIR / "ledger" / "candles" / f"{date_str}.json.gz")
+    except Exception as exc:
+        log.error("MCX candle archive failed (%s: %s) -- continuing.", type(exc).__name__, exc)
     try:
         outcomes_ledger.STATE_KEYS = tuple(outcomes_ledger.STATE_KEYS) + (("mcx_shadow_trades", "mcx"),)
         added = outcomes_ledger.append_resolved(st, state_mod.STATE_CLONE_DIR / MCX_DIR / "ledger" / "outcomes.csv")

@@ -45,3 +45,55 @@ def stamp_trades(state: dict, vix, nifty_chg) -> int:
             trade["nifty_chg_pct_at_alert"] = nifty_chg
             n += 1
     return n
+
+
+def day_type(o, h, l, c, prev_close):
+    """Plain classification of one NIFTY session from its daily candle (capture only; nothing trades on it).
+
+    Returns (label, details): label in trend_up / trend_down / range / mixed, with a gap_up / gap_down prefix when the
+    open was >= 0.5% from the previous close and a volatile prefix when the high-low range was >= 1.5% of the open.
+    body_ratio = |close-open| / (high-low): a trend day closes near one end of its range, a range day does not.
+    """
+    rng = h - l
+    if not o or rng <= 0:
+        return "unknown", {}
+    body = abs(c - o) / rng
+    base = ("trend_up" if c > o else "trend_down") if body >= 0.6 else ("range" if body < 0.35 else "mixed")
+    tags = []
+    gap = (o - prev_close) / prev_close * 100 if prev_close else 0.0
+    if abs(gap) >= 0.5:
+        tags.append("gap_up" if gap > 0 else "gap_down")
+    if rng / o * 100 >= 1.5:
+        tags.append("volatile")
+    return "+".join(tags + [base]), {"gap_pct": round(gap, 2), "range_pct": round(rng / o * 100, 2), "body_ratio": round(body, 2)}
+
+
+def record_day_type(market_data, date_str, now, path):
+    """After the NSE close append today's NIFTY day type to ledger/day_types.csv, once. Best-effort."""
+    import csv
+    from pathlib import Path
+    if (now.hour, now.minute) < (15, 35):
+        return False
+    path = Path(path)
+    if path.exists() and any(r.get("date") == date_str for r in csv.DictReader(open(path, newline=""))):
+        return False
+    try:
+        daily = market_data.get_recent_daily_candles(NIFTY_KEY, 5)
+        today = [c for c in daily if str(c.get("timestamp", ""))[:10] == date_str]
+        prev = [c for c in daily if str(c.get("timestamp", ""))[:10] < date_str]
+        if not today or not prev:
+            return False
+        c0 = today[-1]
+        label, det = day_type(c0["open"], c0["high"], c0["low"], c0["close"], prev[-1]["close"])
+        new = not path.exists()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "a", newline="") as f:
+            w = csv.writer(f)
+            if new:
+                w.writerow(["date", "day_type", "open", "high", "low", "close", "prev_close", "gap_pct", "range_pct", "body_ratio"])
+            w.writerow([date_str, label, c0["open"], c0["high"], c0["low"], c0["close"], prev[-1]["close"],
+                        det.get("gap_pct"), det.get("range_pct"), det.get("body_ratio")])
+        return True
+    except Exception as exc:
+        log.warning("Day type unavailable (%s: %s)", type(exc).__name__, exc)
+        return False

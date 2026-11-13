@@ -28,3 +28,9 @@ MCX_FULL_HOLIDAYS = {"2026-01-26", "2026-04-03", "2026-10-02", "2026-12-25"}    
 MCX_EVENING_CLOSED = {"2026-01-01"}                                                                     # morning open only
 MCX_MORNING_CLOSED = {"2026-03-03", "2026-03-26", "2026-03-31", "2026-04-14", "2026-05-01", "2026-05-28", "2026-06-26",
                       "2026-09-14", "2026-10-20", "2026-11-10", "2026-11-24"}                         # evening session open
+
+# Wide-stop what-if (2026-11-13): every MCX shadow trade also gets a silent twin (strategy "<name>_wsl") with the stop distance
+# multiplied. Same entry, same targets, no Telegram notice: it only answers "are the stops too tight for gold/crude options?".
+MCX_WIDE_SL_VARIANT = True
+MCX_WIDE_SL_MULT = 2.0
+WIDE_SL_SUFFIX = "_wsl"

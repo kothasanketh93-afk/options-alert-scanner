@@ -116,6 +116,11 @@ def process_trade_candles(trade: dict, candles: list) -> list:
       - calling this once per trade per run
     """
     events = []
+    try:
+        import candle_archive
+        candle_archive.record(trade.get("instrument_key"), candles)
+    except Exception:
+        pass
 
     for candle in candles:
         ts = _parse_ts(candle["timestamp"])

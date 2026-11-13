@@ -21,6 +21,14 @@ LABELS = {"fib_pivot": "Fib pivot", "trade_score": "Main scanner (scored)", "cha
 SKIP = {"NOT_ENTERED", "AMBIGUOUS"}
 
 
+def _label(s):
+    if s in LABELS:
+        return LABELS[s]
+    if s.endswith("_wsl") and s[:-4] in LABELS:
+        return LABELS[s[:-4]] + " (wide SL)"
+    return s
+
+
 def _f(x):
     try:
         return float(x)
@@ -81,7 +89,7 @@ def score_rows(rows):
         base = (40 * clip((exp + 10) / 20) + 20 * clip((min(pf, 9.99) - 0.5) / 1.5) + 15 * clip((win - 20) / 40)
                 + 15 * clip(cons / 100) + 10 * clip(t1 / 0.6))
         score = base * min(1.0, math.sqrt(n / 30))
-        out.append({"strat": s, "label": LABELS.get(s, s), "n": n, "setups": len({x["key"] for x in g}), "win": win,
+        out.append({"strat": s, "label": _label(s), "n": n, "setups": len({x["key"] for x in g}), "win": win,
                     "exp": exp, "rexp": rexp, "pf": min(pf, 9.99), "cons": cons, "score": score,
                     "sample": "thin" if n < 10 else ("building" if n < 30 else "solid"), "ev": evidence(g)})
     out.sort(key=lambda r: -r["score"])

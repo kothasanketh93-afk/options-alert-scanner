@@ -1093,6 +1093,12 @@ def main():
             market_context.stamp_trades(state, india_vix, market_context.nifty_change_pct(market_data, date_str))
         except Exception as exc:
             log.warning("Market context stamp failed (%s: %s) -- continuing.", type(exc).__name__, exc)
+        try:
+            import candle_archive
+            candle_archive.flush(state_mod.STATE_CLONE_DIR / "ledger" / "candles" / f"{date_str}.json.gz")
+            market_context.record_day_type(market_data, date_str, now, state_mod.STATE_CLONE_DIR / "ledger" / "day_types.csv")
+        except Exception as exc:
+            log.warning("Candle archive / day type failed (%s: %s) -- continuing.", type(exc).__name__, exc)
         added = outcomes_ledger.append_resolved(
             state, state_mod.STATE_CLONE_DIR / "ledger" / "outcomes.csv")
         if added:
