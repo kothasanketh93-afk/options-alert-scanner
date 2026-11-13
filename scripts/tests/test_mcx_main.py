@@ -174,3 +174,13 @@ def _all_strategies_notify(monkeypatch):
     """These tests cover notice mechanics, not the learning-focus filter (tested in test_trade_chart.py)."""
     import config as _config
     monkeypatch.setattr(_config, "FOCUS_ONLY_NOTICES", False, raising=False)
+
+
+def test_mcx_holidays_skip_full_days_and_morning_only_holidays():
+    from datetime import datetime as D
+    assert not mcx_main.in_session(D(2026, 12, 25, 20, 0))            # Christmas: both sessions closed
+    assert not mcx_main.in_session(D(2026, 10, 2, 20, 0))             # Gandhi Jayanti: both closed
+    assert not mcx_main.in_session(D(2026, 11, 10, 10, 0))            # Diwali-Balipratipada: morning closed
+    assert mcx_main.in_session(D(2026, 11, 10, 17, 30))               # ...evening session open
+    assert not mcx_main.in_session(D(2026, 1, 1, 20, 0)) and mcx_main.in_session(D(2026, 1, 1, 10, 0))     # New Year: evening closed only
+    assert mcx_main.in_session(D(2026, 11, 13, 10, 0))                # ordinary Friday

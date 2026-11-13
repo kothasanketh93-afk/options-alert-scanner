@@ -18,3 +18,13 @@ def entry_bucket(alert_time) -> str:
         if mins < lim:
             return label
     return "2100-2330"
+
+
+# MCX trading holidays (source: MCX holiday calendar as listed by Upstox, checked 2026-11-13). MCX trades in two sessions
+# (morning 09:00-17:00, evening 17:00-23:30); on most exchange holidays only the MORNING session is closed.
+# Dates are year-specific: other years fall back to weekday-only checks until this list is refreshed (mcx_main logs a warning).
+MCX_HOLIDAYS_YEAR = 2026
+MCX_FULL_HOLIDAYS = {"2026-01-26", "2026-04-03", "2026-10-02", "2026-12-25"}                         # both sessions closed
+MCX_EVENING_CLOSED = {"2026-01-01"}                                                                     # morning open only
+MCX_MORNING_CLOSED = {"2026-03-03", "2026-03-26", "2026-03-31", "2026-04-14", "2026-05-01", "2026-05-28", "2026-06-26",
+                      "2026-09-14", "2026-10-20", "2026-11-10", "2026-11-24"}                         # evening session open

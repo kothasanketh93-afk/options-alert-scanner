@@ -81,8 +81,22 @@ def save_state(st: dict, msg: str):
 
 
 def in_session(now: datetime) -> bool:
+    """Weekday, inside the session window, and not an MCX holiday (morning-only holidays start the day at 17:00)."""
+    import mcx_config as mc
     if now.weekday() >= 5:
         return False
+    day = now.strftime("%Y-%m-%d")
+    if now.year == mc.MCX_HOLIDAYS_YEAR:
+        if day in mc.MCX_FULL_HOLIDAYS:
+            return False
+        hm = (now.hour, now.minute)
+        if day in mc.MCX_MORNING_CLOSED and hm < (17, 0):
+            return False
+        if day in mc.MCX_EVENING_CLOSED and hm >= (17, 0):
+            return False
+    else:
+        log.warning("MCX holiday list is for %s, today is %s: only weekends are skipped until it is refreshed.",
+                    mc.MCX_HOLIDAYS_YEAR, now.year)
     return SESSION_OPEN <= (now.hour, now.minute) <= SESSION_CLOSE
 
 
