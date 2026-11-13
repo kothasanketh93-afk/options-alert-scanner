@@ -297,8 +297,8 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-11-13T10:02:00+05:30",
       "tracked_entry_price": 21.9,
       "highest_since_entry": 25.85,
@@ -310,13 +310,14 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T15:24:00+05:30",
+      "eod_last_price": 21.8,
+      "last_processed_ts": "2026-11-13T15:30:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
-        "ENTRY_ACTIVATED"
+        "ENTRY_ACTIVATED",
+        "EOD_CLOSED"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "risk_sizing": {
         "fill": 22.5,
@@ -335,7 +336,17 @@
       "ai_verdict": "mixed",
       "vix_at_alert": 16.33,
       "nifty_chg_pct_at_alert": -0.35,
-      "last_price": 22.0
+      "last_price": 21.8,
+      "sell_view": {
+        "option": "CE 700.0",
+        "key": "NSE_FO|109391",
+        "entry": 28.55,
+        "exit": 21.0,
+        "entry_ts": "2026-11-13T10:02:00+05:30",
+        "exit_ts": "2026-11-13T15:30:00+05:30",
+        "pct": 26.44
+      },
+      "chart_outcome_sent": true
     }
   },
   "next_seq": {
@@ -370,7 +381,7 @@
     "FIBPIVOT-PAYTM-CE": 1
   },
   "next_display_num": 2,
-  "summary_sent": false,
+  "summary_sent": true,
   "consecutive_sl_streak": 0,
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
@@ -514,7 +525,7 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 1092,
+    "scanned_symbols": 1106,
     "valid_signals": 53,
     "rejected_signals": 1761,
     "api_failures": 0,
@@ -525,7 +536,7 @@
     "13:30",
     "14:30"
   ],
-  "last_run_at": "2026-11-13T15:25:38+05:30",
+  "last_run_at": "2026-11-13T15:31:24+05:30",
   "pnl_snaps": [
     "1015",
     "1115",
@@ -541,11 +552,11 @@
   "tape_seen": {
     "NIFTY": [
       "2026-11-13",
-      "15:20"
+      "15:25"
     ],
     "BANKNIFTY": [
       "2026-11-13",
-      "15:20"
+      "15:25"
     ]
   },
   "fib_pivot_shadow_trades": {
@@ -1424,8 +1435,8 @@
         "\u2713 Passing the hard filter"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-11-13T09:51:00+05:30",
       "tracked_entry_price": 8.85,
       "highest_since_entry": 10.3,
@@ -1437,8 +1448,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T15:24:00+05:30",
+      "eod_last_price": 9.4,
+      "last_processed_ts": "2026-11-13T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -1449,7 +1460,16 @@
       "engine": "fib_pivot",
       "vix_at_alert": 16.4,
       "nifty_chg_pct_at_alert": -0.36,
-      "last_price": 9.6
+      "last_price": 9.4,
+      "sell_view": {
+        "option": "CE 410.0",
+        "key": "NSE_FO|67194",
+        "entry": 9.9,
+        "exit": 8.15,
+        "entry_ts": "2026-11-13T09:51:00+05:30",
+        "exit_ts": "2026-11-13T15:30:00+05:30",
+        "pct": 17.68
+      }
     },
     "FIBPIVOT-MIDCPNIFTY-CE-20261113-0955-01": {
       "trade_id": "FIBPIVOT-MIDCPNIFTY-CE-20261113-0955-01",
@@ -1965,8 +1985,8 @@
         "\u2713 Passing the hard filter"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-11-13T14:51:00+05:30",
       "tracked_entry_price": 53.7,
       "highest_since_entry": 58.15,
@@ -1978,8 +1998,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T15:24:00+05:30",
+      "eod_last_price": 54.2,
+      "last_processed_ts": "2026-11-13T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -1988,9 +2008,18 @@
       "live_alert_sent": false,
       "candidate_id": "PAYTM:CE:1940.0:2026-11-23",
       "engine": "fib_pivot",
-      "last_price": 56.2,
+      "last_price": 54.2,
       "vix_at_alert": 15.79,
-      "nifty_chg_pct_at_alert": -0.74
+      "nifty_chg_pct_at_alert": -0.74,
+      "sell_view": {
+        "option": "PE 1940.0",
+        "key": "NSE_FO|141184",
+        "entry": 59.5,
+        "exit": 57.2,
+        "entry_ts": "2026-11-13T14:51:00+05:30",
+        "exit_ts": "2026-11-13T15:30:00+05:30",
+        "pct": 3.87
+      }
     }
   },
   "shadow_trades": {
@@ -3085,8 +3114,8 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-11-13T10:16:00+05:30",
       "tracked_entry_price": 18.35,
       "highest_since_entry": 20.55,
@@ -3098,8 +3127,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T15:24:00+05:30",
+      "eod_last_price": 16.8,
+      "last_processed_ts": "2026-11-13T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -3109,7 +3138,16 @@
       "candidate_id": "KALYANKJIL:PE:690.0:2026-11-23",
       "vix_at_alert": 16.31,
       "nifty_chg_pct_at_alert": -0.33,
-      "last_price": 16.95
+      "last_price": 16.8,
+      "sell_view": {
+        "option": "CE 690.0",
+        "key": "NSE_FO|134459",
+        "entry": 31.85,
+        "exit": 26.25,
+        "entry_ts": "2026-11-13T10:16:00+05:30",
+        "exit_ts": "2026-11-13T15:30:00+05:30",
+        "pct": 17.58
+      }
     },
     "SHADOW-10-101544": {
       "trade_id": "SHADOW-10-101544",
@@ -3847,21 +3885,21 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-11-13T11:16:00+05:30",
       "tracked_entry_price": 44.55,
       "highest_since_entry": 52.3,
-      "lowest_since_entry": 43.95,
+      "lowest_since_entry": 42.45,
       "max_favorable_pct": 17.4,
-      "max_adverse_pct": -1.35,
+      "max_adverse_pct": -4.71,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T15:24:00+05:30",
+      "eod_last_price": 42.45,
+      "last_processed_ts": "2026-11-13T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -3871,7 +3909,16 @@
       "candidate_id": "MOTILALOFS:PE:1240.0:2026-11-23",
       "vix_at_alert": 16.27,
       "nifty_chg_pct_at_alert": -0.51,
-      "last_price": 44.75
+      "last_price": 42.45,
+      "sell_view": {
+        "option": "CE 1240.0",
+        "key": "NSE_FO|119654",
+        "entry": 25.55,
+        "exit": 26.5,
+        "entry_ts": "2026-11-13T11:16:00+05:30",
+        "exit_ts": "2026-11-13T15:30:00+05:30",
+        "pct": -3.72
+      }
     },
     "SHADOW-17-111545": {
       "trade_id": "SHADOW-17-111545",
@@ -3943,21 +3990,21 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-11-13T11:17:00+05:30",
       "tracked_entry_price": 24.65,
       "highest_since_entry": 29.7,
-      "lowest_since_entry": 23.2,
+      "lowest_since_entry": 22.25,
       "max_favorable_pct": 20.49,
-      "max_adverse_pct": -5.88,
+      "max_adverse_pct": -9.74,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T15:24:00+05:30",
+      "eod_last_price": 22.4,
+      "last_processed_ts": "2026-11-13T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -3967,7 +4014,7 @@
       "candidate_id": "MOTILALOFS:PE:1200.0:2026-11-23",
       "vix_at_alert": 16.27,
       "nifty_chg_pct_at_alert": -0.51,
-      "last_price": 23.55,
+      "last_price": 22.4,
       "waiting_candles": [
         [
           "11:16",
@@ -3976,7 +4023,16 @@
           23.55,
           23.55
         ]
-      ]
+      ],
+      "sell_view": {
+        "option": "CE 1200.0",
+        "key": "NSE_FO|119651",
+        "entry": 44.0,
+        "exit": 46.3,
+        "entry_ts": "2026-11-13T11:17:00+05:30",
+        "exit_ts": "2026-11-13T15:30:00+05:30",
+        "pct": -5.23
+      }
     },
     "SHADOW-18-112050": {
       "trade_id": "SHADOW-18-112050",
@@ -4943,8 +4999,8 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-11-13T14:16:00+05:30",
       "tracked_entry_price": 3.24,
       "highest_since_entry": 3.24,
@@ -4956,8 +5012,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T15:24:00+05:30",
+      "eod_last_price": 3.1,
+      "last_processed_ts": "2026-11-13T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
@@ -4967,7 +5023,16 @@
       "candidate_id": "PNB:PE:143.0:2026-11-23:CHASE",
       "vix_at_alert": 15.96,
       "nifty_chg_pct_at_alert": -0.89,
-      "last_price": 3.08
+      "last_price": 3.1,
+      "sell_view": {
+        "option": "CE 143.0",
+        "key": "NSE_FO|142745",
+        "entry": 3.55,
+        "exit": 3.16,
+        "entry_ts": "2026-11-13T14:16:00+05:30",
+        "exit_ts": "2026-11-13T15:30:00+05:30",
+        "pct": 10.99
+      }
     },
     "SHADOW-27-142819": {
       "trade_id": "SHADOW-27-142819",
@@ -5270,8 +5335,8 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-11-13T14:41:00+05:30",
       "tracked_entry_price": 606.65,
       "highest_since_entry": 621.45,
@@ -5283,8 +5348,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T15:24:00+05:30",
+      "eod_last_price": 583.7,
+      "last_processed_ts": "2026-11-13T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
@@ -5294,7 +5359,16 @@
       "candidate_id": "SENSEX:PE:81500.0:2026-11-19:CHASE",
       "vix_at_alert": 15.81,
       "nifty_chg_pct_at_alert": -0.73,
-      "last_price": 562.45
+      "last_price": 583.7,
+      "sell_view": {
+        "option": "CE 81500.0",
+        "key": "BSE_FO|1165651",
+        "entry": 655.35,
+        "exit": 684.7,
+        "entry_ts": "2026-11-13T14:41:00+05:30",
+        "exit_ts": "2026-11-13T15:30:00+05:30",
+        "pct": -4.48
+      }
     },
     "SHADOW-30-144046": {
       "trade_id": "SHADOW-30-144046",
@@ -5645,8 +5719,8 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-11-13T14:51:00+05:30",
       "tracked_entry_price": 53.7,
       "highest_since_entry": 58.15,
@@ -5658,8 +5732,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T15:24:00+05:30",
+      "eod_last_price": 54.2,
+      "last_processed_ts": "2026-11-13T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -5667,9 +5741,18 @@
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
       "candidate_id": "PAYTM:CE:1940.0:2026-11-23",
-      "last_price": 56.2,
+      "last_price": 54.2,
       "vix_at_alert": 15.79,
-      "nifty_chg_pct_at_alert": -0.74
+      "nifty_chg_pct_at_alert": -0.74,
+      "sell_view": {
+        "option": "PE 1940.0",
+        "key": "NSE_FO|141184",
+        "entry": 59.5,
+        "exit": 57.2,
+        "entry_ts": "2026-11-13T14:51:00+05:30",
+        "exit_ts": "2026-11-13T15:30:00+05:30",
+        "pct": 3.87
+      }
     },
     "SHADOW-33-145046": {
       "trade_id": "SHADOW-33-145046",
@@ -5743,8 +5826,8 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-11-13T14:51:00+05:30",
       "tracked_entry_price": 45.1,
       "highest_since_entry": 49.15,
@@ -5756,8 +5839,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T15:24:00+05:30",
+      "eod_last_price": 45.5,
+      "last_processed_ts": "2026-11-13T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -5765,9 +5848,18 @@
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
       "candidate_id": "PAYTM:CE:1960.0:2026-11-23",
-      "last_price": 47.5,
+      "last_price": 45.5,
       "vix_at_alert": 15.79,
-      "nifty_chg_pct_at_alert": -0.74
+      "nifty_chg_pct_at_alert": -0.74,
+      "sell_view": {
+        "option": "PE 1960.0",
+        "key": "NSE_FO|122537",
+        "entry": 71.8,
+        "exit": 69.55,
+        "entry_ts": "2026-11-13T14:51:00+05:30",
+        "exit_ts": "2026-11-13T15:30:00+05:30",
+        "pct": 3.13
+      }
     },
     "SHADOW-34-145533": {
       "trade_id": "SHADOW-34-145533",
@@ -5841,8 +5933,8 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "EOD_CLOSED",
+      "final_status": "EOD_CLOSED",
       "actual_entry_time": "2026-11-13T14:59:00+05:30",
       "tracked_entry_price": 63.95,
       "highest_since_entry": 67.95,
@@ -5854,8 +5946,8 @@
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
-      "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T15:24:00+05:30",
+      "eod_last_price": 63.5,
+      "last_processed_ts": "2026-11-13T15:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -5865,7 +5957,7 @@
       "candidate_id": "PAYTM:CE:1920.0:2026-11-23",
       "vix_at_alert": 15.51,
       "nifty_chg_pct_at_alert": -0.67,
-      "last_price": 65.95,
+      "last_price": 63.5,
       "waiting_candles": [
         [
           "14:56",
@@ -5888,7 +5980,16 @@
           65.1,
           65.8
         ]
-      ]
+      ],
+      "sell_view": {
+        "option": "PE 1920.0",
+        "key": "NSE_FO|122535",
+        "entry": 47.4,
+        "exit": 47.0,
+        "entry_ts": "2026-11-13T14:59:00+05:30",
+        "exit_ts": "2026-11-13T15:30:00+05:30",
+        "pct": 0.84
+      }
     }
   },
   "flow_snap": {
@@ -7954,5 +8055,10 @@
     "2026-11-13|sweep_reversal/fvg|SENSEX|CE",
     "2026-11-13|sweep_reversal/fvg|BANKNIFTY|PE",
     "2026-11-13|sweep_reversal/fvg|MIDCPNIFTY|PE"
-  ]
+  ],
+  "eod_report_sent": true,
+  "lesson_card_sent": true,
+  "shadow_summary_sent": true,
+  "weekly_report_sent": true,
+  "signal_lab_done": true
 }
