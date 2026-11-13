@@ -1983,9 +1983,9 @@
       "final_status": null,
       "actual_entry_time": "2026-11-13T12:26:00+05:30",
       "tracked_entry_price": 13.5,
-      "highest_since_entry": 14.45,
+      "highest_since_entry": 14.5,
       "lowest_since_entry": 13.05,
-      "max_favorable_pct": 7.04,
+      "max_favorable_pct": 7.41,
       "max_adverse_pct": -3.33,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -1993,7 +1993,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T14:15:00+05:30",
+      "last_processed_ts": "2026-11-13T14:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -2063,9 +2063,9 @@
       "final_status": null,
       "actual_entry_time": "2026-11-13T12:26:00+05:30",
       "tracked_entry_price": 13.5,
-      "highest_since_entry": 14.45,
+      "highest_since_entry": 14.5,
       "lowest_since_entry": 13.05,
-      "max_favorable_pct": 7.04,
+      "max_favorable_pct": 7.41,
       "max_adverse_pct": -3.33,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -2073,7 +2073,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T14:15:00+05:30",
+      "last_processed_ts": "2026-11-13T14:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos_wsl",
@@ -2234,9 +2234,9 @@
       "final_status": null,
       "actual_entry_time": "2026-11-13T13:21:00+05:30",
       "tracked_entry_price": 14.0,
-      "highest_since_entry": 14.45,
+      "highest_since_entry": 14.5,
       "lowest_since_entry": 13.5,
-      "max_favorable_pct": 3.21,
+      "max_favorable_pct": 3.57,
       "max_adverse_pct": -3.57,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -2244,7 +2244,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-13T14:15:00+05:30",
+      "last_processed_ts": "2026-11-13T14:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow_wsl",
@@ -2494,6 +2494,12 @@
         "t": 850,
         "spot": 136705.0,
         "call_oi": 344.0,
+        "put_oi": 836.0
+      },
+      {
+        "t": 861,
+        "spot": 136693.0,
+        "call_oi": 342.0,
         "put_oi": 836.0
       }
     ],
@@ -2937,6 +2943,12 @@
         "spot": 136644.0,
         "call_oi": 748800.0,
         "put_oi": 1153000.0
+      },
+      {
+        "t": 861,
+        "spot": 136705.0,
+        "call_oi": 752100.0,
+        "put_oi": 1153500.0
       }
     ],
     "NATURALGAS": [
@@ -3119,6 +3131,12 @@
         "spot": 309.3,
         "call_oi": 44026250.0,
         "put_oi": 38255000.0
+      },
+      {
+        "t": 861,
+        "spot": 308.9,
+        "call_oi": 44216250.0,
+        "put_oi": 38572500.0
       }
     ]
   },
