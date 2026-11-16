@@ -57,7 +57,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T10:01:00+05:30",
+      "last_processed_ts": "2026-11-16T10:05:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow",
@@ -79,7 +79,7 @@
       "entry_oi": 772600,
       "entry_volume": 19802,
       "signal_future_token": null,
-      "last_price": 135.5
+      "last_price": 137.8
     },
     "MCX-oi_flow-CRUDEOIL_wsl-CE-20261116-0940-01": {
       "trade_id": "MCX-oi_flow-CRUDEOIL_wsl-CE-20261116-0940-01",
@@ -137,7 +137,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T10:01:00+05:30",
+      "last_processed_ts": "2026-11-16T10:05:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow_wsl",
@@ -160,7 +160,7 @@
       "entry_volume": 19802,
       "signal_future_token": null,
       "variant_of": "MCX-oi_flow-CRUDEOIL-CE-20261116-0940-01",
-      "last_price": 135.5
+      "last_price": 137.8
     },
     "MCX-fvg-CRUDEOIL-CE-20261116-0950-01": {
       "trade_id": "MCX-fvg-CRUDEOIL-CE-20261116-0950-01",
@@ -247,7 +247,7 @@
       "exit_candle_open": 114.7,
       "sell_view": {
         "error": "BrokerAPIError: 403 rate limited by https://apiconnect.angelone.in/rest/secure/angelbroking/historical/v1/getCandleData: Access denied because of exceeding acce",
-        "tries": 1
+        "tries": 2
       }
     },
     "MCX-fvg-CRUDEOIL_wsl-CE-20261116-0950-01": {
@@ -306,7 +306,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T10:01:00+05:30",
+      "last_processed_ts": "2026-11-16T10:04:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg_wsl",
@@ -332,7 +332,7 @@
       "entry_volume": 9448,
       "signal_future_token": null,
       "variant_of": "MCX-fvg-CRUDEOIL-CE-20261116-0950-01",
-      "last_price": 110.4
+      "last_price": 113.0
     }
   },
   "next_seq": {
@@ -384,6 +384,12 @@
         "spot": 8316.0,
         "call_oi": 2942700.0,
         "put_oi": 3368400.0
+      },
+      {
+        "t": 605,
+        "spot": 8321.0,
+        "call_oi": 2940300.0,
+        "put_oi": 3359900.0
       }
     ],
     "GOLDM": [
@@ -446,6 +452,12 @@
       {
         "t": 601,
         "spot": 135755.0,
+        "call_oi": 304.0,
+        "put_oi": 741.0
+      },
+      {
+        "t": 605,
+        "spot": 135748.0,
         "call_oi": 304.0,
         "put_oi": 741.0
       }
