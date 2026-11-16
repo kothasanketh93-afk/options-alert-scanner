@@ -1238,7 +1238,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T12:54:00+05:30",
+      "last_processed_ts": "2026-11-16T13:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -1260,7 +1260,7 @@
       "entry_oi": 49200,
       "entry_volume": 1291,
       "signal_future_token": null,
-      "last_price": 2389.0
+      "last_price": 2308.5
     },
     "MCX-bos-GOLDM_wsl-PE-20261116-1121-01": {
       "trade_id": "MCX-bos-GOLDM_wsl-PE-20261116-1121-01",
@@ -1318,7 +1318,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T12:54:00+05:30",
+      "last_processed_ts": "2026-11-16T13:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos_wsl",
@@ -1341,7 +1341,7 @@
       "entry_volume": 1291,
       "signal_future_token": null,
       "variant_of": "MCX-bos-GOLDM-PE-20261116-1121-01",
-      "last_price": 2389.0
+      "last_price": 2308.5
     },
     "MCX-fvg-GOLDM-PE-20261116-1140-01": {
       "trade_id": "MCX-fvg-GOLDM-PE-20261116-1140-01",
@@ -1399,7 +1399,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T12:54:00+05:30",
+      "last_processed_ts": "2026-11-16T13:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -1424,7 +1424,7 @@
       "entry_oi": 523000,
       "entry_volume": 13708,
       "signal_future_token": null,
-      "last_price": 2621.5
+      "last_price": 2540.0
     },
     "MCX-fvg-GOLDM_wsl-PE-20261116-1140-01": {
       "trade_id": "MCX-fvg-GOLDM_wsl-PE-20261116-1140-01",
@@ -1482,7 +1482,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T12:54:00+05:30",
+      "last_processed_ts": "2026-11-16T13:00:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg_wsl",
@@ -1508,7 +1508,7 @@
       "entry_volume": 13708,
       "signal_future_token": null,
       "variant_of": "MCX-fvg-GOLDM-PE-20261116-1140-01",
-      "last_price": 2621.5
+      "last_price": 2540.0
     }
   },
   "next_seq": {
@@ -1686,6 +1686,12 @@
         "spot": 8386.0,
         "call_oi": 4113500.0,
         "put_oi": 2979300.0
+      },
+      {
+        "t": 781,
+        "spot": 8368.0,
+        "call_oi": 4270800.0,
+        "put_oi": 3943400.0
       }
     ],
     "GOLDM": [
@@ -2160,6 +2166,12 @@
         "spot": 294.0,
         "call_oi": 38345000.0,
         "put_oi": 47455000.0
+      },
+      {
+        "t": 781,
+        "spot": 293.5,
+        "call_oi": 38620000.0,
+        "put_oi": 47803750.0
       }
     ]
   },
@@ -2180,6 +2192,7 @@
     "GOLD": "495213"
   },
   "pnl_snaps": [
-    "1100"
+    "1100",
+    "1300"
   ]
 }
