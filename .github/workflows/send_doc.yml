@@ -1,0 +1,33 @@
+name: Send Document
+
+# Manual dispatch only: sends one file from the repo (e.g. docs/*.pdf) to Telegram once.
+on:
+  workflow_dispatch:
+    inputs:
+      path:
+        description: 'File path in repo'
+        required: true
+      caption:
+        description: 'Caption'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - name: Send
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DOC_PATH: ${{ github.event.inputs.path }}
+          DOC_CAPTION: ${{ github.event.inputs.caption }}
+        run: cd scripts && python send_doc.py "../$DOC_PATH" "$DOC_CAPTION"
