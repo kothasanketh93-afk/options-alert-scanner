@@ -1238,7 +1238,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T15:25:00+05:30",
+      "last_processed_ts": "2026-11-16T15:35:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -1260,7 +1260,7 @@
       "entry_oi": 49200,
       "entry_volume": 1291,
       "signal_future_token": null,
-      "last_price": 2430.0
+      "last_price": 2347.0
     },
     "MCX-bos-GOLDM_wsl-PE-20261116-1121-01": {
       "trade_id": "MCX-bos-GOLDM_wsl-PE-20261116-1121-01",
@@ -1318,7 +1318,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T15:25:00+05:30",
+      "last_processed_ts": "2026-11-16T15:35:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos_wsl",
@@ -1341,7 +1341,7 @@
       "entry_volume": 1291,
       "signal_future_token": null,
       "variant_of": "MCX-bos-GOLDM-PE-20261116-1121-01",
-      "last_price": 2430.0
+      "last_price": 2347.0
     },
     "MCX-fvg-GOLDM-PE-20261116-1140-01": {
       "trade_id": "MCX-fvg-GOLDM-PE-20261116-1140-01",
@@ -2033,7 +2033,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T15:30:00+05:30",
+      "last_processed_ts": "2026-11-16T15:35:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -2113,7 +2113,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T15:30:00+05:30",
+      "last_processed_ts": "2026-11-16T15:35:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos_wsl",
@@ -2194,7 +2194,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T15:30:00+05:30",
+      "last_processed_ts": "2026-11-16T15:35:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -2216,7 +2216,7 @@
       "entry_oi": 1226900,
       "entry_volume": 96441,
       "signal_future_token": null,
-      "last_price": 100.3
+      "last_price": 92.0
     },
     "MCX-bos-CRUDEOIL_wsl-PE-20261116-1415-01": {
       "trade_id": "MCX-bos-CRUDEOIL_wsl-PE-20261116-1415-01",
@@ -2274,7 +2274,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T15:30:00+05:30",
+      "last_processed_ts": "2026-11-16T15:35:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos_wsl",
@@ -2297,7 +2297,7 @@
       "entry_volume": 96441,
       "signal_future_token": null,
       "variant_of": "MCX-bos-CRUDEOIL-PE-20261116-1415-01",
-      "last_price": 100.3
+      "last_price": 92.0
     },
     "MCX-sweep-CRUDEOIL-CE-20261116-1501-01": {
       "trade_id": "MCX-sweep-CRUDEOIL-CE-20261116-1501-01",
@@ -2796,6 +2796,12 @@
         "spot": 8314.0,
         "call_oi": 6021500.0,
         "put_oi": 5045300.0
+      },
+      {
+        "t": 935,
+        "spot": 8338.0,
+        "call_oi": 7743900.0,
+        "put_oi": 5435900.0
       }
     ],
     "GOLDM": [
@@ -3080,6 +3086,12 @@
         "spot": 134775.0,
         "call_oi": 687200.0,
         "put_oi": 1360900.0
+      },
+      {
+        "t": 935,
+        "spot": 134840.0,
+        "call_oi": 645300.0,
+        "put_oi": 1448300.0
       }
     ],
     "GOLD": [
@@ -3358,6 +3370,12 @@
         "spot": 134671.0,
         "call_oi": 346.0,
         "put_oi": 684.0
+      },
+      {
+        "t": 935,
+        "spot": 134794.0,
+        "call_oi": 345.0,
+        "put_oi": 719.0
       }
     ],
     "NATURALGAS": [
@@ -3636,6 +3654,12 @@
         "spot": 291.9,
         "call_oi": 34503750.0,
         "put_oi": 46960000.0
+      },
+      {
+        "t": 935,
+        "spot": 291.9,
+        "call_oi": 35423750.0,
+        "put_oi": 47486250.0
       }
     ]
   },
