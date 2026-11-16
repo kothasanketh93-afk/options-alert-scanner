@@ -1238,7 +1238,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T16:34:00+05:30",
+      "last_processed_ts": "2026-11-16T16:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -1260,7 +1260,7 @@
       "entry_oi": 49200,
       "entry_volume": 1291,
       "signal_future_token": null,
-      "last_price": 2038.5
+      "last_price": 2051.0
     },
     "MCX-bos-GOLDM_wsl-PE-20261116-1121-01": {
       "trade_id": "MCX-bos-GOLDM_wsl-PE-20261116-1121-01",
@@ -1318,7 +1318,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T16:34:00+05:30",
+      "last_processed_ts": "2026-11-16T16:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos_wsl",
@@ -1341,7 +1341,7 @@
       "entry_volume": 1291,
       "signal_future_token": null,
       "variant_of": "MCX-bos-GOLDM-PE-20261116-1121-01",
-      "last_price": 2038.5
+      "last_price": 2051.0
     },
     "MCX-fvg-GOLDM-PE-20261116-1140-01": {
       "trade_id": "MCX-fvg-GOLDM-PE-20261116-1140-01",
@@ -1492,7 +1492,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T16:35:00+05:30",
+      "last_processed_ts": "2026-11-16T16:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg_wsl",
@@ -1518,7 +1518,7 @@
       "entry_volume": 13708,
       "signal_future_token": null,
       "variant_of": "MCX-fvg-GOLDM-PE-20261116-1140-01",
-      "last_price": 2270.5
+      "last_price": 2282.5
     },
     "MCX-oi_flow-GOLD-CE-20261116-1311-01": {
       "trade_id": "MCX-oi_flow-GOLD-CE-20261116-1311-01",
@@ -2224,7 +2224,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T16:34:00+05:30",
+      "last_processed_ts": "2026-11-16T16:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -2246,7 +2246,7 @@
       "entry_oi": 1226900,
       "entry_volume": 96441,
       "signal_future_token": null,
-      "last_price": 102.9
+      "last_price": 109.2
     },
     "MCX-bos-CRUDEOIL_wsl-PE-20261116-1415-01": {
       "trade_id": "MCX-bos-CRUDEOIL_wsl-PE-20261116-1415-01",
@@ -2304,7 +2304,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T16:34:00+05:30",
+      "last_processed_ts": "2026-11-16T16:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos_wsl",
@@ -2327,7 +2327,7 @@
       "entry_volume": 96441,
       "signal_future_token": null,
       "variant_of": "MCX-bos-CRUDEOIL-PE-20261116-1415-01",
-      "last_price": 102.9
+      "last_price": 109.2
     },
     "MCX-sweep-CRUDEOIL-CE-20261116-1501-01": {
       "trade_id": "MCX-sweep-CRUDEOIL-CE-20261116-1501-01",
@@ -3075,6 +3075,12 @@
         "spot": 8312.0,
         "call_oi": 7807300.0,
         "put_oi": 7006600.0
+      },
+      {
+        "t": 1001,
+        "spot": 8309.0,
+        "call_oi": 8011200.0,
+        "put_oi": 7167900.0
       }
     ],
     "GOLDM": [
@@ -3407,6 +3413,12 @@
         "spot": 135380.0,
         "call_oi": 1024700.0,
         "put_oi": 1529900.0
+      },
+      {
+        "t": 1001,
+        "spot": 135330.0,
+        "call_oi": 1020000.0,
+        "put_oi": 1551000.0
       }
     ],
     "GOLD": [
@@ -3744,6 +3756,12 @@
         "t": 995,
         "spot": 135331.0,
         "call_oi": 447.0,
+        "put_oi": 764.0
+      },
+      {
+        "t": 1001,
+        "spot": 135271.0,
+        "call_oi": 449.0,
         "put_oi": 764.0
       }
     ],
@@ -4089,6 +4107,12 @@
         "spot": 296.6,
         "call_oi": 50078750.0,
         "put_oi": 54032500.0
+      },
+      {
+        "t": 1001,
+        "spot": 295.7,
+        "call_oi": 49941250.0,
+        "put_oi": 54642500.0
       }
     ]
   },
