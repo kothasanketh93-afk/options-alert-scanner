@@ -63,3 +63,29 @@ def test_vwap_no_signal_on_flat_or_short():
 def test_mcx_wrappers_exist():
     assert mcx_signals.detect_pdhl_retest([], 1, 1, 1.0) is None
     assert mcx_signals.detect_vwap_pullback([]) is None
+
+
+def _cross_series():
+    cs = [C(i, 110 - i * 0.5, 110.3 - i * 0.5, 109.6 - i * 0.5, 109.8 - i * 0.5) for i in range(20)]   # downtrend
+    for j in range(20, 30):                                                                              # sharp reversal up
+        b = cs[-1]["close"]
+        cs.append(C(j, b, b + 1.6, b - 0.1, b + 1.4))
+    return cs
+
+
+def test_ema_cross_signal_and_mirror():
+    cs = _cross_series()
+    sig = None
+    for k in range(24, len(cs) + 1):
+        sig = s.detect_ema_cross(cs[:k], (0, 1440)) or sig
+    assert sig and sig["direction"] == "CE"
+    m = [{"timestamp": c["timestamp"], "open": 200 - c["open"], "high": 200 - c["low"], "low": 200 - c["high"], "close": 200 - c["close"]} for c in cs]
+    sg = None
+    for k in range(24, len(m) + 1):
+        sg = s.detect_ema_cross(m[:k], (0, 1440)) or sg
+    assert sg and sg["direction"] == "PE"
+
+
+def test_ema_cross_flat_no_signal_and_wrapper():
+    assert s.detect_ema_cross([C(i, 100, 100.5, 99.5, 100) for i in range(40)], (0, 1440)) is None
+    assert mcx_signals.detect_ema_cross([]) is None

@@ -217,6 +217,7 @@ def scan_commodity(broker, st: dict, name: str, c: dict, now: datetime):
         found["order_block"] = safe("order_block", mcx_signals.detect_order_block, today, atr)
         found["pdhl_retest"] = safe("pdhl_retest", mcx_signals.detect_pdhl_retest, today, ph, pl, atr)
         found["vwap_pb"] = safe("vwap_pb", mcx_signals.detect_vwap_pullback, today)
+        found["ema_cross"] = safe("ema_cross", mcx_signals.detect_ema_cross, today)
     else:
         key = f"{name}:news_blackout"
         st["rejects"][key] = st["rejects"].get(key, 0) + 1

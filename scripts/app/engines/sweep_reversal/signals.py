@@ -556,3 +556,32 @@ def detect_vwap_pullback(candles: list, window: tuple = VWAP_WINDOW):
         return {"direction": direction, "level_name": "VWAP", "level_value": round(sign * v[-1], 2), "signal_index": n - 1,
                 "extreme": round(sign * min(c["low"] for c in cs[-4:]), 2), "signal_close": candles[-1]["close"]}
     return None
+
+
+# ---- EMA crossover + confirmation (added 2026-11-16, SHADOW ONLY, rules FIXED -- a change = a new strategy name) ----
+CROSS_LOOKBACK = 10      # the fast/slow cross must be within the last N candles
+
+
+def detect_ema_cross(candles: list, window: tuple, fast: int = 9, slow: int = 21, min_n: int = 24):
+    """Bullish: EMA fast crosses ABOVE EMA slow within the last 10 candles; the signal candle (last) is bullish, closes above BOTH EMAs
+    and above the previous high (bullish confirmation), and the slow EMA is rising (sideways filter). SL reference = lowest low since the
+    cross (recent swing low). Bearish = exact mirror."""
+    n = len(candles)
+    if n < max(min_n, slow + 4) or not window[0] <= _mins(candles[-1]) <= window[1]:
+        return None
+    for direction, bullish in (("CE", True), ("PE", False)):
+        cs = candles if bullish else _mirror(candles)
+        closes = [c["close"] for c in cs]
+        ef, es = ema(closes, fast), ema(closes, slow)
+        x = next((i for i in range(n - 1, max(n - 1 - CROSS_LOOKBACK, slow), -1) if ef[i] > es[i] and ef[i - 1] <= es[i - 1]), None)
+        if x is None:
+            continue
+        trig, prev = cs[-1], cs[-2]
+        if not es[-1] > es[-4]:
+            continue
+        if not (ef[-1] > es[-1] and trig["close"] > trig["open"] and trig["close"] > max(ef[-1], es[-1]) and trig["close"] > prev["high"]):
+            continue
+        sign = 1 if bullish else -1
+        return {"direction": direction, "level_name": f"EMA{fast}/{slow} cross", "level_value": round(sign * es[-1], 2),
+                "signal_index": n - 1, "extreme": round(sign * min(c["low"] for c in cs[x:]), 2), "signal_close": candles[-1]["close"]}
+    return None

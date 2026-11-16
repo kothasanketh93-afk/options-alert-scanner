@@ -129,3 +129,7 @@ def detect_pdhl_retest(candles: list, prev_high, prev_low, atr: float):
 
 def detect_vwap_pullback(candles: list):
     return base.detect_vwap_pullback(candles, VWAP_WINDOW)
+
+
+def detect_ema_cross(candles: list):
+    return base.detect_ema_cross(candles, EMA_WINDOW, fast=20, slow=50, min_n=60)

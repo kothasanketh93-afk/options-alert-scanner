@@ -92,7 +92,8 @@ def _scan_symbol(symbol, session, state=None, now_mins=None):
                      ("bos", lambda c, ph, pl: signals.detect_bos(c, atr)),
                      ("order_block", lambda c, ph, pl: signals.detect_order_block(c, atr)),
                      ("pdhl_retest", lambda c, ph, pl: signals.detect_pdhl_retest(c, ph, pl, atr)),
-                     ("vwap_pb", lambda c, ph, pl: signals.detect_vwap_pullback(c))):
+                     ("vwap_pb", lambda c, ph, pl: signals.detect_vwap_pullback(c)),
+                     ("ema_cross", lambda c, ph, pl: signals.detect_ema_cross(c, signals.NSE_EMA_WINDOW))):
         try:
             sig = signals.detect_fvg(today, atr) if fn is None else fn(today, prev["high"], prev["low"])
             if sig:
