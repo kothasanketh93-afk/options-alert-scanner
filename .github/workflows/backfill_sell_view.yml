@@ -1,0 +1,39 @@
+name: Backfill Sell View
+
+# Manual only. Read-only research: computes the buy-vs-sell comparison for older ledger trades and prints SV, lines to the log.
+on:
+  workflow_dispatch:
+    inputs:
+      date_from:
+        description: 'From date (YYYY-MM-DD)'
+        required: true
+      date_to:
+        description: 'To date (YYYY-MM-DD)'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: state
+          path: statebranch
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - name: Backfill
+        env:
+          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+          ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
+          UPSTOX_ACCESS_TOKEN: ${{ secrets.UPSTOX_ACCESS_TOKEN }}
+          REPO_URL: https://github.com/${{ github.repository }}.git
+        run: python scripts/backfill_sell_view.py statebranch "${{ github.event.inputs.date_from }}" "${{ github.event.inputs.date_to }}"
