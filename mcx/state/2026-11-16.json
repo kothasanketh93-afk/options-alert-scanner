@@ -1228,9 +1228,9 @@
       "final_status": null,
       "actual_entry_time": "2026-11-16T11:22:00+05:30",
       "tracked_entry_price": 2338.0,
-      "highest_since_entry": 2528.5,
+      "highest_since_entry": 2538.0,
       "lowest_since_entry": 2157.0,
-      "max_favorable_pct": 8.15,
+      "max_favorable_pct": 8.55,
       "max_adverse_pct": -7.74,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -1238,7 +1238,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T12:15:00+05:30",
+      "last_processed_ts": "2026-11-16T12:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -1260,7 +1260,7 @@
       "entry_oi": 49200,
       "entry_volume": 1291,
       "signal_future_token": null,
-      "last_price": 2441.5
+      "last_price": 2515.5
     },
     "MCX-bos-GOLDM_wsl-PE-20261116-1121-01": {
       "trade_id": "MCX-bos-GOLDM_wsl-PE-20261116-1121-01",
@@ -1308,9 +1308,9 @@
       "final_status": null,
       "actual_entry_time": "2026-11-16T11:22:00+05:30",
       "tracked_entry_price": 2338.0,
-      "highest_since_entry": 2528.5,
+      "highest_since_entry": 2538.0,
       "lowest_since_entry": 2157.0,
-      "max_favorable_pct": 8.15,
+      "max_favorable_pct": 8.55,
       "max_adverse_pct": -7.74,
       "t1_hit": false,
       "t1_hit_time": null,
@@ -1318,7 +1318,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T12:15:00+05:30",
+      "last_processed_ts": "2026-11-16T12:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos_wsl",
@@ -1341,7 +1341,7 @@
       "entry_volume": 1291,
       "signal_future_token": null,
       "variant_of": "MCX-bos-GOLDM-PE-20261116-1121-01",
-      "last_price": 2441.5
+      "last_price": 2515.5
     },
     "MCX-fvg-GOLDM-PE-20261116-1140-01": {
       "trade_id": "MCX-fvg-GOLDM-PE-20261116-1140-01",
@@ -1399,7 +1399,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T12:15:00+05:30",
+      "last_processed_ts": "2026-11-16T12:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -1424,7 +1424,7 @@
       "entry_oi": 523000,
       "entry_volume": 13708,
       "signal_future_token": null,
-      "last_price": 2700.0
+      "last_price": 2778.0
     },
     "MCX-fvg-GOLDM_wsl-PE-20261116-1140-01": {
       "trade_id": "MCX-fvg-GOLDM_wsl-PE-20261116-1140-01",
@@ -1482,7 +1482,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-16T12:15:00+05:30",
+      "last_processed_ts": "2026-11-16T12:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg_wsl",
@@ -1508,7 +1508,7 @@
       "entry_volume": 13708,
       "signal_future_token": null,
       "variant_of": "MCX-fvg-GOLDM-PE-20261116-1140-01",
-      "last_price": 2700.0
+      "last_price": 2778.0
     }
   },
   "next_seq": {
@@ -1656,6 +1656,12 @@
         "spot": 8409.0,
         "call_oi": 3989400.0,
         "put_oi": 2919100.0
+      },
+      {
+        "t": 740,
+        "spot": 8396.0,
+        "call_oi": 3858600.0,
+        "put_oi": 2970300.0
       }
     ],
     "GOLDM": [
@@ -1790,6 +1796,12 @@
         "spot": 134513.0,
         "call_oi": 491100.0,
         "put_oi": 1226900.0
+      },
+      {
+        "t": 740,
+        "spot": 134500.0,
+        "call_oi": 512000.0,
+        "put_oi": 1214300.0
       }
     ],
     "GOLD": [
@@ -1924,6 +1936,12 @@
         "spot": 134498.0,
         "call_oi": 295.0,
         "put_oi": 706.0
+      },
+      {
+        "t": 740,
+        "spot": 134460.0,
+        "call_oi": 296.0,
+        "put_oi": 709.0
       }
     ],
     "NATURALGAS": [
@@ -2066,7 +2084,8 @@
     "GOLD:spread_7.0pct": 1,
     "GOLD:spread_4.2pct": 1,
     "GOLD:spread_104.9pct": 1,
-    "GOLD:spread_21.4pct": 1
+    "GOLD:spread_21.4pct": 1,
+    "GOLD:spread_74.3pct": 1
   },
   "summary_sent": false,
   "sig_fut2": {
