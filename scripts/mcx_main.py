@@ -437,7 +437,13 @@ def track_open(broker, st: dict):
     import time
     open_trades = [(tid, t) for tid, t in st["mcx_shadow_trades"].items() if t["status"] not in TERMINAL_STATUSES]
     cache = {}
-    for ikey in {t["instrument_key"] for _, t in open_trades}:
+    # Tiered polling (poll_tier.py): an instrument is fetched when ANY of its trades is due (notice-sending trades every run,
+    # data-only ones every ~15 min); once fetched, every open trade on it is processed and marked as polled.
+    import config as _cfg
+    import poll_tier
+    now = datetime.now(IST)
+    due_keys = {t["instrument_key"] for _, t in open_trades if poll_tier.due(t, now, _cfg.SHADOW_POLL_ALWAYS_FROM_MCX)}
+    for ikey in due_keys:
         since = min(t["last_processed_ts"] for _, t in open_trades if t["instrument_key"] == ikey)
         for attempt in (1, 2):
             try:
@@ -452,6 +458,7 @@ def track_open(broker, st: dict):
         candles = cache.get(t["instrument_key"])
         if candles is None:
             continue
+        poll_tier.mark(t, now)
         mine = [c for c in candles if c["timestamp"] > t["last_processed_ts"]]
         if mine:
             notify_events(t, tracker.process_trade_candles(t, mine))

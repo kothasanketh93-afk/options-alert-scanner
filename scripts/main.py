@@ -30,6 +30,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 import state as state_mod
 import scan_log_store
 import tracker
+import poll_tier
 import telegram_notify as tg
 import market_data
 import scanner
@@ -665,10 +666,13 @@ def run_shadow_tracker_step(state: dict, now: datetime):
     for shadow_id, trade in state.get("shadow_trades", {}).items():
         if trade["status"] in TERMINAL_STATUSES:
             continue
+        if not poll_tier.due(trade, now, config.SHADOW_POLL_ALWAYS_FROM_NSE):
+            continue
         try:
             candles = market_data.get_1min_candles_since(
                 trade["instrument_key"], trade["last_processed_ts"]
             )
+            poll_tier.mark(trade, now)
             if not candles:
                 continue
             events = tracker.process_trade_candles(trade, candles)
@@ -1313,10 +1317,13 @@ def run_fib_pivot_shadow_step(state: dict, now: datetime):
     for trade_id, trade in state.get("fib_pivot_shadow_trades", {}).items():
         if trade["status"] in TERMINAL_STATUSES:
             continue
+        if not poll_tier.due(trade, now, config.SHADOW_POLL_ALWAYS_FROM_NSE):
+            continue
         try:
             candles = market_data.get_1min_candles_since(
                 trade["instrument_key"], trade["last_processed_ts"]
             )
+            poll_tier.mark(trade, now)
             if not candles:
                 continue
             events = tracker.process_trade_candles(trade, candles)
@@ -1395,8 +1402,11 @@ def run_sweep_shadow_step(state: dict, now: datetime):
     for trade_id, trade in state.get("sweep_shadow_trades", {}).items():
         if trade["status"] in TERMINAL_STATUSES:
             continue
+        if not poll_tier.due(trade, now, config.SHADOW_POLL_ALWAYS_FROM_NSE):
+            continue
         try:
             candles = market_data.get_1min_candles_since(trade["instrument_key"], trade["last_processed_ts"])
+            poll_tier.mark(trade, now)
             if not candles:
                 continue
             _events = tracker.process_trade_candles(trade, candles)
@@ -1453,8 +1463,11 @@ def run_orb_pivot_shadow_step(state: dict, now: datetime):
     for trade_id, trade in state.get("orb_pivot_shadow_trades", {}).items():
         if trade["status"] in TERMINAL_STATUSES:
             continue
+        if not poll_tier.due(trade, now, config.SHADOW_POLL_ALWAYS_FROM_NSE):
+            continue
         try:
             candles = market_data.get_1min_candles_since(trade["instrument_key"], trade["last_processed_ts"])
+            poll_tier.mark(trade, now)
             if not candles:
                 continue
             _events = tracker.process_trade_candles(trade, candles)

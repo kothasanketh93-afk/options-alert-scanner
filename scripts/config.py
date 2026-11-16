@@ -1675,3 +1675,11 @@ AI_TUTOR_GEMINI_MODEL = "gemini-flash-latest"      # used when only GEMINI_API_K
 AI_TUTOR_GEMINI_MODELS = ("gemini-flash-latest", "gemini-flash-lite-latest")
 AI_TUTOR_TIMEOUT_S = 120             # charts are sent after the run's alerts, so a slow reply delays nothing important
 AI_TUTOR_GEMINI_THINKING = 512       # Gemini thinking-token budget (0 = off); large budgets timed out on the free tier
+
+# --- Tiered candle polling (2026-11-16, poll_tier.py): data-only shadow trades are polled every N minutes instead of every run.
+# Results are identical (the tracker replays every candle since last_processed_ts); only the time we LEARN of an exit moves.
+# Live alerts and FOCUS_STRATEGIES trades are always polled every run. Set SHADOW_TIERED_POLLING = False to switch it off.
+SHADOW_TIERED_POLLING = True
+SHADOW_POLL_INTERVAL_MIN = 14
+SHADOW_POLL_ALWAYS_FROM_NSE = (15, 5)     # from here every shadow trade is polled each run so the EOD close is applied
+SHADOW_POLL_ALWAYS_FROM_MCX = (23, 5)
