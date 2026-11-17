@@ -1635,7 +1635,7 @@ FAST_TRACKER_LAST_HHMM = (15, 25)   # no extra pass at/after this IST time
 
 # What-if shadow for the ATR chase filter (2026-11-03): ATM strikes rejected ONLY for exceeding the ATR chase ceiling are
 # still tracked as shadow trades (strategy 'chase_bypass', never live) so the data shows whether the filter helps or hurts.
-CHASE_BYPASS_SHADOW_ENABLED = True
+CHASE_BYPASS_SHADOW_ENABLED = False   # stopped 2026-11-17 (user): saves API calls; set True to resume the what-if shadow
 
 # 2026-11-03 (user request): the T1 reward:risk alert gate is OFF so every conditions-met setup is alerted and its outcome
 # captured as data. R:R is still shown in the alert text. Set True to re-enable the RISK_MIN_T1_RR floor.
@@ -1683,3 +1683,9 @@ SHADOW_TIERED_POLLING = True
 SHADOW_POLL_INTERVAL_MIN = 14
 SHADOW_POLL_ALWAYS_FROM_NSE = (15, 5)     # from here every shadow trade is polled each run so the EOD close is applied
 SHADOW_POLL_ALWAYS_FROM_MCX = (23, 5)
+
+
+# MCX scan rate-limit hardening (2026-11-17): Angel 403 'rate limited' hit ~70 scans/day. Gap between instruments, one backoff
+# retry per instrument, and instruments that failed last run are scanned first next run (so none starves).
+MCX_SCAN_GAP_SEC = 1.2
+MCX_SCAN_RETRY_BACKOFF_SEC = 3.0

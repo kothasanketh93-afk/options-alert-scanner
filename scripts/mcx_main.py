@@ -563,16 +563,34 @@ def main():
     err = None
     try:
         track_open(broker, st)
-        for name in COMMODITIES:
-            try:
-                c = resolve_contracts(master, name, now)
-                if not c:
-                    log.warning("MCX %s: no contracts resolved", name)
-                    continue
-                if (now.hour * 60 + now.minute) <= LAST_SIGNAL_MINS + 5:
-                    scan_commodity(broker, st, name, c, now)
-            except BrokerAPIError as exc:
-                log.error("MCX %s scan failed (%s: %s) -- continuing.", name, type(exc).__name__, exc)
+        import time as _t
+        import config as _cfg
+        gap = float(getattr(_cfg, "MCX_SCAN_GAP_SEC", 0) or 0)
+        backoff = float(getattr(_cfg, "MCX_SCAN_RETRY_BACKOFF_SEC", 0) or 0)
+        prev_failed = [n for n in (st.get("mcx_scan_failed") or []) if n in COMMODITIES]
+        order = prev_failed + [n for n in COMMODITIES if n not in prev_failed]
+        failed_now = []
+        for i, name in enumerate(order):
+            if i and gap:
+                _t.sleep(gap)
+            for attempt in (1, 2):
+                try:
+                    c = resolve_contracts(master, name, now)
+                    if not c:
+                        log.warning("MCX %s: no contracts resolved", name)
+                        break
+                    if (now.hour * 60 + now.minute) <= LAST_SIGNAL_MINS + 5:
+                        scan_commodity(broker, st, name, c, now)
+                    break
+                except BrokerAPIError as exc:
+                    if attempt == 1 and backoff and "rate" in str(exc).lower():
+                        log.warning("MCX %s rate limited -- retry in %.0fs", name, backoff)
+                        _t.sleep(backoff)
+                        continue
+                    failed_now.append(name)
+                    log.error("MCX %s scan failed (%s: %s) -- continuing.", name, type(exc).__name__, exc)
+                    break
+        st["mcx_scan_failed"] = failed_now
         try:
             import sell_view
             n = sell_view.attach_all(list(st["mcx_shadow_trades"].values()), sell_view.mcx_opp_key_fn(master),
