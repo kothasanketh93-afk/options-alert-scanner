@@ -1535,7 +1535,7 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "NOT_ENTERED",
       "final_status": null,
       "actual_entry_time": null,
       "tracked_entry_price": null,
@@ -1549,7 +1549,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T12:10:00+05:30",
+      "last_processed_ts": "2026-11-17T12:25:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -1571,8 +1571,8 @@
       "entry_oi": 14300,
       "entry_volume": 294,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-17T12:11:52.930274+05:30",
-      "last_price": 452.4,
+      "last_polled_at": "2026-11-17T12:26:43.946144+05:30",
+      "last_price": 440.0,
       "waiting_candles": [
         [
           "11:52",
@@ -1636,8 +1636,16 @@
           452.4,
           451.0,
           452.4
+        ],
+        [
+          "12:13",
+          447.8,
+          447.8,
+          447.8,
+          447.8
         ]
-      ]
+      ],
+      "not_entered_reason": "ENTRY_WINDOW_EXPIRED"
     },
     "MCX-bos-CRUDEOIL_wsl-CE-20261117-1151-01": {
       "trade_id": "MCX-bos-CRUDEOIL_wsl-CE-20261117-1151-01",
@@ -1681,7 +1689,7 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "NOT_ENTERED",
       "final_status": null,
       "actual_entry_time": null,
       "tracked_entry_price": null,
@@ -1695,7 +1703,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T12:10:00+05:30",
+      "last_processed_ts": "2026-11-17T12:25:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos_wsl",
@@ -1718,8 +1726,8 @@
       "entry_volume": 294,
       "signal_future_token": null,
       "variant_of": "MCX-bos-CRUDEOIL-CE-20261117-1151-01",
-      "last_polled_at": "2026-11-17T12:11:52.930274+05:30",
-      "last_price": 452.4,
+      "last_polled_at": "2026-11-17T12:26:43.946144+05:30",
+      "last_price": 440.0,
       "waiting_candles": [
         [
           "11:52",
@@ -1783,8 +1791,16 @@
           452.4,
           451.0,
           452.4
+        ],
+        [
+          "12:13",
+          447.8,
+          447.8,
+          447.8,
+          447.8
         ]
-      ]
+      ],
+      "not_entered_reason": "ENTRY_WINDOW_EXPIRED"
     },
     "MCX-sweep-NATURALGAS-PE-20261117-1206-01": {
       "trade_id": "MCX-sweep-NATURALGAS-PE-20261117-1206-01",
@@ -1833,16 +1849,16 @@
       "actual_entry_time": "2026-11-17T12:07:00+05:30",
       "tracked_entry_price": 8.05,
       "highest_since_entry": 8.55,
-      "lowest_since_entry": 8.05,
+      "lowest_since_entry": 7.8,
       "max_favorable_pct": 6.21,
-      "max_adverse_pct": 0.0,
+      "max_adverse_pct": -3.11,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T12:11:00+05:30",
+      "last_processed_ts": "2026-11-17T12:25:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sweep",
@@ -1864,8 +1880,8 @@
       "entry_oi": 11493750,
       "entry_volume": 10276,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-17T12:11:52.930274+05:30",
-      "last_price": 8.25
+      "last_polled_at": "2026-11-17T12:26:43.946144+05:30",
+      "last_price": 8.1
     },
     "MCX-sweep-NATURALGAS_wsl-PE-20261117-1206-01": {
       "trade_id": "MCX-sweep-NATURALGAS_wsl-PE-20261117-1206-01",
@@ -1914,16 +1930,16 @@
       "actual_entry_time": "2026-11-17T12:07:00+05:30",
       "tracked_entry_price": 8.05,
       "highest_since_entry": 8.55,
-      "lowest_since_entry": 8.05,
+      "lowest_since_entry": 7.8,
       "max_favorable_pct": 6.21,
-      "max_adverse_pct": 0.0,
+      "max_adverse_pct": -3.11,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T12:11:00+05:30",
+      "last_processed_ts": "2026-11-17T12:25:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sweep_wsl",
@@ -1946,8 +1962,8 @@
       "entry_volume": 10276,
       "signal_future_token": null,
       "variant_of": "MCX-sweep-NATURALGAS-PE-20261117-1206-01",
-      "last_polled_at": "2026-11-17T12:11:52.930274+05:30",
-      "last_price": 8.25
+      "last_polled_at": "2026-11-17T12:26:43.946144+05:30",
+      "last_price": 8.1
     }
   },
   "next_seq": {
@@ -2267,6 +2283,12 @@
         "spot": 291.1,
         "call_oi": 39582500.0,
         "put_oi": 46963750.0
+      },
+      {
+        "t": 746,
+        "spot": 291.2,
+        "call_oi": 39735000.0,
+        "put_oi": 46957500.0
       }
     ],
     "GOLD": [
@@ -2553,6 +2575,12 @@
         "spot": 134860.0,
         "call_oi": 910100.0,
         "put_oi": 1243500.0
+      },
+      {
+        "t": 746,
+        "spot": 134775.0,
+        "call_oi": 917900.0,
+        "put_oi": 1244200.0
       }
     ]
   },
