@@ -392,7 +392,7 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 658,
+    "scanned_symbols": 672,
     "valid_signals": 15,
     "rejected_signals": 1011,
     "api_failures": 0,
@@ -401,7 +401,7 @@
   "rerank_slots_done": [
     "11:30"
   ],
-  "last_run_at": "2026-11-17T13:05:44+05:30",
+  "last_run_at": "2026-11-17T13:10:45+05:30",
   "pnl_snaps": [
     "1015",
     "1115",
@@ -409,16 +409,16 @@
   ],
   "micro_last_minute": [
     "2026-11-17",
-    785
+    790
   ],
   "tape_seen": {
     "NIFTY": [
       "2026-11-17",
-      "13:00"
+      "13:05"
     ],
     "BANKNIFTY": [
       "2026-11-17",
-      "13:00"
+      "13:05"
     ]
   },
   "fib_pivot_shadow_trades": {
@@ -1822,21 +1822,21 @@
         "\u2713 Passing the hard filter"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "T1_THEN_SL",
       "actual_entry_time": "2026-11-17T11:26:00+05:30",
       "tracked_entry_price": 460.0,
       "highest_since_entry": 587.45,
-      "lowest_since_entry": 423.5,
+      "lowest_since_entry": 384.0,
       "max_favorable_pct": 27.71,
-      "max_adverse_pct": -7.93,
+      "max_adverse_pct": -16.52,
       "t1_hit": true,
       "t1_hit_time": "2026-11-17T12:00:00+05:30",
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-11-17T13:07:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T12:54:00+05:30",
+      "last_processed_ts": "2026-11-17T13:09:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -1845,14 +1845,26 @@
       "live_alert_sent": false,
       "candidate_id": "SENSEX:CE:82700.0:2026-11-19",
       "engine": "fib_pivot",
-      "last_polled_at": "2026-11-17T12:55:35.751782+05:30",
+      "last_polled_at": "2026-11-17T13:10:45.796303+05:30",
       "vix_at_alert": 15.42,
       "nifty_chg_pct_at_alert": 0.6,
-      "last_price": 498.85,
+      "last_price": 347.25,
       "be_tracked": true,
       "trail_sl": 520.755,
       "trail_exit_price": 520.755,
-      "time_to_target_1_minutes": 34
+      "time_to_target_1_minutes": 34,
+      "be_touch_price": 460.0,
+      "exit_candle_open": 404.1,
+      "time_to_stop_minutes": 101,
+      "sell_view": {
+        "option": "PE 82700.0",
+        "key": "BSE_FO|821604",
+        "entry": 427.4,
+        "exit": 464.5,
+        "entry_ts": "2026-11-17T11:26:00+05:30",
+        "exit_ts": "2026-11-17T13:07:00+05:30",
+        "pct": -8.68
+      }
     }
   },
   "shadow_trades": {
@@ -4387,16 +4399,16 @@
       "actual_entry_time": "2026-11-17T11:13:00+05:30",
       "tracked_entry_price": 456.6,
       "highest_since_entry": 650.0,
-      "lowest_since_entry": 445.0,
+      "lowest_since_entry": 382.75,
       "max_favorable_pct": 42.36,
-      "max_adverse_pct": -2.54,
+      "max_adverse_pct": -16.17,
       "t1_hit": true,
       "t1_hit_time": "2026-11-17T12:00:00+05:30",
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T12:54:00+05:30",
+      "last_processed_ts": "2026-11-17T13:09:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -4411,10 +4423,10 @@
       "level_value": 82576.97,
       "entry_oi": 386280.0,
       "entry_volume": 4988520,
-      "last_polled_at": "2026-11-17T12:55:35.751782+05:30",
+      "last_polled_at": "2026-11-17T13:10:45.796303+05:30",
       "vix_at_alert": 15.46,
       "nifty_chg_pct_at_alert": 0.56,
-      "last_price": 556.05,
+      "last_price": 393.35,
       "waiting_candles": [
         [
           "11:11",
@@ -4433,7 +4445,8 @@
       ],
       "be_tracked": true,
       "trail_sl": 569.405,
-      "trail_exit_price": 569.405
+      "trail_exit_price": 569.405,
+      "be_touch_price": 456.6
     },
     "SWEEP-ema_pb-BANKNIFTY-CE-20261117-1120-01": {
       "trade_id": "SWEEP-ema_pb-BANKNIFTY-CE-20261117-1120-01",
