@@ -1950,16 +1950,16 @@
       "actual_entry_time": "2026-11-17T12:07:00+05:30",
       "tracked_entry_price": 8.05,
       "highest_since_entry": 8.55,
-      "lowest_since_entry": 7.25,
+      "lowest_since_entry": 7.2,
       "max_favorable_pct": 6.21,
-      "max_adverse_pct": -9.94,
+      "max_adverse_pct": -10.56,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T13:10:00+05:30",
+      "last_processed_ts": "2026-11-17T13:25:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sweep_wsl",
@@ -1982,8 +1982,8 @@
       "entry_volume": 10276,
       "signal_future_token": null,
       "variant_of": "MCX-sweep-NATURALGAS-PE-20261117-1206-01",
-      "last_polled_at": "2026-11-17T13:11:40.739668+05:30",
-      "last_price": 7.4
+      "last_polled_at": "2026-11-17T13:26:42.168276+05:30",
+      "last_price": 7.45
     },
     "MCX-bos-NATURALGAS-CE-20261117-1241-01": {
       "trade_id": "MCX-bos-NATURALGAS-CE-20261117-1241-01",
@@ -2534,6 +2534,12 @@
         "spot": 292.7,
         "call_oi": 48006250.0,
         "put_oi": 47357500.0
+      },
+      {
+        "t": 806,
+        "spot": 292.6,
+        "call_oi": 47740000.0,
+        "put_oi": 47551250.0
       }
     ],
     "GOLD": [
@@ -2716,6 +2722,12 @@
         "spot": 134711.0,
         "call_oi": 538.0,
         "put_oi": 716.0
+      },
+      {
+        "t": 806,
+        "spot": 134797.0,
+        "call_oi": 539.0,
+        "put_oi": 716.0
       }
     ],
     "GOLDM": [
@@ -2886,6 +2898,12 @@
         "spot": 134799.0,
         "call_oi": 924000.0,
         "put_oi": 1265300.0
+      },
+      {
+        "t": 806,
+        "spot": 134882.0,
+        "call_oi": 931300.0,
+        "put_oi": 1266700.0
       }
     ]
   },
