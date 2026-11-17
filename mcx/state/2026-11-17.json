@@ -1116,8 +1116,13 @@
       "be_touch_price": 2349.0,
       "exit_candle_open": 2222.0,
       "sell_view": {
-        "error": "BrokerAPIError: 403 rate limited by https://apiconnect.angelone.in/rest/secure/angelbroking/historical/v1/getCandleData: Access denied because of exceeding acce",
-        "tries": 1
+        "option": "PE 135000.0",
+        "key": "MCX|584641",
+        "entry": 2331.0,
+        "exit": 2408.5,
+        "entry_ts": "2026-11-17T10:32:00+05:30",
+        "exit_ts": "2026-11-17T13:14:00+05:30",
+        "pct": -3.32
       }
     },
     "MCX-fvg-GOLDM-CE-20261117-1046-01": {
@@ -2329,6 +2334,12 @@
         "spot": 8002.0,
         "call_oi": 179300.0,
         "put_oi": 223900.0
+      },
+      {
+        "t": 801,
+        "spot": 7983.0,
+        "call_oi": 181300.0,
+        "put_oi": 226400.0
       }
     ],
     "NATURALGAS": [
@@ -2517,6 +2528,12 @@
         "spot": 292.6,
         "call_oi": 47757500.0,
         "put_oi": 47258750.0
+      },
+      {
+        "t": 801,
+        "spot": 292.7,
+        "call_oi": 48006250.0,
+        "put_oi": 47357500.0
       }
     ],
     "GOLD": [
@@ -2693,6 +2710,12 @@
         "spot": 134701.0,
         "call_oi": 538.0,
         "put_oi": 759.0
+      },
+      {
+        "t": 801,
+        "spot": 134711.0,
+        "call_oi": 538.0,
+        "put_oi": 716.0
       }
     ],
     "GOLDM": [
