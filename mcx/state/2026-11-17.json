@@ -4874,21 +4874,21 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "T2_HIT",
+      "final_status": "T2_HIT",
       "actual_entry_time": "2026-11-17T20:52:00+05:30",
       "tracked_entry_price": 7.95,
-      "highest_since_entry": 10.65,
+      "highest_since_entry": 10.7,
       "lowest_since_entry": 7.65,
-      "max_favorable_pct": 33.96,
+      "max_favorable_pct": 34.59,
       "max_adverse_pct": -3.77,
       "t1_hit": true,
       "t1_hit_time": "2026-11-17T21:16:00+05:30",
-      "t2_hit": false,
-      "t2_hit_time": null,
+      "t2_hit": true,
+      "t2_hit_time": "2026-11-17T22:13:00+05:30",
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T22:10:00+05:30",
+      "last_processed_ts": "2026-11-17T22:25:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "order_block",
@@ -4910,11 +4910,21 @@
       "entry_oi": 18903750,
       "entry_volume": 139944,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-17T22:11:44.164285+05:30",
-      "last_price": 10.4,
+      "last_polled_at": "2026-11-17T22:26:46.687418+05:30",
+      "last_price": 10.95,
       "be_tracked": true,
       "trail_sl": 9.515,
-      "trail_exit_price": 9.515
+      "trail_exit_price": 9.515,
+      "exit_candle_open": 10.4,
+      "sell_view": {
+        "option": "PE 290.0",
+        "key": "MCX|583920",
+        "entry": 7.8,
+        "exit": 6.05,
+        "entry_ts": "2026-11-17T20:52:00+05:30",
+        "exit_ts": "2026-11-17T22:13:00+05:30",
+        "pct": 22.44
+      }
     },
     "MCX-order_block-NATURALGAS_wsl-CE-20261117-2051-01": {
       "trade_id": "MCX-order_block-NATURALGAS_wsl-CE-20261117-2051-01",
@@ -4958,21 +4968,21 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "T2_HIT",
+      "final_status": "T2_HIT",
       "actual_entry_time": "2026-11-17T20:52:00+05:30",
       "tracked_entry_price": 7.95,
-      "highest_since_entry": 10.65,
+      "highest_since_entry": 10.7,
       "lowest_since_entry": 7.65,
-      "max_favorable_pct": 33.96,
+      "max_favorable_pct": 34.59,
       "max_adverse_pct": -3.77,
       "t1_hit": true,
       "t1_hit_time": "2026-11-17T21:16:00+05:30",
-      "t2_hit": false,
-      "t2_hit_time": null,
+      "t2_hit": true,
+      "t2_hit_time": "2026-11-17T22:13:00+05:30",
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T22:10:00+05:30",
+      "last_processed_ts": "2026-11-17T22:25:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "order_block_wsl",
@@ -4995,11 +5005,21 @@
       "entry_volume": 139944,
       "signal_future_token": null,
       "variant_of": "MCX-order_block-NATURALGAS-CE-20261117-2051-01",
-      "last_polled_at": "2026-11-17T22:11:44.164285+05:30",
-      "last_price": 10.4,
+      "last_polled_at": "2026-11-17T22:26:46.687418+05:30",
+      "last_price": 10.95,
       "be_tracked": true,
       "trail_sl": 9.515,
-      "trail_exit_price": 9.515
+      "trail_exit_price": 9.515,
+      "exit_candle_open": 10.4,
+      "sell_view": {
+        "option": "PE 290.0",
+        "key": "MCX|583920",
+        "entry": 7.8,
+        "exit": 6.05,
+        "entry_ts": "2026-11-17T20:52:00+05:30",
+        "exit_ts": "2026-11-17T22:13:00+05:30",
+        "pct": 22.44
+      }
     },
     "MCX-ema_cross-GOLDM-CE-20261117-2106-01": {
       "trade_id": "MCX-ema_cross-GOLDM-CE-20261117-2106-01",
@@ -5143,16 +5163,16 @@
       "actual_entry_time": "2026-11-17T21:07:00+05:30",
       "tracked_entry_price": 2288.5,
       "highest_since_entry": 2518.5,
-      "lowest_since_entry": 2110.0,
+      "lowest_since_entry": 2101.0,
       "max_favorable_pct": 10.05,
-      "max_adverse_pct": -7.8,
+      "max_adverse_pct": -8.19,
       "t1_hit": true,
       "t1_hit_time": "2026-11-17T21:13:00+05:30",
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T22:10:00+05:30",
+      "last_processed_ts": "2026-11-17T22:25:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "ema_cross_wsl",
@@ -5175,8 +5195,8 @@
       "entry_volume": 19680,
       "signal_future_token": null,
       "variant_of": "MCX-ema_cross-GOLDM-CE-20261117-2106-01",
-      "last_polled_at": "2026-11-17T22:11:44.164285+05:30",
-      "last_price": 2170.0,
+      "last_polled_at": "2026-11-17T22:26:46.687418+05:30",
+      "last_price": 2134.0,
       "be_tracked": true,
       "trail_sl": 2423.625,
       "trail_exit_price": 2423.625,
@@ -5460,7 +5480,7 @@
       "entry_oi": 9,
       "entry_volume": 62,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-17T22:11:44.164285+05:30",
+      "last_polled_at": "2026-11-17T22:26:46.687418+05:30",
       "last_price": 2250.5,
       "waiting_candles": [
         [
@@ -5561,7 +5581,7 @@
       "entry_volume": 62,
       "signal_future_token": null,
       "variant_of": "MCX-fvg-GOLD-CE-20261117-2121-01",
-      "last_polled_at": "2026-11-17T22:11:44.164285+05:30",
+      "last_polled_at": "2026-11-17T22:26:46.687418+05:30",
       "last_price": 2250.5,
       "waiting_candles": [
         [
@@ -5635,12 +5655,6 @@
   },
   "flow_snap": {
     "CRUDEOIL": [
-      {
-        "t": 946,
-        "spot": 8034.0,
-        "call_oi": 287800.0,
-        "put_oi": 286400.0
-      },
       {
         "t": 951,
         "spot": 8019.0,
@@ -6114,15 +6128,15 @@
         "spot": 8087.0,
         "call_oi": 337900.0,
         "put_oi": 452000.0
+      },
+      {
+        "t": 1346,
+        "spot": 8074.0,
+        "call_oi": 342900.0,
+        "put_oi": 449100.0
       }
     ],
     "NATURALGAS": [
-      {
-        "t": 946,
-        "spot": 290.9,
-        "call_oi": 40675000.0,
-        "put_oi": 51486250.0
-      },
       {
         "t": 951,
         "spot": 291.4,
@@ -6596,15 +6610,15 @@
         "spot": 294.6,
         "call_oi": 72636250.0,
         "put_oi": 59085000.0
+      },
+      {
+        "t": 1346,
+        "spot": 294.7,
+        "call_oi": 70848750.0,
+        "put_oi": 59105000.0
       }
     ],
     "GOLD": [
-      {
-        "t": 946,
-        "spot": 134149.0,
-        "call_oi": 500.0,
-        "put_oi": 730.0
-      },
       {
         "t": 951,
         "spot": 134154.0,
@@ -7078,15 +7092,15 @@
         "spot": 134386.0,
         "call_oi": 643.0,
         "put_oi": 762.0
+      },
+      {
+        "t": 1346,
+        "spot": 134212.0,
+        "call_oi": 511.0,
+        "put_oi": 731.0
       }
     ],
     "GOLDM": [
-      {
-        "t": 941,
-        "spot": 134280.0,
-        "call_oi": 819000.0,
-        "put_oi": 1416500.0
-      },
       {
         "t": 946,
         "spot": 134177.0,
@@ -7560,6 +7574,12 @@
         "spot": 134420.0,
         "call_oi": 1361300.0,
         "put_oi": 1768600.0
+      },
+      {
+        "t": 1346,
+        "spot": 134305.0,
+        "call_oi": 1356700.0,
+        "put_oi": 1758600.0
       }
     ]
   },
