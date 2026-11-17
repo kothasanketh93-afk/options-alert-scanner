@@ -392,7 +392,7 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 490,
+    "scanned_symbols": 504,
     "valid_signals": 15,
     "rejected_signals": 1011,
     "api_failures": 0,
@@ -401,23 +401,23 @@
   "rerank_slots_done": [
     "11:30"
   ],
-  "last_run_at": "2026-11-17T12:05:34+05:30",
+  "last_run_at": "2026-11-17T12:10:52+05:30",
   "pnl_snaps": [
     "1015",
     "1115"
   ],
   "micro_last_minute": [
     "2026-11-17",
-    725
+    730
   ],
   "tape_seen": {
     "NIFTY": [
       "2026-11-17",
-      "12:00"
+      "12:05"
     ],
     "BANKNIFTY": [
       "2026-11-17",
-      "12:00"
+      "12:05"
     ]
   },
   "fib_pivot_shadow_trades": {
@@ -1814,21 +1814,21 @@
         "\u2713 Passing the hard filter"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
+      "status": "T1_HIT",
       "final_status": null,
       "actual_entry_time": "2026-11-17T11:26:00+05:30",
       "tracked_entry_price": 460.0,
-      "highest_since_entry": 475.0,
+      "highest_since_entry": 572.1,
       "lowest_since_entry": 423.5,
-      "max_favorable_pct": 3.26,
+      "max_favorable_pct": 24.37,
       "max_adverse_pct": -7.93,
-      "t1_hit": false,
-      "t1_hit_time": null,
+      "t1_hit": true,
+      "t1_hit_time": "2026-11-17T12:00:00+05:30",
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T11:54:00+05:30",
+      "last_processed_ts": "2026-11-17T12:10:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -1837,10 +1837,14 @@
       "live_alert_sent": false,
       "candidate_id": "SENSEX:CE:82700.0:2026-11-19",
       "engine": "fib_pivot",
-      "last_polled_at": "2026-11-17T11:55:47.381327+05:30",
+      "last_polled_at": "2026-11-17T12:10:52.447920+05:30",
       "vix_at_alert": 15.42,
       "nifty_chg_pct_at_alert": 0.6,
-      "last_price": 469.6
+      "last_price": 549.95,
+      "be_tracked": true,
+      "trail_sl": 520.755,
+      "trail_exit_price": 520.755,
+      "time_to_target_1_minutes": 34
     }
   },
   "shadow_trades": {
@@ -2780,7 +2784,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T12:04:00+05:30",
+      "last_processed_ts": "2026-11-17T12:10:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -2788,10 +2792,10 @@
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
       "candidate_id": "TMPV:PE:270.0:2026-11-23",
-      "last_polled_at": "2026-11-17T12:05:34.504224+05:30",
+      "last_polled_at": "2026-11-17T12:10:52.447920+05:30",
       "vix_at_alert": 15.44,
       "nifty_chg_pct_at_alert": 0.46,
-      "last_price": 8.8,
+      "last_price": 9.05,
       "waiting_candles": [
         [
           "11:02",
@@ -2908,7 +2912,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T12:04:00+05:30",
+      "last_processed_ts": "2026-11-17T12:10:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -2916,10 +2920,10 @@
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
       "candidate_id": "TMPV:PE:260.0:2026-11-23",
-      "last_polled_at": "2026-11-17T12:05:34.504224+05:30",
+      "last_polled_at": "2026-11-17T12:10:52.447920+05:30",
       "vix_at_alert": 15.44,
       "nifty_chg_pct_at_alert": 0.46,
-      "last_price": 2.85
+      "last_price": 3.05
     },
     "SHADOW-11-111554": {
       "trade_id": "SHADOW-11-111554",
@@ -3201,7 +3205,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T12:04:00+05:30",
+      "last_processed_ts": "2026-11-17T12:10:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -3209,10 +3213,10 @@
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
       "candidate_id": "TMPV:PE:265.0:2026-11-23",
-      "last_polled_at": "2026-11-17T12:05:34.504224+05:30",
+      "last_polled_at": "2026-11-17T12:10:52.447920+05:30",
       "vix_at_alert": 15.42,
       "nifty_chg_pct_at_alert": 0.6,
-      "last_price": 5.3,
+      "last_price": 5.4,
       "be_tracked": true,
       "trail_sl": 5.225,
       "time_to_target_1_minutes": 27,
@@ -4319,21 +4323,21 @@
         "\u2713 Passing the hard filter"
       ],
       "alternatives": [],
-      "status": "ACTIVE",
+      "status": "T1_HIT",
       "final_status": null,
       "actual_entry_time": "2026-11-17T11:13:00+05:30",
       "tracked_entry_price": 456.6,
-      "highest_since_entry": 533.0,
+      "highest_since_entry": 634.0,
       "lowest_since_entry": 445.0,
-      "max_favorable_pct": 16.73,
+      "max_favorable_pct": 38.85,
       "max_adverse_pct": -2.54,
-      "t1_hit": false,
-      "t1_hit_time": null,
+      "t1_hit": true,
+      "t1_hit_time": "2026-11-17T12:00:00+05:30",
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T11:54:00+05:30",
+      "last_processed_ts": "2026-11-17T12:10:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -4348,10 +4352,10 @@
       "level_value": 82576.97,
       "entry_oi": 386280.0,
       "entry_volume": 4988520,
-      "last_polled_at": "2026-11-17T11:55:47.381327+05:30",
+      "last_polled_at": "2026-11-17T12:10:52.447920+05:30",
       "vix_at_alert": 15.46,
       "nifty_chg_pct_at_alert": 0.56,
-      "last_price": 525.0,
+      "last_price": 612.5,
       "waiting_candles": [
         [
           "11:11",
@@ -4367,7 +4371,9 @@
           463.15,
           466.45
         ]
-      ]
+      ],
+      "be_tracked": true,
+      "trail_sl": 553.405
     },
     "SWEEP-ema_pb-BANKNIFTY-CE-20261117-1120-01": {
       "trade_id": "SWEEP-ema_pb-BANKNIFTY-CE-20261117-1120-01",
