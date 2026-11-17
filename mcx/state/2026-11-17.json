@@ -5172,7 +5172,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T22:25:00+05:30",
+      "last_processed_ts": "2026-11-17T22:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "ema_cross_wsl",
@@ -5195,8 +5195,8 @@
       "entry_volume": 19680,
       "signal_future_token": null,
       "variant_of": "MCX-ema_cross-GOLDM-CE-20261117-2106-01",
-      "last_polled_at": "2026-11-17T22:26:46.687418+05:30",
-      "last_price": 2134.0,
+      "last_polled_at": "2026-11-17T22:41:48.601564+05:30",
+      "last_price": 2222.0,
       "be_tracked": true,
       "trail_sl": 2423.625,
       "trail_exit_price": 2423.625,
@@ -5441,7 +5441,7 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "NOT_ENTERED",
       "final_status": null,
       "actual_entry_time": null,
       "tracked_entry_price": null,
@@ -5455,7 +5455,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T21:32:00+05:30",
+      "last_processed_ts": "2026-11-17T22:36:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -5480,8 +5480,8 @@
       "entry_oi": 9,
       "entry_volume": 62,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-17T22:26:46.687418+05:30",
-      "last_price": 2250.5,
+      "last_polled_at": "2026-11-17T22:41:48.601564+05:30",
+      "last_price": 2211.0,
       "waiting_candles": [
         [
           "21:24",
@@ -5496,8 +5496,16 @@
           2250.5,
           2250.5,
           2250.5
+        ],
+        [
+          "22:29",
+          2144.5,
+          2144.5,
+          2144.5,
+          2144.5
         ]
-      ]
+      ],
+      "not_entered_reason": "ENTRY_WINDOW_EXPIRED"
     },
     "MCX-fvg-GOLD_wsl-CE-20261117-2121-01": {
       "trade_id": "MCX-fvg-GOLD_wsl-CE-20261117-2121-01",
@@ -5541,7 +5549,7 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "NOT_ENTERED",
       "final_status": null,
       "actual_entry_time": null,
       "tracked_entry_price": null,
@@ -5555,7 +5563,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T21:32:00+05:30",
+      "last_processed_ts": "2026-11-17T22:36:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg_wsl",
@@ -5581,8 +5589,8 @@
       "entry_volume": 62,
       "signal_future_token": null,
       "variant_of": "MCX-fvg-GOLD-CE-20261117-2121-01",
-      "last_polled_at": "2026-11-17T22:26:46.687418+05:30",
-      "last_price": 2250.5,
+      "last_polled_at": "2026-11-17T22:41:48.601564+05:30",
+      "last_price": 2211.0,
       "waiting_candles": [
         [
           "21:24",
@@ -5597,8 +5605,16 @@
           2250.5,
           2250.5,
           2250.5
+        ],
+        [
+          "22:29",
+          2144.5,
+          2144.5,
+          2144.5,
+          2144.5
         ]
-      ]
+      ],
+      "not_entered_reason": "ENTRY_WINDOW_EXPIRED"
     }
   },
   "next_seq": {
