@@ -392,7 +392,7 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 728,
+    "scanned_symbols": 742,
     "valid_signals": 15,
     "rejected_signals": 1011,
     "api_failures": 0,
@@ -402,7 +402,7 @@
     "11:30",
     "13:30"
   ],
-  "last_run_at": "2026-11-17T13:31:26+05:30",
+  "last_run_at": "2026-11-17T13:35:36+05:30",
   "pnl_snaps": [
     "1015",
     "1115",
@@ -411,16 +411,16 @@
   ],
   "micro_last_minute": [
     "2026-11-17",
-    811
+    815
   ],
   "tape_seen": {
     "NIFTY": [
       "2026-11-17",
-      "13:25"
+      "13:30"
     ],
     "BANKNIFTY": [
       "2026-11-17",
-      "13:25"
+      "13:30"
     ]
   },
   "fib_pivot_shadow_trades": {
@@ -1772,9 +1772,9 @@
       "final_status": null,
       "actual_entry_time": "2026-11-17T11:21:00+05:30",
       "tracked_entry_price": 18.0,
-      "highest_since_entry": 24.3,
+      "highest_since_entry": 24.35,
       "lowest_since_entry": 18.0,
-      "max_favorable_pct": 35.0,
+      "max_favorable_pct": 35.28,
       "max_adverse_pct": 0.0,
       "t1_hit": true,
       "t1_hit_time": "2026-11-17T12:02:00+05:30",
@@ -1782,7 +1782,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T13:22:00+05:30",
+      "last_processed_ts": "2026-11-17T13:34:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot",
@@ -1791,8 +1791,8 @@
       "live_alert_sent": false,
       "candidate_id": "KALYANKJIL:PE:690.0:2026-11-23",
       "engine": "fib_pivot",
-      "last_polled_at": "2026-11-17T13:20:48.844033+05:30",
-      "last_price": 24.1,
+      "last_polled_at": "2026-11-17T13:35:36.328832+05:30",
+      "last_price": 20.45,
       "vix_at_alert": 15.51,
       "nifty_chg_pct_at_alert": 0.6,
       "be_tracked": true,
@@ -1986,7 +1986,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T13:22:00+05:30",
+      "last_processed_ts": "2026-11-17T13:34:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "chase_bypass",
@@ -1994,10 +1994,10 @@
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
       "candidate_id": "PREMIERENE:CE:840.0:2026-11-23:CHASE",
-      "last_polled_at": "2026-11-17T13:20:48.844033+05:30",
+      "last_polled_at": "2026-11-17T13:35:36.328832+05:30",
       "vix_at_alert": 15.4,
       "nifty_chg_pct_at_alert": 0.05,
-      "last_price": 15.45
+      "last_price": 16.25
     },
     "SHADOW-2-093549": {
       "trade_id": "SHADOW-2-093549",
