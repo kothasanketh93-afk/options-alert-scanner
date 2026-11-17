@@ -392,7 +392,7 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 700,
+    "scanned_symbols": 714,
     "valid_signals": 15,
     "rejected_signals": 1011,
     "api_failures": 0,
@@ -402,7 +402,7 @@
     "11:30",
     "13:30"
   ],
-  "last_run_at": "2026-11-17T13:20:48+05:30",
+  "last_run_at": "2026-11-17T13:25:41+05:30",
   "pnl_snaps": [
     "1015",
     "1115",
@@ -411,16 +411,16 @@
   ],
   "micro_last_minute": [
     "2026-11-17",
-    800
+    805
   ],
   "tape_seen": {
     "NIFTY": [
       "2026-11-17",
-      "13:15"
+      "13:20"
     ],
     "BANKNIFTY": [
       "2026-11-17",
-      "13:15"
+      "13:20"
     ]
   },
   "fib_pivot_shadow_trades": {
@@ -4429,21 +4429,21 @@
         "\u2713 Passing the hard filter"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "T1_THEN_SL",
       "actual_entry_time": "2026-11-17T11:13:00+05:30",
       "tracked_entry_price": 456.6,
       "highest_since_entry": 650.0,
-      "lowest_since_entry": 382.75,
+      "lowest_since_entry": 342.1,
       "max_favorable_pct": 42.36,
-      "max_adverse_pct": -16.17,
+      "max_adverse_pct": -25.08,
       "t1_hit": true,
       "t1_hit_time": "2026-11-17T12:00:00+05:30",
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-11-17T13:12:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T13:09:00+05:30",
+      "last_processed_ts": "2026-11-17T13:24:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -4458,10 +4458,10 @@
       "level_value": 82576.97,
       "entry_oi": 386280.0,
       "entry_volume": 4988520,
-      "last_polled_at": "2026-11-17T13:10:45.796303+05:30",
+      "last_polled_at": "2026-11-17T13:25:41.317923+05:30",
       "vix_at_alert": 15.46,
       "nifty_chg_pct_at_alert": 0.56,
-      "last_price": 393.35,
+      "last_price": 390.95,
       "waiting_candles": [
         [
           "11:11",
@@ -4481,7 +4481,17 @@
       "be_tracked": true,
       "trail_sl": 569.405,
       "trail_exit_price": 569.405,
-      "be_touch_price": 456.6
+      "be_touch_price": 456.6,
+      "exit_candle_open": 355.1,
+      "sell_view": {
+        "option": "PE 82600.0",
+        "key": "BSE_FO|821836",
+        "entry": 405.85,
+        "exit": 485.75,
+        "entry_ts": "2026-11-17T11:13:00+05:30",
+        "exit_ts": "2026-11-17T13:12:00+05:30",
+        "pct": -19.69
+      }
     },
     "SWEEP-ema_pb-BANKNIFTY-CE-20261117-1120-01": {
       "trade_id": "SWEEP-ema_pb-BANKNIFTY-CE-20261117-1120-01",
