@@ -148,21 +148,21 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "ACTIVE",
       "final_status": null,
-      "actual_entry_time": null,
-      "tracked_entry_price": null,
-      "highest_since_entry": null,
-      "lowest_since_entry": null,
+      "actual_entry_time": "2026-11-17T09:43:00+05:30",
+      "tracked_entry_price": 452.0,
+      "highest_since_entry": 452.0,
+      "lowest_since_entry": 450.0,
       "max_favorable_pct": 0.0,
-      "max_adverse_pct": 0.0,
+      "max_adverse_pct": -0.44,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T09:30:00+05:30",
+      "last_processed_ts": "2026-11-17T09:45:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sweep_wsl",
@@ -185,8 +185,8 @@
       "entry_volume": 63,
       "signal_future_token": null,
       "variant_of": "MCX-sweep-CRUDEOIL-CE-20261117-0926-01",
-      "last_polled_at": "2026-11-17T09:31:48.700470+05:30",
-      "last_price": 445.7,
+      "last_polled_at": "2026-11-17T09:46:43.594485+05:30",
+      "last_price": 450.0,
       "waiting_candles": [
         [
           "09:27",
@@ -208,6 +208,20 @@
           445.7,
           445.7,
           445.7
+        ],
+        [
+          "09:32",
+          447.5,
+          447.5,
+          447.5,
+          447.5
+        ],
+        [
+          "09:34",
+          452.0,
+          452.0,
+          452.0,
+          452.0
         ]
       ]
     },
@@ -406,6 +420,12 @@
         "spot": 7967.0,
         "call_oi": 131000.0,
         "put_oi": 193200.0
+      },
+      {
+        "t": 586,
+        "spot": 7962.0,
+        "call_oi": 133200.0,
+        "put_oi": 195000.0
       }
     ],
     "NATURALGAS": [
@@ -438,6 +458,12 @@
         "spot": 289.0,
         "call_oi": 37177500.0,
         "put_oi": 45345000.0
+      },
+      {
+        "t": 586,
+        "spot": 289.6,
+        "call_oi": 37243750.0,
+        "put_oi": 45263750.0
       }
     ],
     "GOLD": [
@@ -464,6 +490,12 @@
         "spot": 134793.0,
         "call_oi": 466.0,
         "put_oi": 697.0
+      },
+      {
+        "t": 586,
+        "spot": 134836.0,
+        "call_oi": 463.0,
+        "put_oi": 728.0
       }
     ],
     "GOLDM": [
