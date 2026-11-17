@@ -1085,7 +1085,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T12:15:00+05:30",
+      "last_processed_ts": "2026-11-17T12:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow_wsl",
@@ -1108,8 +1108,8 @@
       "entry_volume": 5337,
       "signal_future_token": null,
       "variant_of": "MCX-oi_flow-GOLDM-CE-20261117-1031-01",
-      "last_polled_at": "2026-11-17T12:16:43.424400+05:30",
-      "last_price": 2268.5,
+      "last_polled_at": "2026-11-17T12:31:41.522565+05:30",
+      "last_price": 2294.5,
       "be_tracked": true,
       "trail_sl": 2413.39,
       "trail_exit_price": 2413.39,
@@ -1269,7 +1269,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-17T12:15:00+05:30",
+      "last_processed_ts": "2026-11-17T12:30:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg_wsl",
@@ -1295,8 +1295,8 @@
       "entry_volume": 5980,
       "signal_future_token": null,
       "variant_of": "MCX-fvg-GOLDM-CE-20261117-1046-01",
-      "last_polled_at": "2026-11-17T12:16:43.424400+05:30",
-      "last_price": 2268.5,
+      "last_polled_at": "2026-11-17T12:31:41.522565+05:30",
+      "last_price": 2294.5,
       "be_tracked": true,
       "trail_sl": 2430.875,
       "trail_exit_price": 2430.875,
@@ -2581,6 +2581,12 @@
         "spot": 134775.0,
         "call_oi": 917900.0,
         "put_oi": 1244200.0
+      },
+      {
+        "t": 751,
+        "spot": 134782.0,
+        "call_oi": 914900.0,
+        "put_oi": 1243000.0
       }
     ]
   },
