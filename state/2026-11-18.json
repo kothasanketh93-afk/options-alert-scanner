@@ -85,7 +85,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-18T09:32:00+05:30",
+      "last_processed_ts": "2026-11-18T09:35:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -108,7 +108,7 @@
       "ai_verdict": "supportive",
       "vix_at_alert": 15.73,
       "nifty_chg_pct_at_alert": -0.26,
-      "last_price": 7.75,
+      "last_price": 7.85,
       "waiting_candles": [
         [
           "09:32",
@@ -116,6 +116,27 @@
           8.2,
           7.65,
           7.75
+        ],
+        [
+          "09:33",
+          7.7,
+          8.1,
+          7.6,
+          8.0
+        ],
+        [
+          "09:34",
+          8.0,
+          8.05,
+          7.8,
+          7.8
+        ],
+        [
+          "09:35",
+          7.8,
+          7.85,
+          7.4,
+          7.85
         ]
       ]
     }
@@ -124,7 +145,8 @@
     "ANGELONE-CE-ATM": 1,
     "FIBPIVOT-NIFTY-PE": 1,
     "FIBPIVOT-MIDCPNIFTY-PE": 1,
-    "FIBPIVOT-SENSEX-PE": 1
+    "FIBPIVOT-SENSEX-PE": 1,
+    "FIBPIVOT-DELHIVERY-PE": 1
   },
   "next_display_num": 1,
   "summary_sent": false,
@@ -132,65 +154,84 @@
   "circuit_breaker_tripped": false,
   "circuit_breaker_notified": false,
   "oi_history": {
-    "NSE_FO|64459": 2908685.0,
-    "NSE_FO|64457": 7579065.0,
-    "NSE_FO|64455": 2148835.0,
+    "NSE_FO|64459": 3428165.0,
+    "NSE_FO|64457": 8656700.0,
+    "NSE_FO|64455": 2542020.0,
     "NSE_FO|62484": 260610.0,
-    "NSE_FO|62482": 216570.0,
-    "NSE_FO|62462": 198810.0,
-    "NSE_FO|63742": 37320.0,
-    "NSE_FO|63740": 561720.0,
-    "NSE_FO|63738": 41880.0,
-    "BSE_FO|821770": 995620.0,
-    "BSE_FO|821979": 1154280.0,
-    "BSE_FO|821714": 1123340.0,
+    "NSE_FO|62482": 231840.0,
+    "NSE_FO|62462": 211080.0,
+    "NSE_FO|63742": 37560.0,
+    "NSE_FO|63740": 586680.0,
+    "NSE_FO|63738": 43800.0,
+    "BSE_FO|821770": 986200.0,
+    "BSE_FO|821979": 1350660.0,
+    "BSE_FO|821714": 1260180.0,
     "NSE_FO|134536": 24750.0,
     "NSE_FO|39762": 131100.0,
     "NSE_FO|134534": 48600.0,
     "NSE_FO|135439": 91000.0,
     "NSE_FO|112209": 389000.0,
     "NSE_FO|135441": 149000.0,
-    "NSE_FO|71147": 6585000.0,
-    "NSE_FO|79584": 2590000.0,
-    "NSE_FO|71128": 7825000.0,
-    "NSE_FO|77476": 900000.0,
-    "NSE_FO|70289": 3740000.0,
-    "NSE_FO|77478": 3045000.0,
-    "NSE_FO|136481": 2132000.0,
-    "NSE_FO|115774": 2593500.0,
-    "NSE_FO|136483": 981500.0,
-    "NSE_FO|77411": 852800.0,
-    "NSE_FO|87753": 551200.0,
+    "NSE_FO|71147": 6560000.0,
+    "NSE_FO|79584": 3120000.0,
+    "NSE_FO|71128": 9155000.0,
+    "NSE_FO|77476": 910000.0,
+    "NSE_FO|70289": 4032500.0,
+    "NSE_FO|77478": 3192500.0,
+    "NSE_FO|136481": 2158000.0,
+    "NSE_FO|115774": 2509000.0,
+    "NSE_FO|136483": 1007500.0,
+    "NSE_FO|77411": 847600.0,
+    "NSE_FO|87753": 530400.0,
     "NSE_FO|77409": 1024400.0,
-    "NSE_FO|36575": 1224000.0,
-    "NSE_FO|142751": 11792000.0,
-    "NSE_FO|41025": 3800000.0,
+    "NSE_FO|36575": 1264000.0,
+    "NSE_FO|142751": 11976000.0,
+    "NSE_FO|41025": 3720000.0,
     "NSE_FO|130452": 4484800.0,
-    "NSE_FO|147908": 2552000.0,
-    "NSE_FO|130446": 2982400.0,
-    "NSE_FO|102736": 535350.0,
-    "NSE_FO|87534": 1255375.0,
-    "NSE_FO|102734": 226175.0,
+    "NSE_FO|147908": 2596800.0,
+    "NSE_FO|130446": 2996800.0,
+    "NSE_FO|102736": 533275.0,
+    "NSE_FO|87534": 1249150.0,
+    "NSE_FO|102734": 224100.0,
     "NSE_FO|134733": 84525.0,
     "NSE_FO|110285": 330625.0,
-    "NSE_FO|134735": 508300.0
+    "NSE_FO|134735": 508300.0,
+    "NSE_FO|62442": 851850.0,
+    "NSE_FO|134533": 37800.0,
+    "NSE_FO|39759": 160500.0,
+    "NSE_FO|134535": 85200.0,
+    "NSE_FO|112210": 390000.0,
+    "NSE_FO|135440": 51000.0,
+    "NSE_FO|135438": 173000.0,
+    "NSE_FO|134736": 69000.0,
+    "NSE_FO|110286": 191475.0,
+    "NSE_FO|134734": 116150.0
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 56,
+    "scanned_symbols": 70,
     "valid_signals": 1,
-    "rejected_signals": 41,
+    "rejected_signals": 83,
     "api_failures": 0,
     "broker_errors": 0
   },
   "rerank_slots_done": [],
-  "last_run_at": "2026-11-18T09:31:14+05:30",
+  "last_run_at": "2026-11-18T09:35:36+05:30",
   "pnl_snaps": [],
   "micro_last_minute": [
     "2026-11-18",
-    571
+    575
   ],
-  "tape_seen": {},
+  "tape_seen": {
+    "NIFTY": [
+      "2026-11-18",
+      "09:30"
+    ],
+    "BANKNIFTY": [
+      "2026-11-18",
+      "09:30"
+    ]
+  },
   "shadow_trades": {
     "SHADOW-1-093114": {
       "trade_id": "SHADOW-1-093114",
@@ -276,7 +317,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-18T09:31:14.462214+05:30",
+      "last_processed_ts": "2026-11-18T09:35:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -284,9 +325,40 @@
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
       "candidate_id": "ANGELONE:CE:360.0:2026-11-23",
-      "last_polled_at": "2026-11-18T09:31:14.462214+05:30",
+      "last_polled_at": "2026-11-18T09:35:36.224289+05:30",
       "vix_at_alert": 15.73,
-      "nifty_chg_pct_at_alert": -0.26
+      "nifty_chg_pct_at_alert": -0.26,
+      "last_price": 7.85,
+      "waiting_candles": [
+        [
+          "09:32",
+          8.15,
+          8.2,
+          7.65,
+          7.75
+        ],
+        [
+          "09:33",
+          7.7,
+          8.1,
+          7.6,
+          8.0
+        ],
+        [
+          "09:34",
+          8.0,
+          8.05,
+          7.8,
+          7.8
+        ],
+        [
+          "09:35",
+          7.8,
+          7.85,
+          7.4,
+          7.85
+        ]
+      ]
     }
   },
   "fib_pivot_shadow_trades": {
@@ -541,6 +613,124 @@
       "last_polled_at": "2026-11-18T09:31:14.462214+05:30",
       "vix_at_alert": 15.73,
       "nifty_chg_pct_at_alert": -0.26
+    },
+    "FIBPIVOT-DELHIVERY-PE-20261118-0935-01": {
+      "trade_id": "FIBPIVOT-DELHIVERY-PE-20261118-0935-01",
+      "display_label": "FibPivotShadow 4",
+      "symbol": "DELHIVERY",
+      "direction": "PE",
+      "moneyness": "ATM",
+      "instrument_key": "NSE_FO|87534",
+      "strike": 450.0,
+      "expiry": "2026-11-23",
+      "spot_price": 452.35,
+      "alert_time": "2026-11-18T09:35:36.224289+05:30",
+      "alert_premium": 5.1,
+      "entry_low": 5.03,
+      "entry_high": 5.17,
+      "stop_loss": 4.1,
+      "initial_stop_loss": 4.1,
+      "target_1": 6.6,
+      "target_2": 7.6,
+      "session": "09:30-10:35",
+      "grade": "Shadow",
+      "trade_score": 50,
+      "bid": null,
+      "ask": null,
+      "spread_pct": null,
+      "probability_pct": null,
+      "probability_label": "Shadow",
+      "score_breakdown": [
+        "Trend: Underlying close below EMA9",
+        "Pivot: Fresh close below P (454.27) -- prior candle close 457.95, this candle close 452.5",
+        "Risk_Reward: 1:1.5",
+        "Liquidity: Passing the hard filter"
+      ],
+      "confidence_score": 5.0,
+      "risk_score": 4.5,
+      "reward_score": 6.0,
+      "expected_rr": "1:1.5",
+      "factor_checklist": [
+        "\u2713 Underlying close below EMA9",
+        "\u2713 Fresh close below P (454.27) -- prior candle close 457.95, this candle close 452.5",
+        "\u2713 1:1.5",
+        "\u2713 Passing the hard filter"
+      ],
+      "confidence_stars": "\u2606\u2606\u2606\u2606\u2606",
+      "confidence_label": "Shadow",
+      "risk_rating": "\ud83d\udfe1",
+      "risk_label": "Unvalidated",
+      "expected_holding_minutes": [
+        15,
+        30
+      ],
+      "why_reasons": [
+        "\u2713 Underlying close below EMA9",
+        "\u2713 Fresh close below P (454.27) -- prior candle close 457.95, this candle close 452.5",
+        "\u2713 1:1.5",
+        "\u2713 Passing the hard filter"
+      ],
+      "alternatives": [],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-11-18T09:35:36.224289+05:30",
+      "messages_sent": [],
+      "streak_counted": false,
+      "strategy": "fib_pivot",
+      "probability_status": "shadow_only",
+      "execution_mode": "shadow",
+      "live_alert_sent": false,
+      "candidate_id": "DELHIVERY:PE:450.0:2026-11-23",
+      "engine": "fib_pivot",
+      "last_polled_at": "2026-11-18T09:35:36.224289+05:30",
+      "vix_at_alert": 15.71,
+      "nifty_chg_pct_at_alert": -0.35
     }
+  },
+  "flow_snap": {
+    "NIFTY": [
+      {
+        "spot": 25311.4,
+        "call_oi": 27285700.0,
+        "put_oi": 30132700.0,
+        "t": 575
+      }
+    ],
+    "BANKNIFTY": [
+      {
+        "spot": 62140.75,
+        "call_oi": 2262930.0,
+        "put_oi": 2027790.0,
+        "t": 575
+      }
+    ],
+    "MIDCPNIFTY": [
+      {
+        "spot": 14187.9,
+        "call_oi": 593040.0,
+        "put_oi": 875760.0,
+        "t": 575
+      }
+    ],
+    "SENSEX": [
+      {
+        "spot": 82310.05,
+        "call_oi": 6355780.0,
+        "put_oi": 8249360.0,
+        "t": 575
+      }
+    ]
   }
 }
