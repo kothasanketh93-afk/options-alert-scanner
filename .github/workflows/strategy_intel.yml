@@ -1,0 +1,32 @@
+name: Strategy Intelligence (research)
+
+# Read-only research report. No broker or Telegram secrets, never changes live rules or other workflows.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 11 * * 6'   # Saturday 17:00 IST
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: state
+          path: state_data
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Build report
+        run: |
+          cd scripts
+          python strategy_intel.py ../state_data/ledger/outcomes.csv ../intel_out
+          cat ../intel_out/strategy_intelligence.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: strategy-intelligence
+          path: intel_out
