@@ -411,7 +411,16 @@
       "trail_exit_price": 428.015,
       "be_touch_price": 371.2,
       "exit_candle_open": 485.9,
-      "time_to_target_2_minutes": 147
+      "time_to_target_2_minutes": 147,
+      "sell_view": {
+        "option": "CE 82200.0",
+        "key": "BSE_FO|821516",
+        "entry": 356.1,
+        "exit": 214.8,
+        "entry_ts": "2026-11-18T10:05:00+05:30",
+        "exit_ts": "2026-11-18T12:32:00+05:30",
+        "pct": 39.68
+      }
     }
   },
   "next_seq": {
@@ -556,7 +565,7 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 574,
+    "scanned_symbols": 588,
     "valid_signals": 11,
     "rejected_signals": 1081,
     "api_failures": 0,
@@ -565,7 +574,7 @@
   "rerank_slots_done": [
     "11:30"
   ],
-  "last_run_at": "2026-11-18T12:31:20+05:30",
+  "last_run_at": "2026-11-18T12:35:36+05:30",
   "pnl_snaps": [
     "1015",
     "1115",
@@ -573,16 +582,16 @@
   ],
   "micro_last_minute": [
     "2026-11-18",
-    751
+    755
   ],
   "tape_seen": {
     "NIFTY": [
       "2026-11-18",
-      "12:25"
+      "12:30"
     ],
     "BANKNIFTY": [
       "2026-11-18",
-      "12:25"
+      "12:30"
     ]
   },
   "shadow_trades": {
@@ -1017,21 +1026,21 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "T2_HIT",
+      "final_status": "T2_HIT",
       "actual_entry_time": "2026-11-18T10:02:00+05:30",
       "tracked_entry_price": 151.6,
-      "highest_since_entry": 195.0,
+      "highest_since_entry": 198.0,
       "lowest_since_entry": 145.05,
-      "max_favorable_pct": 28.63,
+      "max_favorable_pct": 30.61,
       "max_adverse_pct": -4.32,
       "t1_hit": true,
       "t1_hit_time": "2026-11-18T10:36:00+05:30",
-      "t2_hit": false,
-      "t2_hit_time": null,
+      "t2_hit": true,
+      "t2_hit_time": "2026-11-18T12:30:00+05:30",
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-18T12:29:00+05:30",
+      "last_processed_ts": "2026-11-18T12:34:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -1039,15 +1048,26 @@
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
       "candidate_id": "NIFTY:PE:25250.0:2026-11-23",
-      "last_polled_at": "2026-11-18T12:31:20.752156+05:30",
+      "last_polled_at": "2026-11-18T12:35:36.726453+05:30",
       "vix_at_alert": 15.77,
       "nifty_chg_pct_at_alert": -0.34,
-      "last_price": 187.6,
+      "last_price": 198.85,
       "be_tracked": true,
       "trail_sl": 173.205,
       "time_to_target_1_minutes": 34,
       "trail_exit_price": 173.205,
-      "be_touch_price": 151.6
+      "be_touch_price": 151.6,
+      "exit_candle_open": 187.95,
+      "time_to_target_2_minutes": 148,
+      "sell_view": {
+        "option": "CE 25250.0",
+        "key": "NSE_FO|64453",
+        "entry": 206.15,
+        "exit": 158.05,
+        "entry_ts": "2026-11-18T10:02:00+05:30",
+        "exit_ts": "2026-11-18T12:30:00+05:30",
+        "pct": 23.33
+      }
     },
     "SHADOW-4-100100": {
       "trade_id": "SHADOW-4-100100",
@@ -1121,21 +1141,21 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "T2_HIT",
+      "final_status": "T2_HIT",
       "actual_entry_time": "2026-11-18T10:05:00+05:30",
       "tracked_entry_price": 371.2,
-      "highest_since_entry": 499.95,
+      "highest_since_entry": 516.95,
       "lowest_since_entry": 316.55,
-      "max_favorable_pct": 34.68,
+      "max_favorable_pct": 39.26,
       "max_adverse_pct": -14.72,
       "t1_hit": true,
       "t1_hit_time": "2026-11-18T10:59:00+05:30",
-      "t2_hit": false,
-      "t2_hit_time": null,
+      "t2_hit": true,
+      "t2_hit_time": "2026-11-18T12:32:00+05:30",
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-18T12:30:00+05:30",
+      "last_processed_ts": "2026-11-18T12:34:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -1143,10 +1163,10 @@
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
       "candidate_id": "SENSEX:PE:82200.0:2026-11-19",
-      "last_polled_at": "2026-11-18T12:31:20.752156+05:30",
+      "last_polled_at": "2026-11-18T12:35:36.726453+05:30",
       "vix_at_alert": 15.77,
       "nifty_chg_pct_at_alert": -0.34,
-      "last_price": 455.85,
+      "last_price": 501.9,
       "waiting_candles": [
         [
           "10:02",
@@ -1174,7 +1194,18 @@
       "trail_sl": 428.015,
       "time_to_target_1_minutes": 54,
       "trail_exit_price": 428.015,
-      "be_touch_price": 371.2
+      "be_touch_price": 371.2,
+      "exit_candle_open": 485.9,
+      "time_to_target_2_minutes": 147,
+      "sell_view": {
+        "option": "CE 82200.0",
+        "key": "BSE_FO|821516",
+        "entry": 356.1,
+        "exit": 214.8,
+        "entry_ts": "2026-11-18T10:05:00+05:30",
+        "exit_ts": "2026-11-18T12:32:00+05:30",
+        "pct": 39.68
+      }
     },
     "SHADOW-5-100537": {
       "trade_id": "SHADOW-5-100537",
@@ -1362,21 +1393,21 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "T2_HIT",
+      "final_status": "T2_HIT",
       "actual_entry_time": "2026-11-18T10:11:00+05:30",
       "tracked_entry_price": 184.95,
-      "highest_since_entry": 225.95,
+      "highest_since_entry": 231.0,
       "lowest_since_entry": 172.0,
-      "max_favorable_pct": 22.17,
+      "max_favorable_pct": 24.9,
       "max_adverse_pct": -7.0,
       "t1_hit": true,
       "t1_hit_time": "2026-11-18T10:44:00+05:30",
-      "t2_hit": false,
-      "t2_hit_time": null,
+      "t2_hit": true,
+      "t2_hit_time": "2026-11-18T12:32:00+05:30",
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-18T12:30:00+05:30",
+      "last_processed_ts": "2026-11-18T12:34:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -1384,15 +1415,26 @@
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
       "candidate_id": "NIFTY:PE:25300.0:2026-11-23",
-      "last_polled_at": "2026-11-18T12:31:20.752156+05:30",
+      "last_polled_at": "2026-11-18T12:35:36.726453+05:30",
       "vix_at_alert": 15.76,
       "nifty_chg_pct_at_alert": -0.33,
-      "last_price": 214.25,
+      "last_price": 227.5,
       "be_tracked": true,
       "trail_sl": 201.235,
       "time_to_target_1_minutes": 33,
       "trail_exit_price": 201.235,
-      "be_touch_price": 184.95
+      "be_touch_price": 184.95,
+      "exit_candle_open": 222.5,
+      "time_to_target_2_minutes": 141,
+      "sell_view": {
+        "option": "CE 25300.0",
+        "key": "NSE_FO|64456",
+        "entry": 166.9,
+        "exit": 128.7,
+        "entry_ts": "2026-11-18T10:11:00+05:30",
+        "exit_ts": "2026-11-18T12:32:00+05:30",
+        "pct": 22.89
+      }
     },
     "SHADOW-7-101048": {
       "trade_id": "SHADOW-7-101048",
