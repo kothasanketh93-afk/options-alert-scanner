@@ -3082,8 +3082,13 @@
       "trail_exit_price": 449.2,
       "exit_candle_open": 435.2,
       "sell_view": {
-        "error": "BrokerAPIError: 403 rate limited by https://apiconnect.angelone.in/rest/secure/angelbroking/historical/v1/getCandleData: Access denied because of exceeding acce",
-        "tries": 1
+        "option": "PE 7800.0",
+        "key": "MCX|586071",
+        "entry": 442.3,
+        "exit": 447.1,
+        "entry_ts": "2026-11-18T13:38:00+05:30",
+        "exit_ts": "2026-11-18T14:08:00+05:30",
+        "pct": -1.09
       }
     },
     "MCX-fvg-CRUDEOIL_wsl-CE-20261118-1336-01": {
@@ -3552,6 +3557,12 @@
         "spot": 7864.0,
         "call_oi": 351100.0,
         "put_oi": 415000.0
+      },
+      {
+        "t": 856,
+        "spot": 7848.0,
+        "call_oi": 358700.0,
+        "put_oi": 420400.0
       }
     ],
     "NATURALGAS": [
@@ -3878,6 +3889,12 @@
         "spot": 298.8,
         "call_oi": 53796250.0,
         "put_oi": 52313750.0
+      },
+      {
+        "t": 856,
+        "spot": 298.5,
+        "call_oi": 53675000.0,
+        "put_oi": 52093750.0
       }
     ],
     "GOLDM": [
@@ -4536,6 +4553,12 @@
         "spot": 130973.0,
         "call_oi": 290.0,
         "put_oi": 739.0
+      },
+      {
+        "t": 856,
+        "spot": 131010.0,
+        "call_oi": 290.0,
+        "put_oi": 747.0
       }
     ]
   },
@@ -4554,7 +4577,9 @@
     "GOLDM": "575011",
     "GOLD": "495213"
   },
-  "mcx_scan_failed": [],
+  "mcx_scan_failed": [
+    "GOLDM"
+  ],
   "pnl_snaps": [
     "1100",
     "1300"
