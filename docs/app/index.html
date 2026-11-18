@@ -64,6 +64,20 @@ td.hm{font-weight:600}.sub td{background:var(--panel2);font-size:12.5px;color:va
 .wrap{padding-top:0}header h1{font-size:20px;font-weight:700}
 .card{box-shadow:0 1px 0 rgba(255,255,255,.03) inset}.tabs{backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg2) 88%,transparent)}
 .card b{letter-spacing:-.2px}
+
+/* filters v2 */
+.fp{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:10px 12px 8px;margin:6px 0 12px;display:flex;flex-direction:column;gap:9px}
+.fr{display:flex;align-items:center;gap:10px;min-width:0}.fr>label{flex:0 0 58px;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);font-weight:600}
+.fs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:6px 14px 8px 2px;margin:-6px -4px -8px -2px;flex:1;min-width:0;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+.fs::-webkit-scrollbar{display:none}
+.fs button{flex:0 0 auto;font:inherit;font-size:12.5px;font-weight:550;padding:6px 13px;border-radius:99px;border:1px solid var(--line);background:var(--panel2);color:var(--mut);cursor:pointer;transition:background .15s,color .15s,border-color .15s;white-space:nowrap}
+.fs button:active{transform:scale(.96)}
+.fs button[aria-pressed=true]{background:linear-gradient(135deg,var(--acc),color-mix(in srgb,var(--acc) 70%,#8b5cf6));border-color:transparent;color:#fff;box-shadow:0 1px 6px color-mix(in srgb,var(--acc) 30%,transparent)}
+.mk{display:grid;grid-template-columns:1fr 1fr;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:4px;margin:4px 0 8px;gap:4px}
+.mk button{font:inherit;font-weight:650;font-size:13.5px;padding:10px 6px;border-radius:10px;border:0;background:transparent;color:var(--mut);cursor:pointer;display:flex;flex-direction:column;align-items:center;line-height:1.2}
+.mk button small{font-size:10.5px;font-weight:450;opacity:.8}
+.mk button[aria-pressed=true]{background:var(--panel2);color:var(--fg);box-shadow:0 0 0 1px var(--acc) inset,0 2px 10px rgba(0,0,0,.12)}
+@media (prefers-reduced-motion:reduce){.fs button{transition:none}}
 </style></head><body>
 <div id="gate" hidden><form id="login" autocomplete="on"><h2 style="margin:0;font-size:19px">Options Scanner</h2><small>Sign in to view</small>
 <input id="u" name="username" autocomplete="username" placeholder="Username" autocapitalize="none"><input id="p" name="password" type="password" autocomplete="current-password" placeholder="Password"><button>Sign in</button><small id="lerr" class="err"></small></form></div>
@@ -125,12 +139,12 @@ async function todayView(){
   const closed=base.filter(t=>t._est!=null&&DONE.test(t._s)),sum=closed.reduce((a,t)=>a+t._est,0);
   const opens=base.filter(isOpen),unreal=opens.reduce((a,t)=>a+(t._est||0),0),oRisk=opens.reduce((a,t)=>{const e=num(t.tracked_entry_price)??num(t.alert_premium),sl=num(t.stop_loss);return a+(e!=null&&sl!=null&&t._lot?Math.max(0,(e-sl)*t._lot):0)},0);
   const nr=n?ageMin(n.s.last_run_at):null,mt=m?Math.min(...Object.values(m.s.mcx_shadow_trades||{}).map(t=>ageMin(t.last_polled_at)).filter(x=>x!=null),1e9):null,mr=mt==1e9?null:mt;
-  const cls=a=>a==null?'warnc':a>20?'neg':a>10?'warnc':'pos';
+  const ist=new Date(Date.now()+5.5*36e5),mins=ist.getUTCHours()*60+ist.getUTCMinutes(),wk=ist.getUTCDay(),nOpen=wk>0&&wk<6&&mins>=555&&mins<=935,mOpen=wk>0&&wk<6&&mins>=540&&mins<=1425,cls=(a,o)=>!o?'mut':a==null?'warnc':a>20?'neg':a>10?'warnc':'pos';
   const liveS=base.filter(t=>t._live&&DONE.test(t._s)&&t._est!=null).reduce((a,t)=>a+t._est,0),shS=sum-liveS;
-  const chip=(k,v,l)=>`<button class="chip" data-f="${k}:${v}" aria-pressed="${ui[k]==v}">${l}</button>`;
-  let h=`<div class="grid"><div class="card"><small>Telegram alerts</small><b>${base.filter(t=>t._tg).length}</b></div><div class="card"><small>Trades today</small><b>${base.length}</b></div><div class="card"><small>Won</small><b class="pos">${base.filter(win).length}</b></div><div class="card"><small>Stopped</small><b class="neg">${base.filter(loss).length}</b></div><div class="card"><small>Realized (est.), 1 lot</small><b class="${cl(sum)}">${rs(sum)}</b></div><div class="card"><small>Unrealized (est.)</small><b class="${cl(unreal)}">${rs(unreal)}</b></div><div class="card"><small>Open positions</small><b>${opens.length}</b></div><div class="card"><small>Open risk (to SL)</small><b class="neg">${oRisk?'−₹'+f0(oRisk):'₹0'}</b></div><div class="card"><small>Live alerts P&amp;L</small><b class="${cl(liveS)}">${rs(liveS)}</b></div><div class="card"><small>Shadow P&amp;L</small><b class="${cl(shS)}">${rs(shS)}</b></div></div>
-  <p style="margin:8px 0 0;font-size:12.5px">Source data: NSE scanner <b class="${cls(nr)}">${ageTxt(nr)}</b> · MCX scanner <b class="${cls(mr)}">${ageTxt(mr)}</b> <small>(this page refreshes every minute; the scanner itself runs every few minutes)</small></p>`;
-  h+=`<div class="chips">${chip('src','all','All')}${chip('src','tg','✈ Telegram')}${chip('src','NSE','NSE')}${chip('src','MCX','MCX')}</div><div class="chips">${chip('st','all','Any status')}${chip('st','open','Open / pending')}${chip('st','won','Won')}${chip('st','lost','Stopped')}<button class="chip" data-f="twins:${!ui.twins}" aria-pressed="${ui.twins}">Wide-SL twins</button></div>`;
+  const chip=fb;
+  let h=`<div class="grid"><div class="card"><small>Telegram alerts</small><b>${base.filter(t=>t._tg).length}</b></div><div class="card"><small>Trades today</small><b>${base.length}</b></div><div class="card"><small>Won</small><b class="pos">${base.filter(win).length}</b></div><div class="card"><small>Stopped</small><b class="neg">${base.filter(loss).length}</b></div><div class="card"><small>Realized (est.)</small><b class="${cl(sum)}">${rs(sum)}</b></div><div class="card"><small>Unrealized (est.)</small><b class="${cl(unreal)}">${rs(unreal)}</b></div><div class="card"><small>Open positions</small><b>${opens.length}</b></div><div class="card"><small>Open risk (to SL)</small><b class="neg">${oRisk?'−₹'+f0(oRisk):'₹0'}</b></div><div class="card"><small>Live alerts P&amp;L</small><b class="${cl(liveS)}">${rs(liveS)}</b></div><div class="card"><small>Shadow P&amp;L</small><b class="${cl(shS)}">${rs(shS)}</b></div></div>
+  <p style="margin:8px 0 0;font-size:12.5px">Source data: NSE scanner <b class="${cls(nr,nOpen)}">${ageTxt(nr)}</b> · MCX scanner <b class="${cls(mr,mOpen)}">${ageTxt(mr)}</b> <small>${nOpen||mOpen?'(page refreshes every minute; scanner runs every few minutes)':'(markets closed, so old data is expected)'}</small></p>`;
+  h+=`<div class="fp">${frow('Source',chip('src','all','All')+chip('src','tg','✈ Telegram')+chip('src','NSE','NSE')+chip('src','MCX','MCX'))}${frow('Status',chip('st','all','Any')+chip('st','open','Open')+chip('st','won','Won')+chip('st','lost','Stopped')+`<button data-f="twins:${!ui.twins}" aria-pressed="${ui.twins}">+ Wide-SL twins</button>`)}</div>`;
   h+=`<p class="mut" style="margin:4px 0 10px;font-size:12.5px">${n?'NSE '+n.date:'NSE: no data'} · ${m?'MCX '+m.date:'MCX: no data'} · ✈ marks alerts sent to Telegram</p>`;
   h+=shown.map(t=>{const e=num(t.tracked_entry_price)??num(t.alert_premium),sl=num(t.stop_loss),t1=num(t.target_1),t2=num(t.target_2),lot=t._lot;
     const risk=e!=null&&sl!=null&&lot?(e-sl)*lot:null,rew=e!=null&&t2!=null&&lot?(t2-e)*lot:null,rr=risk&&rew?rew/risk:null;
@@ -161,7 +175,9 @@ function metrics(x){const n=x.length;if(!n)return null;const p=x.map(t=>t.inr),w
   return{n,wins:wn,loss:ls,be,win:100*wn/n,lo:100*Math.max(0,ctr-hw),hi:100*Math.min(1,ctr+hw),net:cum,avg:cum/n,aw:awv,al:alv,wl:alv?awv/-alv:null,rf:dd?cum/dd:null,pf:gl?gw/gl:null,dd,ms}}
 function dedupe(x){const seen=new Set();return x.filter(t=>{const k=[t.date,t.strat,t.sym,t.dir,t.src].join('|');if(seen.has(k))return false;seen.add(k);return true})}
 const scopeOf=a=>a.filter(t=>t.mkt==ui.mkt);
-const mktChips=()=>`<div class="chips">${['NSE','MCX'].map(v=>`<button class="chip" data-f="mkt:${v}" aria-pressed="${ui.mkt==v}">${v=='NSE'?'NSE index options':'MCX commodities'}</button>`).join('')}</div>`;
+const fb=(k,v,l)=>`<button data-f="${k}:${v}" aria-pressed="${ui[k]==v}">${l}</button>`;
+const frow=(lab,inner)=>`<div class="fr"><label>${lab}</label><div class="fs">${inner}</div></div>`;
+const mktChips=()=>`<div class="mk">${[['NSE','NSE','Index options'],['MCX','MCX','Commodities']].map(([v,t,d])=>`<button data-f="mkt:${v}" aria-pressed="${ui.mkt==v}">${t}<small>${d}</small></button>`).join('')}</div>`;
 const badge=n=>n<10?'<span class="tag warn">thin</span>':n<30?'<span class="tag acc">building</span>':'<span class="tag ok">solid</span>';
 /* ---------- charts ---------- */
 function barChart(rows,key='v',label='l'){const W=640,H=190,m={t:12,r:8,b:26,l:50};if(!rows.length)return'';const vals=rows.map(r=>r[key]),lo=Math.min(0,...vals),hi=Math.max(0,...vals),span=hi-lo||1;
@@ -178,8 +194,8 @@ function monthly(daily){const g={};daily.forEach(r=>{const k=r.d.slice(0,7);(g[k
 async function daysView(){const all=scopeOf(await ledger()).filter(t=>!/_wsl$/.test(t.strat));const sets={main:all.filter(t=>t.eng=='main'&&t.strat=='trade_score'),live:all.filter(t=>t.src=='live'),shadow:all.filter(t=>t.src=='shadow')};
   const rows=ui.mkt=='MCX'?all:sets[ui.who],g={};rows.forEach(t=>(g[t.date]??=[]).push(t));const ds=Object.keys(g).sort();
   const daily=ds.map(d=>({d,l:d.slice(5),x:g[d],v:g[d].reduce((a,t)=>a+t.inr,0)}));let c=0;const cum=daily.map(r=>c+=r.v);const M=metrics(rows);
-  const chip=(v,l)=>`<button class="chip" data-f="who:${v}" aria-pressed="${ui.who==v}">${l}</button>`;
-  let h=mktChips()+(ui.mkt=='NSE'?`<div class="chips">${chip('main','Main scanner')}${chip('live','Telegram alerts')}${chip('shadow','All shadow')}</div>`:'');
+  const chip=(v,l)=>fb('who',v,l);
+  let h=mktChips()+(ui.mkt=='NSE'?`<div class="fp">${frow('Show',chip('main','Main scanner')+chip('live','Telegram')+chip('shadow','All shadow'))}</div>`:'');
   if(!M){view.innerHTML=h+'<div class="empty">No closed trades.</div>';return}
   const wd=daily.filter(r=>r.v>0).length,best=Math.max(...daily.map(r=>r.v)),worst=Math.min(...daily.map(r=>r.v));
   h+=`<div class="grid"><div class="card"><small>Net, 1 lot</small><b class="${cl(M.net)}">${rs(M.net)}</b></div><div class="card"><small>Trades</small><b>${M.n}</b></div><div class="card"><small>Win rate</small><b>${M.win.toFixed(0)}%</b></div><div class="card"><small>Profit factor</small><b>${M.pf==null?'—':M.pf.toFixed(2)}</b></div><div class="card"><small>Profitable days</small><b>${wd} / ${daily.length}</b></div><div class="card"><small>Max drawdown</small><b class="neg">−₹${f0(M.dd)}</b></div><div class="card"><small>Best / worst day</small><b style="font-size:14px"><span class="pos">${rs(best)}</span><br><span class="neg">${rs(worst)}</span></b></div><div class="card"><small>Loss streak</small><b>${M.ms}</b></div><div class="card"><small>Avg win / avg loss</small><b style="font-size:14px"><span class="pos">${rs(M.aw)}</span><br><span class="neg">${rs(M.al)}</span></b></div><div class="card"><small>Win / loss / breakeven</small><b style="font-size:15px">${M.wins} / ${M.loss} / ${M.be}</b></div><div class="card"><small>Recovery factor</small><b>${M.rf==null?'—':M.rf.toFixed(2)}</b></div></div>`;
@@ -190,10 +206,9 @@ async function daysView(){const all=scopeOf(await ledger()).filter(t=>!/_wsl$/.t
 async function stratView(){const all=scopeOf(await ledger());let g={};all.forEach(t=>(g[t.strat+'|'+t.src]??=[]).push(t));
   const rows=Object.entries(g).map(([k,x])=>{let xs=ui.sym=='ALL'?x:x.filter(t=>t.sym==ui.sym);if(ui.dd)xs=dedupe(xs);const m=metrics(xs);return m?{k:k.split('|')[0],src:k.split('|')[1],...m}:null}).filter(Boolean);
   rows.sort((a,b)=>(b[ui.sort]??-1e9)-(a[ui.sort]??-1e9));
-  const chip=(k,v,l)=>`<button class="chip" data-f="${k}:${v}" aria-pressed="${ui[k]==v}">${l}</button>`;
+  const chip=fb;
   const tot=rows.reduce((a,r)=>a+r.net,0),nT=rows.reduce((a,r)=>a+r.n,0);
-  let h=mktChips()+`<div class="chips">${['ALL',...(ui.mkt=='NSE'?INDEX:COMM)].map(s=>chip('sym',s,s=='ALL'?'All':s)).join('')}</div>`;
-  h+=`<div class="seg"><span>Sort</span>${[['net','Net ₹'],['win','Win %'],['pf','PF'],['avg','Per trade'],['n','Trades']].map(([k,l])=>`<button data-sort="${k}" aria-pressed="${ui.sort==k}">${l}</button>`).join('')}<button class="chip" data-f="dd:${!ui.dd}" aria-pressed="${ui.dd}" style="margin-left:auto">1 per signal</button></div>`;
+  let h=mktChips()+`<div class="fp">${frow(ui.mkt=='NSE'?'Index':'Market',['ALL',...(ui.mkt=='NSE'?INDEX:COMM)].map(s=>chip('sym',s,s=='ALL'?'All':s)).join(''))}${frow('Sort',[['net','Net ₹'],['win','Win %'],['pf','PF'],['avg','Per trade'],['n','Trades']].map(([k,l])=>`<button data-sort="${k}" aria-pressed="${ui.sort==k}">${l}</button>`).join(''))}${frow('View',`<button data-f="dd:${!ui.dd}" aria-pressed="${ui.dd}">1 trade per signal</button>`)}</div>`;
   h+=`<p class="mut" style="margin:2px 2px 10px;font-size:12.5px">${rows.length} strategies · ${nT} trades · 1 lot each · overlapping signals are counted separately unless “1 per signal” is on</p>`;
   h+=rows.map(r=>`<section class="sc"><div class="sc-h"><div class="sc-n">${esc(nm(r.k))}${r.src=='live'?' <span class="tag acc">live</span>':''}<small>${r.n} trades · ${r.wins}W ${r.loss}L${r.be?' '+r.be+'BE':''}</small></div><div class="sc-net ${cl(r.net)}">${rs(r.net)}</div></div>
   <div class="rng"><div class="track"><i style="left:${r.lo}%;width:${Math.max(2,r.hi-r.lo)}%"></i><u style="left:${r.win}%"></u></div><div class="rl"><span>Win rate <b>${r.win.toFixed(0)}%</b></span><span class="mut">likely ${r.lo.toFixed(0)}–${r.hi.toFixed(0)}%</span>${badge(r.n)}</div></div>
