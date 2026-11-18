@@ -61,5 +61,12 @@ def test_late_session_slice_is_a_subset_of_the_parent(tmp_path):
         w.writerow(cols)
         w.writerows(rows)
     out = S.load_rows(p, "2026-11-01", "2026-11-30", "NSE")
-    assert sorted(x["strat"] for x in out) == ["trade_score", "trade_score", "trade_score_late"]
+    assert sorted(x["strat"] for x in out) == ["trade_score", "trade_score", "trade_score_filt", "trade_score_filt", "trade_score_late"]
     assert S._label("trade_score_late") == "Main scanner, 14:00+ slice"
+
+
+def test_filter_drops_expiry_day_and_dead_zone():
+    assert S.passes_filter({"at": "2026-11-12T09:40:00+05:30"}, False)
+    assert S.passes_filter({"at": "2026-11-12T14:20:00+05:30"}, False)
+    assert not S.passes_filter({"at": "2026-11-12T11:00:00+05:30"}, False)
+    assert not S.passes_filter({"at": "2026-11-12T09:40:00+05:30"}, True)

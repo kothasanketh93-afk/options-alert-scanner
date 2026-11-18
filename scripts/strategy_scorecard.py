@@ -14,11 +14,21 @@ from PIL import Image, ImageDraw
 from eod_image import NAVY, INK, MUTED, LINE, GREEN, RED, AMBER, GREEN_BG, RED_BG, AMBER_BG, W, PAD, _font
 
 LABELS = {"fib_pivot": "Fib pivot", "trade_score": "Main scanner (scored)", "chase_bypass": "Main scanner (chase bypass)",
-          "live_scored": "Live alerts (scored)", "trade_score_late": "Main scanner, 14:00+ slice", "orb15": "ORB 15-min", "pivot_break": "Pivot break",
+          "live_scored": "Live alerts (scored)", "trade_score_late": "Main scanner, 14:00+ slice", "trade_score_filt": "Main scanner, filtered", "fib_pivot_filt": "Fib pivot, filtered", "fvg_filt": "Fair value gap, filtered", "orb15": "ORB 15-min", "pivot_break": "Pivot break",
           "sweep": "Liquidity sweep", "sweep_fvg": "Sweep + FVG", "amd": "AMD", "oi_flow": "OI flow",
           "fvg": "Fair value gap", "ema_pb": "EMA pullback", "gap_orb": "Gap and go", "sess_orb": "Session ORB",
           "sess_sweep": "Session sweep", "bos": "Break of structure", "order_block": "Order block", "pdhl_retest": "PDH/PDL retest", "vwap_pb": "VWAP pullback", "ema_cross": "EMA crossover"}
 SKIP = {"NOT_ENTERED", "AMBIGUOUS"}
+# Filtered slices (2026-11-18, hypothesis from 10 days of data -- NOT applied to live): drop expiry-day trades and the 10:35-11:35 dead zone.
+FILT_STRATS = ("trade_score", "fib_pivot", "fvg")
+FILT_DEAD_FROM, FILT_DEAD_TO = "10:35", "11:35"
+
+
+def passes_filter(row, expiry_day: bool) -> bool:
+    t = (row.get("at") or "")[11:16]
+    return not expiry_day and not (t and FILT_DEAD_FROM <= t < FILT_DEAD_TO)
+
+
 LATE_FROM = "14:00"              # IST alert time from which the "late session" slice of the main scanner starts
 
 
@@ -68,6 +78,8 @@ def load_rows(ledger_path, start: str, end: str, market: str):
             out.append(row)
             if strat == "trade_score" and (row["at"][11:16] >= LATE_FROM):
                 out.append({**row, "strat": "trade_score_late"})     # a SLICE of the parent's own trades (not new trades)
+            if market == "NSE" and strat in FILT_STRATS and passes_filter(row, str(r.get("expiry_day")).lower() == "true"):
+                out.append({**row, "strat": strat + "_filt"})        # slice only; the unfiltered parent row stays
     return out
 
 
