@@ -3404,7 +3404,7 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "NOT_ENTERED",
       "final_status": null,
       "actual_entry_time": null,
       "tracked_entry_price": null,
@@ -3418,7 +3418,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-18T15:50:00+05:30",
+      "last_processed_ts": "2026-11-18T16:03:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "vwap_pb",
@@ -3440,8 +3440,8 @@
       "entry_oi": 82,
       "entry_volume": 282,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-18T15:51:37.908299+05:30",
-      "last_price": 2141.5,
+      "last_polled_at": "2026-11-18T16:06:44.784777+05:30",
+      "last_price": 2078.0,
       "waiting_candles": [
         [
           "15:32",
@@ -3568,8 +3568,23 @@
           2141.5,
           2141.5,
           2141.5
+        ],
+        [
+          "15:51",
+          2165.5,
+          2165.5,
+          2165.5,
+          2165.5
+        ],
+        [
+          "15:52",
+          2161.0,
+          2161.0,
+          2156.0,
+          2156.0
         ]
-      ]
+      ],
+      "not_entered_reason": "ENTRY_WINDOW_EXPIRED"
     },
     "MCX-vwap_pb-GOLD_wsl-PE-20261118-1531-01": {
       "trade_id": "MCX-vwap_pb-GOLD_wsl-PE-20261118-1531-01",
@@ -3613,7 +3628,7 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "NOT_ENTERED",
       "final_status": null,
       "actual_entry_time": null,
       "tracked_entry_price": null,
@@ -3627,7 +3642,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-18T15:50:00+05:30",
+      "last_processed_ts": "2026-11-18T16:03:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "vwap_pb_wsl",
@@ -3650,8 +3665,8 @@
       "entry_volume": 282,
       "signal_future_token": null,
       "variant_of": "MCX-vwap_pb-GOLD-PE-20261118-1531-01",
-      "last_polled_at": "2026-11-18T15:51:37.908299+05:30",
-      "last_price": 2141.5,
+      "last_polled_at": "2026-11-18T16:06:44.784777+05:30",
+      "last_price": 2078.0,
       "waiting_candles": [
         [
           "15:32",
@@ -3778,8 +3793,23 @@
           2141.5,
           2141.5,
           2141.5
+        ],
+        [
+          "15:51",
+          2165.5,
+          2165.5,
+          2165.5,
+          2165.5
+        ],
+        [
+          "15:52",
+          2161.0,
+          2161.0,
+          2156.0,
+          2156.0
         ]
-      ]
+      ],
+      "not_entered_reason": "ENTRY_WINDOW_EXPIRED"
     }
   },
   "next_seq": {
@@ -4279,6 +4309,12 @@
         "spot": 7904.0,
         "call_oi": 779400.0,
         "put_oi": 725900.0
+      },
+      {
+        "t": 966,
+        "spot": 7909.0,
+        "call_oi": 1302400.0,
+        "put_oi": 943900.0
       }
     ],
     "NATURALGAS": [
@@ -4725,6 +4761,12 @@
         "spot": 299.0,
         "call_oi": 70955000.0,
         "put_oi": 67253750.0
+      },
+      {
+        "t": 966,
+        "spot": 299.2,
+        "call_oi": 72166250.0,
+        "put_oi": 68436250.0
       }
     ],
     "GOLDM": [
@@ -5165,6 +5207,12 @@
         "spot": 131072.0,
         "call_oi": 1050800.0,
         "put_oi": 1468100.0
+      },
+      {
+        "t": 966,
+        "spot": 131123.0,
+        "call_oi": 1071300.0,
+        "put_oi": 1462800.0
       }
     ],
     "GOLD": [
@@ -5623,6 +5671,12 @@
         "spot": 131050.0,
         "call_oi": 321.0,
         "put_oi": 787.0
+      },
+      {
+        "t": 966,
+        "spot": 131100.0,
+        "call_oi": 321.0,
+        "put_oi": 779.0
       }
     ]
   },
