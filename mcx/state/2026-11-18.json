@@ -256,8 +256,8 @@
       "last_price": 1874.5,
       "exit_candle_open": 1900.0,
       "sell_view": {
-        "error": "LookupError: no opposite-option candle at entry/exit",
-        "tries": 2
+        "error": "BrokerAPIError: 403 rate limited by https://apiconnect.angelone.in/rest/secure/angelbroking/historical/v1/getCandleData: Access denied because of exceeding acce",
+        "tries": 3
       }
     },
     "MCX-oi_flow-GOLD_wsl-PE-20261118-0936-01": {
@@ -575,6 +575,12 @@
         "spot": 7931.0,
         "call_oi": 498700.0,
         "put_oi": 520300.0
+      },
+      {
+        "t": 606,
+        "spot": 7923.0,
+        "call_oi": 498400.0,
+        "put_oi": 525200.0
       }
     ],
     "NATURALGAS": [
@@ -625,6 +631,12 @@
         "spot": 296.3,
         "call_oi": 42591250.0,
         "put_oi": 54272500.0
+      },
+      {
+        "t": 606,
+        "spot": 296.3,
+        "call_oi": 42775000.0,
+        "put_oi": 54298750.0
       }
     ],
     "GOLDM": [
@@ -669,6 +681,12 @@
         "spot": 131552.0,
         "call_oi": 643400.0,
         "put_oi": 1210600.0
+      },
+      {
+        "t": 606,
+        "spot": 131374.0,
+        "call_oi": 655400.0,
+        "put_oi": 1233000.0
       }
     ],
     "GOLD": [
@@ -713,6 +731,12 @@
         "spot": 131452.0,
         "call_oi": 146.0,
         "put_oi": 776.0
+      },
+      {
+        "t": 606,
+        "spot": 131356.0,
+        "call_oi": 145.0,
+        "put_oi": 769.0
       }
     ]
   },
@@ -724,8 +748,6 @@
     "GOLDM": "575011",
     "GOLD": "495213"
   },
-  "mcx_scan_failed": [
-    "GOLDM"
-  ],
+  "mcx_scan_failed": [],
   "pnl_snaps": []
 }
