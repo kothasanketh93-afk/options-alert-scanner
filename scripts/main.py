@@ -1277,6 +1277,8 @@ def create_fib_pivot_shadow_candidates(state: dict, now: datetime):
 
     for candidate in candidates:
         candidate_id = f"{candidate['symbol']}:{candidate['direction']}:{candidate['strike']}:{candidate['expiry']}"
+        if candidate.get("strategy", "fib_pivot") != "fib_pivot":
+            candidate_id = f"{candidate['strategy']}:{candidate_id}"  # variants never collide with the baseline's ids
         if candidate_id in active_candidate_ids:
             log.info("FIBPIVOT_SHADOW_CANDIDATE_DUPLICATE_SKIPPED candidate_id=%s -- already tracked, not terminal",
                       candidate_id)

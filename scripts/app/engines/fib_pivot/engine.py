@@ -32,7 +32,7 @@ import market_data
 from logging_setup import get_logger
 from config import (
     SYMBOLS, FIB_PIVOT_CANDLE_INTERVAL, FIB_PIVOT_CANDLE_FETCH_COUNT,
-    FIB_PIVOT_EMA_PERIOD, FIB_PIVOT_MIN_RR,
+    FIB_PIVOT_EMA_PERIOD, FIB_PIVOT_MIN_RR, FIB_PIVOT_VARIANTS_ENABLED, FIB_PIVOT_VARIANTS,
 )
 from indicators import compute_ema, compute_atr
 from option_chain import resolve_underlying_key, get_atm_strike, current_expiry, _extract_leg
@@ -62,7 +62,27 @@ def _score(rr_ratio: float, candles_since_cross: int = 0) -> int:
     return round(50 + rr_component * 50)
 
 
-def _score_symbol_direction(symbol: str, direction: str, session: str):
+def _itm1_strike(chain: list, atm_strike: float, direction: str):
+    """One strike in-the-money from ATM, from the chain's own listed strikes (CE: next lower, PE: next higher)."""
+    strikes = sorted({r.get("strike_price") for r in chain if r.get("strike_price") is not None})
+    if direction == "CE":
+        lower = [k for k in strikes if k < atm_strike]
+        return lower[-1] if lower else None
+    higher = [k for k in strikes if k > atm_strike]
+    return higher[0] if higher else None
+
+
+def _score_symbol_direction(symbol: str, direction: str, session: str, variant: dict = None):
+    """variant=None is the unchanged baseline (strategy 'fib_pivot'). A variant dict may override only
+    interval / ema / mode ('cross' or 'retest') / moneyness ('ATM' or 'ITM1') and always carries its own
+    strategy name; everything else (pivots, ATR, SL/targets, liquidity gate, min R:R) stays identical."""
+    variant = variant or {}
+    strategy_name = variant.get("name", "fib_pivot")
+    interval = variant.get("interval", FIB_PIVOT_CANDLE_INTERVAL)
+    ema_period = variant.get("ema", FIB_PIVOT_EMA_PERIOD)
+    mode = variant.get("mode", "cross")
+    moneyness = variant.get("moneyness", "ATM")
+    fetch_count = variant.get("fetch_count", FIB_PIVOT_CANDLE_FETCH_COUNT)
     underlying_key = resolve_underlying_key(symbol)
     if not underlying_key:
         return None
@@ -74,19 +94,19 @@ def _score_symbol_direction(symbol: str, direction: str, session: str):
     pivots = pivot_calc.compute_fibonacci_pivots(prev_day["high"], prev_day["low"], prev_day["close"])
 
     today_candles = market_data.get_recent_underlying_candles(
-        underlying_key, FIB_PIVOT_CANDLE_INTERVAL, FIB_PIVOT_CANDLE_FETCH_COUNT
+        underlying_key, interval, fetch_count
     )
     candles, _ = market_data.get_atr_warmup_candles(
-        underlying_key, FIB_PIVOT_CANDLE_INTERVAL, today_candles, min_candles=FIB_PIVOT_CANDLE_FETCH_COUNT
+        underlying_key, interval, today_candles, min_candles=fetch_count
     )
     # Need enough for EMA9, ATR(14), and >=2 candles for the close-
     # confirmation cross check -- ATR(14) (indicators.compute_atr's
     # default period) is the binding constraint at period+1=15.
-    if len(candles) < max(FIB_PIVOT_EMA_PERIOD, 14) + 2:
+    if len(candles) < max(ema_period, 14) + 2:
         return None
 
     closes = [c["close"] for c in candles]
-    ema9 = compute_ema(closes, FIB_PIVOT_EMA_PERIOD)
+    ema9 = compute_ema(closes, ema_period)
     atr = compute_atr(candles)
     if ema9 is None or atr is None or atr <= 0:
         return None
@@ -97,7 +117,10 @@ def _score_symbol_direction(symbol: str, direction: str, session: str):
     if direction == "PE" and not (last_close < ema9):
         return None
 
-    confirmation = close_confirmation.detect_close_confirmation(candles, pivots, direction)
+    if mode == "retest":
+        confirmation = close_confirmation.detect_retest(candles, pivots, direction, atr)
+    else:
+        confirmation = close_confirmation.detect_close_confirmation(candles, pivots, direction)
     if not confirmation["confirmed"]:
         return None
 
@@ -105,7 +128,12 @@ def _score_symbol_direction(symbol: str, direction: str, session: str):
     atm_strike, spot_price = get_atm_strike(symbol)
     expiry = current_expiry(symbol)
     chain = market_data.get_option_chain(underlying_key, expiry)
-    leg = _extract_leg(chain, atm_strike, direction)
+    trade_strike = atm_strike
+    if moneyness == "ITM1":
+        trade_strike = _itm1_strike(chain, atm_strike, direction)
+        if trade_strike is None:
+            return None
+    leg = _extract_leg(chain, trade_strike, direction)
     if leg is None:
         return None
 
@@ -144,7 +172,7 @@ def _score_symbol_direction(symbol: str, direction: str, session: str):
     holding_minutes = estimated_holding_minutes(atr, abs(target_distance / delta) if delta else 0)
 
     reasons = {
-        "trend": f"Underlying close {'above' if direction == 'CE' else 'below'} EMA{FIB_PIVOT_EMA_PERIOD}",
+        "trend": f"Underlying close {'above' if direction == 'CE' else 'below'} EMA{ema_period}",
         "pivot": (
             f"Fresh close {'above' if direction == 'CE' else 'below'} "
             f"{confirmation['level_name']} ({confirmation['level_value']}) -- "
@@ -156,9 +184,9 @@ def _score_symbol_direction(symbol: str, direction: str, session: str):
     why_reasons = [f"✓ {v}" for v in reasons.values()]
 
     return {
-        "strategy": "fib_pivot",
-        "symbol": symbol, "direction": direction, "moneyness": "ATM",
-        "instrument_key": instrument_key, "strike": atm_strike, "expiry": expiry,
+        "strategy": strategy_name,
+        "symbol": symbol, "direction": direction, "moneyness": moneyness,
+        "instrument_key": instrument_key, "strike": trade_strike, "expiry": expiry,
         "spot_price": spot_price, "alert_premium": premium,
         "entry_low": levels["entry_low"], "entry_high": levels["entry_high"],
         "stop_loss": levels["stop_loss"], "target_1": levels["target_1"], "target_2": levels["target_2"],
@@ -201,10 +229,12 @@ def detect_all_fib_pivot_setups() -> list:
     _last_scan_stats["rejected"] = 0
 
     candidates = []
+    variants = [None] + (list(FIB_PIVOT_VARIANTS) if FIB_PIVOT_VARIANTS_ENABLED else [])
     for symbol in SYMBOLS:
+      for variant in variants:
         for direction in ("CE", "PE"):
             try:
-                setup = _score_symbol_direction(symbol, direction, session)
+                setup = _score_symbol_direction(symbol, direction, session, variant)
             except Exception as exc:
                 _logger.error(
                     "FIBPIVOT_SYMBOL_FAILED %s %s: %s: %s",

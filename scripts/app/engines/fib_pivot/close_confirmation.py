@@ -88,3 +88,34 @@ def detect_close_confirmation(candles: list, pivots: dict, direction: str) -> di
             }
 
     return {"confirmed": False}
+
+
+def detect_retest(candles: list, pivots: dict, direction: str, atr: float,
+                  lookback: int = 6, tolerance_atr: float = 0.15) -> dict:
+    """
+    Breakout-then-retest variant (experiment only; baseline entry is detect_close_confirmation).
+
+    CE on level L: some candle j within the last `lookback` candles (before the latest) was a fresh close
+    above L (close[j-1] <= L < close[j]); the latest candle then dipped back to within `tolerance_atr` x ATR
+    of L (low <= L + tol) but CLOSED above L. PE is the mirror (high >= L - tol, close < L).
+    The latest candle itself must not be the breakout candle.
+    """
+    if direction not in ("CE", "PE") or not candles or len(candles) < 3 or not atr or atr <= 0:
+        return {"confirmed": False}
+    tol = tolerance_atr * atr
+    last = candles[-1]
+    first = max(1, len(candles) - 1 - lookback)
+    level_order = (pivot_calc.RESISTANCE_LEVELS_ASCENDING if direction == "CE"
+                   else pivot_calc.SUPPORT_LEVELS_DESCENDING)
+    for level_name in level_order:
+        lv = pivots[level_name]
+        if direction == "CE":
+            touched = last["low"] <= lv + tol and last["close"] > lv
+            crossed = any(candles[j - 1]["close"] <= lv < candles[j]["close"] for j in range(first, len(candles) - 1))
+        else:
+            touched = last["high"] >= lv - tol and last["close"] < lv
+            crossed = any(candles[j - 1]["close"] >= lv > candles[j]["close"] for j in range(first, len(candles) - 1))
+        if touched and crossed:
+            return {"confirmed": True, "level_name": level_name, "level_value": lv,
+                    "close": last["close"], "prev_close": candles[-2]["close"]}
+    return {"confirmed": False}

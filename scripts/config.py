@@ -1570,6 +1570,16 @@ FIB_PIVOT_CANDLE_FETCH_COUNT = 30        # enough warmup for EMA9 and ATR(14) pl
 FIB_PIVOT_EMA_PERIOD = 9
 FIB_PIVOT_MIN_RR = 1.5                   # same floor spirit as DECISION_ENGINE_MIN_RR, tighter than EARLY_BREAKOUT_MIN_RR
 
+# Fib pivot EXPERIMENT variants (2026-11-18). Shadow-only, new strategy names, baseline 'fib_pivot' above is untouched.
+# Each variant changes exactly one thing vs baseline so results are comparable. Never auto-promoted; no Telegram.
+FIB_PIVOT_VARIANTS_ENABLED = True
+FIB_PIVOT_VARIANTS = (
+    {"name": "fib_pivot_ema20", "ema": 20},
+    {"name": "fib_pivot_5m", "interval": "5minute", "fetch_count": 60},
+    {"name": "fib_pivot_retest", "mode": "retest"},
+    {"name": "fib_pivot_itm1", "moneyness": "ITM1"},
+)
+
 # --- ORB15 + classic pivot-break SHADOW engines (app/engines/orb_pivot/, added 2026-10-31) ---
 # Shadow-only (never Telegram). Rules come from the 58-month 5m backtest; see that package's docstring.
 ORB_PIVOT_SHADOW_MODE_ENABLED = True

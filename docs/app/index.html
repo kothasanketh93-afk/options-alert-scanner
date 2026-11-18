@@ -64,7 +64,7 @@ td.hm{font-weight:600}.sub td{background:var(--panel2);font-size:12.5px;color:va
 <script>
 const REPO='kothasanketh93-afk/options-alert-scanner',RAW=`https://raw.githubusercontent.com/${REPO}/state/`;
 const LOTS={NIFTY:65,SENSEX:20,BANKNIFTY:30,MIDCPNIFTY:120},INDEX=Object.keys(LOTS);
-const NAMES={trade_score:'Main scanner',fib_pivot:'Fib pivot',chase_bypass:'Chase bypass',orb15:'ORB 15-min',pivot_break:'Pivot break',sweep:'Liquidity sweep',sweep_fvg:'Sweep + FVG',amd:'AMD',oi_flow:'OI flow',fvg:'Fair value gap',ema_pb:'EMA pullback',gap_orb:'Gap and go',bos:'Break of structure',order_block:'Order block',pdhl_retest:'PDH/PDL retest',vwap_pb:'VWAP pullback',ema_cross:'EMA crossover',live_scored:'Live alerts',sess_orb:'Session ORB',sess_sweep:'Session sweep'};
+const NAMES={trade_score:'Main scanner',fib_pivot:'Fib pivot',fib_pivot_ema20:'Fib pivot · EMA20 trend',fib_pivot_5m:'Fib pivot · 5-min candles',fib_pivot_retest:'Fib pivot · retest entry',fib_pivot_itm1:'Fib pivot · ITM1 option',chase_bypass:'Chase bypass',orb15:'ORB 15-min',pivot_break:'Pivot break',sweep:'Liquidity sweep',sweep_fvg:'Sweep + FVG',amd:'AMD',oi_flow:'OI flow',fvg:'Fair value gap',ema_pb:'EMA pullback',gap_orb:'Gap and go',bos:'Break of structure',order_block:'Order block',pdhl_retest:'PDH/PDL retest',vwap_pb:'VWAP pullback',ema_cross:'EMA crossover',live_scored:'Live alerts',sess_orb:'Session ORB',sess_sweep:'Session sweep'};
 const nm=k=>NAMES[k]||(k.endsWith('_wsl')&&NAMES[k.slice(0,-4)]?NAMES[k.slice(0,-4)]+' (wide SL)':k);
 const $=s=>document.querySelector(s),view=$('#view');
 const MLOT={CRUDEOIL:100,NATURALGAS:1250,GOLDM:10,GOLD:100},COMM=Object.keys(MLOT);
