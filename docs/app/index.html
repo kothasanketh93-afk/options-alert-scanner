@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10141c">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg">
+<title>Options Scanner</title>
+<style>
+:root{--bg:#10141c;--panel:#182030;--line:#26324a;--fg:#e8edf6;--mut:#8b97ad;--ok:#2ecc9a;--bad:#ff6b6b;--warn:#f0b429;color-scheme:dark}
+@media (prefers-color-scheme:light){:root{--bg:#f5f7fb;--panel:#fff;--line:#dde3ee;--fg:#18202e;--mut:#5d6b82;--ok:#14855f;--bad:#c0392b;--warn:#9a6b00;color-scheme:light}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:env(safe-area-inset-top) max(14px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(14px,env(safe-area-inset-left))}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:14px 0 6px}h1{font-size:20px;margin:0}small,.mut{color:var(--mut)}
+nav{display:flex;gap:6px;margin:8px 0 12px;position:sticky;top:0;background:var(--bg);padding:6px 0;z-index:2}
+nav button{flex:1;padding:9px 6px;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:8px;font:inherit}
+nav button[aria-pressed=true]{border-color:var(--ok);color:var(--ok);font-weight:600}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}.card small{display:block}.card b{font-size:20px;font-variant-numeric:tabular-nums}
+.t{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.t .r1{display:flex;justify-content:space-between;gap:8px;font-weight:600}.t .r2{color:var(--mut);margin-top:2px;font-variant-numeric:tabular-nums}
+.chip{font-size:11px;padding:2px 7px;border-radius:99px;border:1px solid var(--line);white-space:nowrap}
+.ok{color:var(--ok);border-color:var(--ok)}.bad{color:var(--bad);border-color:var(--bad)}.warn{color:var(--warn);border-color:var(--warn)}
+.pos{color:var(--ok)}.neg{color:var(--bad)}
+.scroll{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}th{color:var(--mut);font-weight:500;font-size:12px}th:first-child,td:first-child{text-align:left}
+.note{color:var(--mut);font-size:12px;margin:10px 0 24px}.err{color:var(--bad)}
+</style></head><body>
+<header><h1>Options Scanner</h1><small id="stamp">loading…</small></header>
+<nav><button data-v="today" aria-pressed="true">Today</button><button data-v="days" aria-pressed="false">Days</button><button data-v="strat" aria-pressed="false">Strategies</button></nav>
+<main id="view"></main>
+<p class="note">Read-only view of the scanner's paper (shadow) trades and Telegram alerts. 1 lot per trade, ideal fills, index options only in the Days and Strategies tabs. Early data, not proof of an edge.</p>
+<script>
+const REPO='kothasanketh93-afk/options-alert-scanner',RAW=`https://raw.githubusercontent.com/${REPO}/state/`;
+const LOTS={NIFTY:65,SENSEX:20,BANKNIFTY:30,MIDCPNIFTY:120};
+const NAMES={trade_score:'Main scanner',fib_pivot:'Fib pivot',chase_bypass:'Chase bypass',orb15:'ORB 15-min',pivot_break:'Pivot break',sweep:'Liquidity sweep',sweep_fvg:'Sweep + FVG',amd:'AMD',oi_flow:'OI flow',fvg:'Fair value gap',ema_pb:'EMA pullback',gap_orb:'Gap and go',bos:'Break of structure',order_block:'Order block',pdhl_retest:'PDH/PDL retest',vwap_pb:'VWAP pullback',ema_cross:'EMA crossover',live_scored:'Live alerts',sess_orb:'Session ORB',sess_sweep:'Session sweep'};
+const $=s=>document.querySelector(s),view=$('#view');let view_=localStorage.getItem('v')||'today',cache={};
+const rs=v=>(v>=0?'+':'−')+'₹'+Math.round(Math.abs(v)).toLocaleString('en-IN');
+const cl=v=>v>=0?'pos':'neg';
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function get(path,json=true){const r=await fetch(RAW+path+'?t='+Date.now());if(!r.ok)throw new Error(path+' '+r.status);return json?r.json():r.text();}
+function istDate(back=0){const d=new Date(Date.now()+5.5*3600e3-back*864e5);return d.toISOString().slice(0,10);}
+async function loadState(prefix){for(let b=0;b<6;b++){const d=istDate(b);try{return{date:d,s:await get(prefix+'state/'+d+'.json')};}catch(e){}}return null;}
+function csv(text){const rows=[];let row=[],f='',q=false;for(let i=0;i<text.length;i++){const c=text[i];if(q){if(c=='"'){if(text[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==','){row.push(f);f=''}else if(c=='\n'){row.push(f);rows.push(row);row=[];f=''}else if(c!='\r')f+=c}if(f||row.length){row.push(f);rows.push(row)}const h=rows.shift();return rows.filter(r=>r.length>1).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]])))}
+function status(t){const s=t.final_status||t.status||'OPEN';return s}
+function chip(s){const good=/T2|T1_HIT/.test(s),bad=/SL_HIT/.test(s)&&!/T1/.test(s);return `<span class="chip ${good?'ok':bad?'bad':s=='T1_THEN_SL'?'warn':''}">${esc(s.replace(/_/g,' '))}</span>`}
+async function today(){
+  const [n,m]=await Promise.all([loadState(''),loadState('mcx/')]);const items=[];
+  const add=(src,obj,live)=>Object.values(obj||{}).forEach(t=>items.push({...t,_src:src,_live:live}));
+  if(n){add('NSE',n.s.trades,true);['shadow_trades','fib_pivot_shadow_trades','orb_pivot_shadow_trades','sweep_shadow_trades'].forEach(k=>add('NSE',n.s[k],false));}
+  if(m)add('MCX',m.s.mcx_shadow_trades,false);
+  const seen=new Set(),list=items.filter(t=>t.trade_id&&!seen.has(t.trade_id)&&seen.add(t.trade_id));
+  const tg=t=>t._live||t.strategy==='fvg'&&t._src==='NSE'||t.strategy==='ema_pb'&&t._src==='MCX';
+  list.sort((a,b)=>String(b.alert_time).localeCompare(String(a.alert_time)));
+  const focus=list.filter(t=>!/_wsl$/.test(t.strategy));
+  const c=(k)=>focus.filter(t=>k.test(status(t))).length;
+  let h=`<div class="cards"><div class="card"><small>Telegram alerts</small><b>${list.filter(tg).length}</b></div><div class="card"><small>Shadow trades</small><b>${focus.length}</b></div><div class="card"><small>T2 hit</small><b class="pos">${c(/T2_HIT|T1_HIT_THEN_EOD/)}</b></div><div class="card"><small>SL hit</small><b class="neg">${c(/^SL_HIT$|T1_THEN_SL/)}</b></div></div>`;
+  h+=`<p class="mut">${n?'NSE '+n.date:'NSE: no data'} · ${m?'MCX '+m.date:'MCX: no data'}. Telegram alerts are marked ✈.</p>`;
+  h+=focus.map(t=>`<div class="t"><div class="r1"><span>${tg(t)?'✈ ':''}${esc(t.symbol)} ${esc(t.strike)} ${esc(t.direction)} <small>${esc(t._src)}</small></span>${chip(status(t))}</div><div class="r2">${esc(NAMES[t.strategy]||t.strategy)} · ${esc(String(t.alert_time).slice(11,16))} · premium ${esc(t.alert_premium??'')} · SL ${esc(t.stop_loss)} · T1 ${esc(t.target_1)} · T2 ${esc(t.target_2)}</div></div>`).join('')||'<p class="mut">No trades yet today.</p>';
+  view.innerHTML=h;
+}
+async function ledger(){if(!cache.l){cache.l=csv(await get('ledger/outcomes.csv',false));}
+  const seen=new Set(),out=[];
+  for(const r of cache.l){if(seen.has(r.trade_id)||/NOT_ENTERED|AMBIGUOUS/.test(r.final_status))continue;seen.add(r.trade_id);
+    const net=parseFloat(r.net_result_pct),ep=parseFloat(r.entry_price),lot=LOTS[r.symbol];if(!lot||isNaN(net)||isNaN(ep))continue;
+    out.push({id:r.trade_id,date:r.date,src:r.engine=='live'?'live':'shadow',strat:r.engine=='live'?'live_scored':r.strategy,eng:r.engine,status:r.final_status,t1:String(r.t1_hit).toLowerCase()=='true',inr:net/100*ep*lot});}
+  return out;}
+async function days(){const t=await ledger();const main=t.filter(x=>x.eng=='main'&&x.strat=='trade_score'),live=t.filter(x=>x.src=='live');
+  const tab=(rows,title)=>{const g={};rows.forEach(x=>(g[x.date]??=[]).push(x));const ds=Object.keys(g).sort().reverse();const tot=rows.reduce((a,x)=>a+x.inr,0);
+    return `<h3>${title} <small class="${cl(tot)}">${rs(tot)} total</small></h3><div class="scroll"><table><tr><th>Day</th><th>Alerts</th><th>T1</th><th>T2</th><th>SL</th><th>1 lot</th></tr>${ds.map(d=>{const x=g[d];const p=x.reduce((a,y)=>a+y.inr,0);return `<tr><td>${d.slice(5)}</td><td>${x.length}</td><td>${x.filter(y=>y.t1).length}</td><td>${x.filter(y=>y.status=='T2_HIT').length}</td><td>${x.filter(y=>/SL_HIT|T1_THEN_SL/.test(y.status)).length}</td><td class="${cl(p)}">${rs(p)}</td></tr>`}).join('')}</table></div>`};
+  view.innerHTML=tab(main,'Main scanner (shadow)')+tab(live,'Live Telegram alerts');}
+async function strat(){const t=await ledger();const g={};t.forEach(x=>(g[x.strat]??=[]).push(x));
+  const rows=Object.entries(g).map(([k,x])=>({k,n:x.length,w:100*x.filter(y=>y.inr>0).length/x.length,net:x.reduce((a,y)=>a+y.inr,0)})).sort((a,b)=>b.net-a.net);
+  view.innerHTML=`<div class="scroll"><table><tr><th>Strategy</th><th>Trades</th><th>Win %</th><th>Net, 1 lot</th></tr>${rows.map(r=>`<tr><td>${esc(NAMES[r.k]||r.k)}</td><td>${r.n}</td><td>${r.w.toFixed(0)}%</td><td class="${cl(r.net)}">${rs(r.net)}</td></tr>`).join('')}</table></div><p class="note">Each row counts every trade a strategy produced, including the same signal on several strikes, so totals can look better than the number of independent signals supports.</p>`;}
+async function render(){document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v==view_));
+  try{await({today,days,strat})[view_]();$('#stamp').textContent='updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});}catch(e){view.innerHTML='<p class="err">Could not load data: '+esc(e.message)+'</p>';}}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{view_=b.dataset.v;try{localStorage.setItem('v',view_)}catch(e){}render()});
+render();setInterval(()=>{if(view_=='today'&&!document.hidden)render()},60000);
+</script></body></html>
