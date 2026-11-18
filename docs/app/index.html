@@ -22,7 +22,15 @@ nav button[aria-pressed=true]{border-color:var(--ok);color:var(--ok);font-weight
 .scroll{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px}
 table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}th{color:var(--mut);font-weight:500;font-size:12px}th:first-child,td:first-child{text-align:left}
 .note{color:var(--mut);font-size:12px;margin:10px 0 24px}.err{color:var(--bad)}
+#gate{position:fixed;inset:0;z-index:9;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:20px}#gate[hidden]{display:none}
 </style></head><body>
+<div id="gate" hidden>
+<form id="login" autocomplete="on" style="width:100%;max-width:320px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px">
+<h2 style="margin:0;font-size:18px">Options Scanner</h2><small>Sign in to view</small>
+<input id="u" name="username" autocomplete="username" placeholder="Username" autocapitalize="none" style="padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font:inherit">
+<input id="p" name="password" type="password" autocomplete="current-password" placeholder="Password" style="padding:10px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font:inherit">
+<button style="padding:10px;border-radius:8px;border:0;background:var(--ok);color:#fff;font:inherit;font-weight:600">Sign in</button>
+<small id="lerr" class="err"></small></form></div>
 <header><h1>Options Scanner</h1><small id="stamp">loading…</small></header>
 <nav><button data-v="today" aria-pressed="true">Today</button><button data-v="days" aria-pressed="false">Days</button><button data-v="strat" aria-pressed="false">Strategies</button></nav>
 <main id="view"></main>
@@ -72,5 +80,13 @@ async function strat(){const t=await ledger();const g={};t.forEach(x=>(g[x.strat
 async function render(){document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v==view_));
   try{await({today,days,strat})[view_]();$('#stamp').textContent='updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});}catch(e){view.innerHTML='<p class="err">Could not load data: '+esc(e.message)+'</p>';}}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{view_=b.dataset.v;try{localStorage.setItem('v',view_)}catch(e){}render()});
-render();setInterval(()=>{if(view_=='today'&&!document.hidden)render()},60000);
+const SALT='d231d460bb957b0bf55f91590d1cf281',HASH='5d641521b9e02b6d56ab9a386bf1f3dd8e55f6bfd97e56e9d29dccbb3baa21aa',ITER=200000;
+const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
+async function derive(user,pass){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(user.trim().toLowerCase()+':'+pass),'PBKDF2',false,['deriveBits']);
+  return hex(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:Uint8Array.from(SALT.match(/../g).map(x=>parseInt(x,16))),iterations:ITER},k,256));}
+let started=false;function start(){if(started)return;started=true;$('#gate').hidden=true;render();setInterval(()=>{if(view_=='today'&&!document.hidden)render()},60000);}
+$('#login').onsubmit=async e=>{e.preventDefault();$('#lerr').textContent='';
+  try{const d=await derive($('#u').value,$('#p').value);if(d===HASH){try{localStorage.setItem('ok',HASH.slice(0,16))}catch(x){}start();}else $('#lerr').textContent='Wrong username or password';}catch(x){$('#lerr').textContent='Sign-in needs a secure (https) page';}};
+let saved='';try{saved=localStorage.getItem('ok')||''}catch(e){}
+if(saved===HASH.slice(0,16))start();else $('#gate').hidden=false;
 </script></body></html>
