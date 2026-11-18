@@ -47,6 +47,23 @@ td.hm{font-weight:600}.sub td{background:var(--panel2);font-size:12.5px;color:va
 #login{width:100%;max-width:320px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:10px}
 #login input{padding:11px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--fg);font:inherit}
 #login button{padding:11px;border-radius:9px;border:0;background:var(--acc);color:#fff;font:inherit;font-weight:650}
+
+.seg{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:6px 0 8px}.seg span{font-size:12px;color:var(--mut);margin-right:2px}
+.seg button:not(.chip){font:inherit;font-size:12px;padding:4px 10px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--mut);cursor:pointer}
+.seg button[aria-pressed=true]:not(.chip){background:var(--panel2);color:var(--fg);border-color:var(--acc)}
+.sc{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.sc-h{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.sc-n{font-weight:650;font-size:15px;line-height:1.25}.sc-n small{display:block;font-weight:400;color:var(--mut);font-size:12px;margin-top:2px}
+.sc-net{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.track{position:relative;height:8px;border-radius:4px;background:var(--bg2);margin:12px 0 6px;overflow:visible}
+.track i{position:absolute;top:0;bottom:0;border-radius:4px;background:color-mix(in srgb,var(--acc) 45%,transparent)}
+.track u{position:absolute;top:-3px;width:3px;height:14px;background:var(--fg);border-radius:2px;text-decoration:none}
+.rl{display:flex;align-items:center;gap:10px;font-size:12.5px}.rl .tag{margin-left:auto}
+.sc-kv{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}
+.sc-kv small{display:block;font-size:10.5px;color:var(--mut);line-height:1.2}.sc-kv b{font-size:13px;font-variant-numeric:tabular-nums;font-weight:600}
+.hmt td,.hmt th{padding:7px 5px;font-size:12px}.hmt td:first-child{white-space:normal;min-width:92px;font-size:12.5px}.hmt td small{font-size:10px}
+.wrap{padding-top:0}header h1{font-size:20px;font-weight:700}
+.card{box-shadow:0 1px 0 rgba(255,255,255,.03) inset}.tabs{backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg2) 88%,transparent)}
+.card b{letter-spacing:-.2px}
 </style></head><body>
 <div id="gate" hidden><form id="login" autocomplete="on"><h2 style="margin:0;font-size:19px">Options Scanner</h2><small>Sign in to view</small>
 <input id="u" name="username" autocomplete="username" placeholder="Username" autocapitalize="none"><input id="p" name="password" type="password" autocomplete="current-password" placeholder="Password"><button>Sign in</button><small id="lerr" class="err"></small></form></div>
@@ -174,18 +191,24 @@ async function stratView(){const all=scopeOf(await ledger());let g={};all.forEac
   const rows=Object.entries(g).map(([k,x])=>{let xs=ui.sym=='ALL'?x:x.filter(t=>t.sym==ui.sym);if(ui.dd)xs=dedupe(xs);const m=metrics(xs);return m?{k:k.split('|')[0],src:k.split('|')[1],...m}:null}).filter(Boolean);
   rows.sort((a,b)=>(b[ui.sort]??-1e9)-(a[ui.sort]??-1e9));
   const chip=(k,v,l)=>`<button class="chip" data-f="${k}:${v}" aria-pressed="${ui[k]==v}">${l}</button>`;
-  const th=(k,l)=>`<th data-sort="${k}">${l}${ui.sort==k?' ↓':''}</th>`;
-  let h=mktChips()+`<div class="chips">${['ALL',...(ui.mkt=='NSE'?INDEX:COMM)].map(s=>chip('sym',s,s=='ALL'?'All':s)).join('')}</div><div class="chips"><button class="chip" data-f="dd:${!ui.dd}" aria-pressed="${ui.dd}">One trade per signal</button></div>`;
-  h+=`<div class="scroll"><table><tr><th>Strategy</th>${th('n','Trades')}${th('win','Win %')}<th>95% range</th>${th('pf','PF')}${th('wl','Win/loss')}${th('avg','Expect.')}${th('net','Net 1 lot')}${th('dd','Max DD')}<th>Sample</th></tr>`+rows.map(r=>`<tr><td>${esc(nm(r.k))}${r.src=='live'?' <span class="tag acc">live</span>':''}</td><td>${r.n}</td><td>${r.win.toFixed(0)}%</td><td class="mut">${r.lo.toFixed(0)}–${r.hi.toFixed(0)}%</td><td>${r.pf==null?'—':r.pf.toFixed(2)}</td><td>${r.wl==null?'—':r.wl.toFixed(2)}</td><td class="${cl(r.avg)}">${rs(r.avg)}</td><td class="hm ${cl(r.net)}">${rs(r.net)}</td><td>−₹${f0(r.dd)}</td><td>${badge(r.n)}</td></tr>`).join('')+`</table></div><p class="note">Tap a column to sort. "One trade per signal" keeps only the first trade for each day, strategy, instrument and direction, because the same signal on several strikes is not independent evidence. PF = profit factor. Expect. = average ₹ per trade. Win/loss = average win divided by average loss. 95% range = the plausible true win rate given the sample size; a wide range means the result is not reliable yet. Breakeven trades are not counted as wins.</p>`;
+  const tot=rows.reduce((a,r)=>a+r.net,0),nT=rows.reduce((a,r)=>a+r.n,0);
+  let h=mktChips()+`<div class="chips">${['ALL',...(ui.mkt=='NSE'?INDEX:COMM)].map(s=>chip('sym',s,s=='ALL'?'All':s)).join('')}</div>`;
+  h+=`<div class="seg"><span>Sort</span>${[['net','Net ₹'],['win','Win %'],['pf','PF'],['avg','Per trade'],['n','Trades']].map(([k,l])=>`<button data-sort="${k}" aria-pressed="${ui.sort==k}">${l}</button>`).join('')}<button class="chip" data-f="dd:${!ui.dd}" aria-pressed="${ui.dd}" style="margin-left:auto">1 per signal</button></div>`;
+  h+=`<p class="mut" style="margin:2px 2px 10px;font-size:12.5px">${rows.length} strategies · ${nT} trades · 1 lot each · overlapping signals are counted separately unless “1 per signal” is on</p>`;
+  h+=rows.map(r=>`<section class="sc"><div class="sc-h"><div class="sc-n">${esc(nm(r.k))}${r.src=='live'?' <span class="tag acc">live</span>':''}<small>${r.n} trades · ${r.wins}W ${r.loss}L${r.be?' '+r.be+'BE':''}</small></div><div class="sc-net ${cl(r.net)}">${rs(r.net)}</div></div>
+  <div class="rng"><div class="track"><i style="left:${r.lo}%;width:${Math.max(2,r.hi-r.lo)}%"></i><u style="left:${r.win}%"></u></div><div class="rl"><span>Win rate <b>${r.win.toFixed(0)}%</b></span><span class="mut">likely ${r.lo.toFixed(0)}–${r.hi.toFixed(0)}%</span>${badge(r.n)}</div></div>
+  <div class="sc-kv"><div><small>Profit factor</small><b class="${r.pf!=null&&r.pf>=1?'pos':'neg'}">${r.pf==null?'—':r.pf.toFixed(2)}</b></div><div><small>Per trade</small><b class="${cl(r.avg)}">${rs(r.avg)}</b></div><div><small>Avg win / loss</small><b>${r.wl==null?'—':r.wl.toFixed(2)+'×'}</b></div><div><small>Max drawdown</small><b class="neg">−₹${f0(r.dd)}</b></div></div></section>`).join('')||'<div class="empty">No closed trades.</div>';
+  h+=`<p class="note">The bar shows the plausible range of the true win rate (95%); the white tick is the observed rate. A wide bar means too few trades to trust. PF = profit factor (gross profit ÷ gross loss); above 1 is profitable. Breakeven trades are not wins.</p>`;
   view.innerHTML=h}
 /* ---------- insights ---------- */
+const kf=v=>(v>=0?'+':'−')+(Math.abs(v)>=1000?(Math.abs(v)/1000).toFixed(1)+'k':f0(Math.abs(v)));
 function heat(v,max){if(v==null||!max)return'';const a=Math.min(.55,Math.abs(v)/max*.55);return `style="background:${v>=0?`rgba(53,212,159,${a})`:`rgba(255,107,122,${a})`}"`}
 async function insightView(){const all=scopeOf(await ledger()).filter(t=>!/_wsl$/.test(t.strat)),sh=all.filter(t=>t.src=='shadow'),UNI=ui.mkt=='NSE'?INDEX:COMM;
   const cut=(title,keyf,order)=>{const g={};sh.forEach(t=>(g[keyf(t)]??=[]).push(t));const ks=order||Object.keys(g).sort();return `<h3>${title}</h3><div class="scroll"><table><tr><th></th><th>Trades</th><th>Win %</th><th>Net 1 lot</th><th>Avg</th></tr>`+ks.filter(k=>g[k]).map(k=>{const m=metrics(g[k]);return `<tr><td>${esc(k)}</td><td>${m.n}</td><td>${m.win.toFixed(0)}%</td><td class="hm ${cl(m.net)}">${rs(m.net)}</td><td class="${cl(m.avg)}">${rs(m.avg)}</td></tr>`}).join('')+`</table></div>`};
   const sess=t=>t.hh<'10:35'?'09:15–10:35':t.hh<'11:35'?'10:35–11:35':t.hh<'13:45'?'11:35–13:45':'13:45+';
   const strats=[...new Set(sh.map(t=>t.strat))],cells={};let mx=0;strats.forEach(s=>UNI.forEach(i=>{const x=sh.filter(t=>t.strat==s&&t.sym==i);if(x.length){const v=x.reduce((a,t)=>a+t.inr,0);cells[s+i]={v,n:x.length};mx=Math.max(mx,Math.abs(v))}}));
   const rowsM=strats.map(s=>({s,tot:UNI.reduce((a,i)=>a+(cells[s+i]?.v||0),0)})).sort((a,b)=>b.tot-a.tot);
-  let h=mktChips()+`<h3>Strategy × instrument <small>(net ₹, 1 lot · trades)</small></h3><div class="scroll"><table><tr><th>Strategy</th>${UNI.map(i=>`<th>${i.replace('MIDCPNIFTY','MIDCP').replace('BANKNIFTY','BANK')}</th>`).join('')}</tr>`+rowsM.map(r=>`<tr><td>${esc(nm(r.s))}</td>`+UNI.map(i=>{const c=cells[r.s+i];return c?`<td class="hm" ${heat(c.v,mx)}>${rs(c.v)}<br><small>${c.n}</small></td>`:'<td class="mut">—</td>'}).join('')+'</tr>').join('')+`</table></div>`;
+  let h=mktChips()+`<h3>Strategy × instrument <small>(net ₹ · trades, 1 lot)</small></h3><div class="scroll"><table class="hmt"><tr><th>Strategy</th>${UNI.map(i=>`<th>${i.replace('MIDCPNIFTY','MIDCP').replace('BANKNIFTY','BANK')}</th>`).join('')}</tr>`+rowsM.map(r=>`<tr><td>${esc(nm(r.s))}</td>`+UNI.map(i=>{const c=cells[r.s+i];return c?`<td class="hm" ${heat(c.v,mx)}>${kf(c.v)}<br><small>${c.n}</small></td>`:'<td class="mut">—</td>'}).join('')+'</tr>').join('')+`</table></div>`;
   h+=cut('By instrument',t=>t.sym,UNI)+cut('By time of day',sess)+cut('By direction',t=>t.dir==='CE'?'CE (calls)':'PE (puts)')+cut('Expiry day vs other days',t=>t.exp?'Expiry day':'Other days')+cut('By weekday',t=>t.wd||'—',['Monday','Tuesday','Wednesday','Thursday','Friday']);
   const real=sh.filter(t=>t.real!=null);const ideal=real.reduce((a,t)=>a+t.inr,0),rl=real.reduce((a,t)=>a+t.real,0);
   h+=`<h3>Ideal vs realistic fills <small>(coverage ${real.length} of ${sh.length} trades)</small></h3><div class="grid"><div class="card"><small>Ideal fills</small><b class="${cl(ideal)}">${rs(ideal)}</b></div><div class="card"><small>Realistic (spread + slippage)</small><b class="${cl(rl)}">${rs(rl)}</b></div><div class="card"><small>Cost of real fills</small><b class="neg">${rs(rl-ideal)}</b></div></div><p class="note">Shadow trades on index options, ${real.length} with fill estimates. Small samples: treat these cuts as hints, never as rules.</p>`;
