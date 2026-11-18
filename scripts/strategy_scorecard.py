@@ -14,7 +14,7 @@ from PIL import Image, ImageDraw
 from eod_image import NAVY, INK, MUTED, LINE, GREEN, RED, AMBER, GREEN_BG, RED_BG, AMBER_BG, W, PAD, _font
 
 LABELS = {"fib_pivot": "Fib pivot", "trade_score": "Main scanner (scored)", "chase_bypass": "Main scanner (chase bypass)",
-          "live_scored": "Live alerts (scored)", "trade_score_late": "Main scanner, 14:00+ slice", "trade_score_filt": "Main scanner, filtered", "fib_pivot_filt": "Fib pivot, filtered", "fvg_filt": "Fair value gap, filtered", "orb15": "ORB 15-min", "pivot_break": "Pivot break",
+          "live_scored": "Live alerts (scored)", "trade_score_late": "Main scanner, 14:00+ slice", "trade_score_filt": "Main scanner, filtered", "trade_score_cap1": "Main scanner, first 1/day", "trade_score_cap2": "Main scanner, first 2/day", "trade_score_cap3": "Main scanner, first 3/day", "fib_pivot_filt": "Fib pivot, filtered", "fvg_filt": "Fair value gap, filtered", "orb15": "ORB 15-min", "pivot_break": "Pivot break",
           "sweep": "Liquidity sweep", "sweep_fvg": "Sweep + FVG", "amd": "AMD", "oi_flow": "OI flow",
           "fvg": "Fair value gap", "ema_pb": "EMA pullback", "gap_orb": "Gap and go", "sess_orb": "Session ORB",
           "sess_sweep": "Session sweep", "bos": "Break of structure", "order_block": "Order block", "pdhl_retest": "PDH/PDL retest", "vwap_pb": "VWAP pullback", "ema_cross": "EMA crossover"}
@@ -80,6 +80,22 @@ def load_rows(ledger_path, start: str, end: str, market: str):
                 out.append({**row, "strat": "trade_score_late"})     # a SLICE of the parent's own trades (not new trades)
             if market == "NSE" and strat in FILT_STRATS and passes_filter(row, str(r.get("expiry_day")).lower() == "true"):
                 out.append({**row, "strat": strat + "_filt"})        # slice only; the unfiltered parent row stays
+    out.extend(daily_cap_slices(out))
+    return out
+
+
+CAP_LEVELS = (1, 2, 3)   # 2026-11-18: same-direction alerts are one bet; slices test "first N main-scanner trades per day" (shadow only)
+
+
+def daily_cap_slices(rows):
+    """Slices of the parent trade_score rows: the first N per day (by alert time). Not new trades."""
+    parent = sorted((r for r in rows if r["strat"] == "trade_score"), key=lambda r: (r["date"], r["at"]))
+    seen, out = {}, []
+    for r in parent:
+        seen[r["date"]] = k = seen.get(r["date"], 0) + 1
+        for n in CAP_LEVELS:
+            if k <= n:
+                out.append({**r, "strat": f"trade_score_cap{n}"})
     return out
 
 
