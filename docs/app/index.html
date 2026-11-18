@@ -103,7 +103,7 @@ td.hm{font-weight:600}.sub td{background:var(--panel2);font-size:12.5px;color:va
 <div id="gate" hidden><form id="login" autocomplete="on"><h2 style="margin:0;font-size:19px">Options Scanner</h2><small>Sign in to view</small>
 <input id="u" name="username" autocomplete="username" placeholder="Username" autocapitalize="none"><input id="p" name="password" type="password" autocomplete="current-password" placeholder="Password"><button>Sign in</button><small id="lerr" class="err"></small></form></div>
 <div class="wrap">
-<header><div class="top"><h1>Options Scanner</h1><span class="live"><span class="dot"></span><span id="stamp">loading</span></span></div></header>
+<header><div class="top"><h1>Options Scanner</h1><span class="live"><span class="dot"></span><span id="stamp">loading</span><button id="rf" aria-label="Refresh" title="Refresh" style="margin-left:6px;background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:3px 8px;font:inherit;cursor:pointer">↻</button></span></div></header>
 <main id="view"><div class="skel"></div><div class="skel"></div><div class="skel"></div></main>
 <p class="note">Read-only view of paper (shadow) trades and Telegram alerts. P&amp;L is for exactly 1 lot per trade at ideal fills (estimates for today's open trades). Early data, not proof of an edge.</p>
 </div>
@@ -128,7 +128,11 @@ const rs=v=>v==null?'—':(v>=0?'+':'−')+'₹'+f0(Math.abs(v));
 const cl=v=>v==null?'':v>=0?'pos':'neg';
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const pct=v=>v==null?'—':(v>=0?'+':'')+v.toFixed(1)+'%';
-async function get(p,json=true){const r=await fetch(RAW+p+'?t='+Date.now());if(!r.ok)throw new Error(p+' '+r.status);return json?r.json():r.text()}
+let stale=false;
+async function get(p,json=true){
+  try{const r=await fetch(RAW+p+'?t='+Date.now());if(!r.ok)throw new Error(p+' '+r.status);const t=await r.text();
+    try{if(t.length<1.5e6)localStorage.setItem('c:'+p,t)}catch(e){}return json?JSON.parse(t):t}
+  catch(e){let t=null;try{t=localStorage.getItem('c:'+p)}catch(x){}if(t==null)throw e;stale=true;return json?JSON.parse(t):t}}
 const istDate=b=>new Date(Date.now()+5.5*3600e3-b*864e5).toISOString().slice(0,10);
 async function loadState(pre){for(let b=0;b<6;b++){const d=istDate(b);try{return{date:d,s:await get(pre+'state/'+d+'.json')}}catch(e){}}return null}
 function csv(t){const rows=[];let row=[],f='',q=false;for(let i=0;i<t.length;i++){const c=t[i];if(q){if(c=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=c}else if(c=='"')q=true;else if(c==','){row.push(f);f=''}else if(c=='\n'){row.push(f);rows.push(row);row=[];f=''}else if(c!='\r')f+=c}if(f||row.length){row.push(f);rows.push(row)}const h=rows.shift();return rows.filter(r=>r.length>1).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]])))}
@@ -251,8 +255,8 @@ async function insightView(){const all=scopeOf(await ledger()).filter(t=>!/_wsl$
   view.innerHTML=h}
 /* ---------- shell ---------- */
 const VIEWS={today:todayView,days:daysView,strat:stratView,insight:insightView};
-async function render(){document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v==tab));
-  try{await VIEWS[tab]();$('#stamp').textContent='page refreshed '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}catch(e){view.innerHTML='<div class="empty err">Could not load data: '+esc(e.message)+'</div>'}}
+async function render(){stale=false;document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v==tab));
+  try{await VIEWS[tab]();$('#stamp').textContent=(stale?'offline, showing saved data · ':'page refreshed ')+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}catch(e){view.innerHTML='<div class="empty err">Could not load data: '+esc(e.message)+'</div>'}}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.v;try{localStorage.setItem('v',tab)}catch(e){}scrollTo(0,0);render()});
 view.addEventListener('click',e=>{const f=e.target.closest('[data-f]');if(f){const[k,v]=f.dataset.f.split(':');ui[k]=v==='true'?true:v==='false'?false:v;render();return}
   const s=e.target.closest('[data-sort]');if(s){ui.sort=s.dataset.sort;render();return}
@@ -260,6 +264,7 @@ view.addEventListener('click',e=>{const f=e.target.closest('[data-f]');if(f){con
 const SALT='d231d460bb957b0bf55f91590d1cf281',HASH='5d641521b9e02b6d56ab9a386bf1f3dd8e55f6bfd97e56e9d29dccbb3baa21aa',ITER=200000;
 const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
 async function derive(u,p){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(u.trim().toLowerCase()+':'+p),'PBKDF2',false,['deriveBits']);return hex(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:Uint8Array.from(SALT.match(/../g).map(x=>parseInt(x,16))),iterations:ITER},k,256))}
+$('#rf').onclick=()=>{cache={};render()};
 let started=false;function start(){if(started)return;started=true;$('#gate').hidden=true;render();setInterval(()=>{if(tab=='today'&&!document.hidden&&!document.querySelector('details[open]'))render()},60000)}
 $('#login').onsubmit=async e=>{e.preventDefault();$('#lerr').textContent='';try{const d=await derive($('#u').value,$('#p').value);if(d===HASH){try{localStorage.setItem('ok',HASH.slice(0,16))}catch(x){}start()}else $('#lerr').textContent='Wrong username or password'}catch(x){$('#lerr').textContent='Sign-in needs a secure (https) page'}};
 let saved='';try{saved=localStorage.getItem('ok')||''}catch(e){}
