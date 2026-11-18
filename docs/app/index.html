@@ -99,24 +99,50 @@ td.hm{font-weight:600}.sub td{background:var(--panel2);font-size:12.5px;color:va
  .note{max-width:820px}
 }
 @media (min-width:1500px){.tg,.cg{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+.edu{background:color-mix(in srgb,var(--warn) 14%,var(--panel));border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));color:var(--fg);border-radius:12px;padding:7px 11px;font-size:12px;line-height:1.35;margin:2px 0 8px}
+.edu b{color:var(--warn)}
+#toasts{position:fixed;left:0;right:0;top:calc(8px + env(safe-area-inset-top));z-index:30;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 12px}
+.toast{pointer-events:auto;max-width:460px;width:100%;background:var(--panel2);border:1px solid var(--acc);border-left-width:5px;border-radius:12px;padding:10px 12px;box-shadow:0 8px 28px rgba(0,0,0,.35);font-size:13px;animation:ti .25s ease-out}
+.toast b{display:block;font-size:13.5px}.toast.ok{border-color:var(--ok)}.toast.bad{border-color:var(--bad)}
+@keyframes ti{from{transform:translateY(-14px);opacity:0}to{transform:none;opacity:1}}@media (prefers-reduced-motion:reduce){.toast{animation:none}}
+#bell{margin-left:4px;background:var(--panel);border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:3px 8px;font:inherit;cursor:pointer}#bell[aria-pressed=true]{color:#fff;background:var(--acc);border-color:var(--acc)}
+details.how{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}details.how summary{cursor:pointer;font-size:12.5px;color:var(--acc);list-style:none}details.how summary::-webkit-details-marker{display:none}details.how p{margin:6px 0 0;font-size:12.5px;color:var(--mut);line-height:1.5}
+details.g{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:8px}details.g summary{cursor:pointer;padding:11px 13px;font-weight:600;list-style:none}details.g summary::-webkit-details-marker{display:none}details.g summary::after{content:'+';float:right;color:var(--mut)}details.g[open] summary::after{content:'−'}
+details.g div{padding:0 13px 12px;color:var(--mut);font-size:13px;line-height:1.55}details.g div b{color:var(--fg)}
+.lesson{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px;font-size:13.5px;line-height:1.55}.lesson h4{margin:0 0 4px;font-size:14.5px}.lesson p{margin:0;color:var(--mut)}
 </style></head><body>
 <div id="gate" hidden><form id="login" autocomplete="on"><h2 style="margin:0;font-size:19px">Options Scanner</h2><small>Sign in to view</small>
 <input id="u" name="username" autocomplete="username" placeholder="Username" autocapitalize="none"><input id="p" name="password" type="password" autocomplete="current-password" placeholder="Password"><button>Sign in</button><small id="lerr" class="err"></small></form></div>
+<div id="toasts" aria-live="polite"></div>
 <div class="wrap">
-<header><div class="top"><h1>Options Scanner</h1><span class="live"><span class="dot"></span><span id="stamp">loading</span><button id="rf" aria-label="Refresh" title="Refresh" style="margin-left:6px;background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:3px 8px;font:inherit;cursor:pointer">↻</button></span></div></header>
+<header><div class="top"><h1>Options Scanner</h1><span class="live"><span class="dot"></span><span id="stamp">loading</span><button id="bell" aria-pressed="false" aria-label="Alert sound and notifications" title="Alert sound and notifications">🔔</button><button id="rf" aria-label="Refresh" title="Refresh" style="margin-left:6px;background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:8px;padding:3px 8px;font:inherit;cursor:pointer">↻</button></span></div></header>
+<div class="edu"><b>For education only.</b> Simulated paper trades, not advice. Options can lose their whole premium.</div>
 <main id="view"><div class="skel"></div><div class="skel"></div><div class="skel"></div></main>
-<p class="note">Read-only view of paper (shadow) trades and Telegram alerts. P&amp;L is for exactly 1 lot per trade at ideal fills (estimates for today's open trades). Early data, not proof of an edge.</p>
+<p class="note">Educational, read-only view of paper (shadow) trades and Telegram alerts. P&amp;L is for exactly 1 lot per trade at ideal fills (estimates for today's open trades). Early data, not proof of an edge, and not advice.</p>
 </div>
 <nav class="tabs" aria-label="Sections">
 <button data-v="today" aria-pressed="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg>Today</button>
 <button data-v="days" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Days</button>
 <button data-v="strat" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Strategies</button>
 <button data-v="insight" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>Insights</button>
+<button data-v="learn" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5zM4 21.5V5.5M8 7h8M8 11h6"/></svg>Learn</button>
 </nav>
 <script>
 const REPO='kothasanketh93-afk/options-alert-scanner',RAW=`https://raw.githubusercontent.com/${REPO}/state/`;
 const LOTS={NIFTY:65,SENSEX:20,BANKNIFTY:30,MIDCPNIFTY:120},INDEX=Object.keys(LOTS);
 const NAMES={trade_score:'Main scanner',fib_pivot:'Fib pivot',fib_pivot_ema20:'Fib pivot · EMA20 trend',fib_pivot_5m:'Fib pivot · 5-min candles',fib_pivot_retest:'Fib pivot · retest entry',fib_pivot_itm1:'Fib pivot · ITM1 option',chase_bypass:'Chase bypass',orb15:'ORB 15-min',pivot_break:'Pivot break',sweep:'Liquidity sweep',sweep_fvg:'Sweep + FVG',amd:'AMD',oi_flow:'OI flow',fvg:'Fair value gap',ema_pb:'EMA pullback',gap_orb:'Gap and go',bos:'Break of structure',order_block:'Order block',pdhl_retest:'PDH/PDL retest',vwap_pb:'VWAP pullback',ema_cross:'EMA crossover',live_scored:'Live alerts',sess_orb:'Session ORB',sess_sweep:'Session sweep'};
+const INFO={
+trade_score:'Scores each option on trend, momentum, volume, open interest and liquidity, then alerts only the best setup. It is the one sent to Telegram as the main live alert.',
+live_scored:'The main scanner setups that were actually alerted on Telegram (a filtered subset of the shadow trades).',
+fib_pivot:'Uses yesterday’s high, low and close to draw Fibonacci pivot levels. Buys a call when a candle closes above a level (and above EMA9), a put when it closes below one. Variants test EMA20, 5-minute candles, retest entries and ITM1 options, changing one rule each.',
+orb15:'Opening-range breakout: trades the break of the first 15 minutes’ high or low, with a target of 1.5× ATR.',pivot_break:'Classic pivot-level break: enters when price closes through a daily pivot level, target 2× ATR.',
+sweep:'Liquidity sweep: price briefly pokes beyond a recent high or low (grabbing stop orders) and then reverses back; the trade follows the reversal.',sweep_fvg:'Liquidity sweep followed by a fair value gap, then a retest of the gap.',
+fvg:'Fair value gap: a strong candle leaves a gap between neighbouring candles; the trade waits for price to come back and hold above (or below) the gap.',
+ema_pb:'Pullback to a moving average inside an existing trend, entering when price bounces back in the trend direction.',vwap_pb:'Pullback to VWAP (the day’s volume-weighted average price) in a trend.',
+bos:'Break of structure: price breaks a recent swing high or low, signalling a possible trend change.',order_block:'Order block: the last opposite candle before a strong move, treated as a zone where big players may defend price.',
+oi_flow:'Follows changes in open interest and volume to infer where positions are being built.',ema_cross:'Enters when a fast moving average crosses a slower one.',gap_orb:'Trades the break of the opening range after a gap open.',pdhl_retest:'Previous day high/low breakout, then retest of that level.',amd:'Accumulation, manipulation, distribution: a quiet range, a fake move, then the real move.',sess_orb:'Opening-range breakout adapted to the commodity trading session.',sess_sweep:'Liquidity sweep adapted to the commodity session.'};
+const infoFor=k=>INFO[k.replace(/_wsl$/,'')]||INFO[k.replace(/_(ema20|5m|retest|itm1)$/,'')]||'';
 const nm=k=>NAMES[k]||(k.endsWith('_wsl')&&NAMES[k.slice(0,-4)]?NAMES[k.slice(0,-4)]+' (wide SL)':k);
 const $=s=>document.querySelector(s),view=$('#view');
 const MLOT={CRUDEOIL:100,NATURALGAS:1250,GOLDM:10,GOLD:100},COMM=Object.keys(MLOT);
@@ -237,7 +263,7 @@ async function stratView(){const all=scopeOf(await ledger());let g={};all.forEac
   h+=`<p class="mut" style="margin:2px 2px 10px;font-size:12.5px">${rows.length} strategies · ${nT} trades · 1 lot each · overlapping signals are counted separately unless “1 per signal” is on</p>`;
   h+='<div class="cg">'+rows.map(r=>`<section class="sc"><div class="sc-h"><div class="sc-n">${esc(nm(r.k))}${r.src=='live'?' <span class="tag acc">live</span>':''}<small>${r.n} trades · ${r.wins}W ${r.loss}L${r.be?' '+r.be+'BE':''}</small></div><div class="sc-net ${cl(r.net)}">${rs(r.net)}</div></div>
   <div class="rng"><div class="track"><i style="left:${r.lo}%;width:${Math.max(2,r.hi-r.lo)}%"></i><u style="left:${r.win}%"></u></div><div class="rl"><span>Win rate <b>${r.win.toFixed(0)}%</b></span><span class="mut">likely ${r.lo.toFixed(0)}–${r.hi.toFixed(0)}%</span>${badge(r.n)}</div></div>
-  <div class="sc-kv"><div><small>Profit factor</small><b class="${r.pf!=null&&r.pf>=1?'pos':'neg'}">${r.pf==null?'—':r.pf.toFixed(2)}</b></div><div><small>Per trade</small><b class="${cl(r.avg)}">${rs(r.avg)}</b></div><div><small>Avg win / loss</small><b>${r.wl==null?'—':r.wl.toFixed(2)+'×'}</b></div><div><small>Max drawdown</small><b class="neg">−₹${f0(r.dd)}</b></div></div></section>`).join('')+'</div>'||'<div class="empty">No closed trades.</div>';
+  <div class="sc-kv"><div><small>Profit factor</small><b class="${r.pf!=null&&r.pf>=1?'pos':'neg'}">${r.pf==null?'—':r.pf.toFixed(2)}</b></div><div><small>Per trade</small><b class="${cl(r.avg)}">${rs(r.avg)}</b></div><div><small>Avg win / loss</small><b>${r.wl==null?'—':r.wl.toFixed(2)+'×'}</b></div><div><small>Max drawdown</small><b class="neg">−₹${f0(r.dd)}</b></div></div>${infoFor(r.k)?`<details class="how"><summary>How does it work?</summary><p>${esc(infoFor(r.k))}${/_wsl$/.test(r.k)?' Same entry, but with a wider stop-loss.':''}</p></details>`:''}</section>`).join('')+'</div>'||'<div class="empty">No closed trades.</div>';
   h+=`<p class="note">The bar shows the plausible range of the true win rate (95%); the white tick is the observed rate. A wide bar means too few trades to trust. PF = profit factor (gross profit ÷ gross loss); above 1 is profitable. Breakeven trades are not wins.</p>`;
   view.innerHTML=h}
 /* ---------- insights ---------- */
@@ -253,8 +279,51 @@ async function insightView(){const all=scopeOf(await ledger()).filter(t=>!/_wsl$
   const real=sh.filter(t=>t.real!=null);const ideal=real.reduce((a,t)=>a+t.inr,0),rl=real.reduce((a,t)=>a+t.real,0);
   h+=`<h3>Ideal vs realistic fills <small>(coverage ${real.length} of ${sh.length} trades)</small></h3><div class="grid"><div class="card"><small>Ideal fills</small><b class="${cl(ideal)}">${rs(ideal)}</b></div><div class="card"><small>Realistic (spread + slippage)</small><b class="${cl(rl)}">${rs(rl)}</b></div><div class="card"><small>Cost of real fills</small><b class="neg">${rs(rl-ideal)}</b></div></div><p class="note">Shadow trades on index options, ${real.length} with fill estimates. Small samples: treat these cuts as hints, never as rules.</p>`;
   view.innerHTML=h}
+
+async function learnView(){
+  const G=[['Call (CE) and Put (PE)','A <b>call</b> gains when the market rises; a <b>put</b> gains when it falls. You only ever buy them here, so the most you can lose on a trade is the premium paid.'],
+  ['Premium and lot','<b>Premium</b> is the option’s price per unit. A <b>lot</b> is the minimum quantity (NIFTY 65, SENSEX 20, BANKNIFTY 30, MIDCPNIFTY 120 in this app; GOLD 100, GOLDM 10, CRUDEOIL 100, NATURALGAS 1250). Rupees per lot = price move × lot size.'],
+  ['Entry, Stop-loss, T1, T2','<b>Entry</b> is the price you buy. <b>Stop-loss (SL)</b> is where you exit to limit the loss. <b>T1</b> and <b>T2</b> are the first and second profit targets. A trade that hits T1 and then falls back to the stop is a small win or breakeven, not a loss.'],
+  ['Reward : risk (R:R)','Potential profit divided by potential loss. At 2:1 you can be right only 40% of the time and still break even before costs. Win rate alone tells you nothing without R:R.'],
+  ['Win rate and the 95% range','The share of trades that made money. With few trades it is very uncertain: 6 wins out of 8 could truly be anywhere from 40% to 94%. The bar on each strategy card shows this range.'],
+  ['Profit factor (PF)','Total profit divided by total loss. Above 1 means profitable. Around 1.0–1.2 is barely profitable after costs.'],
+  ['Expectancy (per trade)','Average rupees made per trade across all trades. This is the single number that tells you whether repeating the strategy makes money.'],
+  ['Max drawdown','The biggest fall from a peak in your running total. It tells you how much pain to expect on the way. A strategy you cannot sit through is not usable.'],
+  ['Shadow vs live','<b>Shadow</b> trades are paper trades the scanner tracks automatically. <b>Live alerts</b> are the filtered ones sent to Telegram. No real orders are ever placed by this app.'],
+  ['Ideal vs realistic fills','Ideal assumes you buy and sell at the quoted price. Realistic adds the bid–ask spread and slippage, which usually costs real money, especially on thin options.'],
+  ['Expiry day','Options lose value very fast on their expiry day. In this data, expiry-day trades have done worse than other days.'],
+  ['Why small samples mislead','Ten trades can look brilliant by luck. Judge a strategy after at least 30 independent trades, ideally across different market conditions.']];
+  const L=[['Protect capital first','Decide the most you will lose in a day before you start (for example 2% of your capital) and stop when it is hit. Surviving matters more than any single trade.'],
+  ['Learn with paper trades','Follow alerts on paper for weeks. Note why each trade worked or failed. Only consider real money after the numbers hold up over many trades.'],
+  ['One lot, small size','Even when you trade for real, start with one lot. Larger size multiplies mistakes before it multiplies skill.'],
+  ['Signals are not certainty','A scanner finds setups with a decent chance, not guaranteed ones. Most strategies here are still unproven, and many lose money so far.'],
+  ['Count the costs','Brokerage, taxes, spread and slippage eat a large part of small profits. Always compare ideal and realistic results.']];
+  view.innerHTML=`<div class="lesson"><h4>How to read this app</h4><p><b>Today</b> shows live paper trades and Telegram alerts. <b>Days</b> shows results day by day. <b>Strategies</b> compares every strategy with its reliability range. <b>Insights</b> slices results by instrument, time, direction and expiry. All rupee figures are for one lot at ideal prices unless stated.</p></div><h3>Habits worth building</h3>${L.map(([t,p])=>`<div class="lesson"><h4>${t}</h4><p>${p}</p></div>`).join('')}<h3>Glossary</h3>${G.map(([t,p])=>`<details class="g"><summary>${t}</summary><div>${p}</div></details>`).join('')}<div class="edu" style="margin-top:14px"><b>Remember:</b> this app is for education. Past or paper results do not predict future profits, and options can expire worthless.</div>`}
+
+/* ---------- in-app alerts ---------- */
+let unread=0,alertsOn=false;try{alertsOn=localStorage.getItem('alerts')=='1'}catch(e){}
+const bellEl=$('#bell');const syncBell=()=>bellEl.setAttribute('aria-pressed',alertsOn);syncBell();
+function beep(){try{const a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=880;g.gain.value=.08;o.start();o.stop(a.currentTime+.25)}catch(e){}}
+function toast(title,body,kind){const el=document.createElement('div');el.className='toast '+(kind||'');el.innerHTML='<b>'+esc(title)+'</b>'+esc(body);$('#toasts').appendChild(el);setTimeout(()=>el.remove(),9000);el.onclick=()=>el.remove()}
+function notify(title,body,kind){toast(title,body,kind);unread++;document.title='('+unread+') Options Scanner';try{navigator.vibrate&&navigator.vibrate(120)}catch(e){}
+  if(alertsOn){beep();try{if(window.Notification&&Notification.permission==='granted')new Notification(title,{body,icon:'icon.svg'})}catch(e){}}}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){unread=0;document.title='Options Scanner'}});
+bellEl.onclick=async()=>{alertsOn=!alertsOn;try{localStorage.setItem('alerts',alertsOn?'1':'0')}catch(e){}
+  if(alertsOn){try{if(window.Notification&&Notification.permission==='default')await Notification.requestPermission()}catch(e){}beep();toast('Alerts on','You will hear a beep and may get a system notification while this app is open. Telegram still sends alerts when it is closed.')}syncBell()};
+const MSG={T2_HIT:['Target 2 hit','ok'],T1_THEN_SL:['T1 hit, then stopped','bad'],SL_HIT:['Stop-loss hit','bad'],T1_HIT_THEN_EOD:['T1 hit, closed at end of day','ok'],EOD_CLOSED:['Closed at end of day','']};
+async function pollAlerts(){try{
+  const [n,m]=await Promise.all([loadState(''),loadState('mcx/')]);const cur={};
+  const add=(src,o,live)=>Object.values(o||{}).forEach(t=>{if(!t.trade_id)return;const tg=live||(t.strategy==='fvg'&&src==='NSE')||(t.strategy==='ema_pb'&&src==='MCX');if(tg)cur[t.trade_id]={st:stat(t),t,src}});
+  if(n){add('NSE',n.s.trades,true);['shadow_trades','fib_pivot_shadow_trades','orb_pivot_shadow_trades','sweep_shadow_trades'].forEach(k=>add('NSE',n.s[k],false))}
+  if(m)add('MCX',m.s.mcx_shadow_trades,false);
+  let prev=null;try{prev=JSON.parse(localStorage.getItem('seen')||'null')}catch(e){}
+  const day=(n||m||{}).date;if(prev&&prev.day===day){for(const [id,c] of Object.entries(cur)){const o=prev.m[id],lab=`${c.t.symbol} ${c.t.strike||''} ${c.t.direction} · ${nm(c.t.strategy)}`;
+      if(o===undefined&&c.st!=='NOT_ENTERED')notify('New alert · '+c.src,lab+' · entry ~'+(c.t.alert_premium??'—'),'');
+      else if(o!==undefined&&o!==c.st&&MSG[c.st])notify(MSG[c.st][0]+' · '+c.src,lab,MSG[c.st][1])}}
+  try{localStorage.setItem('seen',JSON.stringify({day,m:Object.fromEntries(Object.entries(cur).map(([k,v])=>[k,v.st]))}))}catch(e){}
+  }catch(e){}}
 /* ---------- shell ---------- */
-const VIEWS={today:todayView,days:daysView,strat:stratView,insight:insightView};
+const VIEWS={learn:learnView,today:todayView,days:daysView,strat:stratView,insight:insightView};
 async function render(){stale=false;document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v==tab));
   try{await VIEWS[tab]();$('#stamp').textContent=(stale?'offline, showing saved data · ':'page refreshed ')+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}catch(e){view.innerHTML='<div class="empty err">Could not load data: '+esc(e.message)+'</div>'}}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.v;try{localStorage.setItem('v',tab)}catch(e){}scrollTo(0,0);render()});
@@ -265,7 +334,7 @@ const SALT='d231d460bb957b0bf55f91590d1cf281',HASH='5d641521b9e02b6d56ab9a386bf1
 const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');
 async function derive(u,p){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(u.trim().toLowerCase()+':'+p),'PBKDF2',false,['deriveBits']);return hex(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:Uint8Array.from(SALT.match(/../g).map(x=>parseInt(x,16))),iterations:ITER},k,256))}
 $('#rf').onclick=()=>{cache={};render()};
-let started=false;function start(){if(started)return;started=true;$('#gate').hidden=true;render();setInterval(()=>{if(tab=='today'&&!document.hidden&&!document.querySelector('details[open]'))render()},60000)}
+let started=false;function start(){if(started)return;started=true;$('#gate').hidden=true;render();pollAlerts();setInterval(()=>{if(!document.hidden||alertsOn)pollAlerts()},45000);setInterval(()=>{if(tab=='today'&&!document.hidden&&!document.querySelector('details[open]'))render()},60000)}
 $('#login').onsubmit=async e=>{e.preventDefault();$('#lerr').textContent='';try{const d=await derive($('#u').value,$('#p').value);if(d===HASH){try{localStorage.setItem('ok',HASH.slice(0,16))}catch(x){}start()}else $('#lerr').textContent='Wrong username or password'}catch(x){$('#lerr').textContent='Sign-in needs a secure (https) page'}};
 let saved='';try{saved=localStorage.getItem('ok')||''}catch(e){}
 if(saved===HASH.slice(0,16))start();else $('#gate').hidden=false;
