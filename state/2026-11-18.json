@@ -71,7 +71,7 @@
         "\u2713 Premium In Configured Range"
       ],
       "alternatives": [],
-      "status": "WAITING_ENTRY",
+      "status": "NOT_ENTERED",
       "final_status": null,
       "actual_entry_time": null,
       "tracked_entry_price": null,
@@ -85,11 +85,12 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-18T09:50:00+05:30",
+      "last_processed_ts": "2026-11-18T09:52:00+05:30",
       "messages_sent": [
-        "NEW_TRADE_ALERT"
+        "NEW_TRADE_ALERT",
+        "NOT_ENTERED"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "risk_sizing": {
         "fill": 8.45,
@@ -108,7 +109,7 @@
       "ai_verdict": "supportive",
       "vix_at_alert": 15.73,
       "nifty_chg_pct_at_alert": -0.26,
-      "last_price": 6.25,
+      "last_price": 6.9,
       "waiting_candles": [
         [
           "09:32",
@@ -242,8 +243,23 @@
           6.8,
           6.25,
           6.25
+        ],
+        [
+          "09:51",
+          6.35,
+          6.35,
+          5.85,
+          6.2
+        ],
+        [
+          "09:52",
+          6.15,
+          6.9,
+          6.15,
+          6.9
         ]
-      ]
+      ],
+      "not_entered_reason": "ENTRY_WINDOW_EXPIRED"
     }
   },
   "next_seq": {
