@@ -85,7 +85,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-18T09:31:14.462214+05:30",
+      "last_processed_ts": "2026-11-18T09:32:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT"
       ],
@@ -107,7 +107,17 @@
       "chart_setup_sent": true,
       "ai_verdict": "supportive",
       "vix_at_alert": 15.73,
-      "nifty_chg_pct_at_alert": -0.26
+      "nifty_chg_pct_at_alert": -0.26,
+      "last_price": 7.75,
+      "waiting_candles": [
+        [
+          "09:32",
+          8.15,
+          8.2,
+          7.65,
+          7.75
+        ]
+      ]
     }
   },
   "next_seq": {
