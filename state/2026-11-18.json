@@ -341,27 +341,28 @@
           "trade_score": 50
         }
       ],
-      "status": "T1_HIT",
-      "final_status": null,
+      "status": "T2_HIT",
+      "final_status": "T2_HIT",
       "actual_entry_time": "2026-11-18T10:05:00+05:30",
       "tracked_entry_price": 371.2,
-      "highest_since_entry": 499.95,
+      "highest_since_entry": 516.95,
       "lowest_since_entry": 316.55,
-      "max_favorable_pct": 34.68,
+      "max_favorable_pct": 39.26,
       "max_adverse_pct": -14.72,
       "t1_hit": true,
       "t1_hit_time": "2026-11-18T10:59:00+05:30",
-      "t2_hit": false,
-      "t2_hit_time": null,
+      "t2_hit": true,
+      "t2_hit_time": "2026-11-18T12:32:00+05:30",
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-18T12:30:00+05:30",
+      "last_processed_ts": "2026-11-18T12:32:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED",
-        "T1_HIT"
+        "T1_HIT",
+        "T2_HIT"
       ],
-      "streak_counted": false,
+      "streak_counted": true,
       "strategy": "trade_score",
       "risk_sizing": {
         "fill": 365.15,
@@ -380,7 +381,7 @@
       "ai_verdict": "mixed",
       "vix_at_alert": 15.77,
       "nifty_chg_pct_at_alert": -0.34,
-      "last_price": 455.85,
+      "last_price": 508.55,
       "waiting_candles": [
         [
           "10:02",
@@ -408,7 +409,9 @@
       "trail_sl": 428.015,
       "time_to_target_1_minutes": 54,
       "trail_exit_price": 428.015,
-      "be_touch_price": 371.2
+      "be_touch_price": 371.2,
+      "exit_candle_open": 485.9,
+      "time_to_target_2_minutes": 147
     }
   },
   "next_seq": {
