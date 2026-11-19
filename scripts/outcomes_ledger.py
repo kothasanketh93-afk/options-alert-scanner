@@ -39,7 +39,9 @@ COLUMNS = ["trade_id", "date", "engine", "strategy", "symbol", "direction", "str
            # Realistic execution what-if (2026-11-12): ask-in / bid-out + slippage, then costs. Measured beside net_result_pct.
            "realistic_net_pct",
            # Direction check for NOT_ENTERED trades (2026-11-19, ghost_view.py): which level the option touched first after the alert.
-           "ghost_result", "ghost_mfe_pct", "ghost_mae_pct"]
+           "ghost_result", "ghost_mfe_pct", "ghost_mae_pct",
+           # ITM/ATM/OTM bucket of the strike (2026-11-19) so strike choice can be measured instead of inferred
+           "moneyness"]
 
 
 def result_pct(trade: dict):
@@ -228,6 +230,7 @@ def _row(trade: dict, engine: str, date_str: str) -> dict:
                                                   trade.get("direction"), str(trade.get("alert_time") or "")[:16]))
     row["ai_verdict"] = trade.get("ai_verdict")
     row["realistic_net_pct"] = realistic_net_pct(res, trade.get("spread_pct"))
+    row["moneyness"] = trade.get("moneyness")
     gv = trade.get("ghost_view") or {}
     if "result" in gv:
         row.update({"ghost_result": gv.get("result"), "ghost_mfe_pct": gv.get("mfe_pct"), "ghost_mae_pct": gv.get("mae_pct")})
