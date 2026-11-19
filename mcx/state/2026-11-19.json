@@ -3385,6 +3385,12 @@
         "spot": 7699.0,
         "call_oi": 558600.0,
         "put_oi": 608200.0
+      },
+      {
+        "t": 841,
+        "spot": 7700.0,
+        "call_oi": 561400.0,
+        "put_oi": 606200.0
       }
     ],
     "NATURALGAS": [
@@ -3657,6 +3663,12 @@
         "spot": 311.0,
         "call_oi": 63976250.0,
         "put_oi": 66931250.0
+      },
+      {
+        "t": 841,
+        "spot": 311.3,
+        "call_oi": 64562500.0,
+        "put_oi": 66948750.0
       }
     ],
     "GOLD": [
@@ -3923,6 +3935,12 @@
         "spot": 129400.0,
         "call_oi": 561.0,
         "put_oi": 729.0
+      },
+      {
+        "t": 841,
+        "spot": 129344.0,
+        "call_oi": 562.0,
+        "put_oi": 721.0
       }
     ],
     "GOLDM": [
@@ -4153,6 +4171,12 @@
         "spot": 129420.0,
         "call_oi": 959500.0,
         "put_oi": 1201900.0
+      },
+      {
+        "t": 841,
+        "spot": 129350.0,
+        "call_oi": 970900.0,
+        "put_oi": 1214800.0
       }
     ]
   },
@@ -4166,7 +4190,8 @@
     "GOLD:spread_4.9pct": 1,
     "GOLD:spread_7.3pct": 1,
     "GOLD:spread_7.5pct": 1,
-    "GOLD:spread_4.8pct": 1
+    "GOLD:spread_4.8pct": 1,
+    "GOLD:spread_37.4pct": 1
   },
   "summary_sent": false,
   "sig_fut2": {
@@ -4175,9 +4200,7 @@
     "GOLDM": "575011",
     "GOLD": "495213"
   },
-  "mcx_scan_failed": [
-    "GOLD"
-  ],
+  "mcx_scan_failed": [],
   "pnl_snaps": [
     "1100",
     "1300"
