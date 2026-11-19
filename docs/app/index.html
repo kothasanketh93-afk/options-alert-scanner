@@ -261,7 +261,9 @@ async function todayView(){
   const add=(src,o,live)=>Object.values(o||{}).forEach(t=>items.push({...t,_src:src,_live:live}));
   if(n){add('NSE',n.s.trades,true);['shadow_trades','fib_pivot_shadow_trades','orb_pivot_shadow_trades','sweep_shadow_trades'].forEach(k=>add('NSE',n.s[k],false))}
   if(m)add('MCX',m.s.mcx_shadow_trades,false);
-  const seen=new Set();let list=items.filter(t=>t.trade_id&&!seen.has(t.trade_id)&&seen.add(t.trade_id));
+  const seen=new Set(),sig=new Set();let list=items.filter(t=>t.trade_id&&!seen.has(t.trade_id)&&seen.add(t.trade_id));
+  list.sort((x,y)=>(y._live?1:0)-(x._live?1:0));/* live copy wins over its shadow twin */
+  list=list.filter(t=>{const k=[t._src,t.symbol,t.strike,t.direction,t.alert_time,nm(t.strategy)].join('|');if(sig.has(k))return false;sig.add(k);return true});
   const tg=t=>t._live||(t.strategy==='fvg'&&t._src==='NSE')||(t.strategy==='ema_pb'&&t._src==='MCX');
   const lotOf=t=>t._src=='MCX'?(CFG.lots[t.symbol]??num(t.lot_multiplier)):LOTS[t.symbol];
   if(ui.mkt!=='ALL')list=list.filter(t=>t._src===ui.mkt);
