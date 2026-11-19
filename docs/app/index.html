@@ -221,6 +221,9 @@ const nm=k=>NAMES[k]||(k.endsWith('_wsl')&&NAMES[k.slice(0,-4)]?NAMES[k.slice(0,
 const $=s=>document.querySelector(s),view=$('#view');
 const MLOT=new Proxy({},{get:(o,k)=>CFG.lots[k]}),COMM=['CRUDEOIL','NATURALGAS','GOLDM','GOLD'];
 let tab='today',cache={},ui={per:'all',from:'',to:'',sSt:'all',sTd:'all',sDy:'all',mkt:CFG.mkt||'ALL',src:'all',st:'all',twins:false,dd:false,sym:'ALL',sort:'net',who:'tg',basis:'tg',open:null};
+const UI_KEYS=['mkt','sTd','sDy','sSt','per','from','to','st','twins','dd','sym','sort','who','basis','pkSort'];
+try{const sv=JSON.parse(localStorage.getItem('ui')||'null');if(sv){UI_KEYS.forEach(k=>{if(sv[k]!==undefined&&typeof sv[k]===typeof ui[k])ui[k]=sv[k]});if(!['ALL','NSE','MCX'].includes(ui.mkt))ui.mkt='ALL';if(['today','days','strat','insight','learn','settings'].includes(sv.tab))tab=sv.tab}}catch(e){}
+const saveUi=()=>{try{const o={tab};UI_KEYS.forEach(k=>o[k]=ui[k]);localStorage.setItem('ui',JSON.stringify(o))}catch(e){}};
 try{tab=localStorage.getItem('v')||'today'}catch(e){}
 let lang='en';try{lang=localStorage.getItem('lang')||'en'}catch(e){}
 const T=(en,te)=>lang==='te'?te:en;
@@ -555,7 +558,7 @@ async function settingsView(){const te=lang==='te',L=CFG.lots;
   <div class="set"><h4>${T('About','గురించి')}</h4><p>${T('Options Scanner dashboard v3.2. Paper (shadow) trades only; no real orders are placed. For education, not advice. Data comes from the scanner’s state files and trade ledger.','ఆప్షన్స్ స్కానర్ డాష్‌బోర్డ్ v2. పేపర్ (షాడో) ట్రేడ్లు మాత్రమే; నిజమైన ఆర్డర్లు పెట్టదు. విద్య కోసం, సలహా కాదు. స్కానర్ స్టేట్ ఫైల్స్ మరియు ట్రేడ్ లెడ్జర్ నుండి డేటా వస్తుంది.')}</p></div>`}
 /* ---------- shell ---------- */
 const VIEWS={settings:settingsView,learn:learnView,today:todayView,days:daysView,strat:stratView,insight:insightView};
-async function render(){stale=false;renderBar();document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v==tab));
+async function render(){saveUi();stale=false;renderBar();document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v==tab));
   try{await VIEWS[tab]();{const st=$('#stamp');if(st)st.textContent=stale?T('offline · showing saved data','ఆఫ్‌లైన్ · సేవ్ చేసిన డేటా'):''}foldFilters();applyLang()}catch(e){view.innerHTML='<div class="empty err">'+T('Could not load data: ','డేటా లోడ్ కాలేదు: ')+esc(e.message)+'</div>'}}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.v;try{localStorage.setItem('v',tab)}catch(e){}scrollTo(0,0);render()});
 view.addEventListener('input',e=>{const t=e.target;if(t.dataset.lot){const v=parseInt(t.value);if(v>0){CFG.lots[t.dataset.lot]=v;saveCfg();cache={}}}if(t.dataset.cap!==undefined){const v=parseFloat(t.value);if(v>=1000){CFG.capital=v;saveCfg()}}if(t.dataset.lim!==undefined){const v=parseFloat(t.value);if(v>0&&v<=10){CFG.lossPct=v;saveCfg()}}if(t.id==='jnote'){const j=getJ(t.dataset.day);j.note=t.value;setJ(t.dataset.day,j)}});
