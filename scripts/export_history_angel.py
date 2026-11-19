@@ -5,7 +5,7 @@ cross-check the Upstox-based backtest. Read-only; never touches scanner, state o
 Chunked in 25-day windows (adaptive split on errors) with throttling.
 """
 import csv, gzip, os, sys, time
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import requests  # noqa: E402

@@ -1,7 +1,7 @@
 """Render the intraday P&L snapshot (pnl_snapshot.py) as a PNG for Telegram. Pillow only; same look as eod_image.py."""
 from PIL import Image, ImageDraw
 
-from eod_image import NAVY, INK, MUTED, LINE, GREEN, RED, GREY, W, PAD, _font, _signed_col
+from eod_image import NAVY, INK, MUTED, LINE, GREY, W, PAD, _font, _signed_col
 
 RH = 38
 

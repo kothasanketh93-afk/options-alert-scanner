@@ -4,7 +4,6 @@ from pathlib import Path
 import config
 import market_data
 import pattern_tape
-import signal_lab
 from logging_setup import get_logger
 from option_chain import resolve_underlying_key
 

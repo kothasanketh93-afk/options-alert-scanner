@@ -3,7 +3,7 @@ export_stock_history.py -- ONE-OFF research export (2026-10-31).
 5-minute candles WITH VOLUME for liquid F&O stocks (Upstox v3 historical-candle) + a probe of the
 expired stock-option API (expiries / contracts / sample candles). Read-only; never touches the scanner.
 """
-import csv, gzip, io, json, os, sys, time
+import csv, gzip, json, os, sys, time
 from datetime import date, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))

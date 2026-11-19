@@ -41,11 +41,10 @@ per-run path calls it.
 import json
 import logging
 import re
-import uuid
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
-from state import STATE_CLONE_DIR, STATE_BRANCH, _run, _safe_pull, _git_identity, ist_now, trading_date_str
+from state import STATE_CLONE_DIR, STATE_BRANCH, _run, _safe_pull, trading_date_str
 import holiday_guard
 
 log = logging.getLogger("trading_system.scan_log_store")

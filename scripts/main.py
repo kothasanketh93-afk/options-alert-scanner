@@ -55,7 +55,6 @@ import eod_report
 import shadow_notify
 import pattern_tape_runner
 import chart_notify
-from app.market import snapshot as market_snapshot
 
 IST = timezone(timedelta(hours=5, minutes=30))
 from trade_record import TERMINAL_STATUSES, new_trade_record  # noqa: F401  (re-exported; also used by tests)

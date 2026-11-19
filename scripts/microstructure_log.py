@@ -15,7 +15,6 @@ per trading day: ledger/microstructure/YYYY-MM-DD.csv on the state branch (small
 """
 import csv
 import io
-from datetime import datetime
 from pathlib import Path
 
 COLUMNS = ["ts", "date", "minute", "symbol", "expiry", "dte", "spot", "strike", "atm_offset",

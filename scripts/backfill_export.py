@@ -23,12 +23,10 @@ GITHUB_TOKEN works when the calling workflow grants that permission).
 """
 
 import io
-import json
 import os
 import re
 import sys
 import zipfile
-from datetime import datetime
 
 import requests
 
