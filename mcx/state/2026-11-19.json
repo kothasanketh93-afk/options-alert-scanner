@@ -3190,7 +3190,7 @@
       "exit_candle_open": 1914.0,
       "sell_view": {
         "error": "LookupError: no opposite-option candle at entry/exit",
-        "tries": 2
+        "tries": 3
       }
     },
     "MCX-oi_flow-GOLD_wsl-PE-20261119-1501-01": {
@@ -3876,6 +3876,12 @@
         "spot": 7718.0,
         "call_oi": 1058100.0,
         "put_oi": 766100.0
+      },
+      {
+        "t": 931,
+        "spot": 7750.0,
+        "call_oi": 1079600.0,
+        "put_oi": 803000.0
       }
     ],
     "NATURALGAS": [
@@ -4226,6 +4232,12 @@
         "spot": 311.8,
         "call_oi": 67060000.0,
         "put_oi": 69260000.0
+      },
+      {
+        "t": 931,
+        "spot": 312.7,
+        "call_oi": 78537500.0,
+        "put_oi": 60975000.0
       }
     ],
     "GOLD": [
@@ -4594,6 +4606,12 @@
         "spot": 129223.0,
         "call_oi": 564.0,
         "put_oi": 705.0
+      },
+      {
+        "t": 931,
+        "spot": 129113.0,
+        "call_oi": 450.0,
+        "put_oi": 677.0
       }
     ],
     "GOLDM": [
@@ -4926,6 +4944,12 @@
         "spot": 129290.0,
         "call_oi": 850700.0,
         "put_oi": 1271700.0
+      },
+      {
+        "t": 931,
+        "spot": 129188.0,
+        "call_oi": 878400.0,
+        "put_oi": 1303000.0
       }
     ]
   },
@@ -4952,9 +4976,7 @@
     "GOLDM": "575011",
     "GOLD": "495213"
   },
-  "mcx_scan_failed": [
-    "GOLD"
-  ],
+  "mcx_scan_failed": [],
   "pnl_snaps": [
     "1100",
     "1300",
