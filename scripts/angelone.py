@@ -70,6 +70,8 @@ before trading real money on this:
      name+expiry -- see _fetch_option_greeks()'s docstring.
 """
 
+import json
+import os
 import time
 from collections import deque
 import requests
@@ -732,10 +734,34 @@ class AngelOneBroker(Broker):
         # is a once-per-run fetch, not a latency-sensitive one.
         # max_attempts=5 (vs. the global default of 3): cheap to retry
         # more for a file this size and this infrequently fetched.
+        # 2026-11-20: optional same-day file cache (SCRIP_MASTER_CACHE_DIR, restored between runs by actions/cache) so most runs
+        # skip the ~37 MB download. The file name carries the IST date, so yesterday's copy is never used. Best-effort only.
+        cache_dir = os.environ.get("SCRIP_MASTER_CACHE_DIR")
+        cache_file = None
+        if cache_dir:
+            day = datetime.now(IST).strftime("%Y-%m-%d")
+            cache_file = os.path.join(cache_dir, f"scrip_master_{day}.json")
+            try:
+                with open(cache_file, "r", encoding="utf-8") as fh:
+                    rows = json.load(fh)
+                if isinstance(rows, list) and rows:
+                    return rows
+            except Exception:
+                pass
         resp = request_with_retry(
             "GET", SCRIP_MASTER_URL, timeout=(10, 180), max_attempts=5, error_cls=BrokerAPIError,
         )
-        return resp.json()
+        rows = resp.json()
+        if cache_file and isinstance(rows, list) and rows:
+            try:
+                os.makedirs(cache_dir, exist_ok=True)
+                tmp = cache_file + ".tmp"
+                with open(tmp, "w", encoding="utf-8") as fh:
+                    json.dump(rows, fh)
+                os.replace(tmp, cache_file)
+            except Exception:
+                pass
+        return rows
 
     def download_instrument_master(self) -> list:
         """

@@ -45,9 +45,20 @@ jobs:
           python-version: '3.12'
       - run: pip install -r requirements.txt
         if: steps.guard.outputs.skip != 'true'
+      - name: Today's date (IST) for the scrip-master cache key
+        id: day
+        if: steps.guard.outputs.skip != 'true'
+        run: echo "d=$(TZ=Asia/Kolkata date +%F)" >> "$GITHUB_OUTPUT"
+      - name: Restore same-day Angel scrip master (skips a ~37 MB download on most runs)
+        if: steps.guard.outputs.skip != 'true'
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/.cache/scrip_master
+          key: scrip-master-${{ steps.day.outputs.d }}
       - name: Run MCX shadow step
         if: steps.guard.outputs.skip != 'true'
         env:
+          SCRIP_MASTER_CACHE_DIR: /home/runner/.cache/scrip_master
           ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
           ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
           ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}

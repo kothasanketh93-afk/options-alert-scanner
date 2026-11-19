@@ -193,9 +193,16 @@ def scan_commodity(broker, st: dict, name: str, c: dict, now: datetime):
     atr = compute_atr(allc[-60:])
     if not atr or atr <= 0:
         return
-    daily = broker.get_daily_candles(fut_key, 5)
-    prev = daily[-1] if daily else None
-    ph, pl = (prev["high"], prev["low"]) if prev else (None, None)
+    # Previous session's high/low is fixed for the whole day: fetch once per commodity per day (saves 1 historical call per run).
+    hl = st.setdefault("prev_hl", {}).get(name)
+    if hl:
+        ph, pl = hl
+    else:
+        daily = broker.get_daily_candles(fut_key, 5)
+        prev = daily[-1] if daily else None
+        ph, pl = (prev["high"], prev["low"]) if prev else (None, None)
+        if prev:
+            st["prev_hl"][name] = [ph, pl]
     _CHART_CTX[name] = (today, ph, pl, sig_fut.get("symbol"))
 
     def safe(strategy, fn, *args):
@@ -552,17 +559,23 @@ def main():
     if os.environ.get("MCX_FORCE") != "1" and not in_session(now):
         log.info("Outside MCX session (%s) -- nothing to do.", now.strftime("%a %H:%M"))
         return 0
+    import time as _tm
+    _t0 = _tm.monotonic()
     state_mod.ensure_state_branch_checked_out(os.environ["REPO_URL"], auth.get_github_token())
+    _t_clone = _tm.monotonic()
     date_str = now.strftime("%Y-%m-%d")
     st = load_state(date_str)
     global _BROKER
     broker = AngelOneBroker()
     broker.login()
     _BROKER = broker
+    _t_login = _tm.monotonic()
     master = broker._scrip_master()
+    _t_master = _tm.monotonic()
     err = None
     try:
         track_open(broker, st)
+        _t_track = _tm.monotonic()
         import time as _t
         import config as _cfg
         gap = float(getattr(_cfg, "MCX_SCAN_GAP_SEC", 0) or 0)
@@ -591,6 +604,7 @@ def main():
                     log.error("MCX %s scan failed (%s: %s) -- continuing.", name, type(exc).__name__, exc)
                     break
         st["mcx_scan_failed"] = failed_now
+        _t_scan = _tm.monotonic()
         try:
             import sell_view
             n = sell_view.attach_all(list(st["mcx_shadow_trades"].values()), sell_view.mcx_opp_key_fn(master),
@@ -640,7 +654,14 @@ def main():
     except Exception as exc:
         log.error("MCX report failed (%s: %s) -- continuing.", type(exc).__name__, exc)
     st["last_run_at"] = state_mod.ist_now().isoformat(timespec="seconds")   # dashboard freshness (no open trades -> no polls)
+    _t_pre = _tm.monotonic()
     save_state(st, f"MCX shadow state {date_str} {now.strftime('%H:%M')}")
+    try:
+        _te = _tm.monotonic()
+        log.info("MCX TIMING clone=%.0fs login=%.0fs master=%.0fs track=%.0fs scan=%.0fs tail=%.0fs save=%.0fs total=%.0fs", _t_clone - _t0,
+                 _t_login - _t_clone, _t_master - _t_login, _t_track - _t_master, _t_scan - _t_track, _t_pre - _t_scan, _te - _t_pre, _te - _t0)
+    except NameError:
+        pass
     if err:
         raise err
     return 0

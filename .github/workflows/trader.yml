@@ -105,6 +105,17 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         run: pip install -r requirements.txt
 
+      - name: Today's date (IST) for the scrip-master cache key
+        id: day
+        if: steps.guard.outputs.skip != 'true'
+        run: echo "d=$(TZ=Asia/Kolkata date +%F)" >> "$GITHUB_OUTPUT"
+      - name: Restore same-day Angel scrip master (skips a ~37 MB download on most runs)
+        if: steps.guard.outputs.skip != 'true'
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/.cache/scrip_master
+          key: scrip-master-${{ steps.day.outputs.d }}
+
       - name: Align scan start to :02:30 / :07:30 ... (only waits when started inside :02:00-:02:30 of a 5-min block)
         if: steps.guard.outputs.skip != 'true'
         run: |
@@ -116,6 +127,7 @@ jobs:
       - name: Run trader
         if: steps.guard.outputs.skip != 'true'
         env:
+          SCRIP_MASTER_CACHE_DIR: /home/runner/.cache/scrip_master
           # Angel One (primary broker) -- see auth.py's docstring on
           # where ANGEL_TOTP_SECRET comes from.
           ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
