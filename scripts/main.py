@@ -945,7 +945,10 @@ def main():
     now = state_mod.ist_now()
     date_str = state_mod.trading_date_str(now)
 
+    import time as _tm
+    _T = {"t0": _tm.monotonic()}
     state_mod.ensure_state_branch_checked_out(repo_url, github_token)
+    _T["clone"] = _tm.monotonic()
 
     # Centralized troubleshooting log retention (2026-08-12): captures
     # every "trading_system.*" log line emitted during this run (same
@@ -1025,6 +1028,7 @@ def main():
     # including any Telegram messages already sent earlier in the run --
     # causing them to be re-sent as duplicates next run.
     run_error = None
+    _T["prep"] = _tm.monotonic()
     try:
         run_scanner_step(state, now)
         try:
@@ -1142,6 +1146,7 @@ def main():
             state, now, state_mod.STATE_CLONE_DIR / "ledger" / "pattern_tape")
     except Exception as exc:
         log.error("Pattern tape failed (%s: %s) -- continuing.", type(exc).__name__, exc)
+    _T["work"] = _tm.monotonic()
     state_mod.cleanup_old_state_files(keep_today=date_str)
     try:    # instrument-master snapshots: only the current week's lot sizes are ever read (weekly/EOD reports)
         pruned = state_mod.prune_dated_files("instrument_master", keep_days=14, today=date_str)
@@ -1152,6 +1157,7 @@ def main():
     commit_message = f"update {date_str} @ {now.strftime('%H:%M:%S')}"
     if run_error is not None:
         commit_message += " (partial run -- error occurred, see job log)"
+    _T["save"] = _tm.monotonic()
     state_mod.save_state(state, commit_message=commit_message)
     if run_error is None:
         maybe_fast_tracker_pass(state, now)
@@ -1159,6 +1165,12 @@ def main():
     logging.getLogger("trading_system").removeHandler(_scan_log_handler)
     scan_log_store.run_retention_and_flush(_scan_log_handler.records, date_str)
 
+    try:
+        _e = _tm.monotonic()
+        log.info("NSE TIMING clone=%.0fs prep(login,master,context)=%.0fs work(scan,track,shadow)=%.0fs tail(reports,ledger)=%.0fs save+logs=%.0fs total=%.0fs",
+                 _T["clone"] - _T["t0"], _T["prep"] - _T["clone"], _T["work"] - _T["prep"], _T.get("save", _T["work"]) - _T["work"], _e - _T.get("save", _T["work"]), _e - _T["t0"])
+    except Exception:
+        pass
     log.info("Run complete for %s @ %s IST.", date_str, now.strftime("%H:%M:%S"))
 
     if run_error is not None:
