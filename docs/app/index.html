@@ -284,8 +284,10 @@ async function todayView(){
   if(ui.mkt!=='ALL')list=list.filter(t=>t._src===ui.mkt);
   list.forEach(t=>{t._tg=tg(t);t._s=stat(t);t._lot=lotOf(t);t._est=est(t,t._lot)});
   list.sort((a,b)=>{const ra=(isOpenT(a._s,a)?0:isWaitT(a._s,a)?1:2),rb=(isOpenT(b._s,b)?0:isWaitT(b._s,b)?1:2);return ra-rb||String(b.alert_time).localeCompare(String(a.alert_time))});
+  const skey0=t=>t._live?'live_scored':t.strategy;
   let base0=ui.twins?list:list.filter(t=>!/_wsl$/.test(t.strategy));
-  if(ui.strat==='all')base0=collapse(base0,t=>[t._src,t.symbol,t.strike,t.direction,t.alert_time].join('|'),t=>nm(t.strategy),t=>(t._live?4:0)+(VAR_RE.test(t.strategy)?0:2)+(t._src==='NSE'&&t.strategy==='fvg'||t._src==='MCX'&&t.strategy==='ema_pb'?1:0));
+  /* one card per signal: same symbol+direction+alert time is ONE idea (ITM/ATM/OTM strikes and strategy variants are siblings) */
+  base0=collapse(base0,t=>[t._src,t.symbol,t.direction,t.alert_time,ui.strat==='all'?'':skey0(t)].join('|'),t=>ui.strat==='all'?nm(t.strategy):String(t.strike).replace(/\.0$/,''),t=>(t._live?4:0)+(VAR_RE.test(t.strategy)?0:2)+(t.moneyness==='ATM'?1.5:0)+(t._src==='NSE'&&t.strategy==='fvg'||t._src==='MCX'&&t.strategy==='ema_pb'?1:0));
   const skey=t=>t._live?'live_scored':t.strategy;
   const base=ui.strat==='all'?base0:base0.filter(t=>skey(t)===ui.strat),bAll=ui.basis==='all'||ui.strat!=='all';
   const DONE=DONE_RE,isOpen=t=>isOpenT(t._s,t),isWait=t=>isWaitT(t._s,t);const win=t=>/T2_HIT|T1_HIT_THEN_EOD/.test(t._s),loss=t=>t._s=='SL_HIT',open=t=>isOpen(t)||isWait(t);
@@ -384,7 +386,7 @@ function ddChart(cum,ds){let pk=0;const d=cum.map(v=>{pk=Math.max(pk,v);return v
 function monthly(daily){const g={};daily.forEach(r=>{const k=r.d.slice(0,7);(g[k]??=[]).push(r)});return `<div class="scroll"><table><tr><th>Month</th><th>Days</th><th>Trades</th><th>Net 1 lot</th></tr>`+Object.keys(g).sort().reverse().map(k=>`<tr><td>${k}</td><td>${g[k].length}</td><td>${g[k].reduce((a,r)=>a+r.x.length,0)}</td><td class="hm ${cl(g[k].reduce((a,r)=>a+r.v,0))}">${rs(g[k].reduce((a,r)=>a+r.v,0))}</td></tr>`).join('')+'</table></div>'}
 /* ---------- days ---------- */
 async function daysView(){const all=scopeOf(await ledger()).filter(t=>!/_wsl$/.test(t.strat));const sets={tg:all.filter(tgT),main:all.filter(t=>(t.eng=='main'&&t.strat=='trade_score')||t.strat=='live_scored'),shadow:all};if(ui.who==='main'&&ui.mkt!=='NSE')ui.who='tg';
-  const rows0=sets[ui.who]||sets.tg;const rows=ui.strat==='all'?collapse(rows0,t=>[t.mkt,t.date,t.sym,t.strike,t.dir,t.at].join('|'),t=>nm(t.strat),t=>(t.strat==='live_scored'?4:0)+(VAR_RE.test(t.strat)?0:2)+(t.strat==='fvg'||t.strat==='ema_pb'?1:0)):rows0.filter(t=>t.strat===ui.strat),g={};rows.forEach(t=>(g[t.date]??=[]).push(t));const ds=Object.keys(g).sort();
+  const rows0=sets[ui.who]||sets.tg;const rows=ui.strat==='all'?collapse(rows0,t=>[t.mkt,t.date,t.sym,t.dir,t.at].join('|'),t=>nm(t.strat),t=>(t.strat==='live_scored'?4:0)+(VAR_RE.test(t.strat)?0:2)+(t.strat==='fvg'||t.strat==='ema_pb'?1:0)):rows0.filter(t=>t.strat===ui.strat),g={};rows.forEach(t=>(g[t.date]??=[]).push(t));const ds=Object.keys(g).sort();
   const daily=ds.map(d=>({d,l:d.slice(5),x:g[d],v:g[d].reduce((a,t)=>a+t.inr,0)}));let c=0;const cum=daily.map(r=>c+=r.v);const M=metrics(rows);
   const chip=(v,l)=>fb('who',v,l);
   const ksD=[...new Set([...rows0.map(t=>t.strat),...(ui.strat!=='all'?[ui.strat]:[])])].map(k=>({k,n:rows0.filter(t=>t.strat===k).length,v:rows0.filter(t=>t.strat===k).reduce((a,t)=>a+t.inr,0)}));
