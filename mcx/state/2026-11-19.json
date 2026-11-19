@@ -5679,7 +5679,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T23:15:00+05:30",
+      "last_processed_ts": "2026-11-19T23:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -5701,8 +5701,8 @@
       "entry_oi": 7,
       "entry_volume": 22,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-19T23:16:48.572743+05:30",
-      "last_price": 2011.5
+      "last_polled_at": "2026-11-19T23:21:47.925492+05:30",
+      "last_price": 2001.5
     },
     "MCX-bos-GOLD_wsl-PE-20261119-2136-01": {
       "trade_id": "MCX-bos-GOLD_wsl-PE-20261119-2136-01",
@@ -5760,7 +5760,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T23:15:00+05:30",
+      "last_processed_ts": "2026-11-19T23:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos_wsl",
@@ -5783,8 +5783,8 @@
       "entry_volume": 22,
       "signal_future_token": null,
       "variant_of": "MCX-bos-GOLD-PE-20261119-2136-01",
-      "last_polled_at": "2026-11-19T23:16:48.572743+05:30",
-      "last_price": 2011.5
+      "last_polled_at": "2026-11-19T23:21:47.925492+05:30",
+      "last_price": 2001.5
     },
     "MCX-vwap_pb-NATURALGAS-PE-20261119-2146-01": {
       "trade_id": "MCX-vwap_pb-NATURALGAS-PE-20261119-2146-01",
@@ -5842,7 +5842,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T23:15:00+05:30",
+      "last_processed_ts": "2026-11-19T23:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "vwap_pb",
@@ -5864,8 +5864,8 @@
       "entry_oi": 25037500,
       "entry_volume": 491875,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-19T23:16:48.572743+05:30",
-      "last_price": 8.2,
+      "last_polled_at": "2026-11-19T23:21:47.925492+05:30",
+      "last_price": 7.65,
       "be_tracked": true,
       "trail_sl": 6.44,
       "trail_exit_price": 6.44
@@ -5926,7 +5926,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T23:15:00+05:30",
+      "last_processed_ts": "2026-11-19T23:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "vwap_pb_wsl",
@@ -5949,8 +5949,8 @@
       "entry_volume": 491875,
       "signal_future_token": null,
       "variant_of": "MCX-vwap_pb-NATURALGAS-PE-20261119-2146-01",
-      "last_polled_at": "2026-11-19T23:16:48.572743+05:30",
-      "last_price": 8.2,
+      "last_polled_at": "2026-11-19T23:21:47.925492+05:30",
+      "last_price": 7.65,
       "be_tracked": true,
       "trail_sl": 6.44,
       "trail_exit_price": 6.44
@@ -6011,7 +6011,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T23:15:00+05:30",
+      "last_processed_ts": "2026-11-19T23:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "ema_pb",
@@ -6034,8 +6034,8 @@
       "entry_volume": 514924,
       "signal_future_token": null,
       "chart_setup_sent": true,
-      "last_polled_at": "2026-11-19T23:16:48.572743+05:30",
-      "last_price": 8.2,
+      "last_polled_at": "2026-11-19T23:21:47.925492+05:30",
+      "last_price": 7.65,
       "waiting_candles": [
         [
           "22:02",
@@ -6144,7 +6144,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T23:15:00+05:30",
+      "last_processed_ts": "2026-11-19T23:20:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "ema_pb_wsl",
@@ -6167,8 +6167,8 @@
       "entry_volume": 514924,
       "signal_future_token": null,
       "variant_of": "MCX-ema_pb-NATURALGAS-PE-20261119-2201-01",
-      "last_polled_at": "2026-11-19T23:16:48.572743+05:30",
-      "last_price": 8.2,
+      "last_polled_at": "2026-11-19T23:21:47.925492+05:30",
+      "last_price": 7.65,
       "waiting_candles": [
         [
           "22:02",
@@ -8246,5 +8246,5 @@
     "2100",
     "2300"
   ],
-  "last_run_at": "2026-11-19T23:16:54+05:30"
+  "last_run_at": "2026-11-19T23:21:53+05:30"
 }
