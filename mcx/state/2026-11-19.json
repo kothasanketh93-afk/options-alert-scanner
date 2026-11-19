@@ -5277,17 +5277,17 @@
       "final_status": null,
       "actual_entry_time": "2026-11-19T19:38:00+05:30",
       "tracked_entry_price": 6.1,
-      "highest_since_entry": 6.2,
-      "lowest_since_entry": 5.9,
-      "max_favorable_pct": 1.64,
-      "max_adverse_pct": -3.28,
+      "highest_since_entry": 6.85,
+      "lowest_since_entry": 5.85,
+      "max_favorable_pct": 12.3,
+      "max_adverse_pct": -4.1,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T19:40:00+05:30",
+      "last_processed_ts": "2026-11-19T19:55:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sess_sweep",
@@ -5309,8 +5309,8 @@
       "entry_oi": 20412500,
       "entry_volume": 217804,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-19T19:41:40.019324+05:30",
-      "last_price": 6.0,
+      "last_polled_at": "2026-11-19T19:56:44.667873+05:30",
+      "last_price": 6.7,
       "waiting_candles": [
         [
           "19:37",
@@ -5367,17 +5367,17 @@
       "final_status": null,
       "actual_entry_time": "2026-11-19T19:38:00+05:30",
       "tracked_entry_price": 6.1,
-      "highest_since_entry": 6.2,
-      "lowest_since_entry": 5.9,
-      "max_favorable_pct": 1.64,
-      "max_adverse_pct": -3.28,
+      "highest_since_entry": 6.85,
+      "lowest_since_entry": 5.85,
+      "max_favorable_pct": 12.3,
+      "max_adverse_pct": -4.1,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T19:40:00+05:30",
+      "last_processed_ts": "2026-11-19T19:55:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sess_sweep_wsl",
@@ -5400,8 +5400,8 @@
       "entry_volume": 217804,
       "signal_future_token": null,
       "variant_of": "MCX-sess_sweep-NATURALGAS-PE-20261119-1936-01",
-      "last_polled_at": "2026-11-19T19:41:40.019324+05:30",
-      "last_price": 6.0,
+      "last_polled_at": "2026-11-19T19:56:44.667873+05:30",
+      "last_price": 6.7,
       "waiting_candles": [
         [
           "19:37",
@@ -5465,12 +5465,6 @@
   },
   "flow_snap": {
     "CRUDEOIL": [
-      {
-        "t": 781,
-        "spot": 7716.0,
-        "call_oi": 541800.0,
-        "put_oi": 586300.0
-      },
       {
         "t": 791,
         "spot": 7719.0,
@@ -5944,15 +5938,15 @@
         "spot": 7847.0,
         "call_oi": 1891900.0,
         "put_oi": 1458400.0
+      },
+      {
+        "t": 1196,
+        "spot": 7832.0,
+        "call_oi": 1886800.0,
+        "put_oi": 1463600.0
       }
     ],
     "NATURALGAS": [
-      {
-        "t": 751,
-        "spot": 311.2,
-        "call_oi": 61321250.0,
-        "put_oi": 65860000.0
-      },
       {
         "t": 756,
         "spot": 312.2,
@@ -6426,15 +6420,15 @@
         "spot": 316.6,
         "call_oi": 104637500.0,
         "put_oi": 99178750.0
+      },
+      {
+        "t": 1196,
+        "spot": 315.6,
+        "call_oi": 105878750.0,
+        "put_oi": 98946250.0
       }
     ],
     "GOLD": [
-      {
-        "t": 781,
-        "spot": 129350.0,
-        "call_oi": 549.0,
-        "put_oi": 726.0
-      },
       {
         "t": 791,
         "spot": 129311.0,
@@ -6908,15 +6902,15 @@
         "spot": 128580.0,
         "call_oi": 582.0,
         "put_oi": 770.0
+      },
+      {
+        "t": 1196,
+        "spot": 128531.0,
+        "call_oi": 593.0,
+        "put_oi": 773.0
       }
     ],
     "GOLDM": [
-      {
-        "t": 756,
-        "spot": 129392.0,
-        "call_oi": 925800.0,
-        "put_oi": 1193200.0
-      },
       {
         "t": 766,
         "spot": 129346.0,
@@ -7390,6 +7384,12 @@
         "spot": 128600.0,
         "call_oi": 1434300.0,
         "put_oi": 1801700.0
+      },
+      {
+        "t": 1196,
+        "spot": 128599.0,
+        "call_oi": 1433800.0,
+        "put_oi": 1782000.0
       }
     ]
   },
