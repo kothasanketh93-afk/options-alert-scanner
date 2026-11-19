@@ -292,7 +292,7 @@ async function todayView(){
   const shown=base.filter(t=>(bAll||t._tg)&&(ui.st=='all'||(ui.st=='won'&&win(t))||(ui.st=='lost'&&loss(t))||(ui.st=='open'&&open(t))));
   const closed=base.filter(t=>t._est!=null&&DONE.test(t._s)),sum=closed.reduce((a,t)=>a+t._est,0);
   const opens=base.filter(isOpen),unreal=opens.reduce((a,t)=>a+(t._est||0),0),oRisk=opens.reduce((a,t)=>{const e=num(t.tracked_entry_price)??num(t.alert_premium),sl=num(t.stop_loss);return a+(e!=null&&sl!=null&&t._lot?Math.max(0,(e-sl)*t._lot):0)},0);
-  const nr=n?ageMin(n.s.last_run_at):null,mt=m?Math.min(...Object.values(m.s.mcx_shadow_trades||{}).map(t=>ageMin(t.last_polled_at)).filter(x=>x!=null),1e9):null,mr=mt==1e9?null:mt;
+  const nr=n?ageMin(n.s.last_run_at):null,mt=m?Math.min(ageMin(m.s.last_run_at)??1e9,...Object.values(m.s.mcx_shadow_trades||{}).map(t=>ageMin(t.last_polled_at)).filter(x=>x!=null),1e9):null,mr=mt==1e9?null:mt;
   const ist=new Date(Date.now()+5.5*36e5),mins=ist.getUTCHours()*60+ist.getUTCMinutes(),wk=ist.getUTCDay(),nOpen=wk>0&&wk<6&&mins>=555&&mins<=935,mOpen=wk>0&&wk<6&&mins>=540&&mins<=1425,cls=(a,o)=>!o?'mut':a==null?'warnc':a>20?'neg':a>10?'warnc':'pos';
   const liveS=base.filter(t=>t._live&&DONE.test(t._s)&&t._est!=null).reduce((a,t)=>a+t._est,0),shS=sum-liveS;
   const chip=fb;

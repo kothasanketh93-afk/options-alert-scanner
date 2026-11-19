@@ -639,6 +639,7 @@ def main():
         send_reports(st, now)
     except Exception as exc:
         log.error("MCX report failed (%s: %s) -- continuing.", type(exc).__name__, exc)
+    st["last_run_at"] = state_mod.ist_now().isoformat(timespec="seconds")   # dashboard freshness (no open trades -> no polls)
     save_state(st, f"MCX shadow state {date_str} {now.strftime('%H:%M')}")
     if err:
         raise err
