@@ -7,3 +7,5 @@ date,symbol,bar_time,open,high,low,close,volume,atr14,trend15,gap_dir,patterns,p
 2026-11-19,BANKNIFTY,09:40,62179.9,62271.65,62174.95,62243.85,0.0,95.23,1,1,,0,,,62363.75,61765.45,62038.65
 2026-11-19,NIFTY,09:45,25228.95,25257.3,25224.95,25257.1,0.0,35.41,-1,-1,,0,composite_ema_rsi_macd:CE,pdhl_gap@09:30:PE;rsi_reversion@09:30:CE;camarilla_h3l3@09:35:CE;composite_ema_rsi_macd@09:45:CE,25390.8,25141.8,25227.95
 2026-11-19,BANKNIFTY,09:45,62251.15,62343.35,62241.75,62335.95,0.0,95.68,1,1,,0,orb15_gap:CE;orb15_gap_trend:CE,orb15_gap@09:45:CE;orb15_gap_trend@09:45:CE,62363.75,61765.45,62038.65
+2026-11-19,NIFTY,09:50,25260.05,25281.45,25242.15,25261.1,0.0,35.7,-1,-1,Doji(n),0,ema_cross_5m:CE,pdhl_gap@09:30:PE;rsi_reversion@09:30:CE;camarilla_h3l3@09:35:CE;composite_ema_rsi_macd@09:45:CE;ema_cross_5m@09:50:CE,25390.8,25141.8,25227.95
+2026-11-19,BANKNIFTY,09:50,62336.0,62410.95,62305.6,62349.2,0.0,96.37,1,1,Spinning Top(n),0,pivot_break:CE,orb15_gap@09:45:CE;orb15_gap_trend@09:45:CE;pivot_break@09:50:CE,62363.75,61765.45,62038.65
