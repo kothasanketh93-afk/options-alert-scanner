@@ -527,6 +527,171 @@
       "variant_of": "MCX-oi_flow-NATURALGAS-CE-20261119-1016-01",
       "last_polled_at": "2026-11-19T10:21:39.690103+05:30",
       "last_price": 8.4
+    },
+    "MCX-fvg-GOLDM-PE-20261119-1026-01": {
+      "trade_id": "MCX-fvg-GOLDM-PE-20261119-1026-01",
+      "display_label": "MCX 7",
+      "symbol": "GOLDM",
+      "direction": "PE",
+      "moneyness": "ATM",
+      "instrument_key": "MCX|584938",
+      "strike": 129000.0,
+      "expiry": "2026-11-27",
+      "spot_price": 129170.0,
+      "alert_time": "2026-11-19T10:26:33.507420+05:30",
+      "alert_premium": 2034.0,
+      "entry_low": 2034.0,
+      "entry_high": 2034.0,
+      "stop_loss": 1973.0,
+      "initial_stop_loss": 1973.0,
+      "target_1": 2125.5,
+      "target_2": 2186.5,
+      "session": "MCX",
+      "grade": "Shadow",
+      "trade_score": 50,
+      "bid": 2026.5,
+      "ask": 2034.5,
+      "spread_pct": 0.39,
+      "probability_pct": null,
+      "probability_label": "Shadow",
+      "score_breakdown": [],
+      "confidence_score": 5.0,
+      "risk_score": 4.5,
+      "reward_score": 6.0,
+      "expected_rr": "1:1.5",
+      "factor_checklist": [],
+      "confidence_stars": "",
+      "confidence_label": "Shadow",
+      "risk_rating": "",
+      "risk_label": "Unvalidated",
+      "expected_holding_minutes": [
+        30,
+        180
+      ],
+      "why_reasons": [],
+      "alternatives": [],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-11-19T10:26:33.507420+05:30",
+      "messages_sent": [],
+      "streak_counted": false,
+      "strategy": "fvg",
+      "probability_status": "shadow_only",
+      "execution_mode": "shadow",
+      "live_alert_sent": false,
+      "engine": "mcx",
+      "market_close_hhmm": [
+        23,
+        25
+      ],
+      "delta_proxy": 0.5,
+      "lot_multiplier": 10,
+      "level_name": "FVG",
+      "level_value": 129283.0,
+      "signal_close": 129195.0,
+      "sweep_extreme": 129317.0,
+      "fvg": [
+        129200.0,
+        129283.0
+      ],
+      "entry_oi": 186400,
+      "entry_volume": 8152,
+      "signal_future_token": null
+    },
+    "MCX-fvg-GOLDM_wsl-PE-20261119-1026-01": {
+      "trade_id": "MCX-fvg-GOLDM_wsl-PE-20261119-1026-01",
+      "display_label": "MCX 8",
+      "symbol": "GOLDM",
+      "direction": "PE",
+      "moneyness": "ATM",
+      "instrument_key": "MCX|584938",
+      "strike": 129000.0,
+      "expiry": "2026-11-27",
+      "spot_price": 129170.0,
+      "alert_time": "2026-11-19T10:26:33.507420+05:30",
+      "alert_premium": 2034.0,
+      "entry_low": 2034.0,
+      "entry_high": 2034.0,
+      "stop_loss": 1912.0,
+      "initial_stop_loss": 1912.0,
+      "target_1": 2125.5,
+      "target_2": 2186.5,
+      "session": "MCX",
+      "grade": "Shadow",
+      "trade_score": 50,
+      "bid": 2026.5,
+      "ask": 2034.5,
+      "spread_pct": 0.39,
+      "probability_pct": null,
+      "probability_label": "Shadow",
+      "score_breakdown": [],
+      "confidence_score": 5.0,
+      "risk_score": 4.5,
+      "reward_score": 6.0,
+      "expected_rr": "1:1.5",
+      "factor_checklist": [],
+      "confidence_stars": "",
+      "confidence_label": "Shadow",
+      "risk_rating": "",
+      "risk_label": "Unvalidated",
+      "expected_holding_minutes": [
+        30,
+        180
+      ],
+      "why_reasons": [],
+      "alternatives": [],
+      "status": "WAITING_ENTRY",
+      "final_status": null,
+      "actual_entry_time": null,
+      "tracked_entry_price": null,
+      "highest_since_entry": null,
+      "lowest_since_entry": null,
+      "max_favorable_pct": 0.0,
+      "max_adverse_pct": 0.0,
+      "t1_hit": false,
+      "t1_hit_time": null,
+      "t2_hit": false,
+      "t2_hit_time": null,
+      "sl_hit_time": null,
+      "eod_last_price": null,
+      "last_processed_ts": "2026-11-19T10:26:33.507420+05:30",
+      "messages_sent": [],
+      "streak_counted": false,
+      "strategy": "fvg_wsl",
+      "probability_status": "shadow_only",
+      "execution_mode": "shadow",
+      "live_alert_sent": false,
+      "engine": "mcx",
+      "market_close_hhmm": [
+        23,
+        25
+      ],
+      "delta_proxy": 0.5,
+      "lot_multiplier": 10,
+      "level_name": "FVG",
+      "level_value": 129283.0,
+      "signal_close": 129195.0,
+      "sweep_extreme": 129317.0,
+      "fvg": [
+        129200.0,
+        129283.0
+      ],
+      "entry_oi": 186400,
+      "entry_volume": 8152,
+      "signal_future_token": null,
+      "variant_of": "MCX-fvg-GOLDM-PE-20261119-1026-01"
     }
   },
   "next_seq": {
@@ -535,7 +700,9 @@
     "MCX-fvg-CRUDEOIL": 1,
     "MCX-fvg-CRUDEOIL_wsl": 1,
     "MCX-oi_flow-NATURALGAS": 1,
-    "MCX-oi_flow-NATURALGAS_wsl": 1
+    "MCX-oi_flow-NATURALGAS_wsl": 1,
+    "MCX-fvg-GOLDM": 1,
+    "MCX-fvg-GOLDM_wsl": 1
   },
   "flow_snap": {
     "CRUDEOIL": [
@@ -678,6 +845,12 @@
         "spot": 317.0,
         "call_oi": 59351250.0,
         "put_oi": 57201250.0
+      },
+      {
+        "t": 626,
+        "spot": 316.6,
+        "call_oi": 59958750.0,
+        "put_oi": 57890000.0
       }
     ],
     "GOLD": [
@@ -790,6 +963,12 @@
         "spot": 129270.0,
         "call_oi": 625800.0,
         "put_oi": 1063200.0
+      },
+      {
+        "t": 626,
+        "spot": 129195.0,
+        "call_oi": 626500.0,
+        "put_oi": 1066600.0
       }
     ]
   },
@@ -802,8 +981,8 @@
     "GOLD": "495213"
   },
   "mcx_scan_failed": [
-    "NATURALGAS",
-    "GOLD"
+    "GOLD",
+    "CRUDEOIL"
   ],
   "pnl_snaps": []
 }
