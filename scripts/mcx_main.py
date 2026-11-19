@@ -600,6 +600,14 @@ def main():
         except Exception as exc:
             log.error("MCX sell view failed (%s: %s) -- continuing.", type(exc).__name__, exc)
         try:
+            import ghost_view
+            n = ghost_view.attach_all(list(st["mcx_shadow_trades"].values()),
+                                      lambda k, since: broker.get_candles(k, "1minute", since_iso=since), now, log, TRADE_CLOSE_HHMM)
+            if n:
+                log.info("MCX GHOST_VIEW checked %d not-entered trade(s)", n)
+        except Exception as exc:
+            log.error("MCX ghost view failed (%s: %s) -- continuing.", type(exc).__name__, exc)
+        try:
             import chart_notify
             chart_notify.flush()          # all of this run's notices are out; now the charts
         except Exception as exc:

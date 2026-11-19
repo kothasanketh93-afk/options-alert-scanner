@@ -14,6 +14,8 @@ import io
 from pathlib import Path
 
 import config
+import ghost_view
+from datetime import datetime
 
 TERMINAL = {"T2_HIT", "SL_HIT", "NOT_ENTERED", "AMBIGUOUS", "EOD_CLOSED"}
 # final_status values the tracker writes after T1 / trailing-stop events. BUGFIX 2026-11-03: these were missing here, so
@@ -35,7 +37,9 @@ COLUMNS = ["trade_id", "date", "engine", "strategy", "symbol", "direction", "str
            # AI tutor's view of the setup at alert time (ai_tutor.py): supportive / mixed / against -- measured, not used
            "ai_verdict",
            # Realistic execution what-if (2026-11-12): ask-in / bid-out + slippage, then costs. Measured beside net_result_pct.
-           "realistic_net_pct"]
+           "realistic_net_pct",
+           # Direction check for NOT_ENTERED trades (2026-11-19, ghost_view.py): which level the option touched first after the alert.
+           "ghost_result", "ghost_mfe_pct", "ghost_mae_pct"]
 
 
 def result_pct(trade: dict):
@@ -224,6 +228,9 @@ def _row(trade: dict, engine: str, date_str: str) -> dict:
                                                   trade.get("direction"), str(trade.get("alert_time") or "")[:16]))
     row["ai_verdict"] = trade.get("ai_verdict")
     row["realistic_net_pct"] = realistic_net_pct(res, trade.get("spread_pct"))
+    gv = trade.get("ghost_view") or {}
+    if "result" in gv:
+        row.update({"ghost_result": gv.get("result"), "ghost_mfe_pct": gv.get("mfe_pct"), "ghost_mae_pct": gv.get("mae_pct")})
     sv = trade.get("sell_view") or {}
     if "pct" in sv:
         row.update({"sell_option": sv.get("option"), "sell_entry": sv.get("entry"), "sell_exit": sv.get("exit"),
@@ -258,6 +265,8 @@ def append_resolved(state: dict, ledger_path: Path) -> int:
                 status = trade.get("final_status") or trade.get("status")
                 if (status not in TERMINAL_FINAL and trade.get("status") not in TERMINAL) or trade["trade_id"] in existing:
                     continue
+                if ghost_view.hold_row(trade, datetime.now(ghost_view.IST), config.MARKET_CLOSE_HHMM):
+                    continue                  # NOT_ENTERED: wait for its direction check (ghost_view.py)
                 new_rows.append(_row(trade, engine, state.get("date")))
                 existing.add(trade["trade_id"])
             except Exception:

@@ -738,6 +738,15 @@ def run_sell_view_step(state: dict):
         log.info("SELL_VIEW priced %d closed trade(s)", n)
 
 
+def run_ghost_view_step(state: dict, now: datetime):
+    """Direction check for NOT_ENTERED trades (ghost_view.py), after the close. Never affects any trade's own outcome."""
+    import ghost_view
+    trades = [t for key, _e in outcomes_ledger.STATE_KEYS for t in (state.get(key) or {}).values()]
+    n = ghost_view.attach_all(trades, market_data.get_1min_candles_since, now, log, config.MARKET_CLOSE_HHMM)
+    if n:
+        log.info("GHOST_VIEW checked %d not-entered trade(s)", n)
+
+
 def maybe_send_weekly_lesson(state: dict, now: datetime):
     """Monday, first run from 09:00: this week's Telugu concept lesson (weekly_lesson.py). Best-effort, once."""
     if now.weekday() != 0 or (now.hour, now.minute) < (9, 0) or state.get("weekly_lesson_sent"):
@@ -1055,6 +1064,11 @@ def main():
         except Exception as exc:
             log.error("Sweep shadow step failed (%s: %s) -- continuing with the rest of this run.",
                        type(exc).__name__, exc, exc_info=True)
+
+        try:
+            run_ghost_view_step(state, now)
+        except Exception as exc:
+            log.error("Ghost view step failed (%s: %s) -- continuing.", type(exc).__name__, exc)
 
         try:
             run_sell_view_step(state)
