@@ -148,7 +148,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T12:30:00+05:30",
+      "last_processed_ts": "2026-11-19T12:45:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow_wsl",
@@ -171,8 +171,8 @@
       "entry_volume": 2360,
       "signal_future_token": null,
       "variant_of": "MCX-oi_flow-CRUDEOIL-CE-20261119-0941-01",
-      "last_polled_at": "2026-11-19T12:31:39.272874+05:30",
-      "last_price": 430.0
+      "last_polled_at": "2026-11-19T12:46:42.740161+05:30",
+      "last_price": 440.8
     },
     "MCX-fvg-CRUDEOIL-CE-20261119-1011-01": {
       "trade_id": "MCX-fvg-CRUDEOIL-CE-20261119-1011-01",
@@ -1668,16 +1668,16 @@
       "actual_entry_time": "2026-11-19T11:32:00+05:30",
       "tracked_entry_price": 437.0,
       "highest_since_entry": 443.0,
-      "lowest_since_entry": 427.0,
+      "lowest_since_entry": 426.0,
       "max_favorable_pct": 1.37,
-      "max_adverse_pct": -2.29,
+      "max_adverse_pct": -2.52,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T12:30:00+05:30",
+      "last_processed_ts": "2026-11-19T12:45:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "vwap_pb",
@@ -1699,8 +1699,8 @@
       "entry_oi": 129800,
       "entry_volume": 3829,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-19T12:31:39.272874+05:30",
-      "last_price": 430.0,
+      "last_polled_at": "2026-11-19T12:46:42.740161+05:30",
+      "last_price": 440.8,
       "waiting_candles": [
         [
           "11:27",
@@ -1786,16 +1786,16 @@
       "actual_entry_time": "2026-11-19T11:32:00+05:30",
       "tracked_entry_price": 437.0,
       "highest_since_entry": 443.0,
-      "lowest_since_entry": 427.0,
+      "lowest_since_entry": 426.0,
       "max_favorable_pct": 1.37,
-      "max_adverse_pct": -2.29,
+      "max_adverse_pct": -2.52,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T12:30:00+05:30",
+      "last_processed_ts": "2026-11-19T12:45:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "vwap_pb_wsl",
@@ -1818,8 +1818,8 @@
       "entry_volume": 3829,
       "signal_future_token": null,
       "variant_of": "MCX-vwap_pb-CRUDEOIL-CE-20261119-1126-01",
-      "last_polled_at": "2026-11-19T12:31:39.272874+05:30",
-      "last_price": 430.0,
+      "last_polled_at": "2026-11-19T12:46:42.740161+05:30",
+      "last_price": 440.8,
       "waiting_candles": [
         [
           "11:27",
@@ -2848,6 +2848,12 @@
         "spot": 7730.0,
         "call_oi": 862100.0,
         "put_oi": 688700.0
+      },
+      {
+        "t": 766,
+        "spot": 7727.0,
+        "call_oi": 861700.0,
+        "put_oi": 688900.0
       }
     ],
     "NATURALGAS": [
@@ -3054,6 +3060,12 @@
         "spot": 313.1,
         "call_oi": 68772500.0,
         "put_oi": 56712500.0
+      },
+      {
+        "t": 766,
+        "spot": 312.7,
+        "call_oi": 68717500.0,
+        "put_oi": 57233750.0
       }
     ],
     "GOLD": [
@@ -3242,6 +3254,12 @@
         "spot": 129261.0,
         "call_oi": 533.0,
         "put_oi": 710.0
+      },
+      {
+        "t": 766,
+        "spot": 129250.0,
+        "call_oi": 539.0,
+        "put_oi": 711.0
       }
     ],
     "GOLDM": [
@@ -3418,6 +3436,12 @@
         "spot": 129392.0,
         "call_oi": 925800.0,
         "put_oi": 1193200.0
+      },
+      {
+        "t": 766,
+        "spot": 129346.0,
+        "call_oi": 922300.0,
+        "put_oi": 1193000.0
       }
     ]
   },
@@ -3436,9 +3460,7 @@
     "GOLDM": "575011",
     "GOLD": "495213"
   },
-  "mcx_scan_failed": [
-    "GOLDM"
-  ],
+  "mcx_scan_failed": [],
   "pnl_snaps": [
     "1100"
   ]
