@@ -349,7 +349,6 @@ ENABLE_INTRADAY_RERANK = True
 # (rather than a bare comment) so a schedule change only needs this one
 # edit, and so intraday_rerank.py can log/verify today's first scan tick
 # landed at or after this time.
-INITIAL_RANK_TIME = "09:30"
 
 # RERANK_TIMES: the HH:MM (IST, 24h) marks at which SCAN_UNIVERSE is
 # recomputed from a fresh, live re-score of the full universe/dynamic
@@ -565,16 +564,6 @@ CONDITIONS_ALERT_MODE = True
 # Early Breakout engine: alert floor on ITS score; 0 = no score floor (conditions decide).
 EARLY_BREAKOUT_SCORE_GATE_ENABLED = False
 STRONG_ENTRY = 85
-
-GRADE_THRESHOLDS = [
-    (STRONG_ENTRY, "Strong Entry"),
-    (ENTRY_SCORE, "Entry"),
-]
-
-CONFIDENCE_DISPLAY = {
-    "Strong Entry": ("★★★★★", "Very High"),
-    "Entry":        ("★★★☆☆", "Moderate"),
-}
 
 # --- Phase 3: Professional Trade Score Engine (trade_score.py) ---
 # Replaces the binary strengths (1.0/0.0 per factor) grading.py's
