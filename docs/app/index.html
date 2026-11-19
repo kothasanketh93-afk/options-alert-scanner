@@ -225,8 +225,8 @@ const infoFor=k=>(lang==='te'?INFO_TE:INFO)[k.replace(/_wsl$/,'')]||(lang==='te'
 const nm=k=>NAMES[k]||(k.endsWith('_wsl')&&NAMES[k.slice(0,-4)]?NAMES[k.slice(0,-4)]+' (wide SL)':k);
 const $=s=>document.querySelector(s),view=$('#view');
 const MLOT=new Proxy({},{get:(o,k)=>CFG.lots[k]}),COMM=['CRUDEOIL','NATURALGAS','GOLDM','GOLD'];
-let tab='today',cache={},ui={per:'all',from:'',to:'',sSt:'all',sTd:'all',sDy:'all',mkt:CFG.mkt||'ALL',src:'all',st:'all',twins:false,dd:false,sym:'ALL',sort:'net',who:'tg',basis:'tg',open:null};
-const UI_KEYS=['mkt','sTd','sDy','sSt','per','from','to','st','twins','dd','sym','sort','who','basis','pkSort'];
+let tab='today',cache={},ui={per:'all',from:'',to:'',strat:'all',mkt:CFG.mkt||'ALL',src:'all',st:'all',twins:false,dd:false,sym:'ALL',sort:'net',who:'tg',basis:'tg',open:null};
+const UI_KEYS=['mkt','strat','per','from','to','st','twins','dd','sym','sort','who','basis','pkSort'];
 try{const sv=JSON.parse(localStorage.getItem('ui')||'null');if(sv){UI_KEYS.forEach(k=>{if(sv[k]!==undefined&&typeof sv[k]===typeof ui[k])ui[k]=sv[k]});if(!['ALL','NSE','MCX'].includes(ui.mkt))ui.mkt='ALL';if(['today','days','strat','insight','learn','settings'].includes(sv.tab))tab=sv.tab}}catch(e){}
 const saveUi=()=>{try{const o={tab};UI_KEYS.forEach(k=>o[k]=ui[k]);localStorage.setItem('ui',JSON.stringify(o))}catch(e){}};
 try{tab=localStorage.getItem('v')||'today'}catch(e){}
@@ -278,10 +278,10 @@ async function todayView(){
   list.forEach(t=>{t._tg=tg(t);t._s=stat(t);t._lot=lotOf(t);t._est=est(t,t._lot)});
   list.sort((a,b)=>{const ra=(isOpenT(a._s,a)?0:isWaitT(a._s,a)?1:2),rb=(isOpenT(b._s,b)?0:isWaitT(b._s,b)?1:2);return ra-rb||String(b.alert_time).localeCompare(String(a.alert_time))});
   const base0=ui.twins?list:list.filter(t=>!/_wsl$/.test(t.strategy));
-  if(ui.sTd!=='all'&&!base0.some(t=>t.strategy===ui.sTd))ui.sTd='all';
-  const base=ui.sTd==='all'?base0:base0.filter(t=>t.strategy===ui.sTd);
+  const skey=t=>t._live?'live_scored':t.strategy;
+  const base=ui.strat==='all'?base0:base0.filter(t=>skey(t)===ui.strat),bAll=ui.basis==='all'||ui.strat!=='all';
   const DONE=DONE_RE,isOpen=t=>isOpenT(t._s,t),isWait=t=>isWaitT(t._s,t);const win=t=>/T2_HIT|T1_HIT_THEN_EOD/.test(t._s),loss=t=>t._s=='SL_HIT'||t._s=='T1_THEN_SL',open=t=>isOpen(t)||isWait(t);
-  const shown=base.filter(t=>(ui.basis==='all'||t._tg)&&(ui.st=='all'||(ui.st=='won'&&win(t))||(ui.st=='lost'&&loss(t))||(ui.st=='open'&&open(t))));
+  const shown=base.filter(t=>(bAll||t._tg)&&(ui.st=='all'||(ui.st=='won'&&win(t))||(ui.st=='lost'&&loss(t))||(ui.st=='open'&&open(t))));
   const closed=base.filter(t=>t._est!=null&&DONE.test(t._s)),sum=closed.reduce((a,t)=>a+t._est,0);
   const opens=base.filter(isOpen),unreal=opens.reduce((a,t)=>a+(t._est||0),0),oRisk=opens.reduce((a,t)=>{const e=num(t.tracked_entry_price)??num(t.alert_premium),sl=num(t.stop_loss);return a+(e!=null&&sl!=null&&t._lot?Math.max(0,(e-sl)*t._lot):0)},0);
   const nr=n?ageMin(n.s.last_run_at):null,mt=m?Math.min(...Object.values(m.s.mcx_shadow_trades||{}).map(t=>ageMin(t.last_polled_at)).filter(x=>x!=null),1e9):null,mr=mt==1e9?null:mt;
@@ -289,15 +289,15 @@ async function todayView(){
   const liveS=base.filter(t=>t._live&&DONE.test(t._s)&&t._est!=null).reduce((a,t)=>a+t._est,0),shS=sum-liveS;
   const chip=fb;
   let LT=null;try{LT=scopeOf(await ledger())}catch(e){}
-  const hs=ui.basis==='all'?base:base.filter(t=>t._tg),hClosed=hs.filter(t=>t._est!=null&&DONE.test(t._s)),hSum=hClosed.reduce((a,t)=>a+t._est,0),hOpen=hs.filter(isOpen),hUn=hOpen.reduce((a,t)=>a+(t._est||0),0),dayTot=hSum+hUn;
+  const hs=bAll?base:base.filter(t=>t._tg),hClosed=hs.filter(t=>t._est!=null&&DONE.test(t._s)),hSum=hClosed.reduce((a,t)=>a+t._est,0),hOpen=hs.filter(isOpen),hUn=hOpen.reduce((a,t)=>a+(t._est||0),0),dayTot=hSum+hUn;
   const bySrc=m=>{const x=hs.filter(t=>t._src===m&&t._est!=null&&(DONE.test(t._s)||isOpen(t)));return{v:x.reduce((a,t)=>a+t._est,0),n:hs.filter(t=>t._src===m).length}};
-  const sg={};base0.filter(t=>ui.basis==='all'||t._tg).forEach(t=>{const r=sg[t.strategy]??={k:t.strategy,n:0,w:0,l:0,o:0,v:0};r.n++;if(win(t))r.w++;else if(loss(t))r.l++;else if(isOpen(t))r.o++;if(t._est!=null&&(DONE.test(t._s)||isOpen(t)))r.v+=t._est});
+  const sg={};base0.forEach(t=>{const r=sg[skey(t)]??={k:skey(t),n:0,w:0,l:0,o:0,v:0};r.n++;if(win(t))r.w++;else if(loss(t))r.l++;else if(isOpen(t))r.o++;if(t._est!=null&&(DONE.test(t._s)||isOpen(t)))r.v+=t._est});
+  if(ui.strat!=='all'&&!sg[ui.strat])sg[ui.strat]={k:ui.strat,n:0,w:0,l:0,o:0,v:0};
   const sgl=Object.values(sg).sort((a,b)=>b.v-a.v);
-  PK.sTd={title:T('Choose strategy','స్ట్రాటజీ ఎంచుకోండి'),sortable:true,items:[pkItem('all',T('All strategies','అన్ని స్ట్రాటజీలు'),null,sgl.reduce((a,r)=>a+r.v,0)),...sgl.map(r=>pkItem(r.k,nm(r.k),r.n,r.v))]};
-  const stratCard=sgl.length>1||ui.sTd!=='all'?pkBtn('sTd',T('Strategy','స్ట్రాటజీ'),pkCur('sTd')):'';
+
   const lim=CFG.capital*CFG.lossPct/100,used=Math.max(0,-hSum),usedPct=lim?Math.min(100,used/lim*100):0;
-  const allT=LT?LT.filter(ui.basis==='all'?(()=>true):tgT).reduce((a,t)=>a+t.inr,0):null,allN=LT?LT.filter(ui.basis==='all'?(()=>true):tgT).length:0,hW=hs.filter(win).length,hL=hs.filter(loss).length,decided=hW+hL;
-  const basisSeg=`<div class="seg2" style="margin:0 0 8px"><button data-f="basis:tg" aria-pressed="${ui.basis==='tg'}">${T('Telegram alerts','టెలిగ్రామ్ అలర్ట్‌లు')}</button><button data-f="basis:all" aria-pressed="${ui.basis==='all'}">${T('All strategies','అన్ని స్ట్రాటజీలు')}</button></div>`;
+  const allT=LT?LT.filter(t=>(ui.strat==='all'||t.strat===ui.strat)&&(bAll?true:tgT(t))).reduce((a,t)=>a+t.inr,0):null,allN=LT?LT.filter(t=>(ui.strat==='all'||t.strat===ui.strat)&&(bAll?true:tgT(t))).length:0,hW=hs.filter(win).length,hL=hs.filter(loss).length,decided=hW+hL;
+  const basisSeg=`<div class="seg2" style="margin:0 0 8px"><button data-f="basis:tg" aria-pressed="${ui.basis==='tg'}">${T('Telegram alerts','టెలిగ్రామ్ అలర్ట్‌లు')}</button><button data-f="basis:all" aria-pressed="${bAll}">${T('All strategies','అన్ని స్ట్రాటజీలు')}</button></div>`;
   let h=`<div class="hero"><div class="lbl">${T('Today','ఈరోజు')} · ${ui.mkt==='ALL'?T('All markets','అన్ని మార్కెట్లు'):ui.mkt} · ${T('1 lot, estimate','1 లాట్, అంచనా')}</div><div class="big ${cl(dayTot)}">${rs(dayTot)}</div><div class="sub">${(dayTot/CFG.capital*100>=0?'+':'')+(dayTot/CFG.capital*100).toFixed(2)}% ${T('of paper capital','పేపర్ మూలధనంలో')} ₹${f0(CFG.capital)}</div>
   ${ui.mkt==='ALL'?`<div class="split"><div><small>NSE · ${bySrc('NSE').n} ${T('trades','ట్రేడ్లు')}</small><b class="${cl(bySrc('NSE').v)}">${rs(bySrc('NSE').v)}</b></div><div><small>MCX · ${bySrc('MCX').n} ${T('trades','ట్రేడ్లు')}</small><b class="${cl(bySrc('MCX').v)}">${rs(bySrc('MCX').v)}</b></div></div>`:''}
   <div class="sub" style="margin:2px 0 10px;font-weight:600">${hs.length?`${hs.length} ${T('alerts','అలర్ట్‌లు')} · <span class="pos">${hW} ${T('won','గెలుపు')}</span> · <span class="neg">${hL} SL</span> · ${hOpen.length} ${T('running','నడుస్తున్నవి')}`:T('No alerts yet today.','ఈరోజు ఇంకా అలర్ట్‌లు లేవు.')}</div>
@@ -308,9 +308,9 @@ async function todayView(){
   <details class="more" style="background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-top:8px"><summary style="border:0">More numbers</summary><div class="grid" style="padding:0 10px 10px"><div class="card"><small>Telegram alerts</small><b>${base.filter(t=>t._tg).length}</b></div><div class="card"><small>Trades today</small><b>${base.length}</b></div><div class="card"><small>Won</small><b class="pos">${base.filter(win).length}</b></div><div class="card"><small>SL hit</small><b class="neg">${base.filter(loss).length}</b></div><div class="card"><small>Open risk</small><b class="neg">${oRisk?'−₹'+f0(oRisk):'₹0'}</b></div><div class="card"><small>Telegram P&amp;L</small><b class="${cl(liveS)}">${rs(liveS)}</b></div><div class="card"><small>Shadow P&amp;L</small><b class="${cl(shS)}">${rs(shS)}</b></div></div></details>
   ${opens.length||base.filter(isWait).length?`<button class="ostrip" data-f="st:open"><span class="tag live">● OPEN</span><span><b>${opens.length}</b> ${T('trade(s) running','ట్రేడ్లు నడుస్తున్నాయి')}${base.filter(isWait).length?` · <b>${base.filter(isWait).length}</b> ${T('waiting for entry','ఎంట్రీ కోసం వేచి ఉన్నాయి')}`:''} <small>${T('tap to filter','ఫిల్టర్ చేయడానికి నొక్కండి')}</small></span></button>`:''}<p style="margin:8px 0 0;font-size:12.5px;color:var(--mut)">Data age: ${ui.mkt!=='MCX'?`NSE <b class="${cls(nr,nOpen)}">${ageTxt(nr)}</b>`:''}${ui.mkt==='ALL'?' · ':''}${ui.mkt!=='NSE'?`MCX <b class="${cls(mr,mOpen)}">${ageTxt(mr)}</b>`:''}${(ui.mkt==='NSE'?nOpen:ui.mkt==='MCX'?mOpen:nOpen||mOpen)?'':' · '+(ui.mkt==='ALL'?'markets':'market')+' closed'}</p>`;
   const fpHtml=`<div class="fp">${frow('Status',chip('st','all','Any')+chip('st','open','Open')+chip('st','won','Won')+chip('st','lost','SL hit')+`<button data-f="twins:${!ui.twins}" aria-pressed="${ui.twins}">+ Wide-SL twins</button>`)}</div>`;
-  FTG.today=[{k:'basis',label:T('Show','చూపు'),def:'tg',items:[ftIt('tg',T('Telegram alerts','టెలిగ్రామ్ అలర్ట్‌లు')),ftIt('all',T('All strategies','అన్ని స్ట్రాటజీలు'))]},...(sgl.length>1||ui.sTd!=='all'?[{k:'sTd',main:1,label:T('Strategy','స్ట్రాటజీ'),def:'all',sortable:true,items:PK.sTd.items.map(i=>ftIt(i.v,i.name,i.n,i.val))}]:[]),{k:'st',label:T('Status','స్థితి'),def:'all',items:[ftIt('all',T('Any','ఏదైనా')),ftIt('open',T('Open','ఓపెన్')),ftIt('won',T('Won','గెలుపు')),ftIt('lost',T('SL hit','SL హిట్'))]},{k:'twins',label:T('Wide-SL variants','వైడ్-SL వేరియంట్లు'),def:false,items:[ftIt('false',T('Hide','దాచు')),ftIt('true',T('Show','చూపు'))]}];
+  FTG.today=[{k:'basis',label:T('Show','చూపు'),def:'tg',items:[ftIt('tg',T('Telegram alerts','టెలిగ్రామ్ అలర్ట్‌లు')),ftIt('all',T('All strategies','అన్ని స్ట్రాటజీలు'))]},...(sgl.length>1||ui.strat!=='all'?[{k:'strat',main:1,label:T('Strategy','స్ట్రాటజీ'),def:'all',sortable:true,items:[ftIt('all',T('All strategies','అన్ని స్ట్రాటజీలు'),null,sgl.reduce((a,r)=>a+r.v,0)),...sgl.map(r=>ftIt(r.k,nm(r.k),r.n,r.v))]}]:[]),{k:'st',label:T('Status','స్థితి'),def:'all',items:[ftIt('all',T('Any','ఏదైనా')),ftIt('open',T('Open','ఓపెన్')),ftIt('won',T('Won','గెలుపు')),ftIt('lost',T('SL hit','SL హిట్'))]},{k:'twins',label:T('Wide-SL variants','వైడ్-SL వేరియంట్లు'),def:false,items:[ftIt('false',T('Hide','దాచు')),ftIt('true',T('Show','చూపు'))]}];
   h=ftBar()+h;
-  h+=`<p class="mut" style="margin:4px 0 10px;font-size:12.5px">${ui.basis==='all'?'':'✈ '}${shown.length} trade${shown.length==1?'':'s'}</p>`;
+  h+=`<p class="mut" style="margin:4px 0 10px;font-size:12.5px">${bAll?'':'✈ '}${shown.length} trade${shown.length==1?'':'s'}</p>`;
   h+='<div class="tg">'+(shown.map(t=>{const e=num(t.tracked_entry_price)??num(t.alert_premium),sl=num(t.stop_loss),t1=num(t.target_1),t2=num(t.target_2),lot=t._lot;
     const risk=e!=null&&sl!=null&&lot?(e-sl)*lot:null,rew=e!=null&&t2!=null&&lot?(t2-e)*lot:null,rr=risk&&rew?rew/risk:null;
     const pos=(v)=>{if(e==null||sl==null||t2==null||t2==sl)return 0;return Math.max(0,Math.min(100,(v-sl)/(t2-sl)*100))};
@@ -370,11 +370,11 @@ function ddChart(cum,ds){let pk=0;const d=cum.map(v=>{pk=Math.max(pk,v);return v
 function monthly(daily){const g={};daily.forEach(r=>{const k=r.d.slice(0,7);(g[k]??=[]).push(r)});return `<div class="scroll"><table><tr><th>Month</th><th>Days</th><th>Trades</th><th>Net 1 lot</th></tr>`+Object.keys(g).sort().reverse().map(k=>`<tr><td>${k}</td><td>${g[k].length}</td><td>${g[k].reduce((a,r)=>a+r.x.length,0)}</td><td class="hm ${cl(g[k].reduce((a,r)=>a+r.v,0))}">${rs(g[k].reduce((a,r)=>a+r.v,0))}</td></tr>`).join('')+'</table></div>'}
 /* ---------- days ---------- */
 async function daysView(){const all=scopeOf(await ledger()).filter(t=>!/_wsl$/.test(t.strat));const sets={tg:all.filter(tgT),main:all.filter(t=>(t.eng=='main'&&t.strat=='trade_score')||t.strat=='live_scored'),shadow:all};if(ui.who==='main'&&ui.mkt!=='NSE')ui.who='tg';
-  const rows0=sets[ui.who]||sets.tg;if(ui.sDy!=='all'&&!rows0.some(t=>t.strat===ui.sDy))ui.sDy='all';const rows=ui.sDy==='all'?rows0:rows0.filter(t=>t.strat===ui.sDy),g={};rows.forEach(t=>(g[t.date]??=[]).push(t));const ds=Object.keys(g).sort();
+  const rows0=sets[ui.who]||sets.tg;const rows=ui.strat==='all'?rows0:rows0.filter(t=>t.strat===ui.strat),g={};rows.forEach(t=>(g[t.date]??=[]).push(t));const ds=Object.keys(g).sort();
   const daily=ds.map(d=>({d,l:d.slice(5),x:g[d],v:g[d].reduce((a,t)=>a+t.inr,0)}));let c=0;const cum=daily.map(r=>c+=r.v);const M=metrics(rows);
   const chip=(v,l)=>fb('who',v,l);
-  const ksD=[...new Set(rows0.map(t=>t.strat))].map(k=>({k,n:rows0.filter(t=>t.strat===k).length,v:rows0.filter(t=>t.strat===k).reduce((a,t)=>a+t.inr,0)}));
-  FTG.days=[{k:'who',label:T('Basis','ఆధారం'),def:'tg',items:[ftIt('tg',T('Telegram alerts','టెలిగ్రామ్ అలర్ట్‌లు')),...(ui.mkt==='NSE'?[ftIt('main',T('Main scanner','మెయిన్ స్కానర్'))]:[]),ftIt('shadow',T('All strategies (each 1 lot)','అన్ని స్ట్రాటజీలు (ఒక్కోటి 1 లాట్)'))]},...(ksD.length>1?[{k:'sDy',main:1,label:T('Strategy','స్ట్రాటజీ'),def:'all',sortable:true,items:[ftIt('all',T('All strategies','అన్ని స్ట్రాటజీలు'),null,rows0.reduce((a,t)=>a+t.inr,0)),...ksD.map(r=>ftIt(r.k,nm(r.k),r.n,r.v))]}]:[])];
+  const ksD=[...new Set([...rows0.map(t=>t.strat),...(ui.strat!=='all'?[ui.strat]:[])])].map(k=>({k,n:rows0.filter(t=>t.strat===k).length,v:rows0.filter(t=>t.strat===k).reduce((a,t)=>a+t.inr,0)}));
+  FTG.days=[{k:'who',label:T('Basis','ఆధారం'),def:'tg',items:[ftIt('tg',T('Telegram alerts','టెలిగ్రామ్ అలర్ట్‌లు')),...(ui.mkt==='NSE'?[ftIt('main',T('Main scanner','మెయిన్ స్కానర్'))]:[]),ftIt('shadow',T('All strategies (each 1 lot)','అన్ని స్ట్రాటజీలు (ఒక్కోటి 1 లాట్)'))]},...(ksD.length>1?[{k:'strat',main:1,label:T('Strategy','స్ట్రాటజీ'),def:'all',sortable:true,items:[ftIt('all',T('All strategies','అన్ని స్ట్రాటజీలు'),null,rows0.reduce((a,t)=>a+t.inr,0)),...ksD.map(r=>ftIt(r.k,nm(r.k),r.n,r.v))]}]:[])];
   let h=ftBar();
   if(!M){view.innerHTML=h+'<div class="empty">No closed trades.</div>';return}
   const wd=daily.filter(r=>r.v>0).length,best=Math.max(...daily.map(r=>r.v)),worst=Math.min(...daily.map(r=>r.v));
@@ -407,7 +407,7 @@ function openFilters(scope){let sheet=$('#sheet');if(sheet)sheet.remove();sheet=
   sheet.addEventListener('change',async e=>{const f=e.target.dataset&&e.target.dataset.fd;if(f){ui[f]=e.target.value;await render();draw()}});
   sheet.addEventListener('click',async e=>{if(e.target.closest('[data-close]')){close();return}
     const ps=e.target.closest('[data-ps]');if(ps){ui.pkSort=ps.dataset.ps;draw();return}
-    const mv=e.target.closest('[data-mkv]');if(mv){ui.mkt=mv.dataset.mkv;ui.sym='ALL';ui.sTd=ui.sDy=ui.sSt='all';await render();draw();return}
+    const mv=e.target.closest('[data-mkv]');if(mv){ui.mkt=mv.dataset.mkv;ui.sym='ALL';ui.strat='all';await render();draw();return}
     if(e.target.closest('[data-reset]')){(FTG[tab]||[]).filter(g=>scope?g.main:!g.main).forEach(g=>ftSet(g.k,String(g.def)));await render();draw();return}
     const o=e.target.closest('[data-fk]');if(o){ftSet(o.dataset.fk,o.dataset.fv);await render();scope?close():draw()}})}
 document.addEventListener('click',e=>{if(e.target.closest('[data-ft]')){openFilters();return}const c=e.target.closest('[data-fc]');if(c){const g=(FTG[tab]||[]).find(x=>x.k===c.dataset.fc);if(g){ftSet(g.k,String(g.def));render()}}});
@@ -427,17 +427,18 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-pk]');if(b
 const perRange=()=>{const t=istDate(0),m1=t.slice(0,8)+'01';const lmEnd=istDate(+t.slice(8)),lmStart=lmEnd.slice(0,8)+'01';return ui.per==='7'?[istDate(6),t]:ui.per==='30'?[istDate(29),t]:ui.per==='90'?[istDate(89),t]:ui.per==='mtd'?[m1,t]:ui.per==='lm'?[lmStart,lmEnd]:ui.per==='custom'?[ui.from||'0000',ui.to||'9999']:['0000','9999']};
 async function stratView(){const [pf,pt]=perRange();const all=scopeOf(await ledger()).filter(t=>t.date>=pf&&t.date<=pt);let g={};all.forEach(t=>(g[t.strat+'|'+t.src+'|'+t.mkt]??=[]).push(t));
   const rows=Object.entries(g).map(([k,x])=>{let xs=ui.sym=='ALL'?x:x.filter(t=>t.sym==ui.sym);if(ui.dd)xs=dedupe(xs);const m=metrics(xs);return m?{k:k.split('|')[0],src:k.split('|')[1],mkt:k.split('|')[2],xs,...m}:null}).filter(Boolean);
-  const allRows=rows.slice().sort((a,b)=>b.net-a.net);if(ui.sSt!=='all'&&!rows.some(r=>r.k+'|'+r.src+'|'+r.mkt===ui.sSt))ui.sSt='all';
-  const one=ui.sSt!=='all';rows.sort((a,b)=>(b[ui.sort]??-1e9)-(a[ui.sort]??-1e9));
+  const agg={};rows.forEach(r=>{const a=agg[r.k]??={k:r.k,n:0,net:0};a.n+=r.n;a.net+=r.net});if(ui.strat!=='all'&&!agg[ui.strat])agg[ui.strat]={k:ui.strat,n:0,net:0};
+  const allRows=Object.values(agg).sort((a,b)=>b.net-a.net);
+  const one=ui.strat!=='all';rows.sort((a,b)=>(b[ui.sort]??-1e9)-(a[ui.sort]??-1e9));
   const chip=fb;
-  const optList=allRows.map(r=>`<option value="${esc(r.k+'|'+r.src+'|'+r.mkt)}"${ui.sSt===r.k+'|'+r.src+'|'+r.mkt?' selected':''}>${esc(nm(r.k))}${ui.mkt==='ALL'?' ('+r.mkt+')':''} · ${r.n} · ${rs(r.net)}</option>`).join('');
-  if(one)for(let i=rows.length-1;i>=0;i--)if(rows[i].k+'|'+rows[i].src+'|'+rows[i].mkt!==ui.sSt)rows.splice(i,1);
+
+  if(one)for(let i=rows.length-1;i>=0;i--)if(rows[i].k!==ui.strat)rows.splice(i,1);
   const tot=rows.reduce((a,r)=>a+r.net,0),nT=rows.reduce((a,r)=>a+r.n,0);
   const tradeList=r=>{const byD={};r.xs.forEach(t=>(byD[t.date]??=[]).push(t));return Object.keys(byD).sort().reverse().map(d=>{const x=byD[d].slice().sort((a,b)=>String(b.at).localeCompare(String(a.at))),v=x.reduce((a,t)=>a+t.inr,0);return `<div class="dh"><span>${d}</span><b class="${cl(v)}">${rs(v)}</b></div>`+x.map(t=>`<div class="tr"><span class="mut">${esc(t.hh||'')}</span><span>${esc(t.sym)} ${esc(String(t.strike).replace(/\.0$/,''))} <span class="cp ${t.dir==='CE'?'ce':'pe'}">${esc(t.dir)}</span></span><span class="st2">${esc(String(t.status||'').replace(/_/g,' '))}</span><b class="${cl(t.inr)}">${rs(t.inr)}</b></div>`).join('')}).join('')};
   let h='';
   const PER=[['all',T('All time','మొత్తం కాలం')],['7',T('Last 7 days','చివరి 7 రోజులు')],['30',T('Last 30 days','చివరి 30 రోజులు')],['90',T('Last 90 days','చివరి 90 రోజులు')],['mtd',T('This month','ఈ నెల')],['lm',T('Last month','గత నెల')],['custom',T('Custom dates','ఎంచుకున్న తేదీలు')]];
   const SYMS=['ALL',...(ui.mkt=='NSE'?INDEX:ui.mkt=='MCX'?COMM:[...INDEX,...COMM])];
-  FTG.strat=[{k:'sSt',main:1,label:T('Strategy','స్ట్రాటజీ'),def:'all',sortable:true,items:[ftIt('all',T('All strategies','అన్ని స్ట్రాటజీలు'),null,allRows.reduce((a,r)=>a+r.net,0)),...allRows.map(r=>ftIt(r.k+'|'+r.src+'|'+r.mkt,nm(r.k)+(ui.mkt==='ALL'?' ('+r.mkt+')':''),r.n,r.net))]},{k:'per',label:T('Period','కాలం'),def:'all',items:PER.map(([v,l])=>ftIt(v,l))},{k:'sym',label:ui.mkt=='NSE'?T('Index','ఇండెక్స్'):T('Market','మార్కెట్'),def:'ALL',items:SYMS.map(x=>ftIt(x,x=='ALL'?T('All','అన్నీ'):x))},{k:'sort',label:T('Sort cards by','క్రమం'),def:'net',items:[['net','Net ₹'],['win','Win %'],['pf','PF'],['avg',T('Per trade','ప్రతి ట్రేడ్')],['n',T('Trades','ట్రేడ్లు')]].map(([v,l])=>ftIt(v,l))},{k:'dd',label:T('Count','లెక్క'),def:false,items:[ftIt('false',T('All signals','అన్ని సిగ్నల్స్')),ftIt('true',T('1 trade per signal','సిగ్నల్‌కు 1 ట్రేడ్'))]}];
+  FTG.strat=[{k:'strat',main:1,label:T('Strategy','స్ట్రాటజీ'),def:'all',sortable:true,items:[ftIt('all',T('All strategies','అన్ని స్ట్రాటజీలు'),null,allRows.reduce((a,r)=>a+r.net,0)),...allRows.map(r=>ftIt(r.k,nm(r.k),r.n,r.net))]},{k:'per',label:T('Period','కాలం'),def:'all',items:PER.map(([v,l])=>ftIt(v,l))},{k:'sym',label:ui.mkt=='NSE'?T('Index','ఇండెక్స్'):T('Market','మార్కెట్'),def:'ALL',items:SYMS.map(x=>ftIt(x,x=='ALL'?T('All','అన్నీ'):x))},{k:'sort',label:T('Sort cards by','క్రమం'),def:'net',items:[['net','Net ₹'],['win','Win %'],['pf','PF'],['avg',T('Per trade','ప్రతి ట్రేడ్')],['n',T('Trades','ట్రేడ్లు')]].map(([v,l])=>ftIt(v,l))},{k:'dd',label:T('Count','లెక్క'),def:false,items:[ftIt('false',T('All signals','అన్ని సిగ్నల్స్')),ftIt('true',T('1 trade per signal','సిగ్నల్‌కు 1 ట్రేడ్'))]}];
   h=ftBar()+h;
   h+=`<p class="mut" style="margin:2px 2px 10px;font-size:12.5px">${ui.per==='all'?'':pf.replace(/^0000$/,'…')+' → '+pt.replace(/^9999$/,'…')+' · '}${rows.length} ${rows.length==1?'strategy':'strategies'} · ${nT} trades · 1 lot each · overlapping signals are counted separately unless “1 per signal” is on</p>`;
   h+='<div class="cg">'+rows.map(r=>`<section class="sc"><div class="sc-h"><div class="sc-n">${esc(nm(r.k))}${r.src=='live'?' <span class="tag acc">live</span>':''}${ui.mkt==='ALL'?` <span class="tag">${r.mkt}</span>`:''}<small>${r.n} trades · ${r.wins}W ${r.loss}L${r.be?' '+r.be+'BE':''}</small></div><div class="sc-net ${cl(r.net)}">${rs(r.net)}</div></div>
@@ -573,7 +574,7 @@ function applyLang(){document.documentElement.lang=lang==='te'?'te':'en';documen
 function foldFilters(){document.querySelectorAll('#view .fp').forEach(fp=>{const d=document.createElement('details');d.className='fpd';d.open=!!ui.fpOpen;d.innerHTML='<summary>'+T('Filters','ఫిల్టర్లు')+'</summary>';fp.parentNode.insertBefore(d,fp);d.appendChild(fp);d.addEventListener('toggle',()=>{ui.fpOpen=d.open})})}
 function renderPill(){const p=$('#mkpill');if(!p)return;const mg=(FTG[tab]||[]).find(g=>g.main),on=mg&&String(ui[mg.k])!==String(mg.def);p.innerHTML=(ui.mkt==='ALL'?T('All markets','అన్ని మార్కెట్లు'):ui.mkt)+(on?' · '+esc(ftCur(mg).name):'')+' <span aria-hidden="true">▾</span>'}
 function renderBar(){renderPill();const el=$('#mkbar');if(!el)return;el.innerHTML=[['ALL',T('All','అన్నీ'),T('NSE + MCX','NSE + MCX')],['NSE','NSE',T('Index options','ఇండెక్స్')],['MCX','MCX',T('Commodities','కమోడిటీ')]].map(([v,t,d])=>`<button data-mk="${v}" aria-pressed="${ui.mkt===v}">${t}<small>${d}</small></button>`).join('')}
-document.addEventListener('click',e=>{const b=e.target.closest('#mkbar button'),pl=e.target.closest('#mkpill');if(pl){openFilters(true);return}if(b){ui.mkt=b.dataset.mk;ui.sym='ALL';ui.sTd='all';ui.sDy='all';ui.sSt='all';$('#mkbar').hidden=true;renderBar();render()}else if(!e.target.closest('#mkbar')&&!$('#mkbar').hidden){$('#mkbar').hidden=true;renderPill()}});
+document.addEventListener('click',e=>{const b=e.target.closest('#mkbar button'),pl=e.target.closest('#mkpill');if(pl){openFilters(true);return}if(b){ui.mkt=b.dataset.mk;ui.sym='ALL';ui.strat='all';$('#mkbar').hidden=true;renderBar();render()}else if(!e.target.closest('#mkbar')&&!$('#mkbar').hidden){$('#mkbar').hidden=true;renderPill()}});
 document.querySelectorAll('.lg button').forEach(b=>b.onclick=()=>{lang=b.dataset.l;try{localStorage.setItem('lang',lang)}catch(e){}tickClock();render()});
 /* ---------- live clock ---------- */
 function tickClock(){const d=new Date(Date.now()+5.5*36e5),h=d.getUTCHours(),m=d.getUTCMinutes(),mins=h*60+m,wk=d.getUTCDay(),wd=wk>0&&wk<6;
