@@ -295,7 +295,7 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 658,
+    "scanned_symbols": 672,
     "valid_signals": 3,
     "rejected_signals": 1047,
     "api_failures": 0,
@@ -304,7 +304,7 @@
   "rerank_slots_done": [
     "11:30"
   ],
-  "last_run_at": "2026-11-19T13:05:38+05:30",
+  "last_run_at": "2026-11-19T13:10:59+05:30",
   "pnl_snaps": [
     "1015",
     "1115",
@@ -312,16 +312,16 @@
   ],
   "micro_last_minute": [
     "2026-11-19",
-    785
+    790
   ],
   "tape_seen": {
     "NIFTY": [
       "2026-11-19",
-      "13:00"
+      "13:05"
     ],
     "BANKNIFTY": [
       "2026-11-19",
-      "13:00"
+      "13:05"
     ]
   },
   "fib_pivot_shadow_trades": {
@@ -3155,7 +3155,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T12:54:00+05:30",
+      "last_processed_ts": "2026-11-19T13:10:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot_itm1",
@@ -3164,10 +3164,10 @@
       "live_alert_sent": false,
       "candidate_id": "fib_pivot_itm1:PNB:CE:154.0:2026-11-23",
       "engine": "fib_pivot",
-      "last_polled_at": "2026-11-19T12:55:34.886236+05:30",
+      "last_polled_at": "2026-11-19T13:10:59.531682+05:30",
       "vix_at_alert": 16.29,
       "nifty_chg_pct_at_alert": 0.19,
-      "last_price": 2.55,
+      "last_price": 2.61,
       "be_tracked": true,
       "trail_sl": 3.11,
       "time_to_target_1_minutes": 10,
@@ -3623,7 +3623,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T12:54:00+05:30",
+      "last_processed_ts": "2026-11-19T13:10:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot_itm1",
@@ -3632,10 +3632,10 @@
       "live_alert_sent": false,
       "candidate_id": "fib_pivot_itm1:BANKNIFTY:CE:62400.0:2026-11-23",
       "engine": "fib_pivot",
-      "last_polled_at": "2026-11-19T12:55:34.886236+05:30",
+      "last_polled_at": "2026-11-19T13:10:59.531682+05:30",
       "vix_at_alert": 16.27,
       "nifty_chg_pct_at_alert": 0.15,
-      "last_price": 540.4
+      "last_price": 517.4
     },
     "FIBPIVOT-NAVINFLUOR-CE-20261119-1035-01": {
       "trade_id": "FIBPIVOT-NAVINFLUOR-CE-20261119-1035-01",
@@ -4260,7 +4260,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T12:54:00+05:30",
+      "last_processed_ts": "2026-11-19T13:09:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot_itm1",
@@ -4269,10 +4269,10 @@
       "live_alert_sent": false,
       "candidate_id": "fib_pivot_itm1:NIFTY:CE:25250.0:2026-11-23",
       "engine": "fib_pivot",
-      "last_polled_at": "2026-11-19T12:55:34.886236+05:30",
+      "last_polled_at": "2026-11-19T13:10:59.531682+05:30",
       "vix_at_alert": 16.1,
       "nifty_chg_pct_at_alert": 0.31,
-      "last_price": 230.55,
+      "last_price": 217.1,
       "be_tracked": true,
       "trail_sl": 218.02,
       "time_to_target_1_minutes": 100,
@@ -4736,7 +4736,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T12:54:00+05:30",
+      "last_processed_ts": "2026-11-19T13:10:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fib_pivot_retest",
@@ -4745,10 +4745,10 @@
       "live_alert_sent": false,
       "candidate_id": "fib_pivot_retest:TMPV:CE:260.0:2026-11-23",
       "engine": "fib_pivot",
-      "last_polled_at": "2026-11-19T12:55:34.886236+05:30",
+      "last_polled_at": "2026-11-19T13:10:59.531682+05:30",
       "vix_at_alert": 15.8,
       "nifty_chg_pct_at_alert": 0.37,
-      "last_price": 4.9
+      "last_price": 4.6
     },
     "FIBPIVOT-TMPV-CE-20261119-1131-02": {
       "trade_id": "FIBPIVOT-TMPV-CE-20261119-1131-02",
