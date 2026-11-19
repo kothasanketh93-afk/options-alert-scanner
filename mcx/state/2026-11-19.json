@@ -2132,16 +2132,16 @@
       "actual_entry_time": "2026-11-19T12:17:00+05:30",
       "tracked_entry_price": 6.0,
       "highest_since_entry": 6.95,
-      "lowest_since_entry": 5.4,
+      "lowest_since_entry": 4.95,
       "max_favorable_pct": 15.83,
-      "max_adverse_pct": -10.0,
+      "max_adverse_pct": -17.5,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T15:35:00+05:30",
+      "last_processed_ts": "2026-11-19T15:51:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -2166,8 +2166,8 @@
       "entry_oi": 13178750,
       "entry_volume": 23744,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-19T15:36:46.719476+05:30",
-      "last_price": 5.45
+      "last_polled_at": "2026-11-19T15:51:52.073578+05:30",
+      "last_price": 5.0
     },
     "MCX-fvg-NATURALGAS_wsl-PE-20261119-1216-01": {
       "trade_id": "MCX-fvg-NATURALGAS_wsl-PE-20261119-1216-01",
@@ -2216,16 +2216,16 @@
       "actual_entry_time": "2026-11-19T12:17:00+05:30",
       "tracked_entry_price": 6.0,
       "highest_since_entry": 6.95,
-      "lowest_since_entry": 5.4,
+      "lowest_since_entry": 4.95,
       "max_favorable_pct": 15.83,
-      "max_adverse_pct": -10.0,
+      "max_adverse_pct": -17.5,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T15:35:00+05:30",
+      "last_processed_ts": "2026-11-19T15:51:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg_wsl",
@@ -2251,8 +2251,8 @@
       "entry_volume": 23744,
       "signal_future_token": null,
       "variant_of": "MCX-fvg-NATURALGAS-PE-20261119-1216-01",
-      "last_polled_at": "2026-11-19T15:36:46.719476+05:30",
-      "last_price": 5.45
+      "last_polled_at": "2026-11-19T15:51:52.073578+05:30",
+      "last_price": 5.0
     },
     "MCX-oi_flow-GOLDM-PE-20261119-1231-01": {
       "trade_id": "MCX-oi_flow-GOLDM-PE-20261119-1231-01",
@@ -3245,21 +3245,21 @@
       ],
       "why_reasons": [],
       "alternatives": [],
-      "status": "ACTIVE",
-      "final_status": null,
+      "status": "SL_HIT",
+      "final_status": "SL_HIT",
       "actual_entry_time": "2026-11-19T15:02:00+05:30",
       "tracked_entry_price": 2000.0,
       "highest_since_entry": 2000.0,
-      "lowest_since_entry": 1914.0,
+      "lowest_since_entry": 1855.5,
       "max_favorable_pct": 0.0,
-      "max_adverse_pct": -4.3,
+      "max_adverse_pct": -7.22,
       "t1_hit": false,
       "t1_hit_time": null,
       "t2_hit": false,
       "t2_hit_time": null,
-      "sl_hit_time": null,
+      "sl_hit_time": "2026-11-19T15:46:00+05:30",
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T15:34:00+05:30",
+      "last_processed_ts": "2026-11-19T15:49:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "oi_flow_wsl",
@@ -3282,8 +3282,13 @@
       "entry_volume": 242,
       "signal_future_token": null,
       "variant_of": "MCX-oi_flow-GOLD-PE-20261119-1501-01",
-      "last_polled_at": "2026-11-19T15:36:46.719476+05:30",
-      "last_price": 1960.0
+      "last_polled_at": "2026-11-19T15:51:52.073578+05:30",
+      "last_price": 1845.0,
+      "exit_candle_open": 1855.5,
+      "sell_view": {
+        "error": "LookupError: no opposite-option candle at entry/exit",
+        "tries": 1
+      }
     },
     "MCX-sweep-CRUDEOIL-CE-20261119-1516-01": {
       "trade_id": "MCX-sweep-CRUDEOIL-CE-20261119-1516-01",
@@ -3341,7 +3346,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T15:35:00+05:30",
+      "last_processed_ts": "2026-11-19T15:50:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sweep",
@@ -3363,8 +3368,8 @@
       "entry_oi": 165200,
       "entry_volume": 8180,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-19T15:36:46.719476+05:30",
-      "last_price": 441.7,
+      "last_polled_at": "2026-11-19T15:51:52.073578+05:30",
+      "last_price": 438.3,
       "be_tracked": true,
       "trail_sl": 441.25,
       "trail_exit_price": 441.25
@@ -3425,7 +3430,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T15:35:00+05:30",
+      "last_processed_ts": "2026-11-19T15:50:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sweep_wsl",
@@ -3448,8 +3453,8 @@
       "entry_volume": 8180,
       "signal_future_token": null,
       "variant_of": "MCX-sweep-CRUDEOIL-CE-20261119-1516-01",
-      "last_polled_at": "2026-11-19T15:36:46.719476+05:30",
-      "last_price": 441.7,
+      "last_polled_at": "2026-11-19T15:51:52.073578+05:30",
+      "last_price": 438.3,
       "be_tracked": true,
       "trail_sl": 441.25,
       "trail_exit_price": 441.25
@@ -3916,6 +3921,12 @@
         "spot": 7757.0,
         "call_oi": 1204300.0,
         "put_oi": 930100.0
+      },
+      {
+        "t": 951,
+        "spot": 7745.0,
+        "call_oi": 1257600.0,
+        "put_oi": 963600.0
       }
     ],
     "NATURALGAS": [
@@ -4290,6 +4301,12 @@
         "spot": 313.6,
         "call_oi": 90162500.0,
         "put_oi": 70857500.0
+      },
+      {
+        "t": 951,
+        "spot": 313.6,
+        "call_oi": 93840000.0,
+        "put_oi": 73227500.0
       }
     ],
     "GOLD": [
@@ -4682,6 +4699,12 @@
         "spot": 129235.0,
         "call_oi": 566.0,
         "put_oi": 743.0
+      },
+      {
+        "t": 951,
+        "spot": 129320.0,
+        "call_oi": 578.0,
+        "put_oi": 740.0
       }
     ],
     "GOLDM": [
@@ -5038,6 +5061,12 @@
         "spot": 129301.0,
         "call_oi": 1217500.0,
         "put_oi": 1434400.0
+      },
+      {
+        "t": 951,
+        "spot": 129398.0,
+        "call_oi": 1240200.0,
+        "put_oi": 1451400.0
       }
     ]
   },
