@@ -1199,7 +1199,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T16:25:00+05:30",
+      "last_processed_ts": "2026-11-19T16:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos_wsl",
@@ -1222,8 +1222,8 @@
       "entry_volume": 1859,
       "signal_future_token": null,
       "variant_of": "MCX-bos-GOLDM-CE-20261119-1041-01",
-      "last_polled_at": "2026-11-19T16:26:43.643413+05:30",
-      "last_price": 2013.0,
+      "last_polled_at": "2026-11-19T16:41:44.265940+05:30",
+      "last_price": 1906.0,
       "waiting_candles": [
         [
           "10:42",
@@ -1436,7 +1436,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T16:25:00+05:30",
+      "last_processed_ts": "2026-11-19T16:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "order_block_wsl",
@@ -1459,8 +1459,8 @@
       "entry_volume": 2006,
       "signal_future_token": null,
       "variant_of": "MCX-order_block-GOLDM-CE-20261119-1051-01",
-      "last_polled_at": "2026-11-19T16:26:43.643413+05:30",
-      "last_price": 2013.0,
+      "last_polled_at": "2026-11-19T16:41:44.265940+05:30",
+      "last_price": 1906.0,
       "waiting_candles": [
         [
           "10:52",
@@ -1538,7 +1538,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T16:25:00+05:30",
+      "last_processed_ts": "2026-11-19T16:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -1560,8 +1560,8 @@
       "entry_oi": 7832500,
       "entry_volume": 12404,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-19T16:26:43.643413+05:30",
-      "last_price": 6.85,
+      "last_polled_at": "2026-11-19T16:41:44.265940+05:30",
+      "last_price": 6.6,
       "be_tracked": true,
       "trail_sl": 8.885,
       "trail_exit_price": 8.885,
@@ -1623,7 +1623,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-19T16:25:00+05:30",
+      "last_processed_ts": "2026-11-19T16:40:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos_wsl",
@@ -1646,8 +1646,8 @@
       "entry_volume": 12404,
       "signal_future_token": null,
       "variant_of": "MCX-bos-NATURALGAS-PE-20261119-1121-01",
-      "last_polled_at": "2026-11-19T16:26:43.643413+05:30",
-      "last_price": 6.85,
+      "last_polled_at": "2026-11-19T16:41:44.265940+05:30",
+      "last_price": 6.6,
       "be_tracked": true,
       "trail_sl": 8.885,
       "trail_exit_price": 8.885,
@@ -3789,12 +3789,6 @@
   "flow_snap": {
     "CRUDEOIL": [
       {
-        "t": 566,
-        "spot": 7698.0,
-        "call_oi": 548300.0,
-        "put_oi": 552300.0
-      },
-      {
         "t": 571,
         "spot": 7703.0,
         "call_oi": 552000.0,
@@ -4267,6 +4261,12 @@
         "spot": 7724.0,
         "call_oi": 1495200.0,
         "put_oi": 1164200.0
+      },
+      {
+        "t": 1001,
+        "spot": 7743.0,
+        "call_oi": 1499800.0,
+        "put_oi": 1176800.0
       }
     ],
     "NATURALGAS": [
@@ -4701,6 +4701,12 @@
         "spot": 314.5,
         "call_oi": 105571250.0,
         "put_oi": 86493750.0
+      },
+      {
+        "t": 1001,
+        "spot": 314.7,
+        "call_oi": 105820000.0,
+        "put_oi": 87140000.0
       }
     ],
     "GOLD": [
@@ -5153,6 +5159,12 @@
         "spot": 129294.0,
         "call_oi": 495.0,
         "put_oi": 755.0
+      },
+      {
+        "t": 1001,
+        "spot": 129231.0,
+        "call_oi": 503.0,
+        "put_oi": 751.0
       }
     ],
     "GOLDM": [
@@ -5569,6 +5581,12 @@
         "spot": 129375.0,
         "call_oi": 1286300.0,
         "put_oi": 1570300.0
+      },
+      {
+        "t": 1001,
+        "spot": 129300.0,
+        "call_oi": 1298900.0,
+        "put_oi": 1582800.0
       }
     ]
   },
