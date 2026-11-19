@@ -342,7 +342,7 @@ class AngelOneBroker(Broker):
             "todate": to_dt.strftime("%Y-%m-%d %H:%M"),
         }
         resp = request_with_retry("POST", url, json=body, headers=self._headers(),
-                                   timeout=15, error_cls=BrokerAPIError)
+                                   timeout=(6, 15), error_cls=BrokerAPIError)
         payload = resp.json()
         if not payload.get("status"):
             raise BrokerAPIError(f"getCandleData rejected: {payload.get('message')}")
@@ -407,7 +407,7 @@ class AngelOneBroker(Broker):
         }
         try:
             resp = request_with_retry("POST", url, json=body, headers=self._headers(),
-                                       timeout=15, error_cls=BrokerAPIError)
+                                       timeout=(6, 15), error_cls=BrokerAPIError)
             payload = resp.json()
             if not payload.get("status"):
                 return []
