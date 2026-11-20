@@ -2050,16 +2050,16 @@
       "actual_entry_time": "2026-11-20T11:37:00+05:30",
       "tracked_entry_price": 2774.0,
       "highest_since_entry": 3318.5,
-      "lowest_since_entry": 2140.0,
+      "lowest_since_entry": 2069.5,
       "max_favorable_pct": 19.63,
-      "max_adverse_pct": -22.86,
+      "max_adverse_pct": -25.4,
       "t1_hit": true,
       "t1_hit_time": "2026-11-20T16:08:00+05:30",
       "t2_hit": false,
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-20T20:55:00+05:30",
+      "last_processed_ts": "2026-11-20T21:10:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg_wsl",
@@ -2085,8 +2085,8 @@
       "entry_volume": 4136,
       "signal_future_token": null,
       "variant_of": "MCX-fvg-GOLDM-CE-20261120-1136-01",
-      "last_polled_at": "2026-11-20T20:56:37.948842+05:30",
-      "last_price": 2162.0,
+      "last_polled_at": "2026-11-20T21:11:35.572532+05:30",
+      "last_price": 2336.5,
       "be_tracked": true,
       "trail_sl": 3066.125,
       "trail_exit_price": 3066.125,
@@ -4620,7 +4620,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-20T20:55:00+05:30",
+      "last_processed_ts": "2026-11-20T21:10:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "vwap_pb",
@@ -4642,8 +4642,8 @@
       "entry_oi": 378600,
       "entry_volume": 27498,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-20T20:56:37.948842+05:30",
-      "last_price": 435.4
+      "last_polled_at": "2026-11-20T21:11:35.572532+05:30",
+      "last_price": 422.0
     },
     "MCX-vwap_pb-CRUDEOIL_wsl-PE-20261120-1841-01": {
       "trade_id": "MCX-vwap_pb-CRUDEOIL_wsl-PE-20261120-1841-01",
@@ -4701,7 +4701,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-20T20:55:00+05:30",
+      "last_processed_ts": "2026-11-20T21:10:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "vwap_pb_wsl",
@@ -4724,8 +4724,8 @@
       "entry_volume": 27498,
       "signal_future_token": null,
       "variant_of": "MCX-vwap_pb-CRUDEOIL-PE-20261120-1841-01",
-      "last_polled_at": "2026-11-20T20:56:37.948842+05:30",
-      "last_price": 435.4
+      "last_polled_at": "2026-11-20T21:11:35.572532+05:30",
+      "last_price": 422.0
     },
     "MCX-ema_pb-GOLD-PE-20261120-1841-01": {
       "trade_id": "MCX-ema_pb-GOLD-PE-20261120-1841-01",
@@ -6246,7 +6246,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-20T20:55:00+05:30",
+      "last_processed_ts": "2026-11-20T21:10:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sess_orb",
@@ -6268,8 +6268,8 @@
       "entry_oi": 379400,
       "entry_volume": 34147,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-20T20:56:37.948842+05:30",
-      "last_price": 435.4
+      "last_polled_at": "2026-11-20T21:11:35.572532+05:30",
+      "last_price": 422.0
     },
     "MCX-sess_orb-CRUDEOIL_wsl-PE-20261120-1951-01": {
       "trade_id": "MCX-sess_orb-CRUDEOIL_wsl-PE-20261120-1951-01",
@@ -6327,7 +6327,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-20T20:55:00+05:30",
+      "last_processed_ts": "2026-11-20T21:10:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "sess_orb_wsl",
@@ -6350,8 +6350,8 @@
       "entry_volume": 34147,
       "signal_future_token": null,
       "variant_of": "MCX-sess_orb-CRUDEOIL-PE-20261120-1951-01",
-      "last_polled_at": "2026-11-20T20:56:37.948842+05:30",
-      "last_price": 435.4
+      "last_polled_at": "2026-11-20T21:11:35.572532+05:30",
+      "last_price": 422.0
     },
     "MCX-sess_sweep-NATURALGAS-PE-20261120-2031-01": {
       "trade_id": "MCX-sess_sweep-NATURALGAS-PE-20261120-2031-01",
@@ -6603,12 +6603,6 @@
   },
   "flow_snap": {
     "CRUDEOIL": [
-      {
-        "t": 871,
-        "spot": 7606.0,
-        "call_oi": 447100.0,
-        "put_oi": 866600.0
-      },
       {
         "t": 876,
         "spot": 7581.0,
@@ -7082,15 +7076,15 @@
         "spot": 7570.0,
         "call_oi": 1081800.0,
         "put_oi": 1644900.0
+      },
+      {
+        "t": 1271,
+        "spot": 7589.0,
+        "call_oi": 1165500.0,
+        "put_oi": 1503600.0
       }
     ],
     "NATURALGAS": [
-      {
-        "t": 871,
-        "spot": 294.5,
-        "call_oi": 7780000.0,
-        "put_oi": 7816250.0
-      },
       {
         "t": 876,
         "spot": 294.4,
@@ -7564,15 +7558,15 @@
         "spot": 302.3,
         "call_oi": 10551250.0,
         "put_oi": 8907500.0
+      },
+      {
+        "t": 1271,
+        "spot": 302.8,
+        "call_oi": 10598750.0,
+        "put_oi": 8911250.0
       }
     ],
     "GOLDM": [
-      {
-        "t": 866,
-        "spot": 123545.0,
-        "call_oi": 877900.0,
-        "put_oi": 1282800.0
-      },
       {
         "t": 871,
         "spot": 123490.0,
@@ -8046,15 +8040,15 @@
         "spot": 122155.0,
         "call_oi": 1005500.0,
         "put_oi": 1693700.0
+      },
+      {
+        "t": 1271,
+        "spot": 122494.0,
+        "call_oi": 765800.0,
+        "put_oi": 1669900.0
       }
     ],
     "GOLD": [
-      {
-        "t": 866,
-        "spot": 123540.0,
-        "call_oi": 564.0,
-        "put_oi": 954.0
-      },
       {
         "t": 871,
         "spot": 123480.0,
@@ -8528,6 +8522,12 @@
         "spot": 122196.0,
         "call_oi": 262.0,
         "put_oi": 443.0
+      },
+      {
+        "t": 1271,
+        "spot": 122551.0,
+        "call_oi": 164.0,
+        "put_oi": 365.0
       }
     ]
   },
@@ -8553,7 +8553,7 @@
     "1900",
     "2100"
   ],
-  "last_run_at": "2026-11-20T21:07:00+05:30",
+  "last_run_at": "2026-11-20T21:11:51+05:30",
   "prev_hl": {
     "CRUDEOIL": [
       7933.0,
