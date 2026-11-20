@@ -365,7 +365,7 @@ def save_state(state: dict, commit_message: str, max_retries: int = 6):
 
     try:   # tell the user the day's final state did not persist (best effort)
         import telegram_notify
-        telegram_notify.send(f"⚠️ <b>State save failed</b>\nCould not push {date_str} state after {max_retries} attempts "
+        telegram_notify.send(critical=True, text=f"⚠️ <b>State save failed</b>\nCould not push {date_str} state after {max_retries} attempts "
                              f"(GitHub error?). Latest outcomes may be missing from the ledger; check the run log.")
     except Exception:
         pass

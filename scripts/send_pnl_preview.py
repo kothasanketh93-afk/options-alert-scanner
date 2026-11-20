@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import eod_report
 import pnl_snapshot
 import telegram_notify as tg
+tg.allow_all()   # manual one-off script: always sends, regardless of config.TELEGRAM_EOD_ONLY
 from datetime import datetime, timedelta, timezone
 
 

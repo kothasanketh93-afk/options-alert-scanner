@@ -763,30 +763,31 @@ def maybe_send_eod_report(state: dict, now: datetime):
     """One end-of-day report listing every tracked trade by outcome (see eod_report.py). Sent once, at/after SUMMARY_HHMM."""
     if (now.hour, now.minute) < SUMMARY_HHMM or state.get("eod_report_sent"):
         return
-    try:
-        sent_image = False
-        try:   # preferred: one readable image; falls back to the text report below on any failure
-            import tempfile
-            import eod_image
-            png = os.path.join(tempfile.mkdtemp(), f"eod_{state['date']}.png")
-            if eod_image.render(state, state["date"], png, eod_report.load_lot_sizes()):
-                tg.send_photo(png, caption=f"End-of-day trade report {state['date']} (educational, not advice)")
-                sent_image = True
+    with tg.allow():   # end-of-day report is the one thing that still goes to Telegram (config.TELEGRAM_EOD_ONLY)
+        try:
+            sent_image = False
+            try:   # preferred: one readable image; falls back to the text report below on any failure
+                import tempfile
+                import eod_image
+                png = os.path.join(tempfile.mkdtemp(), f"eod_{state['date']}.png")
+                if eod_image.render(state, state["date"], png, eod_report.load_lot_sizes()):
+                    tg.send_photo(png, caption=f"End-of-day trade report {state['date']} (educational, not advice)")
+                    sent_image = True
+            except Exception as exc:
+                log.error("EOD image report failed (%s: %s) -- sending the text version.", type(exc).__name__, exc)
+            if not sent_image:
+                for m in eod_report.build_messages(state, state["date"]):
+                    tg.send(m)
+            state["eod_report_sent"] = True
+            chart_notify.nse_lesson_card(state)            # Telugu daily lesson card (best-effort, once)
+            try:                                           # why the scanner did / did not trade today (facts from the scan log)
+                import day_review
+                scan = state_mod.STATE_CLONE_DIR / "scan_logs" / f"{state['date']}.jsonl"
+                tg.send(day_review.build_text(state, day_review.summarize(scan), state["date"]))
+            except Exception as exc:
+                log.error("Day review failed (%s: %s) -- continuing.", type(exc).__name__, exc)
         except Exception as exc:
-            log.error("EOD image report failed (%s: %s) -- sending the text version.", type(exc).__name__, exc)
-        if not sent_image:
-            for m in eod_report.build_messages(state, state["date"]):
-                tg.send(m)
-        state["eod_report_sent"] = True
-        chart_notify.nse_lesson_card(state)            # Telugu daily lesson card (best-effort, once)
-        try:                                           # why the scanner did / did not trade today (facts from the scan log)
-            import day_review
-            scan = state_mod.STATE_CLONE_DIR / "scan_logs" / f"{state['date']}.jsonl"
-            tg.send(day_review.build_text(state, day_review.summarize(scan), state["date"]))
-        except Exception as exc:
-            log.error("Day review failed (%s: %s) -- continuing.", type(exc).__name__, exc)
-    except Exception as exc:
-        log.error("EOD report failed (%s: %s) -- will retry next run.", type(exc).__name__, exc)
+            log.error("EOD report failed (%s: %s) -- will retry next run.", type(exc).__name__, exc)
 
 
 

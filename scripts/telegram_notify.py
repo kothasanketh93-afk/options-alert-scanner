@@ -23,8 +23,10 @@ too, they're listed as text only -- never opened as separate trades.
 """
 
 from datetime import datetime
+import contextlib
 import os
 
+import config
 from auth import get_telegram_credentials
 from retry_utils import request_with_retry
 from exceptions import TelegramFailure
@@ -68,7 +70,36 @@ def _trade_header(trade: dict) -> str:
 # message still fails fast.
 
 
-def send(text: str):
+_ALLOW = 0
+
+
+def allow_all():
+    """For manual one-off scripts (previews, test message) that the user runs on purpose: never suppressed."""
+    global _ALLOW
+    _ALLOW += 1
+
+
+@contextlib.contextmanager
+def allow():
+    """Sends inside this block go out even when config.TELEGRAM_EOD_ONLY is on (used for the end-of-day report)."""
+    global _ALLOW
+    _ALLOW += 1
+    try:
+        yield
+    finally:
+        _ALLOW -= 1
+
+
+def _suppressed(what: str, critical: bool = False) -> bool:
+    if getattr(config, "TELEGRAM_EOD_ONLY", False) and not _ALLOW and not critical:
+        log.info("Telegram %s suppressed (TELEGRAM_EOD_ONLY).", what)
+        return True
+    return False
+
+
+def send(text: str, critical: bool = False):
+    if _suppressed("message", critical):
+        return {"suppressed": True}
     bot_token, chat_id = get_telegram_credentials()
     url = API_URL.format(token=bot_token)
     try:
@@ -119,8 +150,10 @@ def send_document(file_path: str, caption: str = None):
     return resp.json()
 
 
-def send_photo(file_path: str, caption: str = None):
+def send_photo(file_path: str, caption: str = None, critical: bool = False):
     """Send an image (PNG) inline via sendPhoto -- same credentials/retry policy as send()/send_document()."""
+    if _suppressed("photo", critical):
+        return {"suppressed": True}
     bot_token, chat_id = get_telegram_credentials()
     url = PHOTO_API_URL.format(token=bot_token)
     with open(file_path, "rb") as fh:

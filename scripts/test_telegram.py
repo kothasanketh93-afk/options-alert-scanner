@@ -16,6 +16,7 @@ environment: `python scripts/test_telegram.py`
 from datetime import datetime
 
 import telegram_notify as tg
+tg.allow_all()   # manual one-off script: always sends, regardless of config.TELEGRAM_EOD_ONLY
 from exceptions import TelegramFailure, ConfigurationError
 
 if __name__ == "__main__":

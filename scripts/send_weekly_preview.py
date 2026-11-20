@@ -8,6 +8,7 @@ import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import telegram_notify as tg
+tg.allow_all()   # manual one-off script: always sends, regardless of config.TELEGRAM_EOD_ONLY
 import weekly_image
 import weekly_report
 

@@ -1628,7 +1628,7 @@ RISK_MIN_T1_RR = 1.2   # live alerts: (T1 - ask) / (ask - SL) must be at least t
 
 # Fast tracker (added 2026-11-03): while a LIVE trade is open, one extra tracker-only pass ~150 s after each run starts
 # (scans stay on the normal 5-min cadence). Same process => single state writer. Set False to disable.
-FAST_TRACKER_ENABLED = True
+FAST_TRACKER_ENABLED = False   # 2026-11-20: off with TELEGRAM_EOD_ONLY (its only purpose was faster Telegram SL/T1 notices; it held every run ~150 s)
 FAST_TRACKER_INTERVAL_SEC = 150
 FAST_TRACKER_LAST_HHMM = (15, 25)   # no extra pass at/after this IST time
 
@@ -1688,3 +1688,10 @@ SHADOW_POLL_ALWAYS_FROM_MCX = (23, 5)
 # retry per instrument, and instruments that failed last run are scanned first next run (so none starves).
 MCX_SCAN_GAP_SEC = 1.2
 MCX_SCAN_RETRY_BACKOFF_SEC = 3.0
+
+
+# --- Telegram: end-of-day report only (2026-11-20) ---
+# True  = every Telegram send is suppressed (logged, never an error) EXCEPT (a) the end-of-day report blocks wrapped in
+#         telegram_notify.allow() and (b) calls marked critical=True (state-save failure, heartbeat/pre-market FAILURE alerts).
+# False = previous behaviour (all alerts). Trading, tracking, ledger and dashboard are unaffected either way.
+TELEGRAM_EOD_ONLY = True

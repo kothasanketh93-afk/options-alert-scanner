@@ -283,7 +283,7 @@ def main():
 
     if alert_text is not None:
         try:
-            tg.send(alert_text)
+            tg.send(alert_text, critical=True)
         except TelegramFailure:
             log.error("Could not send heartbeat alert -- Telegram itself unreachable.")
 

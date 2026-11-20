@@ -9,6 +9,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import eod_report
 import telegram_notify as tg
+tg.allow_all()   # manual one-off script: always sends, regardless of config.TELEGRAM_EOD_ONLY
 
 
 def main(path):

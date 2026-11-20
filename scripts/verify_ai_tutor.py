@@ -7,6 +7,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ai_tutor
 import telegram_notify
+telegram_notify.allow_all()   # manual one-off script: always sends, regardless of config.TELEGRAM_EOD_ONLY
 import trade_chart
 
 

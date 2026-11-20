@@ -6,6 +6,7 @@ import tempfile
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import strategy_scorecard
 import telegram_notify as tg
+tg.allow_all()   # manual one-off script: always sends, regardless of config.TELEGRAM_EOD_ONLY
 
 
 def main(root, day):

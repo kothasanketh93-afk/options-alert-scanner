@@ -513,10 +513,11 @@ def send_reports(st: dict, now: datetime):
     ledger = state_mod.STATE_CLONE_DIR / MCX_DIR / "ledger" / "outcomes.csv"
     if not st.get("summary_sent"):
         png = os.path.join(tempfile.mkdtemp(), f"mcx_daily_{st['date']}.png")
-        if mcx_report.render_daily(st, png):
-            tg.send_photo(png, caption=f"MCX daily trade report {st['date']} (one lot per trade, shadow data)")
-        else:
-            tg.send(f"MCX shadow report {st['date']}: no trades today.")
+        with tg.allow():   # end-of-day report still goes out under config.TELEGRAM_EOD_ONLY
+            if mcx_report.render_daily(st, png):
+                tg.send_photo(png, caption=f"MCX daily trade report {st['date']} (one lot per trade, shadow data)")
+            else:
+                tg.send(f"MCX shadow report {st['date']}: no trades today.")
         st["summary_sent"] = True
     if not st.get("lesson_card_sent"):
         st["lesson_card_sent"] = True

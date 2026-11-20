@@ -136,7 +136,7 @@ def main():
             f"Fix before then or today's trading may not run correctly."
         )
         try:
-            tg.send(text)
+            tg.send(text, critical=True)
         except TelegramFailure:
             log.error("Pre-market check found problems but the alert itself could "
                        "not be sent (Telegram unreachable): %s", problems)

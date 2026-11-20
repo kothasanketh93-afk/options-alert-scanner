@@ -10,6 +10,7 @@ IST = timezone(timedelta(hours=5, minutes=30))
 
 
 def _setup(monkey_now, open_trade=True):
+    config.FAST_TRACKER_ENABLED = True   # production default is False (2026-11-20); these tests exercise the feature itself
     calls = {"track": 0, "save": 0, "sleep": []}
     m.state_mod.ist_now = lambda: monkey_now[0]
     m.run_tracker_step = lambda st, now: calls.__setitem__("track", calls["track"] + 1)
