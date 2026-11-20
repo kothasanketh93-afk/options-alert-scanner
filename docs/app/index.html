@@ -504,7 +504,7 @@ const asOn=k=>(getAS()||DEF_ALERT).includes(String(k).replace(/_wsl$/,''));
 const slugS=k=>String(k).toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,40);
 const ntfyBase=()=>{try{return(localStorage.getItem('ntfyBase')||'').trim()}catch(e){return''}};
 function beep(){try{const a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=880;g.gain.value=.08;o.start();o.stop(a.currentTime+.25)}catch(e){}}
-function toast(title,body,kind){const el=document.createElement('div');el.className='toast '+(kind||'');el.innerHTML='<b>'+esc(title)+'</b>'+esc(body);$('#toasts').appendChild(el);setTimeout(()=>el.remove(),9000);el.onclick=()=>el.remove()}
+function toast(title,body,kind){const el=document.createElement('div');el.className='toast '+(kind||'');el.innerHTML='<b>'+esc(title)+'</b>'+esc(body);const box=$('#toasts');while(box.children.length>=2)box.firstChild.remove();box.appendChild(el);setTimeout(()=>el.remove(),6000);el.onclick=()=>el.remove()}
 function notify(title,body,kind){toast(title,body,kind);unread++;document.title='('+unread+') Options Scanner';try{navigator.vibrate&&navigator.vibrate(120)}catch(e){}
   if(alertsOn){beep();try{if(window.Notification&&Notification.permission==='granted')new Notification(title,{body,icon:'icon.svg'})}catch(e){}}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){unread=0;document.title='Options Scanner'}});
@@ -518,9 +518,11 @@ async function pollAlerts(){try{
   if(n){add('NSE',n.s.trades,true);['shadow_trades','fib_pivot_shadow_trades','orb_pivot_shadow_trades','sweep_shadow_trades'].forEach(k=>add('NSE',n.s[k],false))}
   if(m)add('MCX',m.s.mcx_shadow_trades,false);
   let prev=null;try{prev=JSON.parse(localStorage.getItem('seen')||'null')}catch(e){}
-  const day=(n||m||{}).date;if(prev&&prev.day===day){for(const [id,c] of Object.entries(cur)){const o=prev.m[id],lab=`${c.t.symbol} ${c.t.strike||''} ${c.t.direction} · ${nm(c.t.strategy)}`;
-      if(o===undefined&&c.st!=='NOT_ENTERED')notify('New alert · '+c.src,lab+'\n'+lv(c.t),'');
-      else if(o!==undefined&&o!==c.st&&MSG[c.st])notify(MSG[c.st][0]+' · '+c.src,lab+'\n'+lv(c.t),MSG[c.st][1])}}
+  const day=(n||m||{}).date;if(prev&&prev.day===day){const ev=[];for(const [id,c] of Object.entries(cur)){const o=prev.m[id],lab=`${c.t.symbol} ${c.t.strike||''} ${c.t.direction} · ${nm(c.t.strategy)}`;
+      if(o===undefined&&c.st!=='NOT_ENTERED')ev.push(['New alert · '+c.src,lab,c,'']);
+      else if(o!==undefined&&o!==c.st&&MSG[c.st])ev.push([MSG[c.st][0]+' · '+c.src,lab,c,MSG[c.st][1]])}
+    if(ev.length<=2)ev.forEach(e=>notify(e[0],e[1]+'\n'+lv(e[2].t),e[3]));
+    else notify(ev.length+' '+T('new updates','కొత్త అప్‌డేట్‌లు'),ev.slice(0,3).map(e=>e[1]).join('\n')+'\n'+T('Open Today for entry / SL / targets','ఎంట్రీ / SL / టార్గెట్ల కోసం Today తెరవండి'),'')}
   try{localStorage.setItem('seen',JSON.stringify({day,m:Object.fromEntries(Object.entries(cur).map(([k,v])=>[k,v.st]))}))}catch(e){}
   }catch(e){}}
 
