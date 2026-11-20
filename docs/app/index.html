@@ -181,7 +181,8 @@ body.noscroll{overflow:hidden}#sheet{position:fixed;inset:0;z-index:100}.sh-bd{p
 .crow{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;align-items:center;padding:1px}.crow::-webkit-scrollbar{display:none}.cl{flex:none;font-size:11px;font-weight:650;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin-right:2px}
 .cc{flex:none;font:inherit;font-size:13px;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer;white-space:nowrap}.cc.on{background:color-mix(in srgb,var(--acc) 16%,var(--panel));border-color:var(--acc);color:var(--acc);font-weight:650}.cc b{font-weight:650}
 .crow.dates input{font:inherit;font-size:13px;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 6px;min-width:0}
-.cwrap{margin:0 0 12px}.cbar{display:flex;align-items:center;gap:8px;width:100%;font:inherit;font-size:13.5px;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 14px;cursor:pointer;text-align:left}.cbar .cs{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:650}.cbar svg{color:var(--acc);flex:none}.cbar i{font-style:normal;color:var(--mut)}.cbody{margin-top:10px;animation:shup .15s ease-out}.cbody[hidden]{display:none}.cbody .ctl{margin:0}</style></head><body>
+.cwrap{margin:0 0 12px}.cbar{display:flex;align-items:center;gap:8px;width:100%;font:inherit;font-size:13.5px;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 14px;cursor:pointer;text-align:left}.cbar .cs{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:650}.cbar svg{color:var(--acc);flex:none}.cbar i{font-style:normal;color:var(--mut)}.cbody{margin-top:10px;animation:shup .15s ease-out}.cbody[hidden]{display:none}.cbody .ctl{margin:0}html,body{overscroll-behavior-y:contain}
+</style></head><body>
 <div id="gate" hidden><form id="login" autocomplete="on"><h2 style="margin:0;font-size:19px">Options Scanner</h2><small>Sign in to view</small>
 <input id="u" name="username" autocomplete="username" placeholder="Username" autocapitalize="none"><input id="p" name="password" type="password" autocomplete="current-password" placeholder="Password"><button>Sign in</button><small id="lerr" class="err"></small></form></div>
 <div id="toasts" aria-live="polite"></div>
@@ -625,6 +626,16 @@ const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(
 async function derive(u,p){const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(u.trim().toLowerCase()+':'+p),'PBKDF2',false,['deriveBits']);return hex(await crypto.subtle.deriveBits({name:'PBKDF2',hash:'SHA-256',salt:Uint8Array.from(SALT.match(/../g).map(x=>parseInt(x,16))),iterations:ITER},k,256))}
 
 let started=false;function start(){if(started)return;started=true;$('#gate').hidden=true;render();pollAlerts();setInterval(()=>{if(!document.hidden||alertsOn)pollAlerts()},45000);setInterval(()=>{if(tab=='today'&&!document.hidden&&!document.querySelector('details[open]'))render()},60000)}
+/* pull-to-refresh: pull down at the top of the page to reload the current tab's data (no full page reload) */
+(function(){let y0=null,dy=0,busy=false,el=null;
+  const bar=()=>el||(el=Object.assign(document.createElement('div'),{id:'ptr'}),el.style.cssText='position:fixed;top:0;left:0;right:0;height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#16233a;color:#9fb4d6;font-size:13px;z-index:50;transition:height .15s',document.body.appendChild(el),el);
+  document.addEventListener('touchstart',e=>{y0=(started&&!busy&&window.scrollY<=0&&e.touches.length===1&&!document.getElementById('sheet'))?e.touches[0].clientY:null;dy=0},{passive:true});
+  document.addEventListener('touchmove',e=>{if(y0===null)return;dy=e.touches[0].clientY-y0;if(dy<=0){bar().style.height='0';return}const b=bar();b.style.transition='none';b.style.height=Math.min(dy/2,54)+'px';b.textContent=dy>90?T('Release to refresh','వదిలితే రిఫ్రెష్ అవుతుంది'):T('Pull to refresh','లాగి రిఫ్రెష్ చేయండి')},{passive:true});
+  document.addEventListener('touchend',async()=>{if(y0===null)return;const go=dy>90;y0=null;const b=bar();b.style.transition='height .15s';
+    if(!go){b.style.height='0';return}
+    busy=true;b.style.height='40px';b.textContent=T('Refreshing…','రిఫ్రెష్ అవుతోంది…');
+    try{await render()}catch(x){}finally{busy=false;b.style.height='0'}},{passive:true});
+})();
 $('#login').onsubmit=async e=>{e.preventDefault();$('#lerr').textContent='';try{const d=await derive($('#u').value,$('#p').value);if(d===HASH){try{localStorage.setItem('ok',HASH.slice(0,16))}catch(x){}start()}else $('#lerr').textContent='Wrong username or password'}catch(x){$('#lerr').textContent='Sign-in needs a secure (https) page'}};
 let saved='';try{saved=localStorage.getItem('ok')||''}catch(e){}
 if(saved===HASH.slice(0,16))start();else $('#gate').hidden=false;
