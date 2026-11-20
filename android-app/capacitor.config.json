@@ -1,0 +1,11 @@
+{
+  "appId": "com.sanketh.optionsscanner",
+  "appName": "Options Scanner",
+  "webDir": "www",
+  "server": {
+    "url": "https://options-alert-scanner.pages.dev",
+    "cleartext": false,
+    "allowNavigation": ["options-alert-scanner.pages.dev", "*.cloudflareaccess.com"]
+  },
+  "android": { "allowMixedContent": false }
+}
