@@ -85,7 +85,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-20T12:02:00+05:30",
+      "last_processed_ts": "2026-11-20T12:04:00+05:30",
       "messages_sent": [
         "NEW_TRADE_ALERT",
         "ENTRY_ACTIVATED"
@@ -109,7 +109,7 @@
       "ai_verdict": "supportive",
       "vix_at_alert": 16.98,
       "nifty_chg_pct_at_alert": 0.09,
-      "last_price": 29.6
+      "last_price": 30.55
     }
   },
   "next_seq": {
@@ -255,7 +255,7 @@
   },
   "probability_history": {},
   "daily_stats": {
-    "scanned_symbols": 476,
+    "scanned_symbols": 490,
     "valid_signals": 2,
     "rejected_signals": 1048,
     "api_failures": 0,
@@ -264,23 +264,23 @@
   "rerank_slots_done": [
     "11:30"
   ],
-  "last_run_at": "2026-11-20T12:01:02+05:30",
+  "last_run_at": "2026-11-20T12:05:33+05:30",
   "pnl_snaps": [
     "1015",
     "1115"
   ],
   "micro_last_minute": [
     "2026-11-20",
-    721
+    725
   ],
   "tape_seen": {
     "NIFTY": [
       "2026-11-20",
-      "11:55"
+      "12:00"
     ],
     "BANKNIFTY": [
       "2026-11-20",
-      "11:55"
+      "12:00"
     ]
   },
   "fib_pivot_shadow_trades": {
@@ -3667,9 +3667,9 @@
       "final_status": null,
       "actual_entry_time": "2026-11-20T10:41:00+05:30",
       "tracked_entry_price": 646.8,
-      "highest_since_entry": 837.35,
+      "highest_since_entry": 863.0,
       "lowest_since_entry": 610.1,
-      "max_favorable_pct": 29.46,
+      "max_favorable_pct": 33.43,
       "max_adverse_pct": -5.67,
       "t1_hit": true,
       "t1_hit_time": "2026-11-20T11:57:00+05:30",
@@ -3677,7 +3677,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-20T12:00:00+05:30",
+      "last_processed_ts": "2026-11-20T12:04:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "fvg",
@@ -3696,14 +3696,14 @@
       "entry_oi": 300420.0,
       "entry_volume": 2873780,
       "shadow_notified": true,
-      "last_polled_at": "2026-11-20T12:01:02.908302+05:30",
+      "last_polled_at": "2026-11-20T12:05:33.730175+05:30",
       "chart_setup_sent": true,
       "ai_verdict": "supportive",
       "vix_at_alert": 17.5,
       "nifty_chg_pct_at_alert": 0.07,
-      "last_price": 830.5,
+      "last_price": 851.9,
       "be_tracked": true,
-      "trail_sl": 761.77
+      "trail_sl": 787.42
     },
     "SWEEP-fvg-BANKNIFTY-CE-20261120-1115-01": {
       "trade_id": "SWEEP-fvg-BANKNIFTY-CE-20261120-1115-01",
@@ -4215,7 +4215,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-20T12:00:00+05:30",
+      "last_processed_ts": "2026-11-20T12:04:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -4223,10 +4223,10 @@
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
       "candidate_id": "PAYTM:PE:1740.0:2026-11-23",
-      "last_polled_at": "2026-11-20T12:01:02.908302+05:30",
+      "last_polled_at": "2026-11-20T12:05:33.730175+05:30",
       "vix_at_alert": 16.98,
       "nifty_chg_pct_at_alert": 0.09,
-      "last_price": 28.7
+      "last_price": 30.55
     },
     "SHADOW-2-112538": {
       "trade_id": "SHADOW-2-112538",
@@ -4313,7 +4313,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-20T12:00:00+05:30",
+      "last_processed_ts": "2026-11-20T12:04:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "trade_score",
@@ -4321,10 +4321,10 @@
       "execution_mode": "SHADOW",
       "live_alert_sent": false,
       "candidate_id": "POLYCAB:CE:7400.0:2026-11-23",
-      "last_polled_at": "2026-11-20T12:01:02.908302+05:30",
+      "last_polled_at": "2026-11-20T12:05:33.730175+05:30",
       "vix_at_alert": 16.8,
       "nifty_chg_pct_at_alert": 0.1,
-      "last_price": 115.35,
+      "last_price": 106.35,
       "waiting_candles": [
         [
           "11:26",
