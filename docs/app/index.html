@@ -207,6 +207,14 @@ html[data-mkt=MCX][data-theme=light]{--acc:#b9540f}
 .tabs button{transition:background .2s,color .2s}
 #view{animation:vin .18s ease-out}@keyframes vin{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){#view{animation:none}.sc{transition:none}}
+/* calmer palette */
+:root,:root[data-theme=dark]{--bg:#0f141f;--bg2:#131a28;--panel:#171e2d;--panel2:#1d2638;--line:#263046;--fg:#e4e9f2;--mut:#8a95aa;--ok:#4cae8c;--bad:#d9707c;--warn:#d1a653;--acc:#7e9ccc}
+@media (prefers-color-scheme:light){:root:not([data-theme=dark]){--ok:#2f8566;--bad:#b84a57;--warn:#8f6a1c;--acc:#4a76bd}}
+:root[data-theme=light]{--ok:#2f8566;--bad:#b84a57;--warn:#8f6a1c;--acc:#4a76bd}
+html[data-mkt=MCX][data-mkt=MCX]{--acc:#c08a52}
+.cc.on,.seg2 button[aria-pressed=true],button.chip[aria-pressed=true],.fs button[aria-pressed=true],.mk3 button[aria-pressed=true],#bell[aria-pressed=true]{background:color-mix(in srgb,var(--acc) 20%,var(--panel))!important;color:var(--fg)!important;border-color:color-mix(in srgb,var(--acc) 50%,var(--line))!important;box-shadow:none!important}
+.mk3 button[aria-pressed=true] small{color:var(--mut)}
+.sc-net,.sc-kv b{font-weight:650}
 </style></head><body>
 <div id="gate" hidden><form id="login" autocomplete="on"><h2 style="margin:0;font-size:19px">Options Scanner</h2><small>Sign in to view</small>
 <input id="u" name="username" autocomplete="username" placeholder="Username" autocapitalize="none"><input id="p" name="password" type="password" autocomplete="current-password" placeholder="Password"><button>Sign in</button><small id="lerr" class="err"></small></form></div>
