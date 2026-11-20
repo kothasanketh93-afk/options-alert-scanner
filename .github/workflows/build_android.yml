@@ -53,3 +53,10 @@ jobs:
           name: options-scanner-apk
           path: out/options-scanner.apk
           retention-days: 30
+      - name: Send APK to Telegram
+        env:
+          TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CH: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          [ -n "$TG" ] && [ -n "$CH" ] || { echo "Telegram secrets missing"; exit 0; }
+          curl -fsS -F "chat_id=$CH" -F "caption=Options Scanner app (APK) - open this file on your phone to install" -F "document=@out/options-scanner.apk" "https://api.telegram.org/bot$TG/sendDocument" >/dev/null && echo sent
