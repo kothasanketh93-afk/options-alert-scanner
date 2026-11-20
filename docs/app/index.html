@@ -105,7 +105,7 @@ td.hm{font-weight:600}.sub td{background:var(--panel2);font-size:12.5px;color:va
 .edu b{color:var(--warn)}
 #toasts{position:fixed;left:0;right:0;top:calc(8px + env(safe-area-inset-top));z-index:30;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 12px}
 .toast{pointer-events:auto;max-width:460px;width:100%;background:var(--panel2);border:1px solid var(--acc);border-left-width:5px;border-radius:12px;padding:10px 12px;box-shadow:0 8px 28px rgba(0,0,0,.35);font-size:13px;animation:ti .25s ease-out}
-.toast{white-space:pre-line}.toast b{display:block;font-size:13.5px}.toast.ok{border-color:var(--ok)}.toast.bad{border-color:var(--bad)}
+.toast{white-space:pre-line;touch-action:pan-y;position:relative;padding-right:32px;user-select:none;-webkit-user-select:none}.toast .tx{position:absolute;top:4px;right:4px;border:0;background:transparent;color:var(--mut);font-size:15px;line-height:1;width:28px;height:28px;border-radius:50%;cursor:pointer}.toast b{display:block;font-size:13.5px}.toast.ok{border-color:var(--ok)}.toast.bad{border-color:var(--bad)}
 @keyframes ti{from{transform:translateY(-14px);opacity:0}to{transform:none;opacity:1}}@media (prefers-reduced-motion:reduce){.toast{animation:none}}
 #bell{margin-left:4px;background:var(--panel);border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:3px 8px;font:inherit;cursor:pointer}#bell[aria-pressed=true]{color:#fff;background:var(--acc);border-color:var(--acc)}
 details.how{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}details.how summary{cursor:pointer;font-size:12.5px;color:var(--acc);list-style:none}details.how summary::-webkit-details-marker{display:none}details.how p{margin:6px 0 0;font-size:12.5px;color:var(--mut);line-height:1.5}
@@ -657,7 +657,14 @@ const asOn=k=>(getAS()||DEF_ALERT).includes(String(k).replace(/_wsl$/,''));
 const slugS=k=>String(k).toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,40);
 const ntfyBase=()=>{try{return(localStorage.getItem('ntfyBase')||'').trim()}catch(e){return''}};
 function beep(){try{const a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=880;g.gain.value=.08;o.start();o.stop(a.currentTime+.25)}catch(e){}}
-function toast(title,body,kind){const el=document.createElement('div');el.className='toast '+(kind||'');el.innerHTML='<b>'+esc(title)+'</b>'+esc(body);const box=$('#toasts');while(box.children.length>=2)box.firstChild.remove();box.appendChild(el);setTimeout(()=>el.remove(),6000);el.onclick=()=>el.remove()}
+function toast(title,body,kind){const el=document.createElement('div');el.className='toast '+(kind||'');el.innerHTML='<b>'+esc(title)+'</b>'+esc(body)+'<button class="tx" aria-label="Dismiss">✕</button>';const box=$('#toasts');while(box.children.length>=2)box.firstChild.remove();box.appendChild(el);
+  let tm=setTimeout(()=>gone(0),7000),x0=null,y0=null,dx=0,dy=0,t0=0,moved=false;
+  function gone(dir){clearTimeout(tm);if(!el.isConnected)return;el.style.transition='transform .2s ease-out,opacity .2s';el.style.transform=dir?`translateX(${dir*110}%)`:'translateY(-30px)';el.style.opacity='0';setTimeout(()=>el.remove(),200)}
+  el.addEventListener('pointerdown',e=>{if(e.target.closest('.tx'))return;x0=e.clientX;y0=e.clientY;dx=dy=0;moved=false;t0=Date.now();clearTimeout(tm);el.style.transition='none';try{el.setPointerCapture(e.pointerId)}catch(x){}});
+  el.addEventListener('pointermove',e=>{if(x0===null)return;dx=e.clientX-x0;dy=e.clientY-y0;if(Math.abs(dx)>6||Math.abs(dy)>6)moved=true;el.style.transform=`translate(${dx}px,${Math.min(0,dy)}px)`;el.style.opacity=String(Math.max(.25,1-Math.abs(dx)/260))});
+  const end=()=>{if(x0===null)return;const v=Math.abs(dx)/Math.max(1,Date.now()-t0);x0=null;if(Math.abs(dx)>70||v>.6)gone(dx<0?-1:1);else if(dy<-40)gone(0);else{el.style.transition='transform .18s,opacity .18s';el.style.transform='';el.style.opacity='';tm=setTimeout(()=>gone(0),4000);if(!moved)gone(0)}};
+  el.addEventListener('pointerup',end);el.addEventListener('pointercancel',end);
+  el.querySelector('.tx').onclick=e=>{e.stopPropagation();gone(0)}}
 function notify(title,body,kind){toast(title,body,kind);unread++;document.title='('+unread+') Options Scanner';try{navigator.vibrate&&navigator.vibrate(120)}catch(e){}
   if(alertsOn){beep();try{if(window.Notification&&Notification.permission==='granted')new Notification(title,{body,icon:'icon.svg'})}catch(e){}}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){unread=0;document.title='Options Scanner'}});
