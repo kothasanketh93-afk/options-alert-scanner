@@ -14,7 +14,7 @@ permissions:
 jobs:
   hook:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 6
     steps:
       - name: Trigger Cloudflare Pages build
         env:
@@ -22,3 +22,13 @@ jobs:
         run: |
           [ -n "$HOOK" ] || { echo "::warning::CF_PAGES_HOOK secret not set - skipped"; exit 0; }
           curl -fsS -X POST "$HOOK" -o /dev/null && echo "Cloudflare build triggered"
+      - name: Tell me on Telegram
+        env:
+          TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CH: ${{ secrets.TELEGRAM_CHAT_ID }}
+          MSG: ${{ github.event.head_commit.message }}
+        run: |
+          [ -n "$TG" ] && [ -n "$CH" ] || exit 0
+          sleep 150   # give Cloudflare time to finish the build
+          T=$(printf '%s' "$MSG" | head -1 | cut -c1-200)
+          curl -fsS --data-urlencode "chat_id=$CH" --data-urlencode "text=New dashboard version is live: ${T:-manual deploy}. Close and reopen the app to load it." "https://api.telegram.org/bot$TG/sendMessage" >/dev/null && echo notified
