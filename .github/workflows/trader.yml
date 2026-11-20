@@ -165,3 +165,19 @@ jobs:
           # documented daily opt-out. Empty/unset reads as "false" (Falsy string check inside auth.py) -> trading enabled.
           SKIP_TRADING_TODAY: ${{ vars.SKIP_TRADING_TODAY }}
         run: python scripts/main.py
+
+      # Mirror the state branch to private Cloudflare R2 (best effort; never fails the run; no-op until the R2_* secrets exist).
+      - name: Mirror state to R2
+        if: always()
+        continue-on-error: true
+        timeout-minutes: 3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          [ -n "$R2_BUCKET" ] && [ -d .state_branch ] || { echo "R2 mirror skipped"; exit 0; }
+          aws s3 sync .state_branch "s3://${R2_BUCKET}/" --endpoint-url "https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com" \
+            --exclude ".git/*" --size-only --only-show-errors
