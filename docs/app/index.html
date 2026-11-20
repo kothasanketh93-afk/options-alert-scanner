@@ -196,6 +196,17 @@ html[data-mkt=MCX][data-mkt=MCX]{--acc:#d9822b}
 @media (prefers-color-scheme:light){html[data-mkt=MCX][data-mkt=MCX]:not([data-theme=dark]){--acc:#b9540f}}
 html[data-mkt=MCX][data-theme=light]{--acc:#b9540f}
 #view{animation:mkfade .22s ease}@keyframes mkfade{from{opacity:.0;transform:translateY(4px)}to{opacity:1;transform:none}}@media (prefers-reduced-motion:reduce){#view{animation:none}}
+/* polish: compact trading-app look */
+@media (max-width:699px){.mkw{margin-top:6px;padding:3px 8px;border-radius:12px;gap:8px}.mkw .lab{font-size:14px;padding:2px}.mkw .lab small{font-size:10px}.mkw .tgl{width:46px;height:24px}header{padding-top:calc(6px + env(safe-area-inset-top))}}
+.sc{border-radius:12px;padding:12px 14px;box-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 2px 8px rgba(0,0,0,.18);transition:transform .15s,border-color .15s}
+.sc:active{transform:scale(.995)}
+.sc-net{font-size:20px;letter-spacing:-.2px}
+.sc-kv small,.rl{letter-spacing:.2px}
+.sc-kv small{font-size:11px;opacity:.75;white-space:nowrap}
+.sc-kv b{font-size:15px}
+.tabs button{transition:background .2s,color .2s}
+#view{animation:vin .18s ease-out}@keyframes vin{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#view{animation:none}.sc{transition:none}}
 </style></head><body>
 <div id="gate" hidden><form id="login" autocomplete="on"><h2 style="margin:0;font-size:19px">Options Scanner</h2><small>Sign in to view</small>
 <input id="u" name="username" autocomplete="username" placeholder="Username" autocapitalize="none"><input id="p" name="password" type="password" autocomplete="current-password" placeholder="Password"><button>Sign in</button><small id="lerr" class="err"></small></form></div>
