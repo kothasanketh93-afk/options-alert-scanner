@@ -224,12 +224,20 @@ html[data-mkt=MCX][data-mkt=MCX]{--acc:#c08a52}
 .mkw .tgl i::after{content:"";position:absolute;left:1px;right:1px;top:6px;bottom:6px;background:var(--c);border-radius:3px;box-shadow:0 0 8px color-mix(in srgb,var(--c) 45%,transparent)}
 .mkw .tgl[aria-checked=true] i{transform:translateX(36px)!important}
 @media (max-width:699px){.mkw .tgl{width:68px!important;height:32px!important}}
+/* identity: candle-radar brand */
+.brand svg{width:36px!important;height:36px!important;filter:drop-shadow(0 2px 10px rgba(62,224,168,.25))!important;border-radius:10px}
+.brand h1{font-weight:750;letter-spacing:-.3px;background:linear-gradient(90deg,var(--fg),color-mix(in srgb,var(--fg) 60%,var(--ok)));-webkit-background-clip:text;background-clip:text;color:transparent}
+body{background-image:radial-gradient(1200px 400px at 85% -120px,color-mix(in srgb,var(--ok) 7%,transparent),transparent),repeating-linear-gradient(90deg,transparent 0 31px,color-mix(in srgb,var(--line) 28%,transparent) 31px 32px);background-attachment:fixed}
+.sc,.set,.hero{position:relative}
+.sc::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:linear-gradient(var(--ok),var(--acc))}
+.tabs button[aria-pressed=true]{position:relative}
+.tabs button[aria-pressed=true]::after{content:"";position:absolute;left:50%;top:3px;width:14px;height:3px;margin-left:-7px;border-radius:3px;background:var(--ok)}
 </style></head><body>
 <div id="gate" hidden><form id="login" autocomplete="on"><h2 style="margin:0;font-size:19px">Options Scanner</h2><small>Sign in to view</small>
 <input id="u" name="username" autocomplete="username" placeholder="Username" autocapitalize="none"><input id="p" name="password" type="password" autocomplete="current-password" placeholder="Password"><button>Sign in</button><small id="lerr" class="err"></small></form></div>
 <div id="toasts" aria-live="polite"></div>
 <div class="wrap">
-<header><div class="top"><div class="brand"><svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6ea8ff"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="url(#lg1)"/><path d="M7 21l6-7 4 4 8-9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><h1>Options Scanner</h1></div></div>
+<header><div class="top"><div class="brand"><svg viewBox="0 0 108 108" aria-hidden="true"><defs><radialGradient id="lgb" cx=".35" cy=".25" r="1"><stop offset="0" stop-color="#18233a"/><stop offset="1" stop-color="#080b12"/></radialGradient></defs><rect width="108" height="108" rx="24" fill="url(#lgb)"/><g transform="translate(54 54) scale(1.4) translate(-54 -54)"><defs><linearGradient id="lgs" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#3ee0a8" stop-opacity="0"/><stop offset="1" stop-color="#3ee0a8" stop-opacity=".38"/></linearGradient><filter id="lgg"><feGaussianBlur stdDeviation="1.6"/></filter></defs><g fill="none" stroke="#2a3a52" stroke-width="1.2"><circle cx="54" cy="54" r="26"/><circle cx="54" cy="54" r="17"/></g><path d="M54 54 L54 26 A28 28 0 0 1 80 44 Z" fill="url(#lgs)"/><line x1="54" y1="54" x2="54" y2="26" stroke="#3ee0a8" stroke-width="1.6" stroke-linecap="round"/><g stroke-linecap="round"><line x1="39" y1="44" x2="39" y2="70" stroke="#f0707e" stroke-width="2.4"/><rect x="34.5" y="50" width="9" height="14" rx="2" fill="#f0707e"/><line x1="54" y1="34" x2="54" y2="74" stroke="#3ee0a8" stroke-width="2.4"/><rect x="49.5" y="40" width="9" height="26" rx="2" fill="#3ee0a8"/><line x1="69" y1="40" x2="69" y2="68" stroke="#f2b24b" stroke-width="2.4"/><rect x="64.5" y="46" width="9" height="16" rx="2" fill="#f2b24b"/></g></g></svg><h1>Options Scanner</h1></div></div>
 <div class="sub2"><span id="clock" class="clk">—</span><span id="stamp" class="offb"></span></div><div class="mkw" id="mkbar" hidden></div></header>
 <div class="edu"><b>⚠ Education only</b> · paper trades, not advice</div>
 <main id="view"><div class="skel"></div><div class="skel"></div><div class="skel"></div></main>
