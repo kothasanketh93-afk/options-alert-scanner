@@ -1,0 +1,27 @@
+name: Test R2 connection
+# Manual check that the R2_* secrets work (writes, reads back and deletes one tiny object).
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  r2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+    steps:
+      - name: Round-trip one object
+        run: |
+          for v in R2_ACCOUNT_ID R2_BUCKET AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY; do
+            [ -n "${!v}" ] || { echo "::error::secret for $v is missing"; exit 1; }
+          done
+          EP="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          echo "hello $(date -u +%FT%TZ)" > ping.txt
+          aws s3 cp ping.txt "s3://${R2_BUCKET}/_ping.txt" --endpoint-url "$EP"
+          aws s3 cp "s3://${R2_BUCKET}/_ping.txt" back.txt --endpoint-url "$EP"
+          diff ping.txt back.txt && echo "R2 OK: write + read match"
+          aws s3 rm "s3://${R2_BUCKET}/_ping.txt" --endpoint-url "$EP"
