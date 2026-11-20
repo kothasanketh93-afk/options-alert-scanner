@@ -423,7 +423,7 @@ async function daysView(){const all=scopeOf(await ledger()).filter(t=>!/_wsl$/.t
   view.innerHTML=h}
 /* ---------- strategies ---------- */
 
-const ctlWrap=(inner,parts)=>`<div class="cwrap"><button class="cbar" data-ctl aria-expanded="${!!ui.ctlOpen}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span class="cs">${parts.filter(Boolean).map(esc).join(' · ')}</span><i>${ui.ctlOpen?'▴':'▾'}</i></button><div class="cbody"${ui.ctlOpen?'':' hidden'}>${inner}</div></div>`;
+const ctlWrap=(inner,parts)=>`<div class="cwrap"><button class="cbar" data-ctl aria-expanded="${!!ui.ctlOpen}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span class="cs">${(()=>{const q=parts.filter(Boolean);return q.length>1||tab==='today'?q.map(esc).join(' · '):esc(q[0]||'')+' · '+T('All strategies · All time','అన్ని స్ట్రాటజీలు · మొత్తం కాలం')})()}</span><i>${ui.ctlOpen?'▴':'▾'}</i></button><div class="cbody"${ui.ctlOpen?'':' hidden'}>${inner}</div></div>`;
 const mktName=()=>ui.mkt==='ALL'?T('All markets','అన్ని మార్కెట్లు'):ui.mkt;
 const stratName=()=>{const p=PK.strat;const it=p&&p.items.find(i=>i.v===String(ui.strat));return ui.strat!=='all'&&it?it.name:null};
 const ctlChip=(attr,label,on)=>`<button class="cc${on?' on':''}" ${attr} aria-pressed="${!!on}">${label}</button>`;
