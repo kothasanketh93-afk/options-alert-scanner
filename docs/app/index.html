@@ -594,5 +594,5 @@ let started=false;function start(){if(started)return;started=true;$('#gate').hid
 })();
 $('#login').onsubmit=async e=>{e.preventDefault();$('#lerr').textContent='';try{const d=await derive($('#u').value,$('#p').value);if(d===HASH){try{localStorage.setItem('ok',HASH.slice(0,16))}catch(x){}start()}else $('#lerr').textContent='Wrong username or password'}catch(x){$('#lerr').textContent='Sign-in needs a secure (https) page'}};
 let saved='';try{saved=localStorage.getItem('ok')||''}catch(e){}
-if(saved===HASH.slice(0,16))start();else $('#gate').hidden=false;
+if(/\.pages\.dev$/.test(location.hostname)||saved===HASH.slice(0,16))start();else $('#gate').hidden=false;   /* pages.dev sits behind Cloudflare Access (real login), so the old in-page gate is skipped there */
 </script></body></html>
