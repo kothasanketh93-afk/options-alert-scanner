@@ -182,13 +182,26 @@ body.noscroll{overflow:hidden}#sheet{position:fixed;inset:0;z-index:100}.sh-bd{p
 .cc{flex:none;font:inherit;font-size:13px;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--fg);cursor:pointer;white-space:nowrap}.cc.on{background:color-mix(in srgb,var(--acc) 16%,var(--panel));border-color:var(--acc);color:var(--acc);font-weight:650}.cc b{font-weight:650}
 .crow.dates input{font:inherit;font-size:13px;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 6px;min-width:0}
 .cwrap{margin:0 0 12px}.cbar{display:flex;align-items:center;gap:8px;width:100%;font:inherit;font-size:13.5px;color:var(--fg);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 14px;cursor:pointer;text-align:left}.cbar .cs{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:650}.cbar svg{color:var(--acc);flex:none}.cbar i{font-style:normal;color:var(--mut)}.cbody{margin-top:10px;animation:shup .15s ease-out}.cbody[hidden]{display:none}.cbody .ctl{margin:0}html,body{overscroll-behavior-y:contain}
+
+/* ---- two-mode switch (NSE <-> MCX): re-scopes and re-colours the whole app, like Upstox's investors/traders toggle ---- */
+.mkw{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:8px;padding:6px 8px;background:var(--panel);border:1px solid var(--line);border-radius:14px}
+.mkw .lab{flex:1;font:inherit;border:0;background:transparent;color:var(--mut);cursor:pointer;padding:4px 2px;text-align:center;font-size:15px;font-weight:700;letter-spacing:.2px;opacity:.7;transition:opacity .2s,color .2s}
+.mkw .lab small{display:block;font-size:10.5px;font-weight:500;opacity:.85}
+.mkw .lab[aria-pressed=true]{color:var(--acc);opacity:1}
+.mkw .tgl{flex:none;position:relative;width:58px;height:30px;border-radius:99px;border:2px solid var(--acc);background:color-mix(in srgb,var(--acc) 30%,transparent);cursor:pointer;padding:0;transition:background .2s,border-color .2s}
+.mkw .tgl i{position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:var(--acc);transition:transform .22s ease}
+.mkw .tgl[aria-checked=true] i{transform:translateX(28px)}
+html[data-mkt=MCX][data-mkt=MCX]{--acc:#d9822b}
+@media (prefers-color-scheme:light){html[data-mkt=MCX][data-mkt=MCX]:not([data-theme=dark]){--acc:#b9540f}}
+html[data-mkt=MCX][data-theme=light]{--acc:#b9540f}
+#view{animation:mkfade .22s ease}@keyframes mkfade{from{opacity:.0;transform:translateY(4px)}to{opacity:1;transform:none}}@media (prefers-reduced-motion:reduce){#view{animation:none}}
 </style></head><body>
 <div id="gate" hidden><form id="login" autocomplete="on"><h2 style="margin:0;font-size:19px">Options Scanner</h2><small>Sign in to view</small>
 <input id="u" name="username" autocomplete="username" placeholder="Username" autocapitalize="none"><input id="p" name="password" type="password" autocomplete="current-password" placeholder="Password"><button>Sign in</button><small id="lerr" class="err"></small></form></div>
 <div id="toasts" aria-live="polite"></div>
 <div class="wrap">
 <header><div class="top"><div class="brand"><svg viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6ea8ff"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs><rect width="32" height="32" rx="9" fill="url(#lg1)"/><path d="M7 21l6-7 4 4 8-9" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><h1>Options Scanner</h1></div></div>
-<div class="sub2"><span id="clock" class="clk">—</span><span id="stamp" class="offb"></span></div><div class="mk3" id="mkbar" hidden></div></header>
+<div class="sub2"><span id="clock" class="clk">—</span><span id="stamp" class="offb"></span></div><div class="mkw" id="mkbar" hidden></div></header>
 <div class="edu"><b>⚠ Education only</b> · paper trades, not advice</div>
 <main id="view"><div class="skel"></div><div class="skel"></div><div class="skel"></div></main>
 </div>
@@ -234,11 +247,11 @@ const $=s=>document.querySelector(s),view=$('#view');
 const MLOT=new Proxy({},{get:(o,k)=>CFG.lots[k]}),COMM=['CRUDEOIL','NATURALGAS','GOLDM','GOLD'];
 let tab='today',cache={},ui={per:'all',from:'',to:'',strat:'all',mkt:CFG.mkt||'ALL',src:'all',st:'all',twins:false,dd:false,sym:'ALL',sort:'net',who:'tg',basis:'tg',open:null};
 const UI_KEYS=['mkt','strat','per','from','to','st','twins','dd','sym','sort','who','basis','pkSort'];
-try{const sv=JSON.parse(localStorage.getItem('ui')||'null');if(sv){UI_KEYS.forEach(k=>{if(sv[k]!==undefined&&typeof sv[k]===typeof ui[k])ui[k]=sv[k]});if(!['ALL','NSE','MCX'].includes(ui.mkt))ui.mkt='ALL';if(['today','days','strat','insight','settings'].includes(sv.tab))tab=sv.tab}}catch(e){}
+try{const sv=JSON.parse(localStorage.getItem('ui')||'null');if(sv){UI_KEYS.forEach(k=>{if(sv[k]!==undefined&&typeof sv[k]===typeof ui[k])ui[k]=sv[k]});if(!['NSE','MCX'].includes(ui.mkt))ui.mkt='NSE';if(['today','days','strat','insight','settings'].includes(sv.tab))tab=sv.tab}}catch(e){}
 const saveUi=()=>{try{const o={tab};UI_KEYS.forEach(k=>o[k]=ui[k]);localStorage.setItem('ui',JSON.stringify(o))}catch(e){}};
 try{tab=localStorage.getItem('v')||'today'}catch(e){}
 if(!['today','days','strat','insight','settings'].includes(tab))tab='today';
-{const hm=(location.hash||'').slice(1).toUpperCase();if(['ALL','NSE','MCX'].includes(hm))ui.mkt=hm}   /* #nse / #mcx open that market directly (separate home-screen shortcuts) */   /* the Learn tab was removed; old saved tab values fall back to Today */
+{const hm=(location.hash||'').slice(1).toUpperCase();if(['NSE','MCX'].includes(hm))ui.mkt=hm;if(!['NSE','MCX'].includes(ui.mkt))ui.mkt='NSE';document.documentElement.dataset.mkt=ui.mkt}   /* #nse / #mcx open that market directly (separate home-screen shortcuts) */   /* the Learn tab was removed; old saved tab values fall back to Today */
 let lang='en';try{lang=localStorage.getItem('lang')||'en'}catch(e){}
 const T=(en,te)=>lang==='te'?te:en;
 const WD_E=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],WD_T=['ఆది','సోమ','మంగళ','బుధ','గురు','శుక్ర','శని'],MO_E=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],MO_T=['జన','ఫిబ్ర','మార్చి','ఏప్రి','మే','జూన్','జూలై','ఆగ','సెప్టె','అక్టో','నవం','డిసెం'];
@@ -416,11 +429,16 @@ const ctlChip=(attr,label,on)=>`<button class="cc${on?' on':''}" ${attr} aria-pr
 const mseg=()=>'';   /* market switcher moved to the always-visible header bar (drawMkBar) */
 const pickChip=(key,label,curName,on)=>`<button class="cc pickc${on?' on':''}" data-pk="${key}" aria-haspopup="dialog">${label}: <b>${esc(curName)}</b> ▾</button>`;
 const stratChip=()=>{const p=PK.strat,it=p.items.find(i=>i.v===String(ui.strat))||p.items[0];return pickChip('strat',T('Strategy','స్ట్రాటజీ'),it.name,ui.strat!=='all')};
-function drawMkBar(){const b=$('#mkbar');if(!b)return;const ist=new Date(Date.now()+5.5*36e5),mins=ist.getUTCHours()*60+ist.getUTCMinutes(),wk=ist.getUTCDay(),wd=wk>0&&wk<6,
-    op={NSE:wd&&mins>=555&&mins<=935,MCX:wd&&mins>=540&&mins<=1425};
-  b.hidden=false;b.innerHTML=[['ALL',T('All','అన్నీ'),''],['NSE','NSE',op.NSE?T('open','ఓపెన్'):T('closed','ముగిసింది')],['MCX','MCX',op.MCX?T('open','ఓపెన్'):T('closed','ముగిసింది')]]
-    .map(([v,l,sm])=>`<button data-mkv="${v}" aria-pressed="${ui.mkt===v}">${l}${sm?`<small>${sm}</small>`:''}</button>`).join('');
-  document.title=(ui.mkt==='ALL'?'':ui.mkt+' · ')+'Options Scanner'}
+function drawMkBar(){const b=$('#mkbar');if(!b)return;
+  if(ui.mkt!=='NSE'&&ui.mkt!=='MCX')ui.mkt='NSE';
+  const ist=new Date(Date.now()+5.5*36e5),mins=ist.getUTCHours()*60+ist.getUTCMinutes(),wk=ist.getUTCDay(),wd=wk>0&&wk<6,
+    op={NSE:wd&&mins>=555&&mins<=935,MCX:wd&&mins>=540&&mins<=1425},m=ui.mkt,other=m==='NSE'?'MCX':'NSE',
+    sub={NSE:T('Index options','ఇండెక్స్ ఆప్షన్స్'),MCX:T('Commodities','కమోడిటీస్')},st=v=>op[v]?T('open','ఓపెన్'):T('closed','ముగిసింది');
+  b.hidden=false;
+  b.innerHTML=`<button class="lab" data-mkv="NSE" aria-pressed="${m==='NSE'}">NSE<small>${sub.NSE} · ${st('NSE')}</small></button>
+    <button class="tgl" data-mkv="${other}" role="switch" aria-checked="${m==='MCX'}" aria-label="${T('Switch between NSE and MCX','NSE మరియు MCX మధ్య మారండి')}"><i></i></button>
+    <button class="lab" data-mkv="MCX" aria-pressed="${m==='MCX'}">MCX<small>${sub.MCX} · ${st('MCX')}</small></button>`;
+  document.documentElement.dataset.mkt=m;document.title=m+' · Options Scanner'}
 document.addEventListener('click',e=>{const m=e.target.closest('[data-mkv]');if(m){ui.mkt=m.dataset.mkv;ui.sym='ALL';ui.strat='all';ui.ctlOpen=false;CFG.mkt=ui.mkt;saveCfg();try{history.replaceState(null,'','#'+ui.mkt.toLowerCase())}catch(x){}render()}});
 
 const PK={};
