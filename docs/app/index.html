@@ -500,7 +500,7 @@ const syncBell=()=>{};
 /* which strategies raise in-app alerts: null = default (Telegram basis, as before); array = the user's own choice */
 const BASES=()=>Object.keys(NAMES).filter(k=>!k.endsWith('_wsl')),DEF_ALERT=['trade_score','chase_bypass','fvg','ema_pb'];
 const getAS=()=>{try{const a=JSON.parse(localStorage.getItem('alertSel')||'null');return Array.isArray(a)?a:null}catch(e){return null}};
-const setAS=a=>{try{a===null?localStorage.removeItem('alertSel'):localStorage.setItem('alertSel',JSON.stringify(a))}catch(e){}};
+const setAS=a=>{try{a===null?localStorage.removeItem('alertSel'):localStorage.setItem('alertSel',JSON.stringify(a))}catch(e){}try{window.pushSync&&window.pushSync()}catch(e){}};
 const asOn=k=>(getAS()||DEF_ALERT).includes(String(k).replace(/_wsl$/,''));
 const slugS=k=>String(k).toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').slice(0,40);
 const ntfyBase=()=>{try{return(localStorage.getItem('ntfyBase')||'').trim()}catch(e){return''}};
@@ -595,4 +595,19 @@ let started=false;function start(){if(started)return;started=true;$('#gate').hid
 $('#login').onsubmit=async e=>{e.preventDefault();$('#lerr').textContent='';try{const d=await derive($('#u').value,$('#p').value);if(d===HASH){try{localStorage.setItem('ok',HASH.slice(0,16))}catch(x){}start()}else $('#lerr').textContent='Wrong username or password'}catch(x){$('#lerr').textContent='Sign-in needs a secure (https) page'}};
 let saved='';try{saved=localStorage.getItem('ok')||''}catch(e){}
 if(/\.pages\.dev$/.test(location.hostname)||saved===HASH.slice(0,16))start();else $('#gate').hidden=false;   /* pages.dev sits behind Cloudflare Access (real login), so the old in-page gate is skipped there */
+
+/* ---------- Android app: phone push (Firebase Cloud Messaging via the Capacitor shell). No-op in a normal browser. ---------- */
+(function(){const C=window.Capacitor;if(!C||!C.isNativePlatform||!C.isNativePlatform())return;const P=C.Plugins&&C.Plugins.PushNotifications;if(!P)return;
+  let tok=null;
+  const sync=async()=>{if(!tok)return;try{await fetch('/api/push-register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok,strategies:getAS()||DEF_ALERT})})}catch(e){}};
+  window.pushSync=sync;
+  (async()=>{try{
+    try{await P.createChannel({id:'alerts',name:'Trade alerts',description:'Entry, stop-loss and target alerts',importance:5,visibility:1,vibration:true})}catch(e){}
+    let p=await P.checkPermissions();if(p.receive==='prompt'||p.receive==='prompt-with-rationale')p=await P.requestPermissions();
+    if(p.receive!=='granted')return;
+    await P.addListener('registration',t=>{tok=t.value;sync()});
+    await P.addListener('registrationError',()=>{});
+    await P.register();
+  }catch(e){}})();
+})();
 </script></body></html>

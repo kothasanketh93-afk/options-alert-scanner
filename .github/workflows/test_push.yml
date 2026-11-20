@@ -1,0 +1,33 @@
+name: Test app push
+
+# Manual: sends one real push to every device registered by the Android app (needs FCM_SERVICE_ACCOUNT_JSON + R2_* secrets).
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -q google-auth==2.35.0 requests==2.31.0
+      - name: Send test push
+        working-directory: scripts
+        env:
+          FCM_SERVICE_ACCOUNT_JSON: ${{ secrets.FCM_SERVICE_ACCOUNT_JSON }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          python - <<'PY'
+          import fcm_notify, sys
+          devs = fcm_notify.load_devices(force=True)
+          print("registered devices:", len(devs))
+          n = fcm_notify.publish("Options Scanner test\nPush works. Entry 100 - SL 90 - T1 120 - T2 140", priority=4)
+          print("sent:", n)
+          sys.exit(0 if n else 1)
+          PY

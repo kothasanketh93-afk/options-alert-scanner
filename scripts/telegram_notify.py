@@ -106,6 +106,11 @@ def push(text: str, strategy: str = None):
             ntfy_notify.publish(text, strategy=strategy)
         except Exception:
             pass
+        try:
+            import fcm_notify
+            fcm_notify.publish(text, strategy=strategy)
+        except Exception:
+            pass
 
 
 def send(text: str, critical: bool = False):
@@ -113,6 +118,11 @@ def send(text: str, critical: bool = False):
         try:
             import ntfy_notify
             ntfy_notify.publish(text, priority=4)
+        except Exception:
+            pass
+        try:
+            import fcm_notify
+            fcm_notify.publish(text, priority=4)
         except Exception:
             pass
     if _suppressed("message", critical):

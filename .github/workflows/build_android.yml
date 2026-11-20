@@ -35,6 +35,11 @@ jobs:
           npm install --no-audit --no-fund
           npx cap add android
           npx cap sync android
+      - name: Add Firebase config (push) if the secret exists
+        env:
+          GS: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GS" ]; then printf '%s' "$GS" > android-app/android/app/google-services.json; echo "google-services.json added"; else echo "::warning::GOOGLE_SERVICES_JSON not set - building without push"; fi
       - name: Build debug APK
         working-directory: android-app/android
         run: ./gradlew assembleDebug --no-daemon -q
