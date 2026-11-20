@@ -237,7 +237,8 @@ const UI_KEYS=['mkt','strat','per','from','to','st','twins','dd','sym','sort','w
 try{const sv=JSON.parse(localStorage.getItem('ui')||'null');if(sv){UI_KEYS.forEach(k=>{if(sv[k]!==undefined&&typeof sv[k]===typeof ui[k])ui[k]=sv[k]});if(!['ALL','NSE','MCX'].includes(ui.mkt))ui.mkt='ALL';if(['today','days','strat','insight','settings'].includes(sv.tab))tab=sv.tab}}catch(e){}
 const saveUi=()=>{try{const o={tab};UI_KEYS.forEach(k=>o[k]=ui[k]);localStorage.setItem('ui',JSON.stringify(o))}catch(e){}};
 try{tab=localStorage.getItem('v')||'today'}catch(e){}
-if(!['today','days','strat','insight','settings'].includes(tab))tab='today';   /* the Learn tab was removed; old saved tab values fall back to Today */
+if(!['today','days','strat','insight','settings'].includes(tab))tab='today';
+{const hm=(location.hash||'').slice(1).toUpperCase();if(['ALL','NSE','MCX'].includes(hm))ui.mkt=hm}   /* #nse / #mcx open that market directly (separate home-screen shortcuts) */   /* the Learn tab was removed; old saved tab values fall back to Today */
 let lang='en';try{lang=localStorage.getItem('lang')||'en'}catch(e){}
 const T=(en,te)=>lang==='te'?te:en;
 const WD_E=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],WD_T=['ఆది','సోమ','మంగళ','బుధ','గురు','శుక్ర','శని'],MO_E=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],MO_T=['జన','ఫిబ్ర','మార్చి','ఏప్రి','మే','జూన్','జూలై','ఆగ','సెప్టె','అక్టో','నవం','డిసెం'];
@@ -412,10 +413,15 @@ const ctlWrap=(inner,parts)=>`<div class="cwrap"><button class="cbar" data-ctl a
 const mktName=()=>ui.mkt==='ALL'?T('All markets','అన్ని మార్కెట్లు'):ui.mkt;
 const stratName=()=>{const p=PK.strat;const it=p&&p.items.find(i=>i.v===String(ui.strat));return ui.strat!=='all'&&it?it.name:null};
 const ctlChip=(attr,label,on)=>`<button class="cc${on?' on':''}" ${attr} aria-pressed="${!!on}">${label}</button>`;
-const mseg=()=>`<div class="mseg" role="group" aria-label="Market">${[['ALL',T('All markets','అన్ని మార్కెట్లు')],['NSE','NSE'],['MCX','MCX']].map(([v,l])=>`<button data-mkv="${v}" aria-pressed="${ui.mkt===v}">${l}</button>`).join('')}</div>`;
+const mseg=()=>'';   /* market switcher moved to the always-visible header bar (drawMkBar) */
 const pickChip=(key,label,curName,on)=>`<button class="cc pickc${on?' on':''}" data-pk="${key}" aria-haspopup="dialog">${label}: <b>${esc(curName)}</b> ▾</button>`;
 const stratChip=()=>{const p=PK.strat,it=p.items.find(i=>i.v===String(ui.strat))||p.items[0];return pickChip('strat',T('Strategy','స్ట్రాటజీ'),it.name,ui.strat!=='all')};
-document.addEventListener('click',e=>{const m=e.target.closest('[data-mkv]');if(m){ui.mkt=m.dataset.mkv;ui.sym='ALL';ui.strat='all';ui.ctlOpen=false;render()}});
+function drawMkBar(){const b=$('#mkbar');if(!b)return;const ist=new Date(Date.now()+5.5*36e5),mins=ist.getUTCHours()*60+ist.getUTCMinutes(),wk=ist.getUTCDay(),wd=wk>0&&wk<6,
+    op={NSE:wd&&mins>=555&&mins<=935,MCX:wd&&mins>=540&&mins<=1425};
+  b.hidden=false;b.innerHTML=[['ALL',T('All','అన్నీ'),''],['NSE','NSE',op.NSE?T('open','ఓపెన్'):T('closed','ముగిసింది')],['MCX','MCX',op.MCX?T('open','ఓపెన్'):T('closed','ముగిసింది')]]
+    .map(([v,l,sm])=>`<button data-mkv="${v}" aria-pressed="${ui.mkt===v}">${l}${sm?`<small>${sm}</small>`:''}</button>`).join('');
+  document.title=(ui.mkt==='ALL'?'':ui.mkt+' · ')+'Options Scanner'}
+document.addEventListener('click',e=>{const m=e.target.closest('[data-mkv]');if(m){ui.mkt=m.dataset.mkv;ui.sym='ALL';ui.strat='all';ui.ctlOpen=false;CFG.mkt=ui.mkt;saveCfg();try{history.replaceState(null,'','#'+ui.mkt.toLowerCase())}catch(x){}render()}});
 
 const PK={};
 const pkBtn=(key,label,cur)=>`<button class="sel pk" data-pk="${key}" aria-haspopup="dialog"><span>${label}</span><b>${cur}</b><i aria-hidden="true">▾</i></button>`;
@@ -540,7 +546,7 @@ async function settingsView(){const te=lang==='te',L=CFG.lots;
   <div class="set"><h4>${T('About','గురించి')}</h4><p>${T('Options Scanner dashboard v3.2. Paper (shadow) trades only; no real orders are placed. For education, not advice. Data comes from the scanner’s state files and trade ledger.','ఆప్షన్స్ స్కానర్ డాష్‌బోర్డ్ v2. పేపర్ (షాడో) ట్రేడ్లు మాత్రమే; నిజమైన ఆర్డర్లు పెట్టదు. విద్య కోసం, సలహా కాదు. స్కానర్ స్టేట్ ఫైల్స్ మరియు ట్రేడ్ లెడ్జర్ నుండి డేటా వస్తుంది.')}</p></div>`}
 /* ---------- shell ---------- */
 const VIEWS={settings:settingsView,today:todayView,days:daysView,strat:stratView,insight:insightView};
-async function render(){saveUi();stale=false;document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v==tab));
+async function render(){saveUi();stale=false;drawMkBar();document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v==tab));
   try{await VIEWS[tab]();{const st=$('#stamp');if(st)st.textContent=stale?T('offline · showing saved data','ఆఫ్‌లైన్ · సేవ్ చేసిన డేటా'):''}foldFilters();applyLang()}catch(e){view.innerHTML='<div class="empty err">'+T('Could not load data: ','డేటా లోడ్ కాలేదు: ')+esc(e.message)+'</div>'}}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.v;try{localStorage.setItem('v',tab)}catch(e){}scrollTo(0,0);render()});
 view.addEventListener('input',e=>{const t=e.target;if(t.dataset.lot){const v=parseInt(t.value);if(v>0){CFG.lots[t.dataset.lot]=v;saveCfg();cache={}}}if(t.dataset.cap!==undefined){const v=parseFloat(t.value);if(v>=1000){CFG.capital=v;saveCfg()}}if(t.dataset.lim!==undefined){const v=parseFloat(t.value);if(v>0&&v<=10){CFG.lossPct=v;saveCfg()}}});
