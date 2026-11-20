@@ -2323,7 +2323,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-20T16:43:00+05:30",
+      "last_processed_ts": "2026-11-20T16:59:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos",
@@ -2345,8 +2345,8 @@
       "entry_oi": 61,
       "entry_volume": 246,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-20T16:46:54.766678+05:30",
-      "last_price": 2672.0,
+      "last_polled_at": "2026-11-20T17:01:41.492463+05:30",
+      "last_price": 2789.5,
       "waiting_candles": [
         [
           "11:42",
@@ -2497,7 +2497,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-20T16:43:00+05:30",
+      "last_processed_ts": "2026-11-20T16:59:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "bos_wsl",
@@ -2520,8 +2520,8 @@
       "entry_volume": 246,
       "signal_future_token": null,
       "variant_of": "MCX-bos-GOLD-CE-20261120-1141-01",
-      "last_polled_at": "2026-11-20T16:46:54.766678+05:30",
-      "last_price": 2672.0,
+      "last_polled_at": "2026-11-20T17:01:41.492463+05:30",
+      "last_price": 2789.5,
       "waiting_candles": [
         [
           "11:42",
@@ -2672,7 +2672,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-20T16:43:00+05:30",
+      "last_processed_ts": "2026-11-20T16:59:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "order_block",
@@ -2694,8 +2694,8 @@
       "entry_oi": 62,
       "entry_volume": 350,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-20T16:46:54.766678+05:30",
-      "last_price": 2672.0,
+      "last_polled_at": "2026-11-20T17:01:41.492463+05:30",
+      "last_price": 2789.5,
       "waiting_candles": [
         [
           "12:18",
@@ -2765,7 +2765,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-20T16:43:00+05:30",
+      "last_processed_ts": "2026-11-20T16:59:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "order_block_wsl",
@@ -2788,8 +2788,8 @@
       "entry_volume": 350,
       "signal_future_token": null,
       "variant_of": "MCX-order_block-GOLD-CE-20261120-1216-01",
-      "last_polled_at": "2026-11-20T16:46:54.766678+05:30",
-      "last_price": 2672.0,
+      "last_polled_at": "2026-11-20T17:01:41.492463+05:30",
+      "last_price": 2789.5,
       "waiting_candles": [
         [
           "12:18",
@@ -2859,7 +2859,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-20T16:43:00+05:30",
+      "last_processed_ts": "2026-11-20T16:59:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "vwap_pb",
@@ -2881,8 +2881,8 @@
       "entry_oi": 76,
       "entry_volume": 441,
       "signal_future_token": null,
-      "last_polled_at": "2026-11-20T16:46:54.766678+05:30",
-      "last_price": 2672.0,
+      "last_polled_at": "2026-11-20T17:01:41.492463+05:30",
+      "last_price": 2789.5,
       "waiting_candles": [
         [
           "13:27",
@@ -2963,7 +2963,7 @@
       "t2_hit_time": null,
       "sl_hit_time": null,
       "eod_last_price": null,
-      "last_processed_ts": "2026-11-20T16:43:00+05:30",
+      "last_processed_ts": "2026-11-20T16:59:00+05:30",
       "messages_sent": [],
       "streak_counted": false,
       "strategy": "vwap_pb_wsl",
@@ -2986,8 +2986,8 @@
       "entry_volume": 441,
       "signal_future_token": null,
       "variant_of": "MCX-vwap_pb-GOLD-CE-20261120-1326-01",
-      "last_polled_at": "2026-11-20T16:46:54.766678+05:30",
-      "last_price": 2672.0,
+      "last_polled_at": "2026-11-20T17:01:41.492463+05:30",
+      "last_price": 2789.5,
       "waiting_candles": [
         [
           "13:27",
@@ -3043,12 +3043,6 @@
   },
   "flow_snap": {
     "CRUDEOIL": [
-      {
-        "t": 621,
-        "spot": 7762.0,
-        "call_oi": 755000.0,
-        "put_oi": 751400.0
-      },
       {
         "t": 626,
         "spot": 7755.0,
@@ -3522,15 +3516,15 @@
         "spot": 7656.0,
         "call_oi": 1489200.0,
         "put_oi": 1376400.0
+      },
+      {
+        "t": 1021,
+        "spot": 7651.0,
+        "call_oi": 1488200.0,
+        "put_oi": 1436400.0
       }
     ],
     "NATURALGAS": [
-      {
-        "t": 616,
-        "spot": 301.5,
-        "call_oi": 6951250.0,
-        "put_oi": 6385000.0
-      },
       {
         "t": 621,
         "spot": 301.5,
@@ -4004,15 +3998,15 @@
         "spot": 293.3,
         "call_oi": 3535000.0,
         "put_oi": 6038750.0
+      },
+      {
+        "t": 1021,
+        "spot": 294.1,
+        "call_oi": 3556250.0,
+        "put_oi": 6045000.0
       }
     ],
     "GOLDM": [
-      {
-        "t": 601,
-        "spot": 122172.0,
-        "call_oi": 247300.0,
-        "put_oi": 556000.0
-      },
       {
         "t": 606,
         "spot": 121936.0,
@@ -4486,15 +4480,15 @@
         "spot": 123569.0,
         "call_oi": 1307500.0,
         "put_oi": 1600200.0
+      },
+      {
+        "t": 1021,
+        "spot": 123725.0,
+        "call_oi": 1323800.0,
+        "put_oi": 1595000.0
       }
     ],
     "GOLD": [
-      {
-        "t": 576,
-        "spot": 122787.0,
-        "call_oi": 60.0,
-        "put_oi": 174.0
-      },
       {
         "t": 581,
         "spot": 122615.0,
@@ -4968,6 +4962,12 @@
         "spot": 123569.0,
         "call_oi": 636.0,
         "put_oi": 991.0
+      },
+      {
+        "t": 1021,
+        "spot": 123676.0,
+        "call_oi": 645.0,
+        "put_oi": 993.0
       }
     ]
   },
@@ -4988,9 +4988,10 @@
   "pnl_snaps": [
     "1100",
     "1300",
-    "1500"
+    "1500",
+    "1700"
   ],
-  "last_run_at": "2026-11-20T16:56:59+05:30",
+  "last_run_at": "2026-11-20T17:01:58+05:30",
   "prev_hl": {
     "CRUDEOIL": [
       7933.0,
