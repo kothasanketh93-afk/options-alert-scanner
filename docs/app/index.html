@@ -215,6 +215,15 @@ html[data-mkt=MCX][data-mkt=MCX]{--acc:#c08a52}
 .cc.on,.seg2 button[aria-pressed=true],button.chip[aria-pressed=true],.fs button[aria-pressed=true],.mk3 button[aria-pressed=true],#bell[aria-pressed=true]{background:color-mix(in srgb,var(--acc) 20%,var(--panel))!important;color:var(--fg)!important;border-color:color-mix(in srgb,var(--acc) 50%,var(--line))!important;box-shadow:none!important}
 .mk3 button[aria-pressed=true] small{color:var(--mut)}
 .sc-net,.sc-kv b{font-weight:650}
+/* candlestick market switch */
+.mkw .tgl{--c:var(--ok);width:68px!important;height:32px!important;border-radius:10px;border:1px solid var(--line);background:var(--bg2);overflow:hidden}
+.mkw .tgl[aria-checked=true]{--c:var(--acc)}
+.mkw .tgl::before{content:"";position:absolute;left:6px;right:6px;top:50%;border-top:1px dashed color-mix(in srgb,var(--mut) 55%,transparent)}
+.mkw .tgl i{top:2px!important;left:8px!important;width:16px!important;height:26px!important;border-radius:0!important;background:none!important;transition:transform .25s cubic-bezier(.3,1.3,.5,1)}
+.mkw .tgl i::before{content:"";position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--c);border-radius:1px}
+.mkw .tgl i::after{content:"";position:absolute;left:1px;right:1px;top:6px;bottom:6px;background:var(--c);border-radius:3px;box-shadow:0 0 8px color-mix(in srgb,var(--c) 45%,transparent)}
+.mkw .tgl[aria-checked=true] i{transform:translateX(36px)!important}
+@media (max-width:699px){.mkw .tgl{width:68px!important;height:32px!important}}
 </style></head><body>
 <div id="gate" hidden><form id="login" autocomplete="on"><h2 style="margin:0;font-size:19px">Options Scanner</h2><small>Sign in to view</small>
 <input id="u" name="username" autocomplete="username" placeholder="Username" autocapitalize="none"><input id="p" name="password" type="password" autocomplete="current-password" placeholder="Password"><button>Sign in</button><small id="lerr" class="err"></small></form></div>
