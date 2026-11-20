@@ -258,6 +258,17 @@ body{background-image:radial-gradient(1200px 400px at 85% -120px,color-mix(in sr
 .dt[data-tid],.tr[data-tid],details.t>summary[data-ti]{cursor:pointer}.dt[data-tid]:active,.tr[data-tid]:active{background:color-mix(in srgb,var(--acc) 10%,var(--panel2))}
 @media (min-width:700px){.tsh{height:70vh;border-radius:20px;bottom:5vh}}
 @media (prefers-reduced-motion:reduce){.tsh,.tbd{transition:none}.tl li.live>i{animation:none}}
+/* compact + taller trade sheet */
+.tsh{height:90vh;max-height:820px}
+.tin{padding:2px 16px 10px}
+.th h2{font-size:18px}.tsub{font-size:12px}
+.tpl{margin:8px 0 2px}.tpl b{font-size:26px}.tpl small{font-size:11px}.tpc{font-size:14px}
+.tin h4{margin:12px 0 6px;font-size:11px}
+.lad{margin:6px 0 0}.ll{margin-top:6px}.ll b{font-size:13px}
+.tl li{padding:0 0 9px;gap:10px}.tl li>i{width:14px;height:14px}.tl li::before{left:6px;top:15px}.tl li b{font-size:14px}.tl li span,.tl li em{font-size:12px}
+.tkv{grid-template-columns:repeat(3,1fr);gap:6px}.tkv>div{padding:6px 9px;border-radius:10px}.tkv small{font-size:10.5px}.tkv b{font-size:14px}
+.tnote{font-size:11px;margin:8px 0 0}
+.tft{padding:9px 16px calc(9px + env(safe-area-inset-bottom))}.btn2{padding:11px;font-size:14px}
 </style></head><body>
 <div id="gate" hidden><form id="login" autocomplete="on"><h2 style="margin:0;font-size:19px">Options Scanner</h2><small>Sign in to view</small>
 <input id="u" name="username" autocomplete="username" placeholder="Username" autocapitalize="none"><input id="p" name="password" type="password" autocomplete="current-password" placeholder="Password"><button>Sign in</button><small id="lerr" class="err"></small></form></div>
