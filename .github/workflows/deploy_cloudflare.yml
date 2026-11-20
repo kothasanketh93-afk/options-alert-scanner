@@ -1,0 +1,24 @@
+name: Deploy dashboard (Cloudflare Pages)
+
+# Cloudflare's own auto-build sometimes skips commits, so trigger it explicitly through a Pages deploy hook.
+# Secret CF_PAGES_HOOK = the deploy hook URL (Cloudflare > Workers & Pages > project > Settings > Deploy Hooks).
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['docs/app/**', 'functions/**']
+
+permissions:
+  contents: read
+
+jobs:
+  hook:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Trigger Cloudflare Pages build
+        env:
+          HOOK: ${{ secrets.CF_PAGES_HOOK }}
+        run: |
+          [ -n "$HOOK" ] || { echo "::warning::CF_PAGES_HOOK secret not set - skipped"; exit 0; }
+          curl -fsS -X POST "$HOOK" -o /dev/null && echo "Cloudflare build triggered"
