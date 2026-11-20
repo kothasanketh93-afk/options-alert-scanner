@@ -51,9 +51,13 @@ def format_outcome(trade: dict, etype: str) -> str:
             f"T1: {_fmt(trade.get('target_1'))} | T2: {_fmt(trade.get('target_2'))}")
 
 
+_CUR_STRATEGY = None      # strategy of the trade being announced (lets _send stay a one-argument function)
+
+
 def _send(text):
     import telegram_notify
     telegram_notify.send(text)
+    telegram_notify.push(text, _CUR_STRATEGY)
 
 
 def _focus_ok(trade: dict) -> bool:
@@ -77,6 +81,7 @@ def notify_created(state: dict, trade: dict, now, sender=None) -> bool:
         seen[:] = [k for k in seen if k.startswith(day)]          # keep today's keys only
         if key in seen:
             return False
+        globals()["_CUR_STRATEGY"] = trade.get("strategy")
         (sender or _send)(format_created(trade))
         seen.append(key)
         trade["shadow_notified"] = True
@@ -97,6 +102,7 @@ def notify_events(trade: dict, events: list, sender=None) -> int:
         if etype not in OUTCOME_LABEL:
             continue
         try:
+            globals()["_CUR_STRATEGY"] = trade.get("strategy")
             (sender or _send)(format_outcome(trade, etype))
             sent += 1
         except Exception as exc:

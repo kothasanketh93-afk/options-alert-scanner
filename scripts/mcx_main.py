@@ -354,7 +354,8 @@ def notify_created(t: dict):
     try:
         mult = t.get("lot_multiplier") or LOT_MULTIPLIER.get(t["symbol"], 1)
         e, sl, t1, t2 = t["alert_premium"], t["stop_loss"], t["target_1"], t["target_2"]
-        tg.send(f"🧪 <b>MCX SHADOW</b> – data collection, NOT a trade signal\n"
+        _p = lambda x, _s=t.get("strategy"): (tg.send(x), tg.push(x, _s))
+        _p(f"🧪 <b>MCX SHADOW</b> – data collection, NOT a trade signal\n"
                 f"<b>{NAMES.get(t['symbol'], t['symbol'])} {t['direction']} {t['strike']:g}</b> ({STRATEGY_LABELS.get(t['strategy'], t['strategy'])})\n"
                 f"Premium {e} | SL {sl} | T1 {t1} | T2 {t2}\n"
                 f"One lot: risk to SL Rs {abs((sl - e) * mult):,.0f}, T1 +Rs {(t1 - e) * mult:,.0f}, T2 +Rs {(t2 - e) * mult:,.0f}"
@@ -428,7 +429,8 @@ def notify_events(t: dict, events: list):
             entry = t.get("tracked_entry_price")
             res = outcomes_ledger.result_pct(t) if et in ("SL_HIT", "T2_HIT", "EOD_CLOSED") else None
             pnl = f"\nOne lot result: Rs {_inr(entry * mult * res / 100.0)} before costs" if res is not None and entry else ""
-            tg.send(f"🧪 MCX SHADOW\n{shadow_notify.OUTCOME_LABEL[et]}: <b>{NAMES.get(t['symbol'], t['symbol'])} {t['direction']} {t['strike']:g}</b> "
+            _q = lambda x, _s=t.get("strategy"): (tg.send(x), tg.push(x, _s))
+            _q(f"🧪 MCX SHADOW\n{shadow_notify.OUTCOME_LABEL[et]}: <b>{NAMES.get(t['symbol'], t['symbol'])} {t['direction']} {t['strike']:g}</b> "
                     f"({STRATEGY_LABELS.get(t['strategy'], t['strategy'])})\nEntry {entry} | SL {t['stop_loss']} | T1 {t['target_1']} | T2 {t['target_2']}{pnl}")
         except Exception as exc:
             log.error("MCX outcome notice failed (%s: %s)", type(exc).__name__, exc)

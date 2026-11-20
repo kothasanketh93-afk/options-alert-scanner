@@ -130,6 +130,7 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         env:
           SCRIP_MASTER_CACHE_DIR: /home/runner/.cache/scrip_master
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}   # optional: phone push via ntfy.sh (unset = disabled)
           # Angel One (primary broker) -- see auth.py's docstring on
           # where ANGEL_TOTP_SECRET comes from.
           ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}

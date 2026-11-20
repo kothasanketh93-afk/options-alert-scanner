@@ -97,7 +97,24 @@ def _suppressed(what: str, critical: bool = False) -> bool:
     return False
 
 
+def push(text: str, strategy: str = None):
+    """Live trade alert -> ntfy.sh phone push, only while Telegram is EOD-only (otherwise send() already delivered it).
+    Call right after send(text). Best-effort, never raises."""
+    if getattr(config, "TELEGRAM_EOD_ONLY", False):
+        try:
+            import ntfy_notify
+            ntfy_notify.publish(text, strategy=strategy)
+        except Exception:
+            pass
+
+
 def send(text: str, critical: bool = False):
+    if critical:                                   # failure alerts also reach the phone via ntfy
+        try:
+            import ntfy_notify
+            ntfy_notify.publish(text, priority=4)
+        except Exception:
+            pass
     if _suppressed("message", critical):
         return {"suppressed": True}
     bot_token, chat_id = get_telegram_credentials()

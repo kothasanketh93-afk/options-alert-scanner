@@ -69,6 +69,7 @@ def notify_once(trade: dict, event_key: str, message_fn, *args):
         return
     text = message_fn(*args)
     tg.send(text)
+    tg.push(text, trade.get("strategy"))   # live trade lifecycle alerts -> ntfy when Telegram is EOD-only
     trade["messages_sent"].append(event_key)
 
 

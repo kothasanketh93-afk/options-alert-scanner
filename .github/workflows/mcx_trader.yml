@@ -61,6 +61,7 @@ jobs:
         if: steps.guard.outputs.skip != 'true'
         env:
           SCRIP_MASTER_CACHE_DIR: /home/runner/.cache/scrip_master
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}   # optional: phone push via ntfy.sh (unset = disabled)
           ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
           ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
           ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}

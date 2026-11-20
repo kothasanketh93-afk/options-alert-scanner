@@ -1,0 +1,31 @@
+name: Test ntfy push
+
+# Manual dispatch only -- sends one real push to every strategy topic that matters so you can confirm the phone app receives it.
+# Needs the repo secret NTFY_TOPIC (Settings > Secrets and variables > Actions). See scripts/ntfy_notify.py.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  test-ntfy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Send test pushes
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        working-directory: scripts
+        run: |
+          python - <<'PY'
+          import os, sys
+          import ntfy_notify
+          if not os.environ.get("NTFY_TOPIC"):
+              sys.exit("NTFY_TOPIC secret is not set")
+          ok = [ntfy_notify.publish("Options Scanner test\nFailure-alert topic works", priority=4),
+                ntfy_notify.publish("Options Scanner test\nMain scanner topic works", strategy="trade_score"),
+                ntfy_notify.publish("Options Scanner test\nFVG topic works", strategy="fvg")]
+          print("results:", ok)
+          sys.exit(0 if all(ok) else 1)
+          PY
