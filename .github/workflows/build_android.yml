@@ -54,7 +54,8 @@ jobs:
           name: options-scanner-apk
           path: out/options-scanner.apk
           retention-days: 30
-      - name: Send APK to Telegram
+      - name: Send APK to Telegram (only when I ask: manual run)
+        if: github.event_name == 'workflow_dispatch'
         env:
           TG: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           CH: ${{ secrets.TELEGRAM_CHAT_ID }}
