@@ -8,7 +8,9 @@ const ALLOWED = [
 export async function onRequestGet({ params, env }) {
   const key = [].concat(params.path || []).join("/");
   if (!ALLOWED.some((re) => re.test(key))) return new Response("Not found", { status: 404 });
-  const obj = await env.DATA.get(key);
+  if (!env.DATA) return new Response("R2 binding DATA is missing", { status: 503 });
+  let obj;
+  try { obj = await env.DATA.get(key); } catch (e) { return new Response("R2 read failed: " + e.message, { status: 502 }); }
   if (!obj) return new Response("Not found", { status: 404 });
   const type = key.endsWith(".csv") ? "text/csv; charset=utf-8" : "application/json; charset=utf-8";
   return new Response(obj.body, { headers: { "content-type": type, "cache-control": "no-store" } });
