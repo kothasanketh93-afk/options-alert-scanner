@@ -2,7 +2,40 @@
   "date": "2026-11-20",
   "mcx_shadow_trades": {},
   "next_seq": {},
-  "flow_snap": {},
+  "flow_snap": {
+    "CRUDEOIL": [
+      {
+        "t": 561,
+        "spot": 7769.0,
+        "call_oi": 789800.0,
+        "put_oi": 765600.0
+      }
+    ],
+    "NATURALGAS": [
+      {
+        "t": 561,
+        "spot": 303.6,
+        "call_oi": 7556250.0,
+        "put_oi": 6832500.0
+      }
+    ],
+    "GOLDM": [
+      {
+        "t": 561,
+        "spot": 123100.0,
+        "call_oi": 91200.0,
+        "put_oi": 472800.0
+      }
+    ],
+    "GOLD": [
+      {
+        "t": 561,
+        "spot": 123085.0,
+        "call_oi": 31.0,
+        "put_oi": 149.0
+      }
+    ]
+  },
   "rejects": {},
   "summary_sent": false,
   "sig_fut2": {
@@ -13,5 +46,23 @@
   },
   "mcx_scan_failed": [],
   "pnl_snaps": [],
-  "last_run_at": "2026-11-20T09:17:03+05:30"
+  "last_run_at": "2026-11-20T09:22:02+05:30",
+  "prev_hl": {
+    "CRUDEOIL": [
+      7933.0,
+      7711.0
+    ],
+    "NATURALGAS": [
+      318.9,
+      305.3
+    ],
+    "GOLDM": [
+      129850.0,
+      127258.0
+    ],
+    "GOLD": [
+      129796.0,
+      127192.0
+    ]
+  }
 }
