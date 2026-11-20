@@ -9,3 +9,5 @@ date,symbol,bar_time,open,high,low,close,volume,atr14,trend15,gap_dir,patterns,p
 2026-11-20,BANKNIFTY,09:45,63149.2,63228.2,63110.95,63200.4,0.0,115.36,1,-1,,0,composite_ema_rsi_macd:CE,composite_ema_rsi_macd@09:45:CE,63063.0,61951.1,63063.0
 2026-11-20,NIFTY,09:50,25509.65,25538.15,25502.4,25536.55,0.0,35.18,1,-1,,0,composite_ema_rsi_macd:CE,composite_ema_rsi_macd@09:50:CE,25514.3,25104.8,25514.3
 2026-11-20,BANKNIFTY,09:50,63199.45,63284.7,63187.7,63273.05,0.0,114.05,1,-1,,0,,composite_ema_rsi_macd@09:45:CE,63063.0,61951.1,63063.0
+2026-11-20,NIFTY,09:55,25539.25,25543.65,25520.8,25524.35,0.0,34.3,1,-1,,0,bollinger_fade:PE,composite_ema_rsi_macd@09:50:CE;bollinger_fade@09:55:PE,25514.3,25104.8,25514.3
+2026-11-20,BANKNIFTY,09:55,63274.45,63291.6,63181.3,63208.1,0.0,113.78,1,-1,Outside Bar(b),-1,bollinger_fade:PE,composite_ema_rsi_macd@09:45:CE;bollinger_fade@09:55:PE,63063.0,61951.1,63063.0
