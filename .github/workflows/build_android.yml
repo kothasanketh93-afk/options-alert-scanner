@@ -49,6 +49,17 @@ jobs:
           mkdir -p out
           cp android-app/android/app/build/outputs/apk/debug/app-debug.apk out/options-scanner.apk
           ls -l out
+      - name: Publish APK to private R2 (friends download it behind the Access login)
+        continue-on-error: true
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: |
+          [ -n "$R2_BUCKET" ] || { echo "R2 secrets missing - skipped"; exit 0; }
+          aws s3 cp out/options-scanner.apk "s3://${R2_BUCKET}/app/options-scanner.apk" --endpoint-url "https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com" --content-type application/vnd.android.package-archive --only-show-errors && echo "APK published to R2"
       - uses: actions/upload-artifact@v4
         with:
           name: options-scanner-apk
