@@ -1567,6 +1567,7 @@ FIB_PIVOT_VARIANTS = (
     {"name": "fib_pivot_5m", "interval": "5minute", "fetch_count": 60},
     {"name": "fib_pivot_retest", "mode": "retest"},
     {"name": "fib_pivot_itm1", "moneyness": "ITM1"},
+    {"name": "fib_pivot_4d", "pivot_days": 4},   # pivots of the previous 4 days (reel: "number of pivots back = 4")
 )
 
 # --- ORB15 + classic pivot-break SHADOW engines (app/engines/orb_pivot/, added 2026-10-31) ---

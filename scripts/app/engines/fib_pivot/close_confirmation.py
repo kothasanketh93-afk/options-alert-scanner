@@ -119,3 +119,37 @@ def detect_retest(candles: list, pivots: dict, direction: str, atr: float,
             return {"confirmed": True, "level_name": level_name, "level_value": lv,
                     "close": last["close"], "prev_close": candles[-2]["close"]}
     return {"confirmed": False}
+
+
+def detect_close_confirmation_multi(candles: list, pivot_sets: list, direction: str) -> dict:
+    """
+    Multi-day variant ("pivots back = N"): same fresh-close-cross rule as detect_close_confirmation(),
+    but the level pool is the P/R1-R3 (CE) or P/S1-S3 (PE) of EVERY pivot set in `pivot_sets`
+    (index 0 = yesterday's pivots, 1 = the day before, ...). If several levels were crossed by the
+    same candle the one crossed first in price terms is used (lowest for CE, highest for PE).
+    Level names carry the day offset for days > 0, e.g. "R2[d-3]". Also returns "pool" (all levels
+    of that side) so the caller can find the next structural level beyond the cross.
+    """
+    if direction not in ("CE", "PE") or not candles or len(candles) < 2 or not pivot_sets:
+        return {"confirmed": False}
+    prev_close = candles[-2]["close"]
+    cur_close = candles[-1]["close"]
+    names = (pivot_calc.RESISTANCE_LEVELS_ASCENDING if direction == "CE"
+             else pivot_calc.SUPPORT_LEVELS_DESCENDING)
+    pool = []
+    for d, pv in enumerate(pivot_sets):
+        for n in names:
+            pool.append((n if d == 0 else f"{n}[d-{d + 1}]", pv[n]))
+    hits = []
+    for name, val in pool:
+        if direction == "CE":
+            ok = prev_close <= val < cur_close
+        else:
+            ok = prev_close >= val > cur_close
+        if ok:
+            hits.append((name, val))
+    if not hits:
+        return {"confirmed": False}
+    name, val = min(hits, key=lambda x: x[1]) if direction == "CE" else max(hits, key=lambda x: x[1])
+    return {"confirmed": True, "level_name": name, "level_value": val,
+            "close": cur_close, "prev_close": prev_close, "pool": [v for _, v in pool]}

@@ -13,7 +13,7 @@ from PIL import Image, ImageDraw
 
 from eod_image import NAVY, INK, MUTED, LINE, GREEN, RED, AMBER, GREEN_BG, AMBER_BG, W, PAD, _font
 
-LABELS = {"fib_pivot": "Fib pivot", "fib_pivot_ema20": "Fib pivot, EMA20 trend", "fib_pivot_5m": "Fib pivot, 5-min candles", "fib_pivot_retest": "Fib pivot, retest entry", "fib_pivot_itm1": "Fib pivot, ITM1 option", "trade_score": "Main scanner (scored)", "chase_bypass": "Main scanner (chase bypass)",
+LABELS = {"fib_pivot": "Fib pivot", "fib_pivot_ema20": "Fib pivot, EMA20 trend", "fib_pivot_5m": "Fib pivot, 5-min candles", "fib_pivot_retest": "Fib pivot, retest entry", "fib_pivot_itm1": "Fib pivot, ITM1 option", "fib_pivot_4d": "Fib pivot, last 4 days levels", "trade_score": "Main scanner (scored)", "chase_bypass": "Main scanner (chase bypass)",
           "live_scored": "Live alerts (scored)", "trade_score_late": "Main scanner, 14:00+ slice", "trade_score_filt": "Main scanner, filtered", "trade_score_cap1": "Main scanner, first 1/day", "trade_score_cap2": "Main scanner, first 2/day", "trade_score_cap3": "Main scanner, first 3/day", "fib_pivot_filt": "Fib pivot, filtered", "fvg_filt": "Fair value gap, filtered", "orb15": "ORB 15-min", "pivot_break": "Pivot break",
           "sweep": "Liquidity sweep", "sweep_fvg": "Sweep + FVG", "amd": "AMD", "oi_flow": "OI flow",
           "fvg": "Fair value gap", "ema_pb": "EMA pullback", "gap_orb": "Gap and go", "sess_orb": "Session ORB",

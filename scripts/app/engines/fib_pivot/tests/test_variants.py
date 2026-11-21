@@ -45,3 +45,31 @@ def test_variants_have_unique_names_and_change_one_thing():
     assert len(names) == len(set(names)) and "fib_pivot" not in names
     for v in config.FIB_PIVOT_VARIANTS:
         assert len([k for k in v if k not in ("name", "fetch_count")]) == 1
+
+
+def test_multi_day_detects_older_day_level():
+    old = pivot_calc.compute_fibonacci_pivots(25400, 25100, 25300)
+    pv = [PIV, old]
+    lv = old["R1"]
+    candles = [c(lv - 20, lv - 5, lv - 25, lv - 10), c(lv - 10, lv + 20, lv - 12, lv + 15)]
+    # baseline (yesterday only) does not see the old level; multi-day does
+    assert not cc.detect_close_confirmation(candles, PIV, "CE")["confirmed"] or \
+        cc.detect_close_confirmation(candles, PIV, "CE")["level_value"] != lv
+    out = cc.detect_close_confirmation_multi(candles, pv, "CE")
+    assert out["confirmed"] and out["level_value"] == lv and out["level_name"] == "R1[d-2]"
+
+
+def test_multi_day_pe_picks_first_crossed_and_needs_fresh_cross():
+    old = pivot_calc.compute_fibonacci_pivots(24700, 24400, 24500)
+    pv = [PIV, old]
+    lv = old["S1"]
+    candles = [c(lv + 20, lv + 25, lv + 5, lv + 10), c(lv + 10, lv + 12, lv - 20, lv - 15)]
+    out = cc.detect_close_confirmation_multi(candles, pv, "PE")
+    assert out["confirmed"] and out["level_value"] <= out["prev_close"]
+    stale = [c(lv - 5, lv, lv - 30, lv - 10), c(lv - 10, lv - 5, lv - 30, lv - 20)]
+    assert not cc.detect_close_confirmation_multi(stale, [old], "PE")["confirmed"]
+
+
+def test_4d_variant_configured():
+    v = [x for x in config.FIB_PIVOT_VARIANTS if x["name"] == "fib_pivot_4d"]
+    assert v and v[0]["pivot_days"] == 4

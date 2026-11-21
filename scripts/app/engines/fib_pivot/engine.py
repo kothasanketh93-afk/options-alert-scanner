@@ -87,11 +87,16 @@ def _score_symbol_direction(symbol: str, direction: str, session: str, variant: 
     if not underlying_key:
         return None
 
-    daily_candles = market_data.get_recent_daily_candles(underlying_key, 3)
+    pivot_days = int(variant.get("pivot_days", 1))
+    daily_candles = market_data.get_recent_daily_candles(underlying_key, max(3, pivot_days))
     if not daily_candles:
         return None
     prev_day = daily_candles[-1]
     pivots = pivot_calc.compute_fibonacci_pivots(prev_day["high"], prev_day["low"], prev_day["close"])
+    pivot_sets = [pivots]
+    if pivot_days > 1:
+        for dc in reversed(daily_candles[-pivot_days:-1]):
+            pivot_sets.append(pivot_calc.compute_fibonacci_pivots(dc["high"], dc["low"], dc["close"]))
 
     today_candles = market_data.get_recent_underlying_candles(
         underlying_key, interval, fetch_count
@@ -117,7 +122,9 @@ def _score_symbol_direction(symbol: str, direction: str, session: str, variant: 
     if direction == "PE" and not (last_close < ema9):
         return None
 
-    if mode == "retest":
+    if pivot_days > 1:
+        confirmation = close_confirmation.detect_close_confirmation_multi(candles, pivot_sets, direction)
+    elif mode == "retest":
         confirmation = close_confirmation.detect_retest(candles, pivots, direction, atr)
     else:
         confirmation = close_confirmation.detect_close_confirmation(candles, pivots, direction)
@@ -153,7 +160,15 @@ def _score_symbol_direction(symbol: str, direction: str, session: str, variant: 
     # engine.py's base-window high/low, which is already-broken
     # structure by the time of a breakout -- see that file's own
     # comment) -- use it as dynamic_trade_levels()'s target cap.
-    if direction == "CE":
+    if pivot_days > 1:
+        pool = confirmation["pool"]
+        if direction == "CE":
+            ahead = [v for v in pool if v > max(confirmation["level_value"], confirmation["close"])]
+            nearby_level = min(ahead) if ahead else None
+        else:
+            ahead = [v for v in pool if v < min(confirmation["level_value"], confirmation["close"])]
+            nearby_level = max(ahead) if ahead else None
+    elif direction == "CE":
         nearby_level = pivot_calc.next_resistance_beyond(pivots, confirmation["level_name"])
     else:
         nearby_level = pivot_calc.next_support_beyond(pivots, confirmation["level_name"])
