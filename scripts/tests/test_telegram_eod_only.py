@@ -13,7 +13,7 @@ def _boom(*a, **k):
     raise AssertionError("network call attempted")
 
 
-def test_suppressed_unless_allowed_or_critical(monkeypatch, tg):
+def test_suppressed_unless_allowed(monkeypatch, tg):
     monkeypatch.setattr(config, "TELEGRAM_EOD_ONLY", True)
     monkeypatch.setattr(tg, "request_with_retry", _boom)
     monkeypatch.setattr(tg, "_ALLOW", 0)
@@ -28,7 +28,7 @@ def test_suppressed_unless_allowed_or_critical(monkeypatch, tg):
     with tg.allow():
         tg.send("EOD report")
     tg.send("state save failed", critical=True)
-    assert sent == ["EOD report", "state save failed"]
+    assert sent == ["EOD report"]      # critical alerts go to the app only, not Telegram
     assert tg.send("after the block") == {"suppressed": True}      # allow() is scoped
 
 

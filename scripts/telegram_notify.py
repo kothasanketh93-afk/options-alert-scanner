@@ -91,7 +91,8 @@ def allow():
 
 
 def _suppressed(what: str, critical: bool = False) -> bool:
-    if getattr(config, "TELEGRAM_EOD_ONLY", False) and not _ALLOW and not critical:
+    # critical=True alerts no longer bypass this (2026-11-21): they reach the phone via the app push only, never Telegram.
+    if getattr(config, "TELEGRAM_EOD_ONLY", False) and not _ALLOW:
         log.info("Telegram %s suppressed (TELEGRAM_EOD_ONLY).", what)
         return True
     return False

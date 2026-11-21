@@ -1700,7 +1700,7 @@ MCX_SCAN_RETRY_BACKOFF_SEC = 3.0
 
 
 # --- Telegram: end-of-day report only (2026-11-20) ---
-# True  = every Telegram send is suppressed (logged, never an error) EXCEPT (a) the end-of-day report blocks wrapped in
-#         telegram_notify.allow() and (b) calls marked critical=True (state-save failure, heartbeat/pre-market FAILURE alerts).
+# True  = every Telegram send is suppressed (logged, never an error) EXCEPT the end-of-day report blocks wrapped in
+#         telegram_notify.allow() (NSE at/after 15:30, MCX at/after 23:30). critical=True alerts (state-save, heartbeat, pre-market) go to the app only.
 # False = previous behaviour (all alerts). Trading, tracking, ledger and dashboard are unaffected either way.
 TELEGRAM_EOD_ONLY = True

@@ -36,7 +36,7 @@ IST = state_mod.IST
 from mcx_config import COMMODITIES, LOT_MULTIPLIER, NAMES, STRATEGY_LABELS
 SESSION_OPEN = (9, 0)
 SESSION_CLOSE = (23, 59)             # market closes 23:30; the extra window lets a late-dispatched 23:30 run still close trades and report
-REPORT_AT = (23, 28)                   # daily report (and Friday weekly report) go out once, at/after this time
+REPORT_AT = (23, 30)                   # daily report (and Friday weekly report) go out once, at/after this time
 TRADE_CLOSE_HHMM = (23, 25)            # tracker closes open trades at/after this (last full 5-min bar)
 LAST_SIGNAL_MINS = 22 * 60 + 30        # no new setups in the last hour
 MIN_EXPIRY_DAYS = 1                    # skip the option expiry day itself
