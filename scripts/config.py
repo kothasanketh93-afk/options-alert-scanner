@@ -1581,6 +1581,14 @@ PIVOT_BREAK_TARGET_ATR_MULT = 2.0
 PDHL_SYMBOLS = ["NIFTY", "BANKNIFTY", "MIDCPNIFTY", "SENSEX"]   # index options only, never stock options
 PDHL_TARGET_ATR_MULT = 1.5   # PDH/PDL breakout+retest (added 2026-10-31, shadow only; backtest: unproven)
 
+# VWAP scalp (2026-11-21, shadow only, stored with the orb_pivot shadow trades). 5-min candles (finest the broker layer supports for the
+# underlying). Tight stop/target (x ATR) for scalping; max trades per symbol per day, one open at a time. Tune AFTER seeing results.
+VWAP_SCALP_ENABLED = True
+VWAP_SCALP_SYMBOLS = ["NIFTY", "BANKNIFTY"]
+VWAP_SCALP_TARGET_ATR_MULT = 0.6
+VWAP_SCALP_STOP_ATR_MULT = 0.5
+VWAP_SCALP_MAX_PER_DAY = 4
+
 # Outcomes ledger cost ASSUMPTION (percent of premium, round trip: brokerage + STT + exchange charges
 # + slippage). Unverified placeholder -- replace with your real contract-note costs. Report-only.
 LEDGER_ROUND_TRIP_COST_PCT = 1.5

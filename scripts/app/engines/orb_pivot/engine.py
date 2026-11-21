@@ -17,7 +17,7 @@ from . import signals
 _logger = get_logger("orb_pivot")
 
 
-def _build_setup(strategy, symbol, signal, atr, target_mult, session, wide_prev_day=None):
+def _build_setup(strategy, symbol, signal, atr, target_mult, session, wide_prev_day=None, stop_mult=1.0):
     direction = signal["direction"]
     underlying_key = resolve_underlying_key(symbol)
     atm_strike, spot_price = get_atm_strike(symbol)
@@ -34,7 +34,7 @@ def _build_setup(strategy, symbol, signal, atr, target_mult, session, wide_prev_
         return None
 
     zone = dynamic_trade_levels(premium, atr, delta, direction, spot_price, None)
-    lv = signals.option_levels(premium, delta, atr, target_mult)
+    lv = signals.option_levels(premium, delta, atr, target_mult, stop_mult)
     rr = (lv["target_1"] - premium) / (premium - lv["stop_loss"]) if premium > lv["stop_loss"] else 0.0
     reasons = {
         "setup": f"{strategy}: 5m close {'above' if direction == 'CE' else 'below'} "
@@ -62,6 +62,7 @@ def _build_setup(strategy, symbol, signal, atr, target_mult, session, wide_prev_
         "pivot_level_name": signal["level_name"], "pivot_level_value": signal["level_value"],
         "atr": round(atr, 2),
         "wide_prev_day": wide_prev_day,
+        "signal_ts": signal.get("signal_ts"),
         "entry_oi": leg.get("oi"), "entry_volume": leg.get("volume"),
         "spread_pct": (round((leg["ask"] - leg["bid"]) / premium * 100, 2)
                        if leg.get("bid") and leg.get("ask") else None),
@@ -105,6 +106,13 @@ def _scan_symbol(symbol, session):
         s = _build_setup("pdhl_retest", symbol, pdhl, atr, config.PDHL_TARGET_ATR_MULT, session, wide)
         if s:
             out.append(s)
+    if getattr(config, "VWAP_SCALP_ENABLED", False) and symbol in config.VWAP_SCALP_SYMBOLS:
+        sc = signals.detect_vwap_scalp(today)
+        if sc:
+            s = _build_setup("vwap_scalp", symbol, sc, atr, config.VWAP_SCALP_TARGET_ATR_MULT, session, wide,
+                             stop_mult=config.VWAP_SCALP_STOP_ATR_MULT)
+            if s:
+                out.append(s)
     return out
 
 
@@ -113,7 +121,8 @@ def detect_all_orb_pivot_setups() -> list:
     if session is None:
         return []
     found = []
-    for symbol in list(dict.fromkeys(list(config.ORB_PIVOT_SYMBOLS) + list(config.PDHL_SYMBOLS))):
+    for symbol in list(dict.fromkeys(list(config.ORB_PIVOT_SYMBOLS) + list(config.PDHL_SYMBOLS)
+                                     + list(getattr(config, "VWAP_SCALP_SYMBOLS", [])))):
         try:
             found.extend(_scan_symbol(symbol, session))
         except Exception as exc:

@@ -110,3 +110,23 @@ class PDHL(unittest.TestCase):
         c = self.UP + [mk(5, 108, 113, 108, 112), mk(6, 112, 113, 109.5, 111), mk(7, 111, 114, 110.5, 113),
                        mk(8, 113, 114, 112, 113), mk(9, 113, 115, 112, 114)]
         self.assertIsNone(s.detect_pdhl_retest(c, 110, 80))
+
+
+def _sc(ts_min, o, h, l, c, v=1000):
+    return {"timestamp": f"2026-11-23T{ts_min // 60:02d}:{ts_min % 60:02d}:00+05:30",
+            "open": o, "high": h, "low": l, "close": c, "volume": v}
+
+
+def test_vwap_scalp_ce_and_pe():
+    base = [_sc(9 * 60 + 15 + 5 * i, 100 + i * 0.2, 101 + i * 0.2, 99.5 + i * 0.2, 100.6 + i * 0.2) for i in range(8)]
+    vw_last = sum((c["high"] + c["low"] + c["close"]) / 3 for c in base) / len(base)
+    dip = _sc(9 * 60 + 55, vw_last + 0.3, vw_last + 0.5, vw_last - 0.4, vw_last + 0.1)
+    trig = _sc(10 * 60, vw_last + 0.1, vw_last + 1.5, vw_last + 0.0, vw_last + 1.2)
+    from app.engines.orb_pivot import signals as sg
+    out = sg.detect_vwap_scalp(base + [dip, trig])
+    assert out and out["direction"] == "CE" and out["signal_ts"].endswith("+05:30")
+    assert sg.detect_vwap_scalp(base[:5]) is None
+    mirror = [dict(c, open=400 - c["open"], high=400 - c["low"], low=400 - c["high"], close=400 - c["close"])
+              for c in base + [dip, trig]]
+    out2 = sg.detect_vwap_scalp(mirror)
+    assert out2 and out2["direction"] == "PE"

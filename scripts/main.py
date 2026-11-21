@@ -1461,8 +1461,15 @@ def create_orb_pivot_shadow_candidates(state: dict, now: datetime):
         return
     trades = state.setdefault("orb_pivot_shadow_trades", {})
     for candidate in candidates:
-        if any(t.get("strategy") == candidate["strategy"] and t["symbol"] == candidate["symbol"]
-               for t in trades.values()):
+        if candidate["strategy"] == "vwap_scalp":
+            mine = [t for t in trades.values()
+                    if t.get("strategy") == "vwap_scalp" and t["symbol"] == candidate["symbol"]]
+            if (len(mine) >= config.VWAP_SCALP_MAX_PER_DAY
+                    or any(t["status"] not in TERMINAL_STATUSES for t in mine)
+                    or any(t.get("signal_ts") == candidate.get("signal_ts") for t in mine)):
+                continue
+        elif any(t.get("strategy") == candidate["strategy"] and t["symbol"] == candidate["symbol"]
+                 for t in trades.values()):
             continue
         key = f"ORBPIVOT-{candidate['strategy']}-{candidate['symbol']}"
         seq = state["next_seq"].get(key, 0) + 1
@@ -1476,6 +1483,7 @@ def create_orb_pivot_shadow_candidates(state: dict, now: datetime):
                                  f"{candidate['strike']}:{candidate['expiry']}")
         trade["engine"] = "orb_pivot"
         trade["wide_prev_day"] = candidate.get("wide_prev_day")
+        trade["signal_ts"] = candidate.get("signal_ts")
         for _k in ("entry_oi", "entry_volume", "spread_pct"):
             trade[_k] = candidate.get(_k)
         trades[trade_id] = trade

@@ -157,3 +157,43 @@ def detect_pdhl_retest(candles: list, prev_high: float, prev_low: float):
                 return (None if not _fresh(i, n) else
                         {"direction": "PE", "level_name": "PDL", "level_value": round(prev_low, 2), "signal_index": i})
     return None
+
+
+# ---- VWAP scalp (added 2026-11-21, SHADOW ONLY, rules FIXED -- a change = a new strategy name) ----
+SCALP_WINDOW = (9 * 60 + 45, 15 * 60)
+SCALP_MIN_CANDLES = 8
+
+
+def _session_vwap(candles: list) -> list:
+    use_vol = all((c.get("volume") or 0) > 0 for c in candles)
+    out, pv, vv = [], 0.0, 0.0
+    for c in candles:
+        tp = (c["high"] + c["low"] + c["close"]) / 3.0
+        w = float(c["volume"]) if use_vol else 1.0
+        pv += tp * w
+        vv += w
+        out.append(pv / vv)
+    return out
+
+
+def detect_vwap_scalp(candles: list, window: tuple = SCALP_WINDOW):
+    """
+    Plain VWAP trend scalp (from the "buy above VWAP / sell below VWAP / price reverts to VWAP" rule set).
+    CE: VWAP not falling (vs 3 candles ago); the PREVIOUS candle dipped to/below VWAP (touch or cross);
+        the signal (last) candle is bullish and closes above VWAP and above the previous candle's high.
+    PE: exact mirror. Returns dict (with signal_ts) or None.
+    """
+    n = len(candles)
+    if n < SCALP_MIN_CANDLES or not window[0] <= _mins(candles[-1]) <= window[1]:
+        return None
+    vw = _session_vwap(candles)
+    last, prev = candles[-1], candles[-2]
+    if last["close"] > last["open"] and last["close"] > vw[-1] and last["close"] > prev["high"] \
+            and vw[-1] >= vw[-4] and prev["low"] <= vw[-2]:
+        return {"direction": "CE", "level_name": "VWAP", "level_value": round(vw[-1], 2),
+                "signal_ts": str(last["timestamp"])}
+    if last["close"] < last["open"] and last["close"] < vw[-1] and last["close"] < prev["low"] \
+            and vw[-1] <= vw[-4] and prev["high"] >= vw[-2]:
+        return {"direction": "PE", "level_name": "VWAP", "level_value": round(vw[-1], 2),
+                "signal_ts": str(last["timestamp"])}
+    return None
