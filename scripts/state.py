@@ -18,6 +18,7 @@ Design notes:
 """
 
 import json
+import os
 import time
 import logging
 import shutil
@@ -120,6 +121,14 @@ def ensure_state_branch_checked_out(repo_url: str, github_token: str, allow_crea
     uncommitted and unpushed -- load_state() already treats a missing
     path as "no data yet," so the caller degrades gracefully.
     """
+    # Private state repo (2026-11-21): when STATE_REPO ("owner/name") is set, the state branch lives there instead of the public
+    # code repo. Needs STATE_REPO_TOKEN (fine-grained token, Contents read/write on that repo only). Unset STATE_REPO = old behaviour.
+    state_repo = (os.environ.get("STATE_REPO") or "").strip()
+    if state_repo:
+        state_token = (os.environ.get("STATE_REPO_TOKEN") or "").strip()
+        if not state_token:
+            raise RuntimeError("STATE_REPO is set but STATE_REPO_TOKEN is empty -- add the STATE_REPO_TOKEN secret.")
+        repo_url, github_token = f"https://github.com/{state_repo}.git", state_token
     STATE_CLONE_DIR.parent.mkdir(parents=True, exist_ok=True)
     auth_url = repo_url.replace(
         "https://", f"https://x-access-token:{github_token}@"

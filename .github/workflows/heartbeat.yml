@@ -85,6 +85,8 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO_URL: https://github.com/${{ github.repository }}.git
+          STATE_REPO: ${{ vars.STATE_REPO }}
+          STATE_REPO_TOKEN: ${{ secrets.STATE_REPO_TOKEN }}
           # heartbeat_check.py's own holiday_guard.should_run() /
           # auth.trading_enabled_today() checks handle non-trading
           # days and the opt-out day internally -- see its docstring's

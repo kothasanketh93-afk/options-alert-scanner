@@ -166,6 +166,8 @@ jobs:
           # a secret -- one less thing to configure, and it can never
           # drift from the actual repo this workflow runs in.
           REPO_URL: https://github.com/${{ github.repository }}.git
+          STATE_REPO: ${{ vars.STATE_REPO }}
+          STATE_REPO_TOKEN: ${{ secrets.STATE_REPO_TOKEN }}
 
           # Repo VARIABLE (not secret) -- auth.trading_enabled_today()'s
           # documented daily opt-out. Empty/unset reads as "false" (Falsy string check inside auth.py) -> trading enabled.

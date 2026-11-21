@@ -76,6 +76,8 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO_URL: https://github.com/${{ github.repository }}.git
+          STATE_REPO: ${{ vars.STATE_REPO }}
+          STATE_REPO_TOKEN: ${{ secrets.STATE_REPO_TOKEN }}
           # premarket_check.py's own docstring: an opt-out day sends
           # one informational confirmation message and exits, rather
           # than running the full diagnostic -- see its "Two outcomes
@@ -102,6 +104,8 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO_URL: https://github.com/${{ github.repository }}.git
+          STATE_REPO: ${{ vars.STATE_REPO }}
+          STATE_REPO_TOKEN: ${{ secrets.STATE_REPO_TOKEN }}
           SKIP_TRADING_TODAY: ${{ vars.SKIP_TRADING_TODAY }}
         run: python scripts/build_instrument_master_cache.py
 
@@ -121,5 +125,7 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO_URL: https://github.com/${{ github.repository }}.git
+          STATE_REPO: ${{ vars.STATE_REPO }}
+          STATE_REPO_TOKEN: ${{ secrets.STATE_REPO_TOKEN }}
           SKIP_TRADING_TODAY: ${{ vars.SKIP_TRADING_TODAY }}
         run: python scripts/build_opportunity_shortlist.py

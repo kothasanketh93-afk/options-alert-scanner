@@ -79,6 +79,8 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}         # optional, free: AI tutor via Google Gemini
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO_URL: https://github.com/${{ github.repository }}.git
+          STATE_REPO: ${{ vars.STATE_REPO }}
+          STATE_REPO_TOKEN: ${{ secrets.STATE_REPO_TOKEN }}
           MCX_FORCE: ${{ github.event.inputs.force == 'true' && '1' || '0' }}
         run: python scripts/mcx_main.py
 
