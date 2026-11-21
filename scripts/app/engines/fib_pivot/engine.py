@@ -88,7 +88,7 @@ def _score_symbol_direction(symbol: str, direction: str, session: str, variant: 
         return None
 
     pivot_days = int(variant.get("pivot_days", 1))
-    daily_candles = market_data.get_recent_daily_candles(underlying_key, max(3, pivot_days))
+    daily_candles = market_data.get_recent_daily_candles(underlying_key, max(5, pivot_days))
     if not daily_candles:
         return None
     prev_day = daily_candles[-1]
