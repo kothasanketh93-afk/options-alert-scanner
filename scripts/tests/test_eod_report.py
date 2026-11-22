@@ -15,8 +15,8 @@ def test_groups_counts_and_net():
     msgs = er.build_messages(st, "2026-11-03")
     txt = "\n".join(msgs)
     assert "Tracked: 5 | T2: 1 | T1 then SL: 1 | SL: 2 | open/other: 1" in txt
-    assert "B CE 100 [Main shadow, 09:31]" in txt and "net +48.5%" in txt     # (15-10)/10=50% - 1.5 cost
-    assert "net -21.5%" in txt                                                  # (8-10)/10=-20% - 1.5
+    assert "B CE 100 [Main shadow, 09:31]" in txt and "net +48.0%" in txt     # (15-10)/10=50% - 2.0 cost
+    assert "net -22.0%" in txt                                                  # (8-10)/10=-20% - 2.0
     assert txt.index("Targets hit") < txt.index("T1 hit, then stopped") < txt.index("Stop-loss hit")
 
 

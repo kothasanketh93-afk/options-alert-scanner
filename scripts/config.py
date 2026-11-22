@@ -1590,8 +1590,10 @@ VWAP_SCALP_STOP_ATR_MULT = 0.5
 VWAP_SCALP_MAX_PER_DAY = 4
 
 # Outcomes ledger cost ASSUMPTION (percent of premium, round trip: brokerage + STT + exchange charges
-# + slippage). Unverified placeholder -- replace with your real contract-note costs. Report-only.
-LEDGER_ROUND_TRIP_COST_PCT = 1.5
+# + slippage). Report-only. 2026-11-22 measurement on 663 ledger trades: charges (Rs20/order brokerage, STT 0.15% sell
+# side since Apr-2026, exchange 0.0355%/side, GST, stamp, SEBI) = 0.65% + measured spread/slippage 1.34 pts => ~2.0%.
+# Replace with your real contract-note costs when available.
+LEDGER_ROUND_TRIP_COST_PCT = 2.0
 # Realistic-execution what-if (outcomes_ledger.realistic_net_pct): a buyer pays the ask and a seller gets the bid, so each side
 # loses half the quoted spread plus this extra slippage allowance (% of price). Measured next to the legacy net, never replaces it.
 EXEC_SLIPPAGE_PCT = 0.25
