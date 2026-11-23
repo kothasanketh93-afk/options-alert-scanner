@@ -9,7 +9,7 @@ import math
 import sys
 from pathlib import Path
 
-LOTS = {"NIFTY": 65, "SENSEX": 20, "BANKNIFTY": 30, "MIDCPNIFTY": 120}   # BANKNIFTY / MIDCPNIFTY assumed
+LOTS = {"NIFTY": 65, "SENSEX": 20, "BANKNIFTY": 30, "MIDCPNIFTY": 120}   # BANKNIFTY 30 verified 2026-11-23 (instrument master + NSE); MIDCPNIFTY still assumed
 SKIP = {"NOT_ENTERED", "AMBIGUOUS"}
 
 

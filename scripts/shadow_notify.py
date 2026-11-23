@@ -85,6 +85,11 @@ def notify_created(state: dict, trade: dict, now, sender=None) -> bool:
         (sender or _send)(format_created(trade))
         seen.append(key)
         trade["shadow_notified"] = True
+        try:
+            import latency
+            latency.stamp_notified(trade)
+        except Exception:
+            pass
         if SETUP_CHART and sender is None:
             SETUP_CHART(trade)
         return True

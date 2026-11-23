@@ -53,6 +53,7 @@ import risk_guard
 import run_gap
 import eod_report
 import shadow_notify
+import latency
 import pattern_tape_runner
 import chart_notify
 
@@ -70,6 +71,8 @@ def notify_once(trade: dict, event_key: str, message_fn, *args):
     text = message_fn(*args)
     tg.send(text)
     tg.push(text, trade.get("strategy"))   # live trade lifecycle alerts -> ntfy when Telegram is EOD-only
+    if event_key == "NEW_TRADE_ALERT":
+        latency.stamp_notified(trade)      # when the alert actually went out + latency vs the signal (latency.py)
     trade["messages_sent"].append(event_key)
 
 
@@ -255,6 +258,14 @@ def run_scanner_step(state: dict, now: datetime):
     # ENTRY_SCORE (fewer trades tracked at all) over re-adding this
     # gate -- that keeps alerts and outcomes consistent with each
     # other, which silently dropping just the first message did not.
+    try:   # BankNifty only, informational: debit-spread alternative from live chain quotes (spread_plan.py)
+        import option_chain
+        import spread_plan
+        trade["spread_plan"] = spread_plan.suggest(
+            trade, lambda t: market_data.get_option_chain(option_chain.resolve_underlying_key(t["symbol"]), t["expiry"]),
+            option_chain._extract_leg)
+    except Exception as exc:
+        log.warning("Spread plan skipped (%s: %s)", type(exc).__name__, exc)
     try:
         notify_once(trade, "NEW_TRADE_ALERT", tg.fmt_new_alert, trade)
         chart_notify.later(chart_notify.setup, trade)
@@ -792,6 +803,28 @@ def maybe_send_eod_report(state: dict, now: datetime):
 
 
 
+def maybe_send_banknifty_reports(state: dict, now: datetime, log_path):
+    """BankNifty daily summary (every trading day) and weekly report (Friday), once each, at/after SUMMARY_HHMM. Telegram EOD only."""
+    if (now.hour, now.minute) < SUMMARY_HHMM:
+        return
+    import banknifty_log
+    import banknifty_report
+    rows = banknifty_log.read_log(log_path)
+    day = state["date"]
+    with tg.allow():
+        if not state.get("banknifty_daily_sent"):
+            today = [r for r in rows if r.get("date") == day]
+            if today:
+                tg.send(banknifty_report.daily_text(today, day, rows))
+            state["banknifty_daily_sent"] = True
+        if now.weekday() == 4 and not state.get("banknifty_weekly_sent"):
+            from datetime import timedelta
+            monday = (now.date() - timedelta(days=4)).isoformat()
+            week = [r for r in rows if monday <= str(r.get("date")) <= day]
+            tg.send(banknifty_report.weekly_text(week, monday, day, rows))
+            state["banknifty_weekly_sent"] = True
+
+
 def maybe_send_weekly_report(state: dict, now: datetime):
     """Friday at/after SUMMARY_HHMM: one-lot weekly report image from the outcomes ledger (after today's rows were appended)."""
     if now.weekday() != 4 or (now.hour, now.minute) < SUMMARY_HHMM or state.get("weekly_report_sent"):
@@ -1126,6 +1159,14 @@ def main():
             state, state_mod.STATE_CLONE_DIR / "ledger" / "outcomes.csv")
         if added:
             log.info("OUTCOMES_LEDGER appended %d resolved shadow trade(s)", added)
+        try:
+            if getattr(config, "BANKNIFTY_LOG_ENABLED", False):
+                import banknifty_log
+                root = state_mod.STATE_CLONE_DIR
+                banknifty_log.rebuild(root / "ledger" / "outcomes.csv", root / banknifty_log.LOG_REL)
+                maybe_send_banknifty_reports(state, now, root / banknifty_log.LOG_REL)
+        except Exception as exc:
+            log.error("BankNifty log/report failed (%s: %s) -- continuing.", type(exc).__name__, exc)
     except Exception as exc:
         log.error("Outcomes ledger append failed (%s: %s) -- continuing.", type(exc).__name__, exc)
     try:

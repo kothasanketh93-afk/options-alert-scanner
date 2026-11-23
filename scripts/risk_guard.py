@@ -29,7 +29,33 @@ def check_global(state, now):
     losses = sum(1 for t in trades if (t.get("final_status") or t.get("status")) in LOSS_STATUSES)
     if losses >= config.RISK_DAILY_SL_STOP:
         return False, f"daily stop: {losses} stop-losses today"
+    limit_pct = getattr(config, "RISK_DAILY_LOSS_LIMIT_PCT", None)
+    if limit_pct:
+        realised = realised_pnl_rs(state)
+        limit = config.PAPER_CAPITAL * limit_pct / 100.0
+        if realised <= -limit:
+            return False, f"daily loss limit: realised Rs {realised:,.0f} <= -Rs {limit:,.0f} ({limit_pct}% of capital)"
     return True, ""
+
+
+def realised_pnl_rs(state) -> float:
+    """Today's realised NET P&L (Rs, after charges + slippage estimate) of resolved LIVE trades, one lot each. Never raises."""
+    try:
+        import cost_model
+        import outcomes_ledger
+        total = 0.0
+        for t in (state.get("trades") or {}).values():
+            status = t.get("final_status") or t.get("status")
+            if status in OPEN_STATUSES or status in (None, "NOT_ENTERED"):
+                continue
+            res, entry = outcomes_ledger.result_pct(t), t.get("tracked_entry_price")
+            lot = ((t.get("risk_sizing") or {}).get("lot_size")) or config.INDEX_LOT_SIZE.get(t.get("symbol"), 1)
+            net = cost_model.trade_pnl(entry, res, lot)["net"]
+            if net is not None:
+                total += net
+        return total
+    except Exception:
+        return 0.0
 
 
 def check_symbol(state, symbol):

@@ -277,12 +277,21 @@ def _fmt_new_alert_conditions(trade: dict) -> str:
         f"Stop Loss: ₹{trade['stop_loss']}\n"
         f"Target 1: ₹{trade['target_1']}\n"
         f"Target 2: ₹{trade['target_2']}\n"
-        f"{_risk_line(trade)}\n"
+        f"{_risk_line(trade)}{_spread_line(trade)}\n"
         f"Expected Holding: {low_min}-{high_min} minutes\n\n"
         f"Why Recommended?\n{why}\n"
         f"{alt_block}\n\n"
         f"Status: WAITING_ENTRY"
     )
+
+
+def _spread_line(trade: dict) -> str:
+    """Optional BankNifty debit-spread alternative (spread_plan.py); empty unless the plan was attached to the trade."""
+    try:
+        import spread_plan
+        return spread_plan.alert_line(trade.get("spread_plan"))
+    except Exception:
+        return ""
 
 
 def _risk_line(trade: dict) -> str:

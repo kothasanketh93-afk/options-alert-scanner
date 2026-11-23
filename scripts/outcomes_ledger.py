@@ -41,7 +41,9 @@ COLUMNS = ["trade_id", "date", "engine", "strategy", "symbol", "direction", "str
            # Direction check for NOT_ENTERED trades (2026-11-19, ghost_view.py): which level the option touched first after the alert.
            "ghost_result", "ghost_mfe_pct", "ghost_mae_pct",
            # ITM/ATM/OTM bucket of the strike (2026-11-19) so strike choice can be measured instead of inferred
-           "moneyness"]
+           "moneyness",
+           # Alert latency (2026-11-23, latency.py): condition/scan time -> alert actually sent
+           "signal_ts", "notified_at", "detect_to_send_sec", "signal_to_send_sec"]
 
 
 def result_pct(trade: dict):
@@ -231,6 +233,8 @@ def _row(trade: dict, engine: str, date_str: str) -> dict:
     row["ai_verdict"] = trade.get("ai_verdict")
     row["realistic_net_pct"] = realistic_net_pct(res, trade.get("spread_pct"))
     row["moneyness"] = trade.get("moneyness")
+    for k in ("signal_ts", "notified_at", "detect_to_send_sec", "signal_to_send_sec"):
+        row[k] = trade.get(k)
     gv = trade.get("ghost_view") or {}
     if "result" in gv:
         row.update({"ghost_result": gv.get("result"), "ghost_mfe_pct": gv.get("mfe_pct"), "ghost_mae_pct": gv.get("mae_pct")})

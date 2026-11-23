@@ -1589,6 +1589,21 @@ VWAP_SCALP_TARGET_ATR_MULT = 0.6
 VWAP_SCALP_STOP_ATR_MULT = 0.5
 VWAP_SCALP_MAX_PER_DAY = 4
 
+# --- BankNifty contract facts (verified 2026-11-23 from the broker instrument master + NSE circulars) ---
+# Lot size 30 (revised 27-Jan-2026 from 35). Monthly expiry ONLY (weeklies discontinued Nov-2024), on the LAST TUESDAY of the month;
+# if that Tuesday is a trading holiday the expiry is the previous trading day (Nov-2026 expiry is Mon 23-Nov because 24-Nov is a holiday).
+# Strike step 100 near ATM. The live lot size always comes from the instrument master; these constants are for reports and a sanity check.
+INDEX_LOT_SIZE = {"NIFTY": 65, "BANKNIFTY": 30, "MIDCPNIFTY": 120, "SENSEX": 20}
+BANKNIFTY_EXPIRY_RULE = "monthly, last Tuesday (holiday -> previous trading day)"
+
+# Real-cost model for the BankNifty trade log / reports (cost_model.py). Slippage = measured spread+slippage on 345 ledger trades.
+COST_BROKERAGE_PER_ORDER = 20.0
+COST_SLIPPAGE_PCT = 1.34
+# Daily loss limit in rupees: once today's REALISED net P&L of live trades is <= -(this % of PAPER_CAPITAL), no new live alerts today.
+RISK_DAILY_LOSS_LIMIT_PCT = 1.5
+# BankNifty trade log + reports (banknifty_log.py / banknifty_report.py). Telegram only at end of day (daily) and Friday (weekly).
+BANKNIFTY_LOG_ENABLED = True
+
 # Outcomes ledger cost ASSUMPTION (percent of premium, round trip: brokerage + STT + exchange charges
 # + slippage). Report-only. 2026-11-22 measurement on 663 ledger trades: charges (Rs20/order brokerage, STT 0.15% sell
 # side since Apr-2026, exchange 0.0355%/side, GST, stamp, SEBI) = 0.65% + measured spread/slippage 1.34 pts => ~2.0%.
