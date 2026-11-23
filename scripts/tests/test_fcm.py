@@ -23,7 +23,7 @@ def test_publish_filters_devices_and_formats(monkeypatch):
     n = fcm_notify.publish("<b>New alert · MCX</b>\nGOLD 1 CE · FVG\nEntry 10 · SL 9", strategy="fvg", devices=devs,
                            sender=lambda info, tok, title, body, high, st: sent.append((tok[0], title, body, high, st)) or True)
     assert n == 1 and sent[0][0] == "A"
-    assert sent[0][1] == "New alert · MCX" and "Entry 10" in sent[0][2] and sent[0][3] is False
+    assert sent[0][1] == "New alert · MCX" and "Entry 10" in sent[0][2] and sent[0][3] is True   # all alerts high priority (Doze)
 
 
 def test_stop_loss_is_high_priority_and_system_alert_reaches_all(monkeypatch):

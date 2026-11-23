@@ -138,7 +138,9 @@ def publish(text: str, priority: int = None, strategy: str = None, *, devices=No
         first, _, rest = body_all.partition("\n")
         title = first[:120] or "Options Scanner"
         body = (rest.strip() or first)[:1000]
-        high = (priority or 3) >= 4 or any(w in title.lower() for w in ("stop-loss", "sl hit", "failed", "stopped"))
+        # 2026-11-23: EVERY trade alert is high priority. Normal-priority FCM messages are deferred by Android Doze while the screen
+        # is off (minutes to hours), which made alerts arrive only when the user woke the phone. Alerts are rare and user-selected.
+        high = True
         sent = 0
         for d in (load_devices() if devices is None else devices):
             if d.get("token") and wants(d, strategy):
