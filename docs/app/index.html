@@ -281,6 +281,11 @@ body{background-image:radial-gradient(1200px 400px at 85% -120px,color-mix(in sr
 @keyframes ptrs{to{transform:rotate(270deg)}}@keyframes ptrb{from{opacity:.5}to{opacity:1}}
 #ptr .pt{font-size:11.5px;color:var(--mut);background:var(--panel);border:1px solid var(--line);padding:2px 9px;border-radius:99px;min-height:0;white-space:nowrap}#ptr .pt:empty{display:none}
 @media (prefers-reduced-motion:reduce){#ptr[data-s=busy] .prg,#ptr[data-s=busy] .cd rect{animation:none}}
+
+#hb{margin:6px 12px 0;padding:8px 12px;border-radius:12px;border:1px solid var(--bad);border-left-width:5px;background:color-mix(in srgb,var(--bad) 14%,var(--panel));font-size:12.5px}#hb[hidden]{display:none}
+.pgr{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:4px 0 8px}.pgr i{display:block;height:100%;background:var(--acc);border-radius:99px}
+.egrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media (max-width:520px){.egrid{grid-template-columns:1fr}}
+.rsn{display:flex;gap:8px;font-size:12.5px;padding:3px 0;border-bottom:1px solid var(--line)}.rsn b{min-width:34px;text-align:right}
 </style></head><body>
 <div id="gate" hidden><form id="login" autocomplete="on"><h2 style="margin:0;font-size:19px">Options Scanner</h2><small>Sign in to view</small>
 <input id="u" name="username" autocomplete="username" placeholder="Username" autocapitalize="none"><input id="p" name="password" type="password" autocomplete="current-password" placeholder="Password"><button>Sign in</button><small id="lerr" class="err"></small></form></div>
@@ -288,6 +293,7 @@ body{background-image:radial-gradient(1200px 400px at 85% -120px,color-mix(in sr
 <div class="wrap">
 <header><div class="top"><div class="brand"><svg viewBox="0 0 108 108" aria-hidden="true"><defs><radialGradient id="lgb" cx=".35" cy=".25" r="1"><stop offset="0" stop-color="#18233a"/><stop offset="1" stop-color="#080b12"/></radialGradient></defs><rect width="108" height="108" rx="24" fill="url(#lgb)"/><g transform="translate(54 54) scale(1.4) translate(-54 -54)"><defs><linearGradient id="lgs" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#3ee0a8" stop-opacity="0"/><stop offset="1" stop-color="#3ee0a8" stop-opacity=".38"/></linearGradient><filter id="lgg"><feGaussianBlur stdDeviation="1.6"/></filter></defs><g fill="none" stroke="#2a3a52" stroke-width="1.2"><circle cx="54" cy="54" r="26"/><circle cx="54" cy="54" r="17"/></g><path d="M54 54 L54 26 A28 28 0 0 1 80 44 Z" fill="url(#lgs)"/><line x1="54" y1="54" x2="54" y2="26" stroke="#3ee0a8" stroke-width="1.6" stroke-linecap="round"/><g stroke-linecap="round"><line x1="39" y1="44" x2="39" y2="70" stroke="#f0707e" stroke-width="2.4"/><rect x="34.5" y="50" width="9" height="14" rx="2" fill="#f0707e"/><line x1="54" y1="34" x2="54" y2="74" stroke="#3ee0a8" stroke-width="2.4"/><rect x="49.5" y="40" width="9" height="26" rx="2" fill="#3ee0a8"/><line x1="69" y1="40" x2="69" y2="68" stroke="#f2b24b" stroke-width="2.4"/><rect x="64.5" y="46" width="9" height="16" rx="2" fill="#f2b24b"/></g></g></svg><h1>Options Scanner</h1></div></div>
 <div class="sub2"><span id="clock" class="clk">—</span><span id="stamp" class="offb"></span></div><div class="mkw" id="mkbar" hidden></div></header>
+<div id="hb" role="alert" hidden></div>
 <div class="edu"><b>⚠ Education only</b> · paper trades, not advice</div>
 <main id="view"><div class="skel"></div><div class="skel"></div><div class="skel"></div></main>
 </div>
@@ -296,6 +302,7 @@ body{background-image:radial-gradient(1200px 400px at 85% -120px,color-mix(in sr
 <button data-v="days" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v3M15 3v3M8.5 17v-3M12 17v-5M15.5 17v-2"/></svg>Days</button>
 <button data-v="strat" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M6 4v3M6 16v4M12 3v3M12 18v3M18 7v3M18 16v4"/><rect x="4" y="7" width="4" height="9" rx="1.2"/><rect x="10" y="6" width="4" height="12" rx="1.2"/><rect x="16" y="10" width="4" height="6" rx="1.2"/></svg>Strategies</button>
 <button data-v="insight" aria-pressed="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><path d="M12 12l5.5-5.5"/></svg>Insights</button>
+<button data-v="edge" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9"/><path d="M4 21h16"/></svg>Edge</button>
 <button data-v="settings" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 7h8M18 7h2M4 12h2M12 12h8M4 17h9M19 17h1"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="12" r="2.2"/><circle cx="16" cy="17" r="2.2"/></svg>Settings</button>
 </nav>
 <script>
@@ -672,8 +679,15 @@ async function enableAlerts(){try{if(window.Notification&&Notification.permissio
   
 const MSG={T2_HIT:['Target 2 hit','ok'],T1_THEN_SL:['T1 hit, then stopped (neutral exit)','warn'],SL_HIT:['Stop-loss hit','bad'],T1_HIT_THEN_EOD:['T1 hit, closed at end of day','ok'],EOD_CLOSED:['Closed at end of day','']};
 const lv=t=>{const g=k=>{const v=num(t[k]);return v==null?'—':v},e=num(t.tracked_entry_price)??num(t.alert_premium);return `Entry ${e==null?'—':e} · SL ${g('stop_loss')} · T1 ${g('target_1')} · T2 ${g('target_2')}`};
+
+/* Bot health banner: red when a market is open but its runner has not saved state for a while (a hung / failed workflow). */
+function hbUpdate(n,m){try{const el=$('#hb');if(!el)return;const ist=new Date(Date.now()+5.5*36e5),mins=ist.getUTCHours()*60+ist.getUTCMinutes(),wk=ist.getUTCDay(),wd=wk>0&&wk<6,msg=[];
+  const nA=n&&n.date===istDate(0)?ageMin(n.s.last_run_at):null,mA=m&&m.date===istDate(0)?ageMin(m.s.last_run_at):null;
+  if(wd&&mins>=560&&mins<=925&&nA!=null&&nA>15)msg.push('NSE '+nA+' min');
+  if(wd&&mins>=545&&mins<=1420&&mA!=null&&mA>15)msg.push('MCX '+mA+' min');
+  if(msg.length){el.hidden=false;el.innerHTML='⚠ <b>'+T('Bot may be stuck','బాట్ ఆగిపోయి ఉండవచ్చు')+'</b> · '+T('no update for ','అప్‌డేట్ లేదు: ')+msg.join(', ')+' · '+T('check GitHub Actions','GitHub Actions చూడండి')}else el.hidden=true}catch(e){}}
 async function pollAlerts(){try{
-  const [n,m]=await Promise.all([loadState(''),loadState('mcx/')]);const cur={};
+  const [n,m]=await Promise.all([loadState(''),loadState('mcx/')]);const cur={};hbUpdate(n,m);
   const add=(src,o,live)=>Object.values(o||{}).forEach(t=>{if(!t.trade_id)return;if(asOn(t.strategy))cur[t.trade_id]={st:stat(t),t,src}});
   if(n){add('NSE',n.s.trades,true);['shadow_trades','fib_pivot_shadow_trades','orb_pivot_shadow_trades','sweep_shadow_trades'].forEach(k=>add('NSE',n.s[k],false))}
   if(m)add('MCX',m.s.mcx_shadow_trades,false);
@@ -723,7 +737,46 @@ async function settingsView(){const te=lang==='te',L=CFG.lots;
   <div class="set"><h4>${T('Data and account','డేటా మరియు ఖాతా')}</h4><p>${T('Settings are stored only on this device.','సెట్టింగ్స్ ఈ పరికరంలో మాత్రమే నిల్వ అవుతాయి.')}</p><div class="seg2"><button class="btn" data-refresh>${T('Refresh data now','డేటా ఇప్పుడే రిఫ్రెష్')}</button><button class="btn" data-clear-cache>${T('Clear saved data','సేవ్ చేసిన డేటా తొలగించు')}</button><button class="btn danger" data-logout>${T('Log out','లాగ్ అవుట్')}</button></div></div>
   <div class="set"><h4>${T('About','గురించి')}</h4><p>${T('Options Scanner dashboard v3.2. Paper (shadow) trades only; no real orders are placed. For education, not advice. Data comes from the scanner’s state files and trade ledger.','ఆప్షన్స్ స్కానర్ డాష్‌బోర్డ్ v2. పేపర్ (షాడో) ట్రేడ్లు మాత్రమే; నిజమైన ఆర్డర్లు పెట్టదు. విద్య కోసం, సలహా కాదు. స్కానర్ స్టేట్ ఫైల్స్ మరియు ట్రేడ్ లెడ్జర్ నుండి డేటా వస్తుంది.')}</p></div>`}
 /* ---------- shell ---------- */
-const VIEWS={settings:settingsView,today:todayView,days:daysView,strat:stratView,insight:insightView};
+
+/* ---------- Edge tab: is there a real edge? (BankNifty trade log, day-block bootstrap, no-trade reasons) ---------- */
+function mul32(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function edgeCheck(byDay){const days={};byDay.forEach(([d,p])=>(days[d]??=[]).push(p));const g=Object.values(days),n=byDay.length;if(!n)return{n:0,days:0};
+  const rnd=mul32(11),ms=[];for(let i=0;i<3000;i++){let sum=0,c=0;for(let k=0;k<g.length;k++){const x=g[Math.floor(rnd()*g.length)];for(const v of x)sum+=v;c+=x.length}ms.push(sum/c)}ms.sort((a,b)=>a-b);
+  const lo=ms[Math.floor(.05*3000)],hi=ms[Math.floor(.95*3000)-1],mean=byDay.reduce((a,x)=>a+x[1],0)/n,nd=g.length;
+  const v=n<100||nd<20?'thin':lo>0?'pos':'zero';return{n,days:nd,mean,lo,hi,v}}
+function edgeCard(title,rows){const ent=rows.filter(r=>num(r.net_pnl_rs)!=null).sort((a,b)=>(a.exit_time||a.alert_time||'').localeCompare(b.exit_time||b.alert_time||''));
+  const byDay=ent.map(r=>[r.date,num(r.net_pnl_rs)]),e=edgeCheck(byDay);
+  if(!e.n)return`<div class="card"><b>${title}</b><div class="mut" style="margin-top:6px">${T('No completed trades yet','పూర్తయిన ట్రేడ్‌లు ఇంకా లేవు')}</div></div>`;
+  const w=byDay.filter(x=>x[1]>0).length,net=byDay.reduce((a,x)=>a+x[1],0);let cum=0,pk=0,dd=0;byDay.forEach(x=>{cum+=x[1];pk=Math.max(pk,cum);dd=Math.max(dd,pk-cum)});
+  const tag=e.v==='pos'?`<span class="tag ok">${T('Positive','పాజిటివ్')}</span>`:e.v==='zero'?`<span class="tag warn">${T('Not proven','నిరూపితం కాలేదు')}</span>`:`<span class="tag warn">${T('Not proven · too little data','నిరూపితం కాలేదు · డేటా తక్కువ')}</span>`;
+  return`<div class="card"><div style="display:flex;justify-content:space-between;gap:8px"><b>${title}</b>${tag}</div>
+  <div style="margin-top:6px">${T('Trades','ట్రేడ్‌లు')} <b>${e.n}</b>/100 · ${T('Days','రోజులు')} <b>${e.days}</b>/20</div>
+  <div class="pgr"><i style="width:${Math.min(100,e.n)}%"></i></div><div class="pgr"><i style="width:${Math.min(100,e.days/20*100)}%"></i></div>
+  <div>${T('Net (1 lot, after costs)','నికర (1 లాట్, ఖర్చుల తర్వాత)')}: <b class="${cl(net)}">${rs(net)}</b> · ${T('Win rate','విన్ రేట్')} ${(w/e.n*100).toFixed(0)}%</div>
+  <div>${T('Mean per trade','ప్రతి ట్రేడ్ సగటు')}: <b class="${cl(e.mean)}">${rs(e.mean)}</b> <span class="mut">(${T('90% range','90% పరిధి')} ${rs(e.lo)} … ${rs(e.hi)})</span></div>
+  <div>${T('Max drawdown','గరిష్ఠ డ్రాడౌన్')}: <b class="neg">${rs(-dd)}</b></div></div>`}
+function curveSvg(rows){const ent=rows.filter(r=>num(r.net_pnl_rs)!=null).sort((a,b)=>(a.exit_time||a.alert_time||'').localeCompare(b.exit_time||b.alert_time||''));if(ent.length<2)return'';
+  let c=0;const pts=[0,...ent.map(r=>c+=num(r.net_pnl_rs))],W=640,H=150,m=8,lo=Math.min(...pts),hi=Math.max(...pts),sp=hi-lo||1,X=i=>m+i/(pts.length-1)*(W-2*m),Y=v=>m+(hi-v)/sp*(H-2*m);
+  const path=pts.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join(' ');
+  return`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cumulative net P&L" style="width:100%;height:auto;display:block"><line x1="${m}" x2="${W-m}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--line)"/><path d="${path}" fill="none" stroke="${pts[pts.length-1]>=0?'var(--ok)':'var(--bad)'}" stroke-width="2.2" stroke-linejoin="round"/></svg>`}
+async function edgeView(){
+  let rows=[],err='';try{rows=csv(await get('banknifty/trade_log.csv',false))}catch(e){err=T('BankNifty trade log not available yet (it is created after the next trading run).','BankNifty ట్రేడ్ లాగ్ ఇంకా లేదు (తదుపరి ట్రేడింగ్ రన్ తర్వాత తయారవుతుంది).')}
+  const live=rows.filter(r=>r.kind==='live'),med=a=>{a=a.filter(x=>x!=null).sort((x,y)=>x-y);return a.length?a[Math.floor(a.length/2)]:null},ls=med(rows.map(r=>num(r.signal_to_send_sec))),ld=med(rows.map(r=>num(r.detect_to_send_sec)));
+  /* why no trades today: reasons from today's scan log */
+  let why='';try{const d=istDate(0),txt=await get('scan_logs/'+d+'.jsonl',false),cnt={};let tot=0;
+    for(const ln of txt.split('\n')){if(ln.indexOf('"REJECTED"')<0)continue;try{const o=JSON.parse(ln);if(o.tag!=='REJECTED')continue;const body=String(o.message||'').replace(/^[^:]*:\s*/,'');
+      for(const part of body.split(/,\s*|;\s*/)){const k=part.replace(/\(.*$/,'').replace(/[\d.]+/g,'#').replace(/\s+/g,' ').trim();if(k&&k.length<60){cnt[k]=(cnt[k]||0)+1}}tot++}catch(e){}}
+    const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,7);
+    why=tot?`<div class="card"><b>${T('Why setups were rejected today','ఈ రోజు సెటప్‌లు ఎందుకు తిరస్కరించబడ్డాయి')}</b> <span class="mut">(${tot})</span><div style="margin-top:6px">${top.map(([k,v])=>`<div class="rsn"><b>${v}</b><span>${esc(k)}</span></div>`).join('')}</div></div>`:''}catch(e){}
+  let risk='';try{const n=await loadState('');if(n){const L=Object.values(n.s.trades||{}),open=L.filter(t=>/WAITING_ENTRY|ACTIVE|T1_HIT/.test(t.status||'')).length;
+    risk=`<div class="card"><b>${T('Live alerts today','ఈ రోజు లైవ్ అలర్ట్‌లు')}</b><div style="margin-top:6px">${L.length}/2 ${T('used','వాడినవి')} · ${open} ${T('open','తెరిచి ఉన్నవి')} · ${T('daily loss limit','రోజువారీ నష్ట పరిమితి')} ${rs(-CFG.capital*1.5/100)}</div></div>`}}catch(e){}
+  view.innerHTML=`<div class="note" style="margin:6px 0 10px">${T('Is there a real edge? Net of brokerage, STT, taxes and slippage. An edge is "proven" only with 100+ trades over 20+ days and a 90% range above zero.','నిజమైన edge ఉందా? బ్రోకరేజ్, STT, పన్నులు, స్లిప్పేజ్ తర్వాత. 100+ ట్రేడ్‌లు, 20+ రోజులు, 90% పరిధి సున్నా పైన ఉంటేనే "నిరూపితం".')}</div>
+  ${err?`<div class="empty">${esc(err)}</div>`:`<div class="egrid">${edgeCard('BankNifty · '+T('Live alerts','లైవ్ అలర్ట్‌లు'),live)}${edgeCard('BankNifty · '+T('All setups (live + data)','అన్ని సెటప్‌లు (లైవ్ + డేటా)'),rows)}</div>
+  <div class="card" style="margin-top:10px"><b>${T('Cumulative net P&L · all BankNifty setups','సంచిత నికర P&L · అన్ని BankNifty సెటప్‌లు')}</b>${curveSvg(rows)||'<div class="mut">—</div>'}</div>
+  <div class="card" style="margin-top:10px"><b>${T('Alert latency','అలర్ట్ ఆలస్యం')}</b><div style="margin-top:6px">${ld==null?T('No alert timing recorded yet.','ఇంకా అలర్ట్ సమయం నమోదు కాలేదు.'):T('Scan → sent','స్కాన్ → పంపబడింది')+' <b>'+ld.toFixed(0)+'s</b> · '+T('Candle close → sent','క్యాండిల్ క్లోజ్ → పంపబడింది')+' <b>'+(ls==null?'—':(ls/60).toFixed(1)+' min')+'</b>'}</div></div>`}
+  <div style="display:grid;gap:10px;margin-top:10px">${risk}${why}</div>`}
+
+const VIEWS={settings:settingsView,today:todayView,days:daysView,strat:stratView,insight:insightView,edge:edgeView};
 async function render(){const sy=window.scrollY;saveUi();stale=false;drawMkBar();document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v==tab));
   try{await VIEWS[tab]();{const st=$('#stamp');if(st)st.textContent=stale?T('offline · showing saved data','ఆఫ్‌లైన్ · సేవ్ చేసిన డేటా'):''}foldFilters();applyLang();if(sy>0&&Math.abs(window.scrollY-sy)>2)window.scrollTo(0,sy)}catch(e){view.innerHTML='<div class="empty err">'+T('Could not load data: ','డేటా లోడ్ కాలేదు: ')+esc(e.message)+'</div>'}}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.v;try{localStorage.setItem('v',tab)}catch(e){}scrollTo(0,0);render()});
