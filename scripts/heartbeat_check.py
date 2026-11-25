@@ -63,6 +63,17 @@ def get_last_trader_commit_time() -> datetime:
     heartbeat's own commits would make a dead trader workflow look
     "recently active."
     """
+    # 2026-11-25 BUGFIX: the state clone is --depth 1 (state.py), so `git log --grep` only ever sees the tip commit. Whenever the tip
+    # was not a trader "update" commit (MCX / scan-log / heartbeat commits are newer) this returned 1970 -> a FALSE "Main workflow
+    # stale" alert. Every trader run stamps last_run_at in today's state file (run_gap.py), which a shallow clone has: use that first.
+    try:
+        import json
+        d = json.loads(state_mod._state_file_path(state_mod.ist_now().strftime("%Y-%m-%d")).read_text())
+        ts0 = d.get("last_run_at")
+        if ts0:
+            return datetime.fromisoformat(ts0)
+    except Exception:
+        pass
     result = _run(
         ["git", "log", "--grep=^update ", "-1", "--format=%cI"],
         cwd=state_mod.STATE_CLONE_DIR,
