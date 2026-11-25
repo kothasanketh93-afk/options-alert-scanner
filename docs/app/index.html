@@ -681,7 +681,8 @@ async function pollAlerts(){try{
   const day=(n||m||{}).date;if(prev&&prev.day===day){const ev=[];for(const [id,c] of Object.entries(cur)){const o=prev.m[id],lab=`${c.t.symbol} ${c.t.strike||''} ${c.t.direction} · ${nm(c.t.strategy)}`;
       if(o===undefined&&c.st!=='NOT_ENTERED')ev.push(['New alert · '+c.src,lab,c,'']);
       else if(o!==undefined&&o!==c.st&&MSG[c.st])ev.push([MSG[c.st][0]+' · '+c.src,lab,c,MSG[c.st][1]])}
-    if(ev.length<=2)ev.forEach(e=>notify(e[0],e[1]+'\n'+lv(e[2].t),e[3]));
+    if(Date.now()-(window.__pushSeen||0)<180000){/* the phone push already toasted this moment */}
+    else if(ev.length<=2)ev.forEach(e=>notify(e[0],e[1]+'\n'+lv(e[2].t),e[3]));
     else notify(ev.length+' '+T('new updates','కొత్త అప్‌డేట్‌లు'),ev.slice(0,3).map(e=>e[1]).join('\n')+'\n'+T('Open Today for entry / SL / targets','ఎంట్రీ / SL / టార్గెట్ల కోసం Today తెరవండి'),'')}
   try{localStorage.setItem('seen',JSON.stringify({day,m:Object.fromEntries(Object.entries(cur).map(([k,v])=>[k,v.st]))}))}catch(e){}
   }catch(e){}}
@@ -770,6 +771,9 @@ if(/\.pages\.dev$/.test(location.hostname)||saved===HASH.slice(0,16))start();els
     if(p.receive!=='granted')return;
     await P.addListener('registration',t=>{tok=t.value;sync()});
     await P.addListener('registrationError',()=>{});
+    /* App open (foreground): Android does not show the tray notification then, so show the in-app toast + beep + vibrate at once.
+       __pushSeen makes the 45 s poll skip its own toast for the same event (it still refreshes its seen-state). */
+    await P.addListener('pushNotificationReceived',n=>{try{window.__pushSeen=Date.now();const t=(n&&n.title)||'Options Scanner',b=(n&&n.body)||'';notify(t,b,/stop-loss|sl hit|stopped|failed/i.test(t)?'bad':/target|t2|t1/i.test(t)?'ok':'')}catch(e){}});
     await P.register();
   }catch(e){}})();
 })();
