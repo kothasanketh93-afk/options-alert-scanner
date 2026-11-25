@@ -29,6 +29,7 @@ CALLED FROM: build_opportunity_shortlist.py, once daily, premarket.
 
 from datetime import datetime, timezone, timedelta
 
+import config
 import market_data
 import instrument_master
 import universe
@@ -296,6 +297,10 @@ def build_shortlist(trading_date: str = None) -> dict:
         symbols = universe.fno_eligible_stock_symbols(trading_date)
     if not symbols:
         symbols = universe.universe_symbols()
+    # 2026-11-25: names that appear in the F&O-eligible list but have no listed option expiry (SILVER raised InstrumentNotFound
+    # ~170 times a day in every scan cycle) are dropped before scoring.
+    _excl = set(getattr(config, "SHORTLIST_EXCLUDE_SYMBOLS", ()))
+    symbols = [s for s in symbols if s not in _excl]
 
     instrument_keys = {}
     for symbol in symbols:

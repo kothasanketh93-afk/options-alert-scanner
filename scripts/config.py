@@ -1596,6 +1596,8 @@ VWAP_SCALP_MAX_PER_DAY = 4
 INDEX_LOT_SIZE = {"NIFTY": 65, "BANKNIFTY": 30, "MIDCPNIFTY": 120, "SENSEX": 20}
 BANKNIFTY_EXPIRY_RULE = "monthly, last Tuesday (holiday -> previous trading day)"
 
+# Symbols never shortlisted for stock-option scanning (listed as F&O-eligible but no option expiry exists -> InstrumentNotFound every cycle).
+SHORTLIST_EXCLUDE_SYMBOLS = ("SILVER",)
 # Real-cost model for the BankNifty trade log / reports (cost_model.py). Slippage = measured spread+slippage on 345 ledger trades.
 COST_BROKERAGE_PER_ORDER = 20.0
 COST_SLIPPAGE_PCT = 1.34
