@@ -56,3 +56,17 @@ def test_sigv4_matches_botocore():
     auth2 = SigV4Auth(Credentials("AKID", "SECRET"), "s3", "auto")
     sig = auth2.signature(auth2.string_to_sign(req2, auth2.canonical_request(req2)), req2)
     assert mine["Authorization"].endswith("Signature=" + sig)
+
+
+def test_publish_passes_extra_data_and_stays_compatible(monkeypatch):
+    import json as _json
+    import fcm_notify
+    monkeypatch.setenv("FCM_SERVICE_ACCOUNT_JSON", _json.dumps({"project_id": "p"}))
+    seen = []
+    dev = [{"token": "tok"}]
+    fcm_notify.publish("T\nbody", strategy="trade_score", devices=dev,
+                       sender=lambda info, tok, title, body, high, strat, extra=None: seen.append(extra) or True,
+                       extra={"trade": '{"trade_id":"x"}'})
+    fcm_notify.publish("T\nbody", strategy="trade_score", devices=dev,
+                       sender=lambda info, tok, title, body, high, strat: seen.append("legacy") or True)
+    assert seen == [{"trade": '{"trade_id":"x"}'}, "legacy"]

@@ -392,6 +392,8 @@ async function todayView(){
   const add=(src,o,live)=>Object.values(o||{}).forEach(t=>items.push({...t,_src:src,_live:live}));
   if(n){add('NSE',n.s.trades,true);['shadow_trades','fib_pivot_shadow_trades','orb_pivot_shadow_trades','sweep_shadow_trades','rfp_shadow_trades'].forEach(k=>add('NSE',n.s[k],false))}
   if(m)add('MCX',m.s.mcx_shadow_trades,false);
+  /* a push can arrive ~1 min before the state mirror: show its card now (deduped by trade_id once the state has it; only for the entry window) */
+  try{const have=new Set(items.map(x=>x.trade_id));JSON.parse(localStorage.getItem('ptr')||'[]').forEach(p=>{if(p&&p.trade_id&&!have.has(p.trade_id)&&Date.now()-Date.parse(p.alert_time)<25*6e4&&String(p.alert_time).slice(0,10)===istDate(0))items.push({...p,status:'WAITING_ENTRY',_src:'NSE',_live:true})})}catch(e){}
   const seen=new Set(),sig=new Set();let list=items.filter(t=>t.trade_id&&!seen.has(t.trade_id)&&seen.add(t.trade_id));
   list.sort((x,y)=>(y._live?1:0)-(x._live?1:0));/* live copy wins over its shadow twin */
   list=list.filter(t=>{const k=[t._src,t.symbol,t.strike,t.direction,t.alert_time,nm(t.strategy)].join('|');if(sig.has(k))return false;sig.add(k);return true});
@@ -689,6 +691,9 @@ function hbUpdate(n,m){try{const el=$('#hb');if(!el)return;if(stale||bgPending>0
   if(wd&&mins>=560&&mins<=925&&nA!=null&&nA>15)msg.push('NSE '+nA+' min');
   if(wd&&mins>=545&&mins<=1420&&mA!=null&&mA>15)msg.push('MCX '+mA+' min');
   if(msg.length){el.hidden=false;el.innerHTML='⚠ <b>'+T('Bot may be stuck','బాట్ ఆగిపోయి ఉండవచ్చు')+'</b> · '+T('no update for ','అప్‌డేట్ లేదు: ')+msg.join(', ')+' · '+T('check GitHub Actions','GitHub Actions చూడండి')}else el.hidden=true}catch(e){}}
+/* Push-driven fast path: keep the alert's trade, show it immediately and poll every 15 s for 3 min until the mirrored state has it. */
+function pushTrade(n){try{const raw=n&&n.data&&n.data.trade;if(raw){const t=typeof raw==='string'?JSON.parse(raw):raw;if(t&&t.trade_id){let a=[];try{a=JSON.parse(localStorage.getItem('ptr')||'[]')}catch(e){}a=a.filter(x=>x&&x.trade_id!==t.trade_id&&Date.now()-Date.parse(x.alert_time)<864e5);a.push(t);localStorage.setItem('ptr',JSON.stringify(a.slice(-20)))}}
+  let k=0;const go=()=>{if(tab=='today'&&!document.hidden)render();pollAlerts();if(++k<12)setTimeout(go,15000)};go()}catch(e){}}
 async function pollAlerts(){try{
   stale=false;const [n,m]=await Promise.all([loadState(''),loadState('mcx/')]);const cur={};hbUpdate(n,m);
   const add=(src,o,live)=>Object.values(o||{}).forEach(t=>{if(!t.trade_id)return;if(asOn(t.strategy))cur[t.trade_id]={st:stat(t),t,src}});
@@ -860,7 +865,7 @@ if(/\.pages\.dev$/.test(location.hostname)||saved===HASH.slice(0,16))start();els
     await P.addListener('registrationError',()=>{});
     /* App open (foreground): Android does not show the tray notification then, so show the in-app toast + beep + vibrate at once.
        __pushSeen makes the 45 s poll skip its own toast for the same event (it still refreshes its seen-state). */
-    await P.addListener('pushNotificationReceived',n=>{try{window.__pushSeen=Date.now();const t=(n&&n.title)||'Options Scanner',b=(n&&n.body)||'';notify(t,b,/stop-loss|sl hit|stopped|failed/i.test(t)?'bad':/target|t2|t1/i.test(t)?'ok':'')}catch(e){}});
+    await P.addListener('pushNotificationReceived',n=>{try{window.__pushSeen=Date.now();pushTrade(n);const t=(n&&n.title)||'Options Scanner',b=(n&&n.body)||'';notify(t,b,/stop-loss|sl hit|stopped|failed/i.test(t)?'bad':/target|t2|t1/i.test(t)?'ok':'')}catch(e){}});
     await P.register();
   }catch(e){}})();
 })();

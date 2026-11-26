@@ -105,10 +105,10 @@ def _access_token(info: dict) -> str:
     return creds.token
 
 
-def send_one(info: dict, token: str, title: str, body: str, high: bool, strategy=None) -> bool:
+def send_one(info: dict, token: str, title: str, body: str, high: bool, strategy=None, extra=None) -> bool:
     msg = {"message": {"token": token,
                        "notification": {"title": title, "body": body},
-                       "data": {"strategy": base_of(strategy) if strategy else ""},
+                       "data": {"strategy": base_of(strategy) if strategy else "", **{str(k): str(v) for k, v in (extra or {}).items()}},
                        "android": {"priority": "HIGH" if high else "NORMAL",
                                    "notification": {"channel_id": CHANNEL_ID, "tag": "scanner"}}}}
     url = f"https://fcm.googleapis.com/v1/projects/{info['project_id']}/messages:send"
@@ -125,7 +125,7 @@ def send_one(info: dict, token: str, title: str, body: str, high: bool, strategy
         return False
 
 
-def publish(text: str, priority: int = None, strategy: str = None, *, devices=None, sender=None) -> int:
+def publish(text: str, priority: int = None, strategy: str = None, *, devices=None, sender=None, extra=None) -> int:
     """Push one notification to every matching registered device. First line = title, rest = body. Returns how many were accepted."""
     raw = os.environ.get("FCM_SERVICE_ACCOUNT_JSON", "").strip()
     if not raw:
@@ -144,7 +144,8 @@ def publish(text: str, priority: int = None, strategy: str = None, *, devices=No
         sent = 0
         for d in (load_devices() if devices is None else devices):
             if d.get("token") and wants(d, strategy):
-                ok = (sender or send_one)(info, d["token"], title, body, high, strategy)
+                ok = ((sender or send_one)(info, d["token"], title, body, high, strategy, extra) if extra
+                      else (sender or send_one)(info, d["token"], title, body, high, strategy))
                 sent += 1 if ok else 0
         log.info("FCM push: %d device(s) (title=%r).", sent, title[:50])
         return sent

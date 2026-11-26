@@ -98,7 +98,7 @@ def _suppressed(what: str, critical: bool = False) -> bool:
     return False
 
 
-def push(text: str, strategy: str = None):
+def push(text: str, strategy: str = None, extra: dict = None):
     """Live trade alert -> ntfy.sh phone push, only while Telegram is EOD-only (otherwise send() already delivered it).
     Call right after send(text). Best-effort, never raises."""
     if getattr(config, "TELEGRAM_EOD_ONLY", False):
@@ -109,7 +109,7 @@ def push(text: str, strategy: str = None):
             pass
         try:
             import fcm_notify
-            fcm_notify.publish(text, strategy=strategy)
+            fcm_notify.publish(text, strategy=strategy, extra=extra)
         except Exception:
             pass
 

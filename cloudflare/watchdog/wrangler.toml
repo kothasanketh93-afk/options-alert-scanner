@@ -1,0 +1,10 @@
+name = "scanner-watchdog"
+main = "worker.js"
+compatibility_date = "2026-11-01"
+
+[triggers]
+crons = ["* * * * *"]
+
+[[r2_buckets]]
+binding = "DATA"
+bucket_name = "scanner-data"

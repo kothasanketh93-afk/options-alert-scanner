@@ -21,6 +21,7 @@ workflow / one writer):
 """
 
 import sys
+import json
 import os
 import logging
 from datetime import datetime, timezone, timedelta
@@ -71,7 +72,15 @@ def notify_once(trade: dict, event_key: str, message_fn, *args):
         return
     text = message_fn(*args)
     tg.send(text)
-    tg.push(text, trade.get("strategy"))   # live trade lifecycle alerts -> ntfy when Telegram is EOD-only
+    extra = None
+    if event_key == "NEW_TRADE_ALERT":     # compact trade so the app can show the card the moment the push arrives (FCM data <= 4 KB)
+        try:
+            extra = {"trade": json.dumps({k: trade.get(k) for k in (
+                "trade_id", "symbol", "strike", "direction", "expiry", "strategy", "alert_time", "alert_premium",
+                "entry_low", "entry_high", "stop_loss", "target_1", "target_2")}, separators=(",", ":"))}
+        except Exception:
+            extra = None
+    tg.push(text, trade.get("strategy"), extra)   # live trade lifecycle alerts -> ntfy when Telegram is EOD-only
     if event_key == "NEW_TRADE_ALERT":
         latency.stamp_notified(trade)      # when the alert actually went out + latency vs the signal (latency.py)
     trade["messages_sent"].append(event_key)
