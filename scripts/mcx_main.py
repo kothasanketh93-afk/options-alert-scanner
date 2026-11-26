@@ -183,6 +183,16 @@ def scan_commodity(broker, st: dict, name: str, c: dict, now: datetime):
     since = (now - timedelta(days=3)).replace(hour=9, minute=0, second=0, microsecond=0).isoformat()
     allc = broker.get_candles(fut_key, "5minute", since_iso=since)
     today = [x for x in allc if x["timestamp"][:10] == today_str]
+    try:   # live-price strip in the app: last 5m close vs the previous session's close (no extra API call)
+        if today:
+            prev = [x for x in allc if x["timestamp"][:10] < today_str]
+            pc = prev[-1]["close"] if prev else today[0]["open"]
+            ltp = today[-1]["close"]
+            st.setdefault("spot", {})[name] = {"ltp": round(ltp, 2), "prev": round(pc, 2),
+                                               "chg": round((ltp - pc) / pc * 100, 2) if pc else None,
+                                               "t": today[-1]["timestamp"], "sym": sig_fut.get("symbol")}
+    except Exception:
+        pass
     if len(today) < 4:
         return
     elapsed = (now.hour * 60 + now.minute) - (SESSION_OPEN[0] * 60 + SESSION_OPEN[1])
