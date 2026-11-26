@@ -99,3 +99,9 @@ jobs:
           [ -n "$R2_BUCKET" ] && [ -d .state_branch ] || { echo "R2 mirror skipped"; exit 0; }
           aws s3 sync .state_branch "s3://${R2_BUCKET}/" --endpoint-url "https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com" \
             --exclude ".git/*" --size-only --only-show-errors
+          # --size-only skips a state file whose size did not change (only last_run_at moved), leaving the dashboard "stuck";
+          # always re-upload today's state file(s) explicitly.
+          D=$(TZ=Asia/Kolkata date +%F)
+          for f in "state/$D.json" "mcx/state/$D.json"; do
+            [ -f ".state_branch/$f" ] && aws s3 cp ".state_branch/$f" "s3://${R2_BUCKET}/$f" --endpoint-url "https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com" --only-show-errors || true
+          done
