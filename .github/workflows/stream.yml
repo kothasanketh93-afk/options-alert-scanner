@@ -35,7 +35,7 @@ jobs:
       - run: pip install -r requirements.txt upstox-python-sdk websocket-client
       - name: Stream prices
         env:
-          UPSTOX_ANALYTICS_TOKEN: ${{ secrets.UPSTOX_ANALYTICS_TOKEN }}   # read-only, 1-year (Upstox Developer Apps > Analytics)
+          UPSTOX_ANALYTICS_TOKEN: ${{ secrets.UPSTOX_ANALYTICS_TOKEN || secrets.UPSTOX_ACCESS_TOKEN }}   # read-only, 1-year (Upstox Developer Apps > Analytics)
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: auto
