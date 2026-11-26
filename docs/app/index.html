@@ -303,7 +303,6 @@ body{background-image:radial-gradient(1200px 400px at 85% -120px,color-mix(in sr
 <button data-v="days" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v3M15 3v3M8.5 17v-3M12 17v-5M15.5 17v-2"/></svg>Days</button>
 <button data-v="strat" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M6 4v3M6 16v4M12 3v3M12 18v3M18 7v3M18 16v4"/><rect x="4" y="7" width="4" height="9" rx="1.2"/><rect x="10" y="6" width="4" height="12" rx="1.2"/><rect x="16" y="10" width="4" height="6" rx="1.2"/></svg>Strategies</button>
 <button data-v="insight" aria-pressed="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/><path d="M12 12l5.5-5.5"/></svg>Insights</button>
-<button data-v="edge" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 18l5-6 4 3 7-9"/><path d="M4 21h16"/></svg>Edge</button>
 <button data-v="settings" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 7h8M18 7h2M4 12h2M12 12h8M4 17h9M19 17h1"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="12" r="2.2"/><circle cx="16" cy="17" r="2.2"/></svg>Settings</button>
 </nav>
 <script>
@@ -345,7 +344,7 @@ let tab='today',cache={},ui={per:'all',from:'',to:'',strat:'all',mkt:CFG.mkt||'A
 const UI_KEYS=['mkt','strat','per','from','to','st','twins','dd','sym','sort','who','basis','pkSort'];
 try{const sv=JSON.parse(localStorage.getItem('ui')||'null');if(sv){UI_KEYS.forEach(k=>{if(sv[k]!==undefined&&typeof sv[k]===typeof ui[k])ui[k]=sv[k]});if(!['NSE','MCX'].includes(ui.mkt))ui.mkt='NSE';if(['today','days','strat','insight','settings'].includes(sv.tab))tab=sv.tab}}catch(e){}
 const saveUi=()=>{try{const o={tab};UI_KEYS.forEach(k=>o[k]=ui[k]);localStorage.setItem('ui',JSON.stringify(o))}catch(e){}};
-try{tab=localStorage.getItem('v')||'today'}catch(e){}
+try{tab=localStorage.getItem('v')||'today';if(tab==='edge')tab='today'}catch(e){}
 if(!['today','days','strat','insight','settings'].includes(tab))tab='today';
 {const hm=(location.hash||'').slice(1).toUpperCase();if(['NSE','MCX'].includes(hm))ui.mkt=hm;if(!['NSE','MCX'].includes(ui.mkt))ui.mkt='NSE';document.documentElement.dataset.mkt=ui.mkt}   /* #nse / #mcx open that market directly (separate home-screen shortcuts) */   /* the Learn tab was removed; old saved tab values fall back to Today */
 let lang='en';try{lang=localStorage.getItem('lang')||'en'}catch(e){}
@@ -829,7 +828,7 @@ async function edgeView(){
   <div class="card" style="margin-top:10px"><b>${T('Alert latency','అలర్ట్ ఆలస్యం')}</b><div style="margin-top:6px">${ld==null?T('No alert timing recorded yet.','ఇంకా అలర్ట్ సమయం నమోదు కాలేదు.'):T('Scan → sent','స్కాన్ → పంపబడింది')+' <b>'+ld.toFixed(0)+'s</b> · '+T('Candle close → sent','క్యాండిల్ క్లోజ్ → పంపబడింది')+' <b>'+(ls==null?'—':(ls/60).toFixed(1)+' min')+'</b>'}</div></div>`}
   </details><div style="display:grid;gap:10px;margin-top:10px">${risk}${why}</div><div id="jr"></div>`;journalMount()}
 
-const VIEWS={settings:settingsView,today:todayView,days:daysView,strat:stratView,insight:insightView,edge:edgeView};
+const VIEWS={settings:settingsView,today:todayView,days:daysView,strat:stratView,insight:insightView};
 async function render(){const sy=window.scrollY;saveUi();stale=false;drawMkBar();document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.v==tab));
   try{await VIEWS[tab]();{const st=$('#stamp');if(st)st.textContent=stale?T('offline · showing saved data','ఆఫ్‌లైన్ · సేవ్ చేసిన డేటా'):''}foldFilters();applyLang();if(sy>0&&Math.abs(window.scrollY-sy)>2)window.scrollTo(0,sy)}catch(e){view.innerHTML='<div class="empty err">'+T('Could not load data: ','డేటా లోడ్ కాలేదు: ')+esc(e.message)+'</div>'}}
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.v;try{localStorage.setItem('v',tab)}catch(e){}scrollTo(0,0);render()});
