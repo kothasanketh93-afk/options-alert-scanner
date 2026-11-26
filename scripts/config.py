@@ -1723,3 +1723,7 @@ MCX_SCAN_RETRY_BACKOFF_SEC = 3.0
 #         telegram_notify.allow() (NSE at/after 15:30, MCX at/after 23:30). critical=True alerts (state-save, heartbeat, pre-market) go to the app only.
 # False = previous behaviour (all alerts). Trading, tracking, ledger and dashboard are unaffected either way.
 TELEGRAM_EOD_ONLY = True
+
+# Regime-First Pullback (RFP): shadow-only strategy designed 2026-11-26 (rfp.py). Never alerts the live channel; results go to
+# state["rfp_shadow_trades"] (NSE) / mcx_shadow_trades (MCX, strategy "rfp"). Fixed rules; acceptance test is in rfp.py.
+RFP_SHADOW_ENABLED = True

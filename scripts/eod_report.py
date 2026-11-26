@@ -8,7 +8,7 @@ import outcomes_ledger
 import sell_view
 
 _ENGINES = (("trades", "LIVE"), ("shadow_trades", "Main shadow"), ("fib_pivot_shadow_trades", "Fib pivot"),
-            ("orb_pivot_shadow_trades", "ORB"), ("sweep_shadow_trades", "Sweep"))
+            ("orb_pivot_shadow_trades", "ORB"), ("sweep_shadow_trades", "Sweep"), ("rfp_shadow_trades", "RFP"))
 _GROUPS = (
     ("win", "✅ Targets hit (T2)", ("T2_HIT",)),
     ("partial", "🟡 T1 hit, then stopped", ("T1_THEN_SL", "T1_THEN_TRAILING_SL", "T1_HIT_THEN_EOD", "T1_HIT")),

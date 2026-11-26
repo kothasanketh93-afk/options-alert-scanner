@@ -16,7 +16,7 @@ from logging_setup import get_logger
 log = get_logger("market_context")
 NIFTY_KEY = "NSE_INDEX|Nifty 50"
 TRADE_LISTS = ("trades", "shadow_trades", "fib_pivot_shadow_trades", "orb_pivot_shadow_trades",
-               "sweep_shadow_trades")
+               "sweep_shadow_trades", "rfp_shadow_trades")
 
 
 def nifty_change_pct(market_data, date_str):

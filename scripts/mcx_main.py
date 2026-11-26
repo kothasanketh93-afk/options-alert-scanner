@@ -21,6 +21,7 @@ import outcomes_ledger
 import telegram_notify as tg
 import mcx_report
 import mcx_signals
+import rfp
 import shadow_notify
 from angelone import AngelOneBroker
 from app.engines.sweep_reversal import signals
@@ -225,6 +226,8 @@ def scan_commodity(broker, st: dict, name: str, c: dict, now: datetime):
         found["pdhl_retest"] = safe("pdhl_retest", mcx_signals.detect_pdhl_retest, today, ph, pl, atr)
         found["vwap_pb"] = safe("vwap_pb", mcx_signals.detect_vwap_pullback, today)
         found["ema_cross"] = safe("ema_cross", mcx_signals.detect_ema_cross, today)
+        if name in rfp.MCX_SYMBOLS:
+            found["rfp"] = safe("rfp", rfp.detect, name, today, allc[-120:] if allc else today, atr)
     else:
         key = f"{name}:news_blackout"
         st["rejects"][key] = st["rejects"].get(key, 0) + 1
@@ -309,8 +312,12 @@ def create_trade(broker, st, name, c, strategy, sig, atr, ph, pl, qs, now, spot_
               "level_value": sig.get("level_value"), "signal_close": sig.get("signal_close"),
               "sweep_extreme": sig.get("extreme"), "fvg": sig.get("fvg"),
               "entry_oi": qf["oi"], "entry_volume": qf["volume"], "signal_future_token": (st.get("sig_fut") or {}).get(name)})
+    if strategy == "rfp":
+        t["be_trigger_pct"] = sig.get("be_trigger_pct")
+        t["regime"], t["regime_score"] = sig.get("regime"), sig.get("regime_score")
     st["mcx_shadow_trades"][trade_id] = t
-    _wide_sl_twin(st, t, setup, key, direction, now)
+    if strategy != "rfp":
+        _wide_sl_twin(st, t, setup, key, direction, now)
     notify_created(t)
     log.info("MCX_SHADOW_CANDIDATE_CREATED %s %s %s strike=%s prem=%s sl=%s t1=%s", strategy, name, direction, atm, prem, lv["stop_loss"], lv["target_1"])
 

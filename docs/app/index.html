@@ -315,7 +315,7 @@ try{const c=JSON.parse(localStorage.getItem('cfg')||'null');if(c){CFG={...CFG,..
 function saveCfg(){try{localStorage.setItem('cfg',JSON.stringify(CFG))}catch(e){}INDEX.forEach(k=>LOTS[k]=CFG.lots[k]);applyTheme()}
 function applyTheme(){const r=document.documentElement;if(CFG.theme==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',CFG.theme)}
 INDEX.forEach(k=>LOTS[k]=CFG.lots[k]);applyTheme();
-const NAMES={trade_score:'Main scanner',fib_pivot:'Fib pivot',fib_pivot_ema20:'Fib pivot · EMA20 trend',fib_pivot_5m:'Fib pivot · 5-min candles',fib_pivot_retest:'Fib pivot · retest entry',fib_pivot_itm1:'Fib pivot · ITM1 option',fib_pivot_4d:'Fib pivot · last 4 days levels',vwap_scalp:'VWAP scalp',chase_bypass:'Chase bypass',orb15:'ORB 15-min',pivot_break:'Pivot break',sweep:'Liquidity sweep',sweep_fvg:'Sweep + FVG',amd:'AMD',oi_flow:'OI flow',fvg:'Fair value gap',ema_pb:'EMA pullback',gap_orb:'Gap and go',bos:'Break of structure',order_block:'Order block',pdhl_retest:'PDH/PDL retest',vwap_pb:'VWAP pullback',ema_cross:'EMA crossover',live_scored:'Live alerts',sess_orb:'Session ORB',sess_sweep:'Session sweep'};
+const NAMES={rfp:'Regime pullback (RFP)',trade_score:'Main scanner',fib_pivot:'Fib pivot',fib_pivot_ema20:'Fib pivot · EMA20 trend',fib_pivot_5m:'Fib pivot · 5-min candles',fib_pivot_retest:'Fib pivot · retest entry',fib_pivot_itm1:'Fib pivot · ITM1 option',fib_pivot_4d:'Fib pivot · last 4 days levels',vwap_scalp:'VWAP scalp',chase_bypass:'Chase bypass',orb15:'ORB 15-min',pivot_break:'Pivot break',sweep:'Liquidity sweep',sweep_fvg:'Sweep + FVG',amd:'AMD',oi_flow:'OI flow',fvg:'Fair value gap',ema_pb:'EMA pullback',gap_orb:'Gap and go',bos:'Break of structure',order_block:'Order block',pdhl_retest:'PDH/PDL retest',vwap_pb:'VWAP pullback',ema_cross:'EMA crossover',live_scored:'Live alerts',sess_orb:'Session ORB',sess_sweep:'Session sweep'};
 const INFO={
 trade_score:'Scores each option on trend, momentum, volume, open interest and liquidity, then alerts only the best setup. It is the one sent to Telegram as the main live alert.',
 live_scored:'The main scanner setups that were actually alerted on Telegram (a filtered subset of the shadow trades).',
@@ -390,7 +390,7 @@ function est(t,lot){ // estimated 1-lot rupees for today's trade
 async function todayView(){
   const [n,m]=await Promise.all([loadState(''),loadState('mcx/')]);const items=[];
   const add=(src,o,live)=>Object.values(o||{}).forEach(t=>items.push({...t,_src:src,_live:live}));
-  if(n){add('NSE',n.s.trades,true);['shadow_trades','fib_pivot_shadow_trades','orb_pivot_shadow_trades','sweep_shadow_trades'].forEach(k=>add('NSE',n.s[k],false))}
+  if(n){add('NSE',n.s.trades,true);['shadow_trades','fib_pivot_shadow_trades','orb_pivot_shadow_trades','sweep_shadow_trades','rfp_shadow_trades'].forEach(k=>add('NSE',n.s[k],false))}
   if(m)add('MCX',m.s.mcx_shadow_trades,false);
   const seen=new Set(),sig=new Set();let list=items.filter(t=>t.trade_id&&!seen.has(t.trade_id)&&seen.add(t.trade_id));
   list.sort((x,y)=>(y._live?1:0)-(x._live?1:0));/* live copy wins over its shadow twin */
@@ -692,7 +692,7 @@ function hbUpdate(n,m){try{const el=$('#hb');if(!el)return;if(stale||bgPending>0
 async function pollAlerts(){try{
   stale=false;const [n,m]=await Promise.all([loadState(''),loadState('mcx/')]);const cur={};hbUpdate(n,m);
   const add=(src,o,live)=>Object.values(o||{}).forEach(t=>{if(!t.trade_id)return;if(asOn(t.strategy))cur[t.trade_id]={st:stat(t),t,src}});
-  if(n){add('NSE',n.s.trades,true);['shadow_trades','fib_pivot_shadow_trades','orb_pivot_shadow_trades','sweep_shadow_trades'].forEach(k=>add('NSE',n.s[k],false))}
+  if(n){add('NSE',n.s.trades,true);['shadow_trades','fib_pivot_shadow_trades','orb_pivot_shadow_trades','sweep_shadow_trades','rfp_shadow_trades'].forEach(k=>add('NSE',n.s[k],false))}
   if(m)add('MCX',m.s.mcx_shadow_trades,false);
   let prev=null;try{prev=JSON.parse(localStorage.getItem('seen')||'null')}catch(e){}
   const day=(n||m||{}).date;if(prev&&prev.day===day){const ev=[];for(const [id,c] of Object.entries(cur)){const o=prev.m[id],lab=`${c.t.symbol} ${c.t.strike||''} ${c.t.direction} · ${nm(c.t.strategy)}`;
@@ -768,7 +768,7 @@ const JALIAS={NIFTYMIDSELECT:'MIDCPNIFTY',NIFTYBANK:'BANKNIFTY',BANKNIFTY:'BANKN
 async function jGet(){try{const r=await fetch('/api/journal',{cache:'no-store'});if(!r.ok)throw 0;const j=(await r.json()).trades||[];try{localStorage.setItem('journal',JSON.stringify(j))}catch(x){}return j}catch(e){try{return JSON.parse(localStorage.getItem('journal')||'[]')}catch(x){return[]}}}
 async function jPut(list){try{localStorage.setItem('journal',JSON.stringify(list))}catch(x){}try{const r=await fetch('/api/journal',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({trades:list})});return r.ok}catch(e){return false}}
 async function jCands(){const out=[];try{for(const t of await ledger())if(t.mkt==='NSE')out.push({date:t.date,sym:jsym(t.sym),dir:t.dir,strike:num(t.strike),entry:t.entry,sl:t.sl,t2:t.t2,st:t.status,strat:t.strat,live:t.src==='live'})}catch(e){}
-  try{const n=await loadState('');if(n)for(const k of ['trades','shadow_trades','fib_pivot_shadow_trades','orb_pivot_shadow_trades','sweep_shadow_trades'])for(const t of Object.values(n.s[k]||{}))out.push({date:n.date,sym:jsym(t.symbol),dir:t.direction,strike:num(t.strike),entry:num(t.tracked_entry_price),sl:num(t.stop_loss),t2:num(t.target_2),st:stat(t),strat:t.strategy,live:k==='trades'})}catch(e){}return out}
+  try{const n=await loadState('');if(n)for(const k of ['trades','shadow_trades','fib_pivot_shadow_trades','orb_pivot_shadow_trades','sweep_shadow_trades','rfp_shadow_trades'])for(const t of Object.values(n.s[k]||{}))out.push({date:n.date,sym:jsym(t.symbol),dir:t.direction,strike:num(t.strike),entry:num(t.tracked_entry_price),sl:num(t.stop_loss),t2:num(t.target_2),st:stat(t),strat:t.strategy,live:k==='trades'})}catch(e){}return out}
 function jMatch(j,C){const m=C.filter(c=>c.date===j.date&&c.sym===jsym(j.symbol)&&c.dir===j.dir&&c.strike===j.strike&&c.entry!=null);m.sort((a,b)=>(b.live-a.live)||((b.strat==='trade_score')-(a.strat==='trade_score')));return m[0]||null}
 function jScan(m){if(!m)return null;let x=null;if(m.st==='T2_HIT'&&m.t2!=null)x=m.t2;else if(m.st==='SL_HIT'&&m.sl!=null)x=m.sl;else if(m.st==='T1_THEN_SL')x=m.entry;return x}
 async function journalMount(){const box=$('#jr');if(!box)return;const list=await jGet(),C=await jCands();

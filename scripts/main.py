@@ -44,6 +44,7 @@ from config import SUMMARY_HHMM
 from app.engines import early_breakout as early_breakout_engine
 from app.engines import fib_pivot as fib_pivot_engine
 from app.engines.orb_pivot import engine as orb_pivot_engine
+import rfp_nse
 from app.engines.sweep_reversal import engine as sweep_engine
 import market_context
 import outcomes_ledger
@@ -1097,6 +1098,13 @@ def main():
                        type(exc).__name__, exc, exc_info=True)
 
         try:
+            create_rfp_shadow_candidates(state, now)
+            run_rfp_shadow_step(state, now)
+        except Exception as exc:
+            log.error("RFP shadow step failed (%s: %s) -- continuing with the rest of this run.",
+                       type(exc).__name__, exc, exc_info=True)
+
+        try:
             create_sweep_shadow_candidates(state, now)
             run_sweep_shadow_step(state, now)
         except Exception as exc:
@@ -1554,6 +1562,58 @@ def run_orb_pivot_shadow_step(state: dict, now: datetime):
         except (BrokerAPIError, TelegramFailure) as exc:
             log.error("ORB/pivot shadow trade %s: tracker step failed (%s: %s) -- retry next run.",
                       trade_id, type(exc).__name__, exc)
+
+
+def create_rfp_shadow_candidates(state: dict, now: datetime):
+    """Regime-First Pullback shadow engine (rfp_nse.py / rfp.py). One trade per symbol per day, state["rfp_shadow_trades"], no live alerts."""
+    if not getattr(config, "RFP_SHADOW_ENABLED", False):
+        return
+    candidates = rfp_nse.detect_all_rfp_setups()
+    if not candidates:
+        return
+    trades = state.setdefault("rfp_shadow_trades", {})
+    for candidate in candidates:
+        if any(t["symbol"] == candidate["symbol"] for t in trades.values()):
+            continue
+        key = f"RFP-{candidate['symbol']}"
+        seq = state["next_seq"].get(key, 0) + 1
+        state["next_seq"][key] = seq
+        trade_id = f"{key}-{candidate['direction']}-{now.strftime('%Y%m%d-%H%M')}-{seq:02d}"
+        trade = new_trade_record(candidate, trade_id, now, f"RFP {len(trades) + 1}")
+        trade["probability_status"] = "shadow_only"
+        trade["execution_mode"] = "shadow"
+        trade["live_alert_sent"] = False
+        trade["candidate_id"] = (f"rfp:{candidate['symbol']}:{candidate['direction']}:"
+                                 f"{candidate['strike']}:{candidate['expiry']}")
+        trade["engine"] = "rfp"
+        trade["be_trigger_pct"] = candidate.get("be_trigger_pct")
+        trade["regime"], trade["regime_score"] = candidate.get("regime"), candidate.get("regime_score")
+        for _k in ("entry_oi", "entry_volume", "spread_pct"):
+            trade[_k] = candidate.get(_k)
+        trades[trade_id] = trade
+        log.info("RFP_SHADOW_CANDIDATE_CREATED trade_id=%s %s %s strike=%s regime=%s score=%s", trade_id,
+                 trade["symbol"], trade["direction"], trade["strike"], trade.get("regime"), trade.get("regime_score"))
+
+
+def run_rfp_shadow_step(state: dict, now: datetime):
+    """Tracker step for state["rfp_shadow_trades"] (same mechanism as the ORB step; per-trade break-even stop lives in tracker)."""
+    if not getattr(config, "RFP_SHADOW_ENABLED", False):
+        return
+    for trade_id, trade in state.get("rfp_shadow_trades", {}).items():
+        if trade["status"] in TERMINAL_STATUSES:
+            continue
+        if not poll_tier.due(trade, now, config.SHADOW_POLL_ALWAYS_FROM_NSE):
+            continue
+        try:
+            candles = market_data.get_1min_candles_since(trade["instrument_key"], trade["last_processed_ts"])
+            poll_tier.mark(trade, now)
+            if not candles:
+                continue
+            for ev in tracker.process_trade_candles(trade, candles):
+                log.info("RFP_SHADOW_%s %s %s strike=%s candidate_id=%s", ev["type"], trade["symbol"], trade["direction"],
+                         trade["strike"], trade.get("candidate_id"))
+        except (BrokerAPIError, TelegramFailure) as exc:
+            log.error("RFP shadow trade %s: tracker step failed (%s: %s) -- retry next run.", trade_id, type(exc).__name__, exc)
 
 
 if __name__ == "__main__":

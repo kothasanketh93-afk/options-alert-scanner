@@ -66,13 +66,20 @@ def _maybe_apply_trailing_stop(trade: dict, ts: datetime) -> dict:
         -- SL/T1/T2 evaluation using the (possibly just-raised) sl still
         happens exactly where it already did, right after this call.
     """
-    if not TRAILING_STOP_ENABLED or trade.get("_trailing_stop_applied"):
+    if trade.get("_trailing_stop_applied"):
         return None
-    if trade.get("max_favorable_pct", 0.0) < TRAILING_STOP_TRIGGER_PCT:
+    # Per-trade break-even trigger (RFP shadow strategy, 2026-11-26): trade["be_trigger_pct"] overrides the global switch.
+    trigger = trade.get("be_trigger_pct")
+    lock_pct = trade.get("be_lock_pct", 0.0) if trigger is not None else TRAILING_STOP_LOCK_PCT
+    if trigger is None:
+        if not TRAILING_STOP_ENABLED:
+            return None
+        trigger = TRAILING_STOP_TRIGGER_PCT
+    if trade.get("max_favorable_pct", 0.0) < trigger:
         return None
 
     entry_price = trade["tracked_entry_price"]
-    new_sl = round(entry_price * (1 + TRAILING_STOP_LOCK_PCT / 100), 2)
+    new_sl = round(entry_price * (1 + lock_pct / 100), 2)
     if new_sl <= trade["stop_loss"]:
         return None  # entry-relative lock is already below/at the existing SL -- nothing to raise
 
