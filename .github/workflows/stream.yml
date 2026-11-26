@@ -10,10 +10,7 @@ on:
         description: 'How long to stream (default 350)'
         required: false
         default: '350'
-  schedule:
-    - cron: '25 3 * * 1-5'    # 08:55 IST
-    - cron: '40 9 * * 1-5'    # 15:10 IST
-    - cron: '25 15 * * 1-5'   # 20:55 IST
+  # schedule disabled 2026-11-26 until the feed is verified (Angel session conflict risk); replaced by an Upstox-based feed
 
 permissions:
   contents: read
