@@ -443,11 +443,8 @@ async function todayView(){
     <div class="sub">${en.map(([k,e])=>`${esc(k)}: ${e.win}W/${e.partial}P/${e.loss}L (${e.n}) ${pc(e.net_pct)}`).join('<br>')}</div>${bw}${lr?`<div class="sub">${T('SL kinds','SL రకాలు')}: ${esc(lr)}</div>`:''}</div>`};
    const dh=dsRow('NSE',n&&n.s.day_summary)+dsRow('MCX',m&&m.s.day_summary);
    if(dh)h+=`<details class="more" style="background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-top:8px" open><summary style="border:0">📊 ${T('Day summary','డే సమ్మరీ')}</summary>${dh}</details>`}
-  /* MCX live-price strip: shown once NSE is closed (after 15:30 IST) while MCX trades; prices come from the scanner's last run (1-2 min delay) */
-  {const sp=m&&m.s.spot,nseOpenNow=nOpen;if(sp&&!nseOpenNow&&mOpen){const nmx={CRUDEOIL:'Crude',NATURALGAS:'NatGas',GOLDM:'Gold Mini',GOLD:'Gold'};
-    const cells=Object.entries(sp).map(([k,v])=>`<div style="flex:1;min-width:0;text-align:center"><small class="mut">${nmx[k]||k}</small><div style="font-weight:700">${f0(v.ltp)}</div><small class="${v.chg>0?'pos':v.chg<0?'neg':'mut'}">${v.chg==null?'—':(v.chg>0?'+':'')+v.chg+'%'}</small></div>`).join('');
-    const ag=ageMin(Object.values(sp)[0].t);
-    h=`<div class="card" style="display:flex;gap:6px;margin-bottom:8px;padding:8px">${cells}</div><div class="mut" style="font-size:11px;margin:-4px 0 8px">MCX · ${ag==null?'':ageTxt(ag)}</div>`+h}}
+  /* live-price strip: WebSocket feed (prices.json, ~4 s) when fresh, else the scanner's own MCX prices (1-5 min old) */
+  SPOTM=(m&&m.s.spot)||null;h=`<div id="lv"></div>`+h;setTimeout(lvPaint,0);
   const fpHtml=`<div class="fp">${frow('Status',chip('st','all','Any')+chip('st','open','Open')+chip('st','won','Won')+chip('st','lost','SL hit')+`<button data-f="twins:${!ui.twins}" aria-pressed="${ui.twins}">+ Wide-SL twins</button>`)}</div>`;
   PK.strat={title:T('Choose strategy','స్ట్రాటజీ ఎంచుకోండి'),sortable:true,items:[pkItem('all',T('All strategies','అన్ని స్ట్రాటజీలు'),null,sgl.reduce((a,r)=>a+r.v,0)),...sgl.map(r=>pkItem(r.k,nm(r.k),r.n,r.v))]};
   h=ctlWrap(`<div class="ctl">${mseg()}<div class="crow">${sgl.length>1||ui.strat!=='all'?stratChip():''}${ctlChip(`data-f="basis:${ui.basis==='tg'?'all':'tg'}"`,'✈ '+T('Telegram only','టెలిగ్రామ్ మాత్రమే'),ui.basis==='tg')}</div><div class="crow"><span class="cl">${T('Status','స్థితి')}</span>${[['all',T('Any','ఏదైనా')],['open',T('Open','ఓపెన్')],['won',T('Won','గెలుపు')],['lost',T('SL hit','SL హిట్')]].map(([v,l])=>ctlChip(`data-f="st:${v}"`,l,ui.st===v)).join('')}</div></div>`,[mktName(),stratName(),ui.st!=='all'?{open:T('Open','ఓపెన్'),won:T('Won','గెలుపు'),lost:T('SL hit','SL హిట్')}[ui.st]:null,ui.basis==='tg'?'✈ Telegram':null])+h;
@@ -471,6 +468,19 @@ async function todayView(){
     </details>`}).join('')||'<div class="empty">No trades match these filters.</div>')+'</div>';
   view.innerHTML=h;
 }
+/* ---- live price strip ---- */
+let SPOTM=null,LIVEP=null;
+const NSE_NAMES=['NIFTY','BANKNIFTY','SENSEX','MIDCPNIFTY'],MCX_NAMES=['CRUDEOIL','NATURALGAS','GOLDM','GOLD'],LV_LBL={CRUDEOIL:'Crude',NATURALGAS:'NatGas',GOLDM:'Gold Mini',GOLD:'Gold',MIDCPNIFTY:'Midcap',BANKNIFTY:'BankNifty'};
+function lvPaint(){const el=document.getElementById('lv');if(!el)return;
+  const ist=new Date(Date.now()+5.5*36e5),mm=ist.getUTCHours()*60+ist.getUTCMinutes(),wk=ist.getUTCDay(),wd=wk>0&&wk<6,nseO=wd&&mm>=555&&mm<=935,mcxO=wd&&mm>=540&&mm<=1425;
+  const names=nseO?NSE_NAMES:mcxO?MCX_NAMES:[];if(!names.length){el.innerHTML='';return}
+  const fresh=LIVEP&&LIVEP.age!=null&&LIVEP.age<=60,src=fresh?LIVEP.p:(nseO?{}:(SPOTM||{}));
+  const cells=names.filter(k=>src[k]&&src[k].ltp!=null).map(k=>{const v=src[k];return `<div style="flex:1;min-width:0;text-align:center"><small class="mut">${LV_LBL[k]||k}</small><div style="font-weight:700">${f0(v.ltp)}</div><small class="${v.chg>0?'pos':v.chg<0?'neg':'mut'}">${v.chg==null?'—':(v.chg>0?'+':'')+v.chg+'%'}</small></div>`}).join('');
+  if(!cells){el.innerHTML='';return}
+  const a=fresh?LIVEP.age:ageMin(Object.values(src)[0].t)*60;
+  el.innerHTML=`<div class="card" style="display:flex;gap:6px;margin-bottom:4px;padding:8px">${cells}</div><div class="mut" style="font-size:11px;margin:0 0 8px">${fresh?'<span class="pos">● LIVE</span> · '+(a<5?T('now','ఇప్పుడు'):a+'s'):T('delayed','ఆలస్యం')+' · '+(a==null?'':ageTxt(Math.round(a/60)))}</div>`}
+async function lvPoll(){if(!document.getElementById('lv')||document.hidden)return;
+  try{const r=await fetch(RAW+'prices.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;const j=await r.json(),t=Date.parse(j.t);LIVEP={p:j.p||{},age:isNaN(t)?null:Math.max(0,Math.round((Date.now()-t)/1e3))}}catch(e){LIVEP=null}lvPaint()}
 /* ---------- ledger ---------- */
 const NEUTRAL_FROM='2026-11-19';
 async function ledger(){if(cache.t)return cache.t;let rows=csv(await get('ledger/outcomes.csv',false)).map(r=>({...r,_m:'NSE'}));
@@ -850,7 +860,7 @@ async function derive(u,p){const k=await crypto.subtle.importKey('raw',new TextE
 
 /* polling only while a market can be live (IST Mon-Fri 09:00-23:45); one load still happens at start */
 const mktLive=()=>{const i=new Date(Date.now()+5.5*36e5),w=i.getUTCDay(),m=i.getUTCHours()*60+i.getUTCMinutes();return w>0&&w<6&&m>=540&&m<=1425+20};
-let started=false;function start(){if(started)return;started=true;$('#gate').hidden=true;render().finally(()=>{fastBoot=false});pollAlerts();setInterval(()=>{if(mktLive()&&(!document.hidden||alertsOn))pollAlerts()},45000);setInterval(()=>{if(mktLive()&&tab=='today'&&!document.hidden&&!document.querySelector('details[open]'))render()},60000)}
+let started=false;function start(){if(started)return;started=true;$('#gate').hidden=true;render().finally(()=>{fastBoot=false});pollAlerts();setInterval(()=>{if(mktLive()&&(!document.hidden||alertsOn))pollAlerts()},45000);setInterval(()=>{if(mktLive()&&tab=='today')lvPoll()},5000);setInterval(()=>{if(mktLive()&&tab=='today'&&!document.hidden&&!document.querySelector('details[open]'))render()},60000)}
 /* pull-to-refresh: candle-radar indicator. Pull down at the top; ring fills, release past the mark to reload this tab's data. */
 (function(){let y0=null,dy=0,busy=false,el=null,TH=84;
   const C=2*Math.PI*15;

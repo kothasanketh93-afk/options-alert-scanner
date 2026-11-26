@@ -190,7 +190,7 @@ def scan_commodity(broker, st: dict, name: str, c: dict, now: datetime):
             ltp = today[-1]["close"]
             st.setdefault("spot", {})[name] = {"ltp": round(ltp, 2), "prev": round(pc, 2),
                                                "chg": round((ltp - pc) / pc * 100, 2) if pc else None,
-                                               "t": today[-1]["timestamp"], "sym": sig_fut.get("symbol")}
+                                               "t": today[-1]["timestamp"], "sym": sig_fut.get("symbol"), "token": sig_fut.get("token")}
     except Exception:
         pass
     if len(today) < 4:

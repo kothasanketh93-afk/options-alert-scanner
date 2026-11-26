@@ -3,6 +3,7 @@
 const ALLOWED = [
   /^(mcx\/)?state\/\d{4}-\d{2}-\d{2}\.json$/,
   /^(mcx\/)?ledger\/outcomes\.csv$/,
+  /^prices\.json$/,                                 // live price strip (written every few seconds by stream.yml)
   /^banknifty\/trade_log\.csv$/,                     // Edge tab: BankNifty trade log (2026-11-25)
   /^scan_logs\/\d{4}-\d{2}-\d{2}\.jsonl$/,          // Edge tab: "why setups were rejected today"
 ];

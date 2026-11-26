@@ -1,0 +1,46 @@
+# Live price feed for the app's price strip: Angel One WebSocket -> prices.json in R2 every ~4 s. Independent of the scanner.
+# Three back-to-back jobs cover 09:00-23:35 IST (GitHub caps a job at 6 h). Safe to cancel any time: the app falls back to the
+# scanner's own prices (1-5 min old).
+name: Live price stream
+
+on:
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: 'How long to stream (default 350)'
+        required: false
+        default: '350'
+  schedule:
+    - cron: '25 3 * * 1-5'    # 08:55 IST
+    - cron: '40 9 * * 1-5'    # 15:10 IST
+    - cron: '25 15 * * 1-5'   # 20:55 IST
+
+permissions:
+  contents: read
+
+concurrency:
+  group: price_stream
+  cancel-in-progress: false
+
+jobs:
+  stream:
+    runs-on: ubuntu-latest
+    timeout-minutes: 358
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt smartapi-python==1.5.5 websocket-client
+      - name: Stream prices
+        env:
+          ANGEL_CLIENT_CODE: ${{ secrets.ANGEL_CLIENT_CODE }}
+          ANGEL_PIN: ${{ secrets.ANGEL_PIN }}
+          ANGEL_API_KEY: ${{ secrets.ANGEL_API_KEY }}
+          ANGEL_TOTP_SECRET: ${{ secrets.ANGEL_TOTP_SECRET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ secrets.R2_BUCKET }}
+        run: python scripts/price_stream.py --minutes "${{ github.event.inputs.minutes || '350' }}"
