@@ -71,7 +71,11 @@ def notify_once(trade: dict, event_key: str, message_fn, *args):
     if event_key in trade["messages_sent"]:
         return
     text = message_fn(*args)
-    tg.send(text)
+    if getattr(config, "TELEGRAM_LIVE_ALERTS", False):
+        with tg.allow():                   # live trade alerts bypass TELEGRAM_EOD_ONLY (user, 2026-11-26)
+            tg.send(text)
+    else:
+        tg.send(text)
     extra = None
     if event_key == "NEW_TRADE_ALERT":     # compact trade so the app can show the card the moment the push arrives (FCM data <= 4 KB)
         try:

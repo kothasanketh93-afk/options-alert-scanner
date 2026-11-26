@@ -70,3 +70,14 @@ def test_publish_passes_extra_data_and_stays_compatible(monkeypatch):
     fcm_notify.publish("T\nbody", strategy="trade_score", devices=dev,
                        sender=lambda info, tok, title, body, high, strat: seen.append("legacy") or True)
     assert seen == [{"trade": '{"trade_id":"x"}'}, "legacy"]
+
+
+def test_live_alert_bypasses_eod_only(monkeypatch):
+    import config, main, telegram_notify as tg
+    sent = []
+    monkeypatch.setattr(config, "TELEGRAM_EOD_ONLY", True, raising=False)
+    monkeypatch.setattr(config, "TELEGRAM_LIVE_ALERTS", True, raising=False)
+    monkeypatch.setattr(tg, "_ALLOW", 0)
+    assert tg._suppressed("x") is True                 # outside allow(): still suppressed
+    with tg.allow():
+        assert tg._suppressed("x") is False            # inside allow(): goes out (what notify_once now does)

@@ -1727,3 +1727,7 @@ TELEGRAM_EOD_ONLY = True
 # Regime-First Pullback (RFP): shadow-only strategy designed 2026-11-26 (rfp.py). Never alerts the live channel; results go to
 # state["rfp_shadow_trades"] (NSE) / mcx_shadow_trades (MCX, strategy "rfp"). Fixed rules; acceptance test is in rfp.py.
 RFP_SHADOW_ENABLED = True
+
+# 2026-11-26 (user): live trade alerts go to Telegram again even while TELEGRAM_EOD_ONLY is on. Only the main scanner's live
+# trade lifecycle messages (new alert, entry, T1, T2, SL, ...) are let through; shadow notices, charts and reports stay as they were.
+TELEGRAM_LIVE_ALERTS = True
