@@ -681,13 +681,13 @@ const MSG={T2_HIT:['Target 2 hit','ok'],T1_THEN_SL:['T1 hit, then stopped (neutr
 const lv=t=>{const g=k=>{const v=num(t[k]);return v==null?'—':v},e=num(t.tracked_entry_price)??num(t.alert_premium);return `Entry ${e==null?'—':e} · SL ${g('stop_loss')} · T1 ${g('target_1')} · T2 ${g('target_2')}`};
 
 /* Bot health banner: red when a market is open but its runner has not saved state for a while (a hung / failed workflow). */
-function hbUpdate(n,m){try{const el=$('#hb');if(!el)return;const ist=new Date(Date.now()+5.5*36e5),mins=ist.getUTCHours()*60+ist.getUTCMinutes(),wk=ist.getUTCDay(),wd=wk>0&&wk<6,msg=[];
+function hbUpdate(n,m){try{const el=$('#hb');if(!el)return;if(stale||bgPending>0||fastBoot){el.hidden=true;return}/* cached / offline data is not proof of a stuck bot */const ist=new Date(Date.now()+5.5*36e5),mins=ist.getUTCHours()*60+ist.getUTCMinutes(),wk=ist.getUTCDay(),wd=wk>0&&wk<6,msg=[];
   const nA=n&&n.date===istDate(0)?ageMin(n.s.last_run_at):null,mA=m&&m.date===istDate(0)?ageMin(m.s.last_run_at):null;
   if(wd&&mins>=560&&mins<=925&&nA!=null&&nA>15)msg.push('NSE '+nA+' min');
   if(wd&&mins>=545&&mins<=1420&&mA!=null&&mA>15)msg.push('MCX '+mA+' min');
   if(msg.length){el.hidden=false;el.innerHTML='⚠ <b>'+T('Bot may be stuck','బాట్ ఆగిపోయి ఉండవచ్చు')+'</b> · '+T('no update for ','అప్‌డేట్ లేదు: ')+msg.join(', ')+' · '+T('check GitHub Actions','GitHub Actions చూడండి')}else el.hidden=true}catch(e){}}
 async function pollAlerts(){try{
-  const [n,m]=await Promise.all([loadState(''),loadState('mcx/')]);const cur={};hbUpdate(n,m);
+  stale=false;const [n,m]=await Promise.all([loadState(''),loadState('mcx/')]);const cur={};hbUpdate(n,m);
   const add=(src,o,live)=>Object.values(o||{}).forEach(t=>{if(!t.trade_id)return;if(asOn(t.strategy))cur[t.trade_id]={st:stat(t),t,src}});
   if(n){add('NSE',n.s.trades,true);['shadow_trades','fib_pivot_shadow_trades','orb_pivot_shadow_trades','sweep_shadow_trades'].forEach(k=>add('NSE',n.s[k],false))}
   if(m)add('MCX',m.s.mcx_shadow_trades,false);
