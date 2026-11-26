@@ -214,3 +214,47 @@ def buy_vs_sell_rows(rows: list) -> list:
     """buy_vs_sell() for the daily report rows (collect()), by engine label."""
     items = [{"engine": r["engine"], "buy_net": r["pnl_net"], "sell_net": r["sell_net"]} for r in _closed_rows(rows)]
     return buy_vs_sell(items, lambda x: x["engine"])
+
+
+def day_summary(state: dict, engines=None) -> dict:
+    """Compact end-of-day summary stored in state for the app (replaces the Telegram EOD report). Percent based, so it
+    needs no lot sizes. Live = engine 'trades'; everything else is shadow data."""
+    rows = collect(state, None, engines)
+    def agg(sel):
+        closed = [r for r in sel if r["net"] is not None]
+        return {"n": len(sel), "closed": len(closed),
+                "win": sum(1 for r in sel if _group_of(r["status"]) == "win"),
+                "partial": sum(1 for r in sel if _group_of(r["status"]) == "partial"),
+                "loss": sum(1 for r in sel if _group_of(r["status"]) == "loss"),
+                "net_pct": round(sum(r["net"] for r in closed), 1)}
+    by = {}
+    for r in rows:
+        if not r["twin_of_live"]:
+            by.setdefault(r["engine"], []).append(r)
+    out = {"date": state.get("date"), "engines": {k: agg(v) for k, v in by.items()}}
+    live = [r for r in rows if r["engine"] == "LIVE"]
+    out["live"] = agg(live)
+    closed = [r for r in rows if r["net"] is not None and not r["twin_of_live"]]
+    if closed:
+        b, w = max(closed, key=lambda r: r["net"]), min(closed, key=lambda r: r["net"])
+        f = lambda r: {"sym": r["t"].get("symbol"), "dir": r["t"].get("direction"), "strike": r["t"].get("strike"),
+                       "engine": r["engine"], "net": round(r["net"], 1), "status": r["status"]}
+        out["best"], out["worst"] = f(b), f(w)
+    sl = {}
+    for r in rows:
+        if _group_of(r["status"]) == "loss":
+            sl[r["status"]] = sl.get(r["status"], 0) + 1
+    out["loss_reasons"] = sl
+    return out
+
+
+def day_summary_text(s: dict, market: str) -> str:
+    lv = s.get("live") or {}
+    head = f"{market} {s.get('date')}: "
+    if lv.get("n"):
+        head += f"LIVE {lv['n']} trade(s), {lv['win']} T2 / {lv['partial']} T1→SL / {lv['loss']} SL, net {lv['net_pct']:+.1f}%"
+    else:
+        eng = s.get("engines") or {}
+        tot = sum(e["n"] for e in eng.values())
+        head += f"no live alerts; shadow tracked {tot}"
+    return head

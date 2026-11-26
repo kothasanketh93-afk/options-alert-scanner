@@ -785,10 +785,23 @@ def maybe_send_weekly_lesson(state: dict, now: datetime):
         log.error("Weekly lesson failed (%s: %s) -- continuing.", type(exc).__name__, exc)
 
 
+def _store_day_summary(state: dict):
+    """App replacement for the Telegram EOD report: summary kept in state (shown in the app) + one app push. Once a day."""
+    if state.get("day_summary"):
+        return
+    try:
+        s = eod_report.day_summary(state)
+        state["day_summary"] = s
+        tg.push("📊 " + eod_report.day_summary_text(s, "NSE"), None, {"kind": "eod"})
+    except Exception as exc:
+        log.error("Day summary failed (%s: %s) -- continuing.", type(exc).__name__, exc)
+
+
 def maybe_send_eod_report(state: dict, now: datetime):
     """One end-of-day report listing every tracked trade by outcome (see eod_report.py). Sent once, at/after SUMMARY_HHMM."""
     if (now.hour, now.minute) < SUMMARY_HHMM or state.get("eod_report_sent"):
         return
+    _store_day_summary(state)
     with tg.allow():   # end-of-day report is the one thing that still goes to Telegram (config.TELEGRAM_EOD_ONLY)
         try:
             sent_image = False

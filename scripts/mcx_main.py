@@ -520,6 +520,17 @@ def send_reports(st: dict, now: datetime):
         return
     import tempfile
     ledger = state_mod.STATE_CLONE_DIR / MCX_DIR / "ledger" / "outcomes.csv"
+    if not st.get("day_summary"):
+        try:
+            import eod_report
+            pseudo = {f"mcx_{k}": {i: t for i, t in st.get("mcx_shadow_trades", {}).items() if t.get("strategy") == k}
+                      for k in STRATEGY_LABELS}
+            ds = eod_report.day_summary(pseudo, tuple((f"mcx_{k}", v) for k, v in STRATEGY_LABELS.items()))
+            ds["date"] = st["date"]
+            st["day_summary"] = ds
+            tg.push("📊 " + eod_report.day_summary_text(ds, "MCX"), None, {"kind": "eod"})
+        except Exception as exc:
+            log.error("MCX day summary failed (%s: %s) -- continuing.", type(exc).__name__, exc)
     if not st.get("summary_sent"):
         png = os.path.join(tempfile.mkdtemp(), f"mcx_daily_{st['date']}.png")
         with tg.allow():   # end-of-day report still goes out under config.TELEGRAM_EOD_ONLY
