@@ -371,9 +371,12 @@ function csv(t){const rows=[];let row=[],f='',q=false;for(let i=0;i<t.length;i++
 const ageMin=iso=>{const t=Date.parse(iso);return isNaN(t)?null:Math.max(0,Math.round((Date.now()-t)/60000))};
 const ageTxt=m=>m==null?'unknown':m<1?'just now':m<60?m+' min ago':Math.floor(m/60)+' h '+(m%60)+' m ago';
 const stat=t=>t.final_status||t.status||'OPEN';
+const NEWHY=r=>({SL_BREACHED_BEFORE_ENTRY:T('Stop level traded before entry - setup failed','ఎంట్రీ ముందే SL స్థాయి తాకింది - సెటప్ ఫెయిల్'),T1_REACHED_BEFORE_ENTRY:T('Target 1 reached before entry - move missed','ఎంట్రీ ముందే T1 వచ్చేసింది - మూవ్ మిస్'),ENTRY_WINDOW_EXPIRED:T('20-min entry window expired','20 నిమిషాల ఎంట్రీ విండో ముగిసింది'),NEVER_TOUCHED:T('Price never reached the entry zone','ధర ఎంట్రీ జోన్ చేరలేదు')}[r]||'');
+const validTill=t=>{try{const a=Date.parse(t.alert_time);return isNaN(a)?'':new Date(a+20*6e4).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Kolkata'})}catch(e){return''}};
 function tagFor(s,t){const won=/T2_HIT|T1_HIT_THEN_EOD/.test(s),lost=s=='SL_HIT';
   if(t&&isOpenT(s,t))return `<span class="tag live">● ${s=='T1_HIT'?'OPEN · T1 HIT':'OPEN'}</span>`;
-  if(t&&isWaitT(s,t))return `<span class="tag wait">◌ WAITING ENTRY</span>`;
+  if(t&&isWaitT(s,t)){const v=validTill(t);return `<span class="tag wait">◌ WAITING ENTRY${v?' · till '+v:''}</span>`}
+  if(t&&s==='NOT_ENTERED'&&t.not_entered_reason)return `<span class="tag">NOT ENTERED</span><small class="mut" style="display:block;font-size:11px;margin-top:2px">${esc(NEWHY(t.not_entered_reason))}</small>`;
   return `<span class="tag ${won?'ok':lost?'bad':s=='T1_THEN_SL'?'warn':''}">${esc(s.replace(/_/g,' '))}</span>`}
 const DONE_RE=/^(T2_HIT|SL_HIT|T1_THEN_SL|T1_HIT_THEN_EOD|EOD_CLOSED)$/,DEAD_RE=/NOT_ENTERED|AMBIGUOUS/;
 const isOpenT=(s,t)=>!DONE_RE.test(s)&&!DEAD_RE.test(s)&&!!t.actual_entry_time,isWaitT=(s,t)=>!DONE_RE.test(s)&&!DEAD_RE.test(s)&&!t.actual_entry_time;
@@ -609,7 +612,7 @@ function tmFrom(t){const e=t.e;const fin=/^(T2_HIT|SL_HIT|T1_THEN_SL|T1_HIT_THEN
   return t}
 function adaptLedger(r){return tmFrom({kind:'L',id:r.id,sym:r.sym,strike:r.strike,dir:r.dir,mkt:r.mkt,strat:r.strat,date:r.date,status:r.status,e:r.entry,sl:r.sl,t1:r.t1p,t2:r.t2,lot:r.lot,pnl:r.inr,pct:r.pct,real:r.real,alertT:r.hh,entT:(r.entT||'').slice(11,16),t1Hit:r.t1,exitT:(r.exitT||'').slice(11,16),hold:r.hold,mfe:r.mfe,mae:r.mae,spread:r.spread,spot:r.spot,score:r.score,grade:r.grade,delay:r.delay})}
 function adaptToday(t){const e=num(t.tracked_entry_price)??num(t.alert_premium),st=t._s,fin=/^(T2_HIT|SL_HIT|T1_THEN_SL|T1_HIT_THEN_EOD|EOD_CLOSED)$/.test(st),last=num(t.last_price);
-  const m={kind:'T',id:t.trade_id,sym:t.symbol,strike:t.strike,dir:t.direction,mkt:t._src,strat:t.strategy,date:(t.alert_time||'').slice(0,10),status:st,e,sl:num(t.stop_loss),t1:num(t.target_1),t2:num(t.target_2),lot:t._lot,pnl:t._est,pct:e&&t._est!=null&&t._lot?t._est/(e*t._lot)*100:null,alertT:hhmm(t.alert_time),entT:t.actual_entry_time?hhmm(t.actual_entry_time):'',t1Hit:!!t.t1_hit_time||/T1/.test(st),t1T:t.t1_hit_time?hhmm(t.t1_hit_time):'',exitT:(t.t2_hit_time||t.sl_hit_time)?hhmm(t.t2_hit_time||t.sl_hit_time):'',mfe:num(t.max_favorable_pct),mae:num(t.max_adverse_pct),spread:num(t.spread_pct),spot:num(t.spot_price),now:fin?null:last,ghost:t.ghost_view&&t.ghost_view.result,planned:t.alert_premium,alertAge:ageMin(t.alert_time)};
+  const m={kind:'T',ner:t.not_entered_reason,id:t.trade_id,sym:t.symbol,strike:t.strike,dir:t.direction,mkt:t._src,strat:t.strategy,date:(t.alert_time||'').slice(0,10),status:st,e,sl:num(t.stop_loss),t1:num(t.target_1),t2:num(t.target_2),lot:t._lot,pnl:t._est,pct:e&&t._est!=null&&t._lot?t._est/(e*t._lot)*100:null,alertT:hhmm(t.alert_time),entT:t.actual_entry_time?hhmm(t.actual_entry_time):'',t1Hit:!!t.t1_hit_time||/T1/.test(st),t1T:t.t1_hit_time?hhmm(t.t1_hit_time):'',exitT:(t.t2_hit_time||t.sl_hit_time)?hhmm(t.t2_hit_time||t.sl_hit_time):'',mfe:num(t.max_favorable_pct),mae:num(t.max_adverse_pct),spread:num(t.spread_pct),spot:num(t.spot_price),now:fin?null:last,ghost:t.ghost_view&&t.ghost_view.result,planned:t.alert_premium,alertAge:ageMin(t.alert_time)};
   m.exitPx=fin?(st==='T2_HIT'?m.t2:/SL_HIT|T1_THEN_SL/.test(st)?m.sl:(num(t.eod_last_price)??last)):null;m.fin=fin;return m}
 function ladder(m){const v=[m.sl,m.e,m.t1,m.t2,m.exitPx,m.now].filter(x=>x!=null);if(m.e==null||m.sl==null||v.length<3)return'';
   const lo=Math.min(...v),hi=Math.max(...v),sp=(hi-lo)||1,P=x=>((x-lo)/sp*100).toFixed(1);
@@ -620,7 +623,7 @@ function ladder(m){const v=[m.sl,m.e,m.t1,m.t2,m.exitPx,m.now].filter(x=>x!=null
   <div class="ll"><span class="neg">SL<b>${m.sl}</b></span><span>${T('Entry','ఎంట్రీ')}<b>${m.e}</b></span><span class="pos">T1<b>${m.t1??'—'}</b></span><span class="pos">T2<b>${m.t2??'—'}</b></span></div></div>`}
 function timeline(m){const S=STL(),[lab,kind]=S[m.status]||[String(m.status).replace(/_/g,' '),'mut'],st=[];
   st.push({c:'ok',h:T('Signal alerted','సిగ్నల్ వచ్చింది'),d:[m.planned!=null?T('premium ','ప్రీమియం ')+m.planned:'',m.spot!=null?T('spot ','స్పాట్ ')+m.spot:''].filter(Boolean).join(' · '),t:m.alertT});
-  if(m.status==='NOT_ENTERED'){st.push({c:'mut',h:T('Never entered','ఎంట్రీ కాలేదు'),d:T('Price did not reach the entry level','ధర ఎంట్రీ లెవెల్ చేరలేదు'),t:''});return st}
+  if(m.status==='NOT_ENTERED'){st.push({c:'mut',h:T('Never entered','ఎంట్రీ కాలేదు'),d:NEWHY(m.ner)||T('Price did not reach the entry level','ధర ఎంట్రీ లెవెల్ చేరలేదు'),t:''});return st}
   if(!m.entT&&!m.fin&&m.status!=='OPEN'&&m.status!=='T1_HIT'){st.push({c:'wait',h:T('Waiting for entry','ఎంట్రీ కోసం వేచి ఉంది'),d:m.e!=null?T('entry level ','ఎంట్రీ లెవెల్ ')+m.e:'',t:''});return st}
   st.push({c:'ok',h:T('Entered','ఎంట్రీ అయింది'),d:m.e!=null?T('at ','ధర ')+m.e+(m.lot?` · ${m.lot} ${T('qty (1 lot)','క్వాంటిటీ (1 లాట్)')}`:''):'',t:m.entT});
   if(m.t1Hit&&m.status!=='SL_HIT'||m.status==='T1_THEN_SL')st.push({c:'ok',h:T('Target 1 reached','టార్గెట్ 1 చేరింది'),d:m.t1!=null?T('at ','ధర ')+m.t1:'',t:m.t1T||''});
