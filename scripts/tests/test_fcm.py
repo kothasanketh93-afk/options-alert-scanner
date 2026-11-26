@@ -77,6 +77,7 @@ def test_live_alert_bypasses_eod_only(monkeypatch):
     sent = []
     monkeypatch.setattr(config, "TELEGRAM_EOD_ONLY", True, raising=False)
     monkeypatch.setattr(config, "TELEGRAM_LIVE_ALERTS", True, raising=False)
+    monkeypatch.setattr(config, "TELEGRAM_REPORTS", True, raising=False)
     monkeypatch.setattr(tg, "_ALLOW", 0)
     assert tg._suppressed("x") is True                 # outside allow(): still suppressed
     with tg.allow():

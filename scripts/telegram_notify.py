@@ -83,6 +83,9 @@ def allow_all():
 def allow():
     """Sends inside this block go out even when config.TELEGRAM_EOD_ONLY is on (used for the end-of-day report)."""
     global _ALLOW
+    if not getattr(config, "TELEGRAM_REPORTS", True):   # reports now live in the app (Day summary); nothing goes to Telegram
+        yield
+        return
     _ALLOW += 1
     try:
         yield

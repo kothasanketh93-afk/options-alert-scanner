@@ -15,6 +15,7 @@ def _boom(*a, **k):
 
 def test_suppressed_unless_allowed(monkeypatch, tg):
     monkeypatch.setattr(config, "TELEGRAM_EOD_ONLY", True)
+    monkeypatch.setattr(config, "TELEGRAM_REPORTS", True, raising=False)
     monkeypatch.setattr(tg, "request_with_retry", _boom)
     monkeypatch.setattr(tg, "_ALLOW", 0)
     assert tg.send("trade alert") == {"suppressed": True}
