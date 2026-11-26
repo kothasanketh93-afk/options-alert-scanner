@@ -69,3 +69,12 @@ def test_breakeven_not_before_trigger_and_global_off():
     t2 = {"tracked_entry_price": 100.0, "stop_loss": 90.0, "max_favorable_pct": 50.0}      # no per-trade BE, global trailing disabled
     assert tracker._maybe_apply_trailing_stop(t2, __import__("datetime").datetime.now()) is None
     assert t2["stop_loss"] == 90.0
+
+
+def test_call_stats_counts_and_flags_refused():
+    import retry_utils as ru
+    ru._CALLS.clear()
+    ru._note_call("https://apiconnect.angelbroking.com/rest/secure/x/getCandleData", 200)
+    ru._note_call("https://apiconnect.angelbroking.com/rest/secure/x/getCandleData", 403)
+    s = ru.call_stats()
+    assert s["total"] == 2 and s["refused"] == 1 and list(s["top"].values())[0] == {"n": 2, "bad": 1}

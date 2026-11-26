@@ -1234,6 +1234,11 @@ def main():
     if run_error is not None:
         commit_message += " (partial run -- error occurred, see job log)"
     _T["save"] = _tm.monotonic()
+    try:
+        import retry_utils
+        state["api_calls"] = retry_utils.call_stats()      # last run's HTTP call count per endpoint (403 tracing)
+    except Exception:
+        pass
     state_mod.save_state(state, commit_message=commit_message)
     if run_error is None:
         maybe_fast_tracker_pass(state, now)

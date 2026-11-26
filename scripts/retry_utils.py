@@ -56,6 +56,30 @@ def _parse_retry_after(resp):
         return None
 
 
+# Per-run call counter (2026-11-26): how many HTTP calls this run made, per endpoint, and how many were refused (401/403/429),
+# so rate-limit (403) problems can be traced to the endpoint that causes them. Saved into the state file by main.py / mcx_main.py.
+_CALLS: dict = {}
+
+
+def _note_call(url: str, status: int) -> None:
+    try:
+        from urllib.parse import urlparse
+        u = urlparse(url)
+        key = (u.netloc.split(".")[0] + u.path)[:70]
+        c = _CALLS.setdefault(key, {"n": 0, "bad": 0})
+        c["n"] += 1
+        if status in (401, 403, 429) or status >= 500:
+            c["bad"] += 1
+    except Exception:
+        pass
+
+
+def call_stats() -> dict:
+    top = sorted(_CALLS.items(), key=lambda kv: -kv[1]["n"])[:8]
+    return {"total": sum(v["n"] for v in _CALLS.values()), "refused": sum(v["bad"] for v in _CALLS.values()),
+            "top": {k: v for k, v in top}}
+
+
 def request_with_retry(method: str, url: str, *, error_cls=RuntimeError,
                         max_attempts: int = RETRY_MAX_ATTEMPTS,
                         base_backoff: float = RETRY_BACKOFF_SECONDS,
@@ -90,6 +114,7 @@ def request_with_retry(method: str, url: str, *, error_cls=RuntimeError,
         except requests.RequestException as exc:
             last_exc = error_cls(f"{method} {url} failed: {exc}")
         else:
+            _note_call(url, resp.status_code)
             rate_limited_auth_failure = False
             if resp.status_code in AUTH_FAILURE_CODES:
                 # See the rate-limit note below -- same underlying

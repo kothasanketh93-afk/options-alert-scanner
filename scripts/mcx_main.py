@@ -686,6 +686,11 @@ def main():
         log.error("MCX report failed (%s: %s) -- continuing.", type(exc).__name__, exc)
     st["last_run_at"] = state_mod.ist_now().isoformat(timespec="seconds")   # dashboard freshness (no open trades -> no polls)
     _t_pre = _tm.monotonic()
+    try:
+        import retry_utils
+        st["api_calls"] = retry_utils.call_stats()
+    except Exception:
+        pass
     save_state(st, f"MCX shadow state {date_str} {now.strftime('%H:%M')}")
     try:
         _te = _tm.monotonic()
