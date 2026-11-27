@@ -1734,5 +1734,7 @@ TELEGRAM_REPORTS = False   # 2026-11-26: EOD/weekly/BankNifty reports no longer 
 # 2026-11-27 (user: "make changes with the data"): phone pushes are muted for (market, strategy) pairs that lost money on 3 weeks of
 # shadow data while their SHADOW trades keep being recorded and shown in the app. Net avg / SL% / n: NSE chase_bypass -5.0% / 56% / 81,
 # NSE ema_pb -4.9% / 63% / 35, MCX fvg -3.7% / 65% / 34. Re-check at the December review; remove a pair here to un-mute it.
-ALERT_MUTE = (("NSE", "chase_bypass"), ("NSE", "ema_pb"), ("MCX", "fvg"))
+ALERT_MUTE = (("NSE", "chase_bypass"), ("NSE", "ema_pb"), ("MCX", "fvg"),
+              ("NSE", "oi_flow"), ("MCX", "oi_flow"), ("NSE", "sweep"), ("MCX", "sweep"),
+              ("NSE", "ema_cross"), ("MCX", "ema_cross"), ("NSE", "bos"))   # oi_flow -5.6/-2.2%, sweep -15/-2.9%, ema_cross -12/-3.8%, bos -12%
 TELEGRAM_LIVE_ALERTS = False   # 2026-11-26: user turned live Telegram alerts off again (app push only)
