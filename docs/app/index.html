@@ -469,7 +469,7 @@ async function todayView(){
     lr=Object.entries(d.loss_reasons||{}).map(([k,v])=>`${k} ${v}`).join(' · ');
     return `<div style="padding:8px 10px;border-top:1px solid var(--line)"><b>${src} · ${esc(d.date||'')}</b>${lv.n?`<div class="sub">LIVE: ${lv.n} · <span class="pos">${lv.win} T2</span> · ${lv.partial} T1→SL · <span class="neg">${lv.loss} SL</span> · ${T('net','నికర')} ${pc(lv.net_pct)}</div>`:`<div class="sub">${T('No live alerts','లైవ్ అలర్ట్‌లు లేవు')}</div>`}
     <div class="sub">${en.map(([k,e])=>`${esc(k)}: ${e.win}W/${e.partial}P/${e.loss}L (${e.n}) ${pc(e.net_pct)}`).join('<br>')}</div>${bw}${lr?`<div class="sub">${T('SL kinds','SL రకాలు')}: ${esc(lr)}</div>`:''}</div>`};
-   const dh=dsRow('NSE',n&&n.s.day_summary)+dsRow('MCX',m&&m.s.day_summary);
+   const dh=(ui.mkt!=='MCX'?dsRow('NSE',n&&n.s.day_summary):'')+(ui.mkt!=='NSE'?dsRow('MCX',m&&m.s.day_summary):'');
    if(dh)h+=`<details class="more" style="background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-top:8px" open><summary style="border:0">📊 ${T('Day summary','డే సమ్మరీ')}</summary>${dh}</details>`}
   /* live-price strip: WebSocket feed (prices.json, ~4 s) when fresh, else the scanner's own MCX prices (1-5 min old) */
   SPOTM=(m&&m.s.spot)||null;SPOTN=null;try{const fs=n&&n.s.flow_snap;if(fs){SPOTN={};for(const k of Object.keys(fs)){const a=fs[k];const l=Array.isArray(a)&&a[a.length-1];if(l&&l.spot!=null&&l.t!=null){const hh=String(Math.floor(l.t/60)).padStart(2,'0'),mi=String(l.t%60).padStart(2,'0');const pc=n.s.spot_prev&&n.s.spot_prev[k];SPOTN[k]={ltp:l.spot,chg:pc?+((l.spot-pc)/pc*100).toFixed(2):null,t:n.date+'T'+hh+':'+mi+':00+05:30'}}}}}catch(x){SPOTN=null}h=`<div id="lv"></div>`+h;setTimeout(lvPaint,0);
