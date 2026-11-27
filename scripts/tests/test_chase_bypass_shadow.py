@@ -47,6 +47,7 @@ def test_alert_mute_blocks_push_for_losing_pairs(monkeypatch):
     import config, fcm_notify, telegram_notify as tg
     sent = []
     monkeypatch.setattr(config, "TELEGRAM_EOD_ONLY", True, raising=False)
+    monkeypatch.setattr(config, "ALERT_MUTE", (("NSE", "chase_bypass"), ("NSE", "ema_pb"), ("MCX", "fvg")), raising=False)
     monkeypatch.setattr(fcm_notify, "publish", lambda *a, **k: sent.append(("fcm", k.get("strategy"))))
     import ntfy_notify
     monkeypatch.setattr(ntfy_notify, "publish", lambda *a, **k: None)
