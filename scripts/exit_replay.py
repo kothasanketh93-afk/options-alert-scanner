@@ -155,8 +155,8 @@ def main():
     rows = load_trades(a.state_dir, a.min_date)
     print(f"trades replayed: {len(rows)}")
     groups = {"ALL": rows,
-              "NSE": [r for r in rows if r[1].get("symbol") not in ("CRUDEOIL", "NATURALGAS", "GOLDM", "GOLD")],
-              "MCX": [r for r in rows if r[1].get("symbol") in ("CRUDEOIL", "NATURALGAS", "GOLDM", "GOLD")]}
+              "NSE": [r for r in rows if r[1].get("symbol") not in ("CRUDEOIL", "NATURALGAS", "GOLDM", "GOLD", "SILVERM")],
+              "MCX": [r for r in rows if r[1].get("symbol") in ("CRUDEOIL", "NATURALGAS", "GOLDM", "GOLD", "SILVERM")]}
     for g, rr in groups.items():
         if not rr:
             continue

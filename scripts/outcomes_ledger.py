@@ -132,7 +132,7 @@ def entry_bucket(alert_time) -> str:
 
 
 EVENTS_FILE = Path(__file__).resolve().parent / "data" / "events.csv"     # optional, user-maintained: date,scope,note (scope NSE|MCX|ALL|<SYMBOL>)
-_MCX = {"CRUDEOIL", "NATURALGAS", "GOLDM", "GOLD"}
+_MCX = {"CRUDEOIL", "NATURALGAS", "GOLDM", "GOLD", "SILVERM"}
 
 
 def _flt(x):

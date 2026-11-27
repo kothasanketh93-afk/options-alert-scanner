@@ -23,7 +23,7 @@ API = "https://api.upstox.com/v3/feed/market-data-feed/authorize"
 INSTR = "https://assets.upstox.com/market-quote/instruments/exchange/{}.json.gz"
 INDEX_KEYS = {"NIFTY": "NSE_INDEX|Nifty 50", "BANKNIFTY": "NSE_INDEX|Nifty Bank",
               "MIDCPNIFTY": "NSE_INDEX|NIFTY MID SELECT", "SENSEX": "BSE_INDEX|SENSEX"}
-MCX_NAMES = ("CRUDEOIL", "NATURALGAS", "GOLDM", "GOLD")
+MCX_NAMES = ("CRUDEOIL", "NATURALGAS", "GOLDM", "GOLD", "SILVERM")
 
 
 def _load(exchange: str) -> list:

@@ -1,11 +1,11 @@
 """MCX shadow constants shared by the runner (mcx_main.py) and the reports (mcx_report.py). No heavy imports."""
-COMMODITIES = ("CRUDEOIL", "NATURALGAS", "GOLDM", "GOLD")
+COMMODITIES = ("CRUDEOIL", "NATURALGAS", "GOLDM", "GOLD", "SILVERM")   # SILVERM added 2026-11-27 (shadow only; liquidity probe: spread 0.3%, OI ~900)
 # Rupee value of a 1.0 move in the quoted premium for ONE lot. Crude: 100 bbl/lot; NatGas: 1250 mmBtu/lot;
 # Gold is quoted per 10 g: GOLDM lot = 100 g (x10), GOLD lot = 1 kg (x100).
-LOT_MULTIPLIER = {"CRUDEOIL": 100, "NATURALGAS": 1250, "GOLDM": 10, "GOLD": 100}
+LOT_MULTIPLIER = {"CRUDEOIL": 100, "NATURALGAS": 1250, "GOLDM": 10, "GOLD": 100, "SILVERM": 5}   # SILVERM quoted per kg, lot 5 kg
 STRATEGY_LABELS = {"sweep": "Sweep", "sweep_fvg": "Sweep+FVG", "amd": "AMD", "fvg": "FVG", "oi_flow": "OI flow",
                    "sess_orb": "Session ORB", "sess_sweep": "Session sweep", "ema_pb": "EMA pullback", "bos": "Break of structure", "order_block": "Order block", "pdhl_retest": "PDH/PDL retest", "vwap_pb": "VWAP pullback", "ema_cross": "EMA crossover", "rfp": "Regime pullback"}
-NAMES = {"CRUDEOIL": "Crude Oil", "NATURALGAS": "Natural Gas", "GOLDM": "Gold Mini", "GOLD": "Gold"}
+NAMES = {"CRUDEOIL": "Crude Oil", "NATURALGAS": "Natural Gas", "GOLDM": "Gold Mini", "GOLD": "Gold", "SILVERM": "Silver Mini"}
 BUCKETS = ("0900-1200", "1200-1700", "1700-2100", "2100-2330")   # IST entry time: morning / midday / US-open run-up / US session
 
 
