@@ -34,3 +34,10 @@ MCX_MORNING_CLOSED = {"2026-03-03", "2026-03-26", "2026-03-31", "2026-04-14", "2
 MCX_WIDE_SL_VARIANT = True
 MCX_WIDE_SL_MULT = 2.0
 WIDE_SL_SUFFIX = "_wsl"
+
+
+# 2026-11-27: weak MCX hours (14 days / 513 shadow trades: 10:00-14:00 IST entries averaged -3% to -6% net, win 18-36%) are not
+# scanned at all -- saves API calls (rate-limit 403s) and keeps new data on the better windows. Open trades are still tracked.
+# NATURALGAS keeps scanning 12:00-14:00 for the pre-registered RFP strategy only (its fixed window starts 12:00).
+MCX_SKIP_SCAN_MIN = (10 * 60, 14 * 60)            # minutes since midnight, [start, end)
+MCX_SKIP_EXCEPT_RFP = {"NATURALGAS": (12 * 60, 14 * 60)}

@@ -86,3 +86,11 @@ def test_short_id():
     assert tg.short_id({"display_label": "SweepShadow 12", "alert_time": "2026-11-27T10:01:08+05:30"}) == "1127-SS12"
     assert tg.short_id({"display_label": "MCX 2", "alert_time": "2026-11-27T20:01:08+05:30"}) == "1127-M2"
     assert tg.short_id({}) == ""
+
+
+def test_mcx_weak_window_modes():
+    import mcx_main as mm
+    m = lambda n, h, mi=0: mm.weak_window_mode(n, h * 60 + mi)
+    assert m("CRUDEOIL", 10) == "skip" and m("GOLDM", 13, 59) == "skip" and m("CRUDEOIL", 14) == ""
+    assert m("CRUDEOIL", 9, 59) == "" and m("NATURALGAS", 11) == "skip"
+    assert m("NATURALGAS", 12) == "rfp_only" and m("NATURALGAS", 13, 59) == "rfp_only" and m("NATURALGAS", 14) == ""

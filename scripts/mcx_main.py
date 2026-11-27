@@ -34,7 +34,7 @@ log = get_logger("mcx_main")
 IST = state_mod.IST
 
 # --- MCX settings (fixed rules; a change = a new strategy name, not a tweak) -----------------------------------
-from mcx_config import COMMODITIES, LOT_MULTIPLIER, NAMES, STRATEGY_LABELS
+from mcx_config import COMMODITIES, LOT_MULTIPLIER, NAMES, STRATEGY_LABELS, MCX_SKIP_SCAN_MIN, MCX_SKIP_EXCEPT_RFP
 SESSION_OPEN = (9, 0)
 SESSION_CLOSE = (23, 59)             # market closes 23:30; the extra window lets a late-dispatched 23:30 run still close trades and report
 REPORT_AT = (23, 30)                   # daily report (and Friday weekly report) go out once, at/after this time
@@ -176,8 +176,20 @@ def _quote_fields(q: dict) -> dict:
 
 
 # --- detection -------------------------------------------------------------------------------------------------
+def weak_window_mode(name: str, minute_of_day: int) -> str:
+    """'skip' = do not scan at all, 'rfp_only' = scan but keep only the RFP strategy, '' = normal."""
+    lo, hi = MCX_SKIP_SCAN_MIN
+    if not (lo <= minute_of_day < hi):
+        return ""
+    ex = MCX_SKIP_EXCEPT_RFP.get(name)
+    return "rfp_only" if ex and ex[0] <= minute_of_day < ex[1] else "skip"
+
+
 def scan_commodity(broker, st: dict, name: str, c: dict, now: datetime):
     today_str = st["date"]
+    mode = weak_window_mode(name, now.hour * 60 + now.minute)
+    if mode == "skip":
+        return
     sig_fut = pick_signal_future(broker, st, name, c)
     fut_key = f"MCX|{sig_fut['token']}"
     since = (now - timedelta(days=3)).replace(hour=9, minute=0, second=0, microsecond=0).isoformat()
@@ -258,6 +270,8 @@ def scan_commodity(broker, st: dict, name: str, c: dict, now: datetime):
     del snaps[:-80]
     found["oi_flow"] = safe("oi_flow", signals.detect_oi_flow, snaps, atr)
 
+    if mode == "rfp_only":
+        found = {k: v for k, v in found.items() if k == "rfp"}
     for strategy, sig in found.items():
         if not sig:
             continue
