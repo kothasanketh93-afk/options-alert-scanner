@@ -344,6 +344,7 @@ const $=s=>document.querySelector(s),view=$('#view');
 /* skip DOM work when a re-render produces identical HTML (no flicker, keeps scroll and open sections) */
 {const d=Object.getOwnPropertyDescriptor(Element.prototype,'innerHTML');let last=null;Object.defineProperty(view,'innerHTML',{configurable:true,get(){return d.get.call(view)},set(v){if(v===last&&view.firstChild)return;last=v;d.set.call(view,v)}})}
 const MLOT=new Proxy({},{get:(o,k)=>CFG.lots[k]}),COMM=['CRUDEOIL','NATURALGAS','GOLDM','GOLD'];
+const SS=()=>ui.strat==='all'?null:new Set(String(ui.strat).split(',').filter(Boolean)),sm=k=>ui.strat==='all'||SS().has(k),sLabel=()=>{const x=[...(SS()||[])];return x.length>1?x.length+' '+T('strategies','స్ట్రాటజీలు'):x.length?nm(x[0]):''};
 let tab='today',cache={},ui={per:'all',from:'',to:'',strat:'all',mkt:CFG.mkt||'ALL',src:'all',st:'all',twins:false,dd:false,sym:'ALL',sort:'net',who:'tg',basis:'tg',open:null};
 const UI_KEYS=['mkt','strat','per','from','to','st','twins','dd','sym','sort','who','basis','pkSort'];
 try{const sv=JSON.parse(localStorage.getItem('ui')||'null');if(sv){UI_KEYS.forEach(k=>{if(sv[k]!==undefined&&typeof sv[k]===typeof ui[k])ui[k]=sv[k]});if(!['NSE','MCX'].includes(ui.mkt))ui.mkt='NSE';if(['today','days','strat','insight','settings'].includes(sv.tab))tab=sv.tab}}catch(e){}
@@ -423,7 +424,7 @@ async function todayView(){
   /* one card per signal: same symbol+direction+alert time is ONE idea (ITM/ATM/OTM strikes and strategy variants are siblings) */
   base0=collapse(base0,t=>[t._src,t.symbol,t.direction,t.alert_time,ui.strat==='all'?'':skey0(t)].join('|'),t=>ui.strat==='all'?nm(t.strategy):String(t.strike).replace(/\.0$/,''),t=>(t._live?4:0)+(VAR_RE.test(t.strategy)?0:2)+(t.moneyness==='ATM'?1.5:0)+(t._src==='NSE'&&t.strategy==='fvg'||t._src==='MCX'&&t.strategy==='ema_pb'?1:0));
   const skey=t=>t._live?'live_scored':t.strategy;
-  const base=ui.strat==='all'?base0:base0.filter(t=>skey(t)===ui.strat),bAll=ui.basis==='all'||ui.strat!=='all';
+  const base=ui.strat==='all'?base0:base0.filter(t=>sm(skey(t))),bAll=ui.basis==='all'||ui.strat!=='all';
   const DONE=DONE_RE,isOpen=t=>isOpenT(t._s,t),isWait=t=>isWaitT(t._s,t);const win=t=>/T2_HIT|T1_HIT_THEN_EOD/.test(t._s),loss=t=>t._s=='SL_HIT',open=t=>isOpen(t)||isWait(t);
   const shown=base.filter(t=>(bAll||t._tg)&&(ui.st=='all'||(ui.st=='won'&&win(t))||(ui.st=='lost'&&loss(t))||(ui.st=='half'&&t._s==='T1_THEN_SL')||(ui.st=='open'&&open(t))));
   const closed=base.filter(t=>t._est!=null&&DONE.test(t._s)),sum=closed.reduce((a,t)=>a+t._est,0);
@@ -436,11 +437,11 @@ async function todayView(){
   const hs=bAll?base:base.filter(t=>t._tg),hClosed=hs.filter(t=>t._est!=null&&DONE.test(t._s)),hSum=hClosed.reduce((a,t)=>a+t._est,0),hOpen=hs.filter(isOpen),hUn=hOpen.reduce((a,t)=>a+(t._est||0),0),dayTot=hSum+hUn;
   const bySrc=m=>{const x=hs.filter(t=>t._src===m&&t._est!=null&&(DONE.test(t._s)||isOpen(t)));return{v:x.reduce((a,t)=>a+t._est,0),n:hs.filter(t=>t._src===m).length}};
   const sg={};base0.forEach(t=>{const r=sg[skey(t)]??={k:skey(t),n:0,w:0,l:0,o:0,v:0};r.n++;if(win(t))r.w++;else if(loss(t))r.l++;else if(isOpen(t))r.o++;if(t._est!=null&&(DONE.test(t._s)||isOpen(t)))r.v+=t._est});
-  if(ui.strat!=='all'&&!sg[ui.strat])sg[ui.strat]={k:ui.strat,n:0,w:0,l:0,o:0,v:0};
+  if(ui.strat!=='all')for(const k of SS())if(!sg[k])sg[k]={k,n:0,w:0,l:0,o:0,v:0};
   const sgl=Object.values(sg).sort((a,b)=>b.v-a.v);
 
   const lim=CFG.capital*CFG.lossPct/100,used=Math.max(0,-hSum),usedPct=lim?Math.min(100,used/lim*100):0;
-  const allT=LT?LT.filter(t=>(ui.strat==='all'||t.strat===ui.strat)&&(bAll?true:tgT(t))).reduce((a,t)=>a+t.inr,0):null,allN=LT?LT.filter(t=>(ui.strat==='all'||t.strat===ui.strat)&&(bAll?true:tgT(t))).length:0,hW=hs.filter(win).length,hL=hs.filter(loss).length,decided=hW+hL;
+  const allT=LT?LT.filter(t=>sm(t.strat)&&(bAll?true:tgT(t))).reduce((a,t)=>a+t.inr,0):null,allN=LT?LT.filter(t=>sm(t.strat)&&(bAll?true:tgT(t))).length:0,hW=hs.filter(win).length,hL=hs.filter(loss).length,decided=hW+hL;
   const basisSeg=`<div class="seg2" style="margin:0 0 8px"><button data-f="basis:tg" aria-pressed="${ui.basis==='tg'}">${T('Telegram alerts','టెలిగ్రామ్ అలర్ట్‌లు')}</button><button data-f="basis:all" aria-pressed="${bAll}">${T('All strategies','అన్ని స్ట్రాటజీలు')}</button></div>`;
   let h=`<div class="hero"><div class="lbl">${T('Today','ఈరోజు')} · ${ui.mkt==='ALL'?T('All markets','అన్ని మార్కెట్లు'):ui.mkt} · ${T('1 lot, estimate','1 లాట్, అంచనా')}</div><div class="big ${cl(dayTot)}">${rs(dayTot)}</div><div class="sub">${(dayTot/CFG.capital*100>=0?'+':'')+(dayTot/CFG.capital*100).toFixed(2)}% ${T('of paper capital','పేపర్ మూలధనంలో')} ₹${f0(CFG.capital)}</div>
   ${ui.mkt==='ALL'?`<div class="split"><div><small>NSE · ${bySrc('NSE').n} ${T('trades','ట్రేడ్లు')}</small><b class="${cl(bySrc('NSE').v)}">${rs(bySrc('NSE').v)}</b></div><div><small>MCX · ${bySrc('MCX').n} ${T('trades','ట్రేడ్లు')}</small><b class="${cl(bySrc('MCX').v)}">${rs(bySrc('MCX').v)}</b></div></div>`:''}
@@ -546,10 +547,10 @@ function ddChart(cum,ds){let pk=0;const d=cum.map(v=>{pk=Math.max(pk,v);return v
 function monthly(daily){const g={};daily.forEach(r=>{const k=r.d.slice(0,7);(g[k]??=[]).push(r)});return `<div class="scroll"><table><tr><th>Month</th><th>Days</th><th>Trades</th><th>Net 1 lot</th></tr>`+Object.keys(g).sort().reverse().map(k=>`<tr><td>${k}</td><td>${g[k].length}</td><td>${g[k].reduce((a,r)=>a+r.x.length,0)}</td><td class="hm ${cl(g[k].reduce((a,r)=>a+r.v,0))}">${rs(g[k].reduce((a,r)=>a+r.v,0))}</td></tr>`).join('')+'</table></div>'}
 /* ---------- days ---------- */
 async function daysView(){const all=scopeOf(await ledger()).filter(t=>!/_wsl$/.test(t.strat)&&inScope(t));const sets={tg:all.filter(tgT),main:all.filter(t=>(t.eng=='main'&&t.strat=='trade_score')||t.strat=='live_scored'),shadow:all};if(ui.who==='main'&&ui.mkt!=='NSE')ui.who='tg';
-  const rows0=sets[ui.who]||sets.tg;const rows=ui.strat==='all'?collapse(rows0,t=>[t.mkt,t.date,t.sym,t.dir,t.at].join('|'),t=>nm(t.strat),t=>(t.strat==='live_scored'?4:0)+(VAR_RE.test(t.strat)?0:2)+(t.strat==='fvg'||t.strat==='ema_pb'?1:0)):rows0.filter(t=>t.strat===ui.strat),g={};rows.forEach(t=>(g[t.date]??=[]).push(t));const ds=Object.keys(g).sort();
+  const rows0=sets[ui.who]||sets.tg;const rows=ui.strat==='all'?collapse(rows0,t=>[t.mkt,t.date,t.sym,t.dir,t.at].join('|'),t=>nm(t.strat),t=>(t.strat==='live_scored'?4:0)+(VAR_RE.test(t.strat)?0:2)+(t.strat==='fvg'||t.strat==='ema_pb'?1:0)):rows0.filter(t=>sm(t.strat)),g={};rows.forEach(t=>(g[t.date]??=[]).push(t));const ds=Object.keys(g).sort();
   const daily=ds.map(d=>({d,l:d.slice(5),x:g[d],v:g[d].reduce((a,t)=>a+t.inr,0)}));let c=0;const cum=daily.map(r=>c+=r.v);const M=metrics(rows);
   const chip=(v,l)=>fb('who',v,l);
-  const ksD=[...new Set([...rows0.map(t=>t.strat),...(ui.strat!=='all'?[ui.strat]:[])])].map(k=>({k,n:rows0.filter(t=>t.strat===k).length,v:rows0.filter(t=>t.strat===k).reduce((a,t)=>a+t.inr,0)}));
+  const ksD=[...new Set([...rows0.map(t=>t.strat),...(ui.strat!=='all'?[...SS()]:[])])].map(k=>({k,n:rows0.filter(t=>t.strat===k).length,v:rows0.filter(t=>t.strat===k).reduce((a,t)=>a+t.inr,0)}));
   PK.strat={title:T('Choose strategy','స్ట్రాటజీ ఎంచుకోండి'),sortable:true,items:[pkItem('all',T('All strategies','అన్ని స్ట్రాటజీలు'),null,rows0.reduce((a,t)=>a+t.inr,0)),...ksD.map(r=>pkItem(r.k,nm(r.k),r.n,r.v))]};
   symPK();const ctl=ctlWrap(`<div class="ctl">${mseg()}<div class="crow">${ksD.length>1?stratChip():''}${symChip2()}${resetChip()}</div><div class="crow">${[['tg',T('Telegram alerts','టెలిగ్రామ్ అలర్ట్‌లు')],...(ui.mkt==='NSE'?[['main',T('Main scanner','మెయిన్ స్కానర్')]]:[]),['shadow',T('All strategies','అన్ని స్ట్రాటజీలు')]].map(([v,l])=>ctlChip(`data-f="who:${v}"`,l,ui.who===v)).join('')}</div>${perRow()}</div>`,[mktName(),stratName(),ui.sym!=='ALL'?ui.sym:null,perPart(),{tg:T('Telegram alerts','టెలిగ్రామ్ అలర్ట్‌లు'),main:T('Main scanner','మెయిన్ స్కానర్'),shadow:T('All strategies','అన్ని స్ట్రాటజీలు')}[ui.who]]);
   let h=ctl;
@@ -566,11 +567,11 @@ async function daysView(){const all=scopeOf(await ledger()).filter(t=>!/_wsl$/.t
 
 const ctlWrap=(inner,parts)=>`<div class="cwrap"><button class="cbar" data-ctl aria-expanded="${!!ui.ctlOpen}"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span class="cs">${(()=>{const q=parts.filter(Boolean);return q.length>1||tab==='today'?q.map(esc).join(' · '):esc(q[0]||'')+' · '+(tab==='strat'?T('All strategies · All time','అన్ని స్ట్రాటజీలు · మొత్తం కాలం'):T('All time','మొత్తం కాలం'))})()}</span><i>${ui.ctlOpen?'▴':'▾'}</i></button><div class="cbody"${ui.ctlOpen?'':' hidden'}>${inner}</div></div>`;
 const mktName=()=>ui.mkt==='ALL'?T('All markets','అన్ని మార్కెట్లు'):ui.mkt;
-const stratName=()=>{const p=PK.strat;const it=p&&p.items.find(i=>i.v===String(ui.strat));return ui.strat!=='all'&&it?it.name:null};
+const stratName=()=>ui.strat==='all'?null:sLabel();
 const ctlChip=(attr,label,on)=>`<button class="cc${on?' on':''}" ${attr} aria-pressed="${!!on}">${label}</button>`;
 const mseg=()=>'';   /* market switcher moved to the always-visible header bar (drawMkBar) */
 const pickChip=(key,label,curName,on)=>`<button class="cc pickc${on?' on':''}" data-pk="${key}" aria-haspopup="dialog">${label}: <b>${esc(curName)}</b> ▾</button>`;
-const stratChip=()=>{const p=PK.strat,it=p.items.find(i=>i.v===String(ui.strat))||p.items[0];return pickChip('strat',T('Strategy','స్ట్రాటజీ'),it.name,ui.strat!=='all')};
+const stratChip=()=>pickChip('strat',T('Strategy','స్ట్రాటజీ'),ui.strat==='all'?T('All strategies','అన్ని స్ట్రాటజీలు'):sLabel(),ui.strat!=='all');
 const PERS=()=>[['all',T('All','అన్నీ')],['7','7D'],['30','30D'],['90','90D'],['mtd',T('Month','నెల')],['lm',T('Last mo.','గత నెల')],['custom',T('Custom','ఎంపిక')]];
 const perRow=()=>`<div class="crow"><span class="cl">${T('Period','కాలం')}</span>${PERS().map(([v,l])=>ctlChip(`data-f="per:${v}"`,l,ui.per===v)).join('')}</div>${ui.per==='custom'?`<div class="crow dates"><span class="cl">${T('From','నుండి')}</span><input type="date" data-sel="from" value="${esc(ui.from||'')}" max="${istDate(0)}"><span class="cl">${T('To','వరకు')}</span><input type="date" data-sel="to" value="${esc(ui.to||'')}" max="${istDate(0)}"></div>`:''}`;
 const perPart=()=>ui.per==='all'?null:({7:'7D',30:'30D',90:'90D',mtd:T('Month','నెల'),lm:T('Last month','గత నెల'),custom:(ui.from||'…')+' → '+(ui.to||'…')}[ui.per]);
@@ -597,24 +598,29 @@ const pkBtn=(key,label,cur)=>`<button class="sel pk" data-pk="${key}" aria-haspo
 const pkItem=(v,name,n,val)=>({v,name,n,val});
 function pkCur(key){const p=PK[key];const it=p.items.find(i=>i.v===ui[key])||p.items[0];return esc(it.name)+(it.val!=null?' · <span class="'+cl(it.val)+'">'+rs(it.val)+'</span>':'')}
 function openPicker(key){const p=PK[key];if(!p)return;let sheet=$('#sheet');if(sheet)sheet.remove();sheet=document.createElement('div');sheet.id='sheet';
+  const multi=key==='strat',sel=new Set(multi?[...(SS()||[])]:[]);
   const draw=()=>{const sort=ui.pkSort||'best',head=p.items.filter(i=>i.v==='all'||i.pin),rest=p.items.filter(i=>i.v!=='all'&&!i.pin);
     if(p.sortable){rest.sort((a,b)=>sort==='worst'?(a.val??0)-(b.val??0):sort==='n'?(b.n||0)-(a.n||0):sort==='az'?String(a.name).localeCompare(b.name):(b.val??0)-(a.val??0))}
-    const row=i=>`<button class="pr" data-pv="${esc(i.v)}" aria-pressed="${ui[key]===i.v}"><span class="pn">${esc(i.name)}${i.n!=null?`<small>${i.n} ${i.n==1?T('trade','ట్రేడ్'):T('trades','ట్రేడ్లు')}</small>`:''}</span>${i.val!=null?`<b class="${cl(i.val)}">${rs(i.val)}</b>`:''}<em>${ui[key]===i.v?'✓':''}</em></button>`;
-    sheet.innerHTML=`<div class="sh-bd" data-close></div><div class="sh" role="dialog" aria-label="${esc(p.title)}"><div class="sh-h"><b>${esc(p.title)}</b><button class="sh-x" data-close aria-label="Close">✕</button></div>${p.sortable?`<div class="sh-s"><small>${T('Sort','క్రమం')}</small>${[['best',T('Most profit','ఎక్కువ లాభం')],['worst',T('Most loss','ఎక్కువ నష్టం')],['n',T('Most trades','ఎక్కువ ట్రేడ్లు')],['az','A–Z']].map(([k,l])=>`<button data-ps="${k}" aria-pressed="${sort===k}">${l}</button>`).join('')}</div>`:''}<div class="sh-l">${head.map(row).join('')}${rest.map(row).join('')}</div></div>`};
+    const on=i=>multi?(i.v==='all'?sel.size===0:sel.has(i.v)):ui[key]===i.v;
+    const row=i=>`<button class="pr" data-pv="${esc(i.v)}" aria-pressed="${on(i)}"><span class="pn">${esc(i.name)}${i.n!=null?`<small>${i.n} ${i.n==1?T('trade','ట్రేడ్'):T('trades','ట్రేడ్లు')}</small>`:''}</span>${i.val!=null?`<b class="${cl(i.val)}">${rs(i.val)}</b>`:''}<em>${multi&&i.v!=='all'?(on(i)?'☑':'☐'):on(i)?'✓':''}</em></button>`;
+    sheet.innerHTML=`<div class="sh-bd" data-close></div><div class="sh" role="dialog" aria-label="${esc(p.title)}"><div class="sh-h"><b>${esc(p.title)}${multi?` <small class="mut">· ${T('tick several','అనేకం ఎంచుకోండి')}</small>`:''}</b><button class="sh-x" data-close aria-label="Close">✕</button></div>${p.sortable?`<div class="sh-s"><small>${T('Sort','క్రమం')}</small>${[['best',T('Most profit','ఎక్కువ లాభం')],['worst',T('Most loss','ఎక్కువ నష్టం')],['n',T('Most trades','ఎక్కువ ట్రేడ్లు')],['az','A–Z']].map(([k,l])=>`<button data-ps="${k}" aria-pressed="${sort===k}">${l}</button>`).join('')}</div>`:''}<div class="sh-l">${head.map(row).join('')}${rest.map(row).join('')}</div>${multi?`<div style="padding:10px 14px;border-top:1px solid var(--line)"><button class="cc on" data-apply style="width:100%;padding:10px;font-size:14px">${sel.size?T('Show','చూపించు')+' '+sel.size+' '+T('strategies','స్ట్రాటజీలు'):T('Show all strategies','అన్ని స్ట్రాటజీలు చూపించు')}</button></div>`:''}</div>`};
+  const done=()=>{sheet.remove();document.body.classList.remove('noscroll')};
   draw();document.body.appendChild(sheet);document.body.classList.add('noscroll');
-  sheet.addEventListener('click',e=>{if(e.target.closest('[data-close]')){sheet.remove();document.body.classList.remove('noscroll');return}const ps=e.target.closest('[data-ps]');if(ps){ui.pkSort=ps.dataset.ps;draw();return}const pv=e.target.closest('[data-pv]');if(pv){ui[key]=pv.dataset.pv;ui.ctlOpen=false;sheet.remove();document.body.classList.remove('noscroll');render()}})}
+  sheet.addEventListener('click',e=>{if(e.target.closest('[data-close]')){done();return}const ps=e.target.closest('[data-ps]');if(ps){ui.pkSort=ps.dataset.ps;draw();return}
+    if(e.target.closest('[data-apply]')){ui.strat=sel.size?[...sel].join(','):'all';ui.ctlOpen=false;done();render();return}
+    const pv=e.target.closest('[data-pv]');if(pv){const v=pv.dataset.pv;if(multi){if(v==='all'){ui.strat='all';ui.ctlOpen=false;done();render();return}sel.has(v)?sel.delete(v):sel.add(v);const l0=sheet.querySelector('.sh-l'),sc=l0?l0.scrollTop:0;draw();const l=sheet.querySelector('.sh-l');if(l)l.scrollTop=sc;return}ui[key]=v;ui.ctlOpen=false;done();render()}})}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-pk]');if(b)openPicker(b.dataset.pk)});
 const neLine=(r,pf,pt)=>{const x=(cache.ne||[]).filter(t=>t.strat===r.k&&t.mkt===r.mkt&&t.date>=pf&&t.date<=pt&&(ui.sym==='ALL'||t.sym===ui.sym));if(!x.length)return'';const c=k=>x.filter(t=>t.gr===k).length,ok=c('T1_FIRST'),bad=c('SL_FIRST'),un=x.length-ok-bad;return `<p class="mut" style="margin:6px 2px 0;font-size:12.5px">${T('Not entered','ఎంట్రీ కానివి')}: ${x.length} · ${T('direction right','దిశ సరైనది')} <b class="pos">${ok}</b> · ${T('wrong','తప్పు')} <b class="neg">${bad}</b>${un?' · '+T('unclear','స్పష్టంగా లేదు')+' '+un:''}</p>`};
 
 const perRange=()=>{const t=istDate(0),m1=t.slice(0,8)+'01';const lmEnd=istDate(+t.slice(8)),lmStart=lmEnd.slice(0,8)+'01';return ui.per==='7'?[istDate(6),t]:ui.per==='30'?[istDate(29),t]:ui.per==='90'?[istDate(89),t]:ui.per==='mtd'?[m1,t]:ui.per==='lm'?[lmStart,lmEnd]:ui.per==='custom'?[ui.from||'0000',ui.to||'9999']:['0000','9999']};
 async function stratView(){const [pf,pt]=perRange();const all=scopeOf(await ledger()).filter(t=>t.date>=pf&&t.date<=pt);let g={};all.forEach(t=>(g[t.strat+'|'+t.src+'|'+t.mkt]??=[]).push(t));
   const rows=Object.entries(g).map(([k,x])=>{let xs=ui.sym=='ALL'?x:x.filter(t=>t.sym==ui.sym);if(ui.dd)xs=dedupe(xs);const m=metrics(xs);return m?{k:k.split('|')[0],src:k.split('|')[1],mkt:k.split('|')[2],xs,...m}:null}).filter(Boolean);
-  const agg={};rows.forEach(r=>{const a=agg[r.k]??={k:r.k,n:0,net:0};a.n+=r.n;a.net+=r.net});if(ui.strat!=='all'&&!agg[ui.strat])agg[ui.strat]={k:ui.strat,n:0,net:0};
+  const agg={};rows.forEach(r=>{const a=agg[r.k]??={k:r.k,n:0,net:0};a.n+=r.n;a.net+=r.net});if(ui.strat!=='all')for(const k of SS())if(!agg[k])agg[k]={k,n:0,net:0};
   const allRows=Object.values(agg).sort((a,b)=>b.net-a.net);
   const one=ui.strat!=='all';rows.sort((a,b)=>(b[ui.sort]??-1e9)-(a[ui.sort]??-1e9));
   const chip=fb;
 
-  if(one)for(let i=rows.length-1;i>=0;i--)if(rows[i].k!==ui.strat)rows.splice(i,1);
+  if(one)for(let i=rows.length-1;i>=0;i--)if(!sm(rows[i].k))rows.splice(i,1);
   const tot=rows.reduce((a,r)=>a+r.net,0),nT=rows.reduce((a,r)=>a+r.n,0);
   const tradeList=r=>{const byD={};r.xs.forEach(t=>(byD[t.date]??=[]).push(t));return Object.keys(byD).sort().reverse().map(d=>{const x=byD[d].slice().sort((a,b)=>String(b.at).localeCompare(String(a.at))),v=x.reduce((a,t)=>a+t.inr,0);return `<div class="dh"><span>${d}</span><b class="${cl(v)}">${rs(v)}</b></div>`+x.map(t=>`<div class="tr" data-tid="${esc(t.id)}" role="button" tabindex="0">${icoS(t.status,1)}<div class="tb"><span>${esc(t.sym)} ${esc(String(t.strike).replace(/\.0$/,''))} <span class="cp ${t.dir==='CE'?'ce':'pe'}">${esc(t.dir)}</span></span><span class="sb">${esc(t.hh||'')} · ${esc(String(t.status||'').replace(/_/g,' '))}</span></div><div class="rt"><b class="big ${cl(t.inr)}" style="font-size:14px">${rs(t.inr)}</b><small class="pct">${pctTxt(t.pct)}</small></div></div>`).join('')}).join('')};
   let h='';
