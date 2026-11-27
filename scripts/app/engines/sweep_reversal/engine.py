@@ -69,6 +69,12 @@ def _scan_symbol(symbol, session, state=None, now_mins=None):
     if not daily:
         return []
     prev = daily[-1]
+    if state is not None:      # previous close for the app's index % change (display only)
+        try:
+            if prev.get("close"):
+                state.setdefault("spot_prev", {})[symbol] = round(float(prev["close"]), 2)
+        except Exception:
+            pass
     today = market_data.get_recent_underlying_candles(
         underlying_key, config.SWEEP_CANDLE_INTERVAL, config.SWEEP_CANDLE_FETCH_COUNT)
     if len(today) < 4:
