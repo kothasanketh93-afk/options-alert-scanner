@@ -101,6 +101,27 @@ def _suppressed(what: str, critical: bool = False) -> bool:
     return False
 
 
+
+def short_id(trade: dict) -> str:
+    """Short unique trade ID shown in alerts and in the app (e.g. '1127-T3'): MMDD + initials of the label + its number.
+    The app derives the same ID from the same state fields (docs/app/index.html tidOf), so you can type it into My trades."""
+    import re as _re
+    try:
+        m = _re.match(r"\s*([A-Za-z]+)\s*(\d+)", str(trade.get("display_label") or ""))
+        if not m:
+            return ""
+        word = m.group(1)
+        pre = word[0] if word.isupper() else "".join(c for c in word if c.isupper())
+        at = str(trade.get("alert_time") or "")
+        return f"{at[5:7]}{at[8:10]}-{pre}{m.group(2)}"
+    except Exception:
+        return ""
+
+
+def _lbl(trade: dict) -> str:
+    sid = short_id(trade)
+    return f"{trade['display_label']} · ID {sid}" if sid else str(trade["display_label"])
+
 def push(text: str, strategy: str = None, extra: dict = None):
     """Live trade alert -> ntfy.sh phone push, only while Telegram is EOD-only (otherwise send() already delivered it).
     Call right after send(text). Best-effort, never raises."""
@@ -259,7 +280,7 @@ def _fmt_new_alert_conditions(trade: dict) -> str:
     alt_block = ("\nOther setups meeting conditions:\n" + "\n".join(
         f"  • {a['symbol']} {a['direction']} {a['moneyness']}" for a in alts)) if alts else ""
     return (
-        f"📣 CONDITIONS MET — {trade['display_label']}\n\n"
+        f"📣 CONDITIONS MET — {_lbl(trade)}\n\n"
         f"Trade ID: {trade['trade_id']}\n"
         f"Symbol: {trade['symbol']} | Direction: {trade['direction']} | "
         f"Strike: {trade['moneyness']}\n"
@@ -331,7 +352,7 @@ def fmt_new_alert(trade: dict) -> str:
     prob_trend = trade.get("probability_trend", "Stable")
 
     return (
-        f"🏆 BEST OPPORTUNITY — {trade['display_label']}\n\n"
+        f"🏆 BEST OPPORTUNITY — {_lbl(trade)}\n\n"
         f"Trade ID: {trade['trade_id']}\n"
         f"Symbol: {trade['symbol']} | Direction: {trade['direction']} | "
         f"Strike: {trade['moneyness']}\n"
@@ -380,7 +401,7 @@ def fmt_early_breakout_alert(trade: dict) -> str:
     low_min, high_min = trade["expected_holding_minutes"]
 
     return (
-        f"🚨 EARLY INSTITUTIONAL BREAKOUT — {trade['display_label']}\n\n"
+        f"🚨 EARLY INSTITUTIONAL BREAKOUT — {_lbl(trade)}\n\n"
         f"Trade ID: {trade['trade_id']}\n"
         f"Underlying: {trade['symbol']}\n"
         f"Direction: {trade['direction']}\n"
@@ -423,7 +444,7 @@ def fmt_early_breakout_alert(trade: dict) -> str:
 
 def fmt_entry_activated(trade: dict) -> str:
     return (
-        f"ENTRY ACTIVATED — {trade['display_label']}\n\n"
+        f"ENTRY ACTIVATED — {_lbl(trade)}\n\n"
         f"{_trade_header(trade)}\n"
         f"Entry Time: {_time_only(trade['actual_entry_time'])}\n"
         f"Tracked Entry: ₹{trade['tracked_entry_price']}\n\n"
@@ -436,7 +457,7 @@ def fmt_entry_activated(trade: dict) -> str:
 
 def fmt_t1_hit(trade: dict, time_taken_min: int) -> str:
     return (
-        f"TARGET 1 HIT — {trade['display_label']}\n\n"
+        f"TARGET 1 HIT — {_lbl(trade)}\n\n"
         f"{_trade_header(trade)}\n"
         f"Entry Time: {_time_only(trade['actual_entry_time'])}\n"
         f"T1 Hit Time: {_time_only(trade['t1_hit_time'])}\n"
@@ -456,7 +477,7 @@ def fmt_t1_hit(trade: dict, time_taken_min: int) -> str:
 
 def fmt_t2_hit(trade: dict, time_taken_min: int) -> str:
     return (
-        f"TARGET 2 HIT — {trade['display_label']}\n\n"
+        f"TARGET 2 HIT — {_lbl(trade)}\n\n"
         f"{_trade_header(trade)}\n"
         f"Entry Time: {_time_only(trade['actual_entry_time'])}\n"
         f"T2 Hit Time: {_time_only(trade['t2_hit_time'])}\n"
@@ -476,7 +497,7 @@ def fmt_trailing_sl_adjusted(trade: dict) -> str:
     profit after a favorable move -- see tracker.py's
     _maybe_apply_trailing_stop() for the trigger logic."""
     return (
-        f"🔒 SL RAISED (Trailing) — {trade['display_label']}\n\n"
+        f"🔒 SL RAISED (Trailing) — {_lbl(trade)}\n\n"
         f"{_trade_header(trade)}\n"
         f"Tracked Entry: ₹{trade['tracked_entry_price']}\n"
         f"Best Move So Far: {trade['max_favorable_pct']:+.2f}%\n\n"
@@ -488,7 +509,7 @@ def fmt_trailing_sl_adjusted(trade: dict) -> str:
 def fmt_sl_hit(trade: dict, time_taken_min: int) -> str:
     result = "T1 achieved, SL after T2 attempt" if trade["t1_hit"] else "FAILED"
     return (
-        f"STOP LOSS HIT — {trade['display_label']}\n\n"
+        f"STOP LOSS HIT — {_lbl(trade)}\n\n"
         f"{_trade_header(trade)}\n"
         f"Entry Time: {_time_only(trade['actual_entry_time'])}\n"
         f"SL Time: {_time_only(trade['sl_hit_time'])}\n"
@@ -513,7 +534,7 @@ _NOT_ENTERED_WHY = {
 def fmt_not_entered(trade: dict) -> str:
     why = _NOT_ENTERED_WHY.get(trade.get("not_entered_reason"), "Never touched during market hours.")
     return (
-        f"NOT ENTERED — {trade['display_label']}\n\n"
+        f"NOT ENTERED — {_lbl(trade)}\n\n"
         f"{_trade_header(trade)}\n"
         f"Entry Zone: ₹{trade['entry_low']} - ₹{trade['entry_high']}\n"
         f"{why}\n\n"
@@ -523,7 +544,7 @@ def fmt_not_entered(trade: dict) -> str:
 
 def fmt_eod_closed(trade: dict) -> str:
     return (
-        f"EOD — TRADE UNRESOLVED — {trade['display_label']}\n"
+        f"EOD — TRADE UNRESOLVED — {_lbl(trade)}\n"
         f"{_trade_header(trade)}\n"
         f"Entry: ₹{trade['tracked_entry_price']} at {_time_only(trade['actual_entry_time'])}\n"
         f"Last Price: ₹{trade.get('eod_last_price', 'N/A')}\n\n"
@@ -535,7 +556,7 @@ def fmt_eod_closed(trade: dict) -> str:
 
 def fmt_ambiguous(trade: dict, candle: dict) -> str:
     return (
-        f"AMBIGUOUS CANDLE — MANUAL REVIEW NEEDED — {trade['display_label']}\n"
+        f"AMBIGUOUS CANDLE — MANUAL REVIEW NEEDED — {_lbl(trade)}\n"
         f"{_trade_header(trade)}\n"
         f"Both SL and a target level were touched within one 1-min "
         f"candle; order can't be determined from OHLC.\n\n"

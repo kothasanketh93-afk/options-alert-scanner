@@ -78,3 +78,11 @@ def test_call_stats_counts_and_flags_refused():
     ru._note_call("https://apiconnect.angelbroking.com/rest/secure/x/getCandleData", 403)
     s = ru.call_stats()
     assert s["total"] == 2 and s["refused"] == 1 and list(s["top"].values())[0] == {"n": 2, "bad": 1}
+
+
+def test_short_id():
+    import telegram_notify as tg
+    assert tg.short_id({"display_label": "Trade 3", "alert_time": "2026-11-27T10:01:08+05:30"}) == "1127-T3"
+    assert tg.short_id({"display_label": "SweepShadow 12", "alert_time": "2026-11-27T10:01:08+05:30"}) == "1127-SS12"
+    assert tg.short_id({"display_label": "MCX 2", "alert_time": "2026-11-27T20:01:08+05:30"}) == "1127-M2"
+    assert tg.short_id({}) == ""
