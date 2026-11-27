@@ -175,6 +175,65 @@ def _quote_fields(q: dict) -> dict:
     return {"ltp": q.get("ltp"), "bid": bid, "ask": ask, "oi": q.get("opnInterest"), "volume": q.get("tradeVolume")}
 
 
+
+# --- silver data probe (2026-11-27) ------------------------------------------------------------------------------------
+# DATA ONLY: silver is not scanned or traded. Every PROBE_EVERY_MIN minutes it records how liquid the silver options are
+# (bid/ask spread, OI, volume near the money) so we can judge, from numbers, whether adding silver is worth it. Never raises.
+SILVER_NAMES = ("SILVER", "SILVERM", "SILVERMIC")
+PROBE_EVERY_MIN = 30
+PROBE_MAX_SNAPSHOTS = 60
+
+
+def _spread_pct(bid, ask):
+    try:
+        b, a = float(bid), float(ask)
+        return round((a - b) / ((a + b) / 2) * 100, 1) if b > 0 and a > 0 and a >= b else None
+    except (TypeError, ValueError):
+        return None
+
+
+def silver_probe(broker, st: dict, master: list, now: datetime) -> int:
+    """One probe slot per PROBE_EVERY_MIN minutes. Returns the number of snapshots added (0 when not due / nothing listed)."""
+    try:
+        slot = (now.hour * 60 + now.minute) // PROBE_EVERY_MIN
+        if st.get("silver_probe_slot") == slot:
+            return 0
+        st["silver_probe_slot"] = slot
+        snaps = st.setdefault("silver_probe", [])
+        added = 0
+        for name in SILVER_NAMES:
+            c = resolve_contracts(master, name, now)
+            if not c:
+                if not st.setdefault("silver_probe_missing", {}).get(name):
+                    st["silver_probe_missing"][name] = True
+                    log.info("SILVER_PROBE %s: no future/option contracts in the scrip master", name)
+                continue
+            fq = broker._batch_quotes("MCX", [c["opt_fut"]["token"]]).get(c["opt_fut"]["token"]) or {}
+            fut = fq.get("ltp")
+            if not fut:
+                continue
+            strikes = sorted({x["_strike"] for x in c["chain"]}, key=lambda k: abs(k - float(fut)))[:3]
+            legs = [(k, d, _leg(c["chain"], k, d)) for k in strikes for d in ("CE", "PE")]
+            legs = [(k, d, x) for k, d, x in legs if x]
+            qs = broker._batch_quotes("MCX", [x["token"] for _, _, x in legs]) if legs else {}
+            rows = []
+            for k, d, x in legs:
+                f = _quote_fields(qs.get(x["token"]) or {})
+                rows.append({"strike": k, "dir": d, "ltp": f["ltp"], "bid": f["bid"], "ask": f["ask"],
+                             "spread_pct": _spread_pct(f["bid"], f["ask"]), "oi": f["oi"], "volume": f["volume"]})
+            sp = [r["spread_pct"] for r in rows if r["spread_pct"] is not None]
+            snaps.append({"t": now.strftime("%H:%M"), "name": name, "expiry": c["expiry"], "lot": c["lot"], "fut": fut,
+                          "n_strikes": len({x["_strike"] for x in c["chain"]}), "legs": rows})
+            added += 1
+            log.info("SILVER_PROBE %s exp=%s fut=%s strikes=%d legs=%d median_spread=%s%%", name, c["expiry"], fut,
+                     len({x["_strike"] for x in c["chain"]}), len(rows), sorted(sp)[len(sp) // 2] if sp else "n/a")
+        del snaps[:-PROBE_MAX_SNAPSHOTS]
+        return added
+    except Exception as exc:
+        log.error("SILVER_PROBE failed (%s: %s) -- continuing.", type(exc).__name__, exc)
+        return 0
+
+
 # --- detection -------------------------------------------------------------------------------------------------
 def weak_window_mode(name: str, minute_of_day: int) -> str:
     """'skip' = do not scan at all, 'rfp_only' = scan but keep only the RFP strategy, '' = normal."""
@@ -649,6 +708,8 @@ def main():
                     log.error("MCX %s scan failed (%s: %s) -- continuing.", name, type(exc).__name__, exc)
                     break
         st["mcx_scan_failed"] = failed_now
+        if not failed_now:            # data-only silver liquidity probe (skipped when this run already hit API trouble)
+            silver_probe(broker, st, master, now)
         _t_scan = _tm.monotonic()
         try:
             import sell_view

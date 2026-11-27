@@ -94,3 +94,42 @@ def test_mcx_weak_window_modes():
     assert m("CRUDEOIL", 10) == "skip" and m("GOLDM", 13, 59) == "skip" and m("CRUDEOIL", 14) == ""
     assert m("CRUDEOIL", 9, 59) == "" and m("NATURALGAS", 11) == "skip"
     assert m("NATURALGAS", 12) == "rfp_only" and m("NATURALGAS", 13, 59) == "rfp_only" and m("NATURALGAS", 14) == ""
+
+
+def test_silver_probe_records_liquidity_and_is_throttled():
+    from datetime import datetime
+    import mcx_main as mm
+
+    def row(sym, tok, typ, strike, exp="29DEC2026"):
+        return {"exch_seg": "MCX", "name": "SILVERM", "instrumenttype": typ, "expiry": exp, "symbol": sym, "token": tok,
+                "strike": str(strike * 100), "lotsize": "5"}
+    master = [row("SILVERM29DEC26FUT", "F1", "FUTCOM", 0)]
+    for k in (150000, 151000, 152000):
+        master += [row(f"SILVERM29DEC26{k}CE", f"C{k}", "OPTFUT", k), row(f"SILVERM29DEC26{k}PE", f"P{k}", "OPTFUT", k)]
+
+    class B:
+        calls = 0
+
+        def _batch_quotes(self, exch, toks):
+            B.calls += 1
+            if toks == ["F1"]:
+                return {"F1": {"ltp": 151100}}
+            return {t: {"ltp": 100, "depth": {"buy": [{"price": 90}], "sell": [{"price": 110}]}, "opnInterest": 50, "tradeVolume": 7} for t in toks}
+    st, now = {}, datetime(2026, 11, 27, 19, 0)
+    assert mm.silver_probe(B(), st, master, now) == 1
+    snap = st["silver_probe"][0]
+    assert snap["name"] == "SILVERM" and len(snap["legs"]) == 6 and snap["legs"][0]["spread_pct"] == 20.0
+    n = B.calls
+    assert mm.silver_probe(B(), st, master, now) == 0 and B.calls == n          # same 30-min slot: no extra API calls
+    assert "SILVER" in st["silver_probe_missing"] and "SILVERMIC" in st["silver_probe_missing"]
+
+
+def test_silver_probe_never_raises():
+    from datetime import datetime
+    import mcx_main as mm
+
+    class Boom:
+        def _batch_quotes(self, *a):
+            raise RuntimeError("x")
+    master = [{"exch_seg": "MCX", "name": "SILVER", "instrumenttype": t, "expiry": "29DEC2026", "symbol": "S", "token": "1", "strike": "100", "lotsize": "30"} for t in ("FUTCOM", "OPTFUT")]
+    assert mm.silver_probe(Boom(), {}, master, datetime(2026, 11, 27, 19, 0)) == 0
