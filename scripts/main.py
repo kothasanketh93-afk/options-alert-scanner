@@ -1000,6 +1000,16 @@ def main():
         log.info("SKIP_TRADING_TODAY=true -- trading opted out for today, skipping run.")
         return
 
+    # 2026-11-27: weekends and NSE holidays must not run the scanner. holiday_guard existed but main() never called it, so on
+    # 2026-11-24 (Guru Nanak Jayanti) every 5-min run hit Upstox for candles that did not exist ("empty candle list"), failed over
+    # to Angel One, and burst-called its getCandleData until it answered 400/403 "exceeding access rate" (54 errors that day).
+    # Set FORCE_TRADING_DAY=true for a special session (e.g. Muhurat) or a manual test run.
+    if os.environ.get("FORCE_TRADING_DAY", "").strip().lower() != "true":
+        import holiday_guard
+        if not holiday_guard.should_run():
+            log.info("Weekend / NSE holiday per holiday_guard -- nothing to scan, skipping run.")
+            return
+
     repo_url = os.environ["REPO_URL"]           # e.g. https://github.com/you/repo.git
     github_token = auth.get_github_token()
 

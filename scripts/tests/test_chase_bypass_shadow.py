@@ -59,3 +59,14 @@ def test_alert_mute_blocks_push_for_losing_pairs(monkeypatch):
     tg.push("x", "ema_pb", None, "MCX")               # MCX ema_pb: still alerts
     tg.push("x", "trade_score")
     assert [s for _, s in sent] == ["fvg", "ema_pb", "trade_score"]
+
+
+def test_main_skips_on_nse_holiday(monkeypatch):
+    """2026-11-24 regression: main() must return before touching the repo/broker on a holiday, unless FORCE_TRADING_DAY=true."""
+    import main, holiday_guard, auth
+    monkeypatch.delenv("FORCE_TRADING_DAY", raising=False)
+    monkeypatch.setattr(main.config_validation, "validate_startup_config", lambda: None)
+    monkeypatch.setattr(auth, "trading_enabled_today", lambda: True)
+    monkeypatch.setattr(holiday_guard, "should_run", lambda: False)
+    monkeypatch.delenv("REPO_URL", raising=False)     # would KeyError if the guard did not return first
+    assert main.main() is None
