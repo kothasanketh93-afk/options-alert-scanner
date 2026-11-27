@@ -3,7 +3,6 @@
 const ALLOWED = [
   /^(mcx\/)?state\/\d{4}-\d{2}-\d{2}\.json$/,
   /^(mcx\/)?ledger\/outcomes\.csv$/,
-  /^(mcx\/)?ledger\/candles\/\d{4}-\d{2}-\d{2}\.json\.gz$/,   // trade chart sheet: archived 1-minute option candles (gzip, client decompresses)
   /^prices\.json$/,                                 // live price strip (written every few seconds by stream.yml)
   /^banknifty\/trade_log\.csv$/,                     // Edge tab: BankNifty trade log (2026-11-25)
   /^scan_logs\/\d{4}-\d{2}-\d{2}\.jsonl$/,          // Edge tab: "why setups were rejected today"
@@ -16,6 +15,6 @@ export async function onRequestGet({ params, env }) {
   let obj;
   try { obj = await env.DATA.get(key); } catch (e) { return new Response("R2 read failed: " + e.message, { status: 502 }); }
   if (!obj) return new Response("Not found", { status: 404 });
-  const type = key.endsWith(".gz") ? "application/octet-stream" : key.endsWith(".csv") ? "text/csv; charset=utf-8" : key.endsWith(".jsonl") ? "text/plain; charset=utf-8" : "application/json; charset=utf-8";
+  const type = key.endsWith(".csv") ? "text/csv; charset=utf-8" : key.endsWith(".jsonl") ? "text/plain; charset=utf-8" : "application/json; charset=utf-8";
   return new Response(obj.body, { headers: { "content-type": type, "cache-control": "no-store" } });
 }
