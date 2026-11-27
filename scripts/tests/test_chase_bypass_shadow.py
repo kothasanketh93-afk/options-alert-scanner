@@ -41,3 +41,20 @@ def test_not_extended_unchanged():
 
 if __name__ == "__main__":
     test_extended_atm_becomes_shadow_only(); test_flag_off_no_shadow(); test_not_extended_unchanged(); print("ok")
+
+
+def test_alert_mute_blocks_push_for_losing_pairs(monkeypatch):
+    import config, fcm_notify, telegram_notify as tg
+    sent = []
+    monkeypatch.setattr(config, "TELEGRAM_EOD_ONLY", True, raising=False)
+    monkeypatch.setattr(fcm_notify, "publish", lambda *a, **k: sent.append(("fcm", k.get("strategy"))))
+    import ntfy_notify
+    monkeypatch.setattr(ntfy_notify, "publish", lambda *a, **k: None)
+    tg.push("x", "chase_bypass")                      # NSE chase_bypass: muted
+    tg.push("x", "fvg", None, "MCX")                  # MCX fvg: muted
+    tg.push("x", "ema_pb", None, "NSE")               # NSE ema_pb: muted
+    assert sent == []
+    tg.push("x", "fvg")                               # NSE fvg: still alerts
+    tg.push("x", "ema_pb", None, "MCX")               # MCX ema_pb: still alerts
+    tg.push("x", "trade_score")
+    assert [s for _, s in sent] == ["fvg", "ema_pb", "trade_score"]

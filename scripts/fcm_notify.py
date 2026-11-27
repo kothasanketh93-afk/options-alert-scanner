@@ -22,7 +22,7 @@ from logging_setup import get_logger
 
 log = get_logger("fcm")
 DEVICES_KEY = "push/devices.json"
-DEFAULT_STRATEGIES = ["trade_score", "chase_bypass", "fvg", "ema_pb"]     # same as the dashboard's DEF_ALERT
+DEFAULT_STRATEGIES = ["trade_score", "fvg", "ema_pb"]     # same as the dashboard's DEF_ALERT
 CHANNEL_ID = "alerts"
 _TAG = re.compile(r"<[^>]+>")
 _cache = {"devices": (0.0, None), "token": (0.0, None)}

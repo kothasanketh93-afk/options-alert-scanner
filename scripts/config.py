@@ -1731,4 +1731,8 @@ RFP_SHADOW_ENABLED = True
 # 2026-11-26 (user): live trade alerts go to Telegram again even while TELEGRAM_EOD_ONLY is on. Only the main scanner's live
 # trade lifecycle messages (new alert, entry, T1, T2, SL, ...) are let through; shadow notices, charts and reports stay as they were.
 TELEGRAM_REPORTS = False   # 2026-11-26: EOD/weekly/BankNifty reports no longer go to Telegram; the app shows the Day summary
+# 2026-11-27 (user: "make changes with the data"): phone pushes are muted for (market, strategy) pairs that lost money on 3 weeks of
+# shadow data while their SHADOW trades keep being recorded and shown in the app. Net avg / SL% / n: NSE chase_bypass -5.0% / 56% / 81,
+# NSE ema_pb -4.9% / 63% / 35, MCX fvg -3.7% / 65% / 34. Re-check at the December review; remove a pair here to un-mute it.
+ALERT_MUTE = (("NSE", "chase_bypass"), ("NSE", "ema_pb"), ("MCX", "fvg"))
 TELEGRAM_LIVE_ALERTS = False   # 2026-11-26: user turned live Telegram alerts off again (app push only)

@@ -718,7 +718,7 @@ window.addEventListener('popstate',()=>{if($('#tsheet'))closeTrade(true)});
 let unread=0,alertsOn=false;try{alertsOn=localStorage.getItem('alerts')!='0'}catch(e){}   /* default ON: Telegram trade alerts are off (EOD report only), this is now the notification surface */
 const syncBell=()=>{};
 /* which strategies raise in-app alerts: null = default (Telegram basis, as before); array = the user's own choice */
-const BASES=()=>Object.keys(NAMES).filter(k=>!k.endsWith('_wsl')),DEF_ALERT=['trade_score','chase_bypass','fvg','ema_pb'];
+const BASES=()=>Object.keys(NAMES).filter(k=>!k.endsWith('_wsl')),DEF_ALERT=['trade_score','fvg','ema_pb'];
 const getAS=()=>{try{const a=JSON.parse(localStorage.getItem('alertSel')||'null');return Array.isArray(a)?a:null}catch(e){return null}};
 const setAS=a=>{try{a===null?localStorage.removeItem('alertSel'):localStorage.setItem('alertSel',JSON.stringify(a))}catch(e){}try{window.pushSync&&window.pushSync()}catch(e){}};
 const asOn=k=>(getAS()||DEF_ALERT).includes(String(k).replace(/_wsl$/,''));

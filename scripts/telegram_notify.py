@@ -122,9 +122,15 @@ def _lbl(trade: dict) -> str:
     sid = short_id(trade)
     return f"{trade['display_label']} · ID {sid}" if sid else str(trade["display_label"])
 
-def push(text: str, strategy: str = None, extra: dict = None):
+def push(text: str, strategy: str = None, extra: dict = None, market: str = "NSE"):
     """Live trade alert -> ntfy.sh phone push, only while Telegram is EOD-only (otherwise send() already delivered it).
-    Call right after send(text). Best-effort, never raises."""
+    Call right after send(text). Best-effort, never raises. Muted (market, strategy) pairs (config.ALERT_MUTE) send nothing."""
+    try:
+        import re as _re
+        if strategy and (market, _re.sub(r"_wsl$", "", str(strategy).lower())) in set(getattr(config, "ALERT_MUTE", ())):
+            return
+    except Exception:
+        pass
     if getattr(config, "TELEGRAM_EOD_ONLY", False):
         try:
             import ntfy_notify
